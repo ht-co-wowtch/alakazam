@@ -37,21 +37,23 @@ name | 說明 |
     |platform|web/android/ios|站台種類
     |accepts|[1000,1001,1002]|多房間推送用的tag
 
-    假如有兩告個房間如以下資料
+    假如有兩個房間如以下資料
 
     `room1`
+
     |key|value|
     |---|-----|
-    |room_id|live://1000|
-    |platform|web|
-    |accepts|[1500,1001]
+    |room_id|live://1000
+    |platform|web
+    |accepts|[1500,1000]
 
     `room2`
+
     |key|value|
     |---|-----|
-    |room_id|live://1001|
-    |platform|web|
-    |accepts|[1500,2000]
+    |room_id|live://1001
+    |platform|web
+    |accepts|[1500,1001]
 
     推送可以指定`accepts=1500`就推送到`room1` `room2`
 
