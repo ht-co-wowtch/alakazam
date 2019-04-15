@@ -30,29 +30,28 @@ name | 說明 |
 1. 連接webSocket ws://127.0.0.1:3102/sub
 2. 請求連線到某個room，webScoket傳送如下格式binary body bytes
 
-    key|value|說明|
-    ---|-----|----|
-    mid|123|要連接的user id，通常用於指定私密的對象
-    room_id|live://1000|live代表房間種類(自訂)，1000代表房間代號(自訂)
-    platform|web/android/ios|站台種類
-    accepts|[1000,1001,1002]|多房間推送用的tag
+    |key|value|說明|
+    |---|-----|----|
+    |mid|123|要連接的user id，通常用於指定私密的對象
+    |room_id|live://1000|live代表房間種類(自訂)，1000代表房間代號(自訂)
+    |platform|web/android/ios|站台種類
+    |accepts|[1000,1001,1002]|多房間推送用的tag
 
     假如有兩告個房間如以下資料
 
     `room1`
-    key|value|
-    ---|-----|
-    room_id|live://1000|
-    platform|web|
-    accepts|[1500,1001]
+    |key|value|
+    |---|-----|
+    |room_id|live://1000|
+    |platform|web|
+    |accepts|[1500,1001]
 
     `room2`
-    key|value|
-    ---|-----|
-    room_id|live://1001|
-    platform|web|
-    accepts|[1500,2000]
-
+    |key|value|
+    |---|-----|
+    |room_id|live://1001|
+    |platform|web|
+    |accepts|[1500,2000]
 
     推送可以指定`accepts=1500`就推送到`room1` `room2`
 
