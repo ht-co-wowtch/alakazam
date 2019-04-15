@@ -55,7 +55,7 @@ name | 說明 |
     |platform|web
     |accepts|[1500,1001]
 
-    推送可以指定`accepts=1500`就推送到`room1` `room2`
+    推送可以指定`operation=1500`就推送到`room1` `room2`
 
 3. service回覆是否進入房間成功
 
