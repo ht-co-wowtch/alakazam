@@ -8,7 +8,7 @@ name | length | remork |說明
 Package Length|4 bytes|header + body length| 整個Protocol bytes長度
 Header Length|2 bytes|protocol header length| Package Length - Boyd Length
 Protocol Version|2 bytes|自訂數字|Protocol版本號
-Operation|4 bytes| [Operation](#Operation)|Protocol的動作
+Operation|4 bytes| [Operation](#operation)|Protocol的動作
 Sequence id |4 bytes| 區分同user但不同裝置連接
 Body |不固定|傳送的資料16bytes之後就是Body
 
@@ -95,7 +95,7 @@ name | 說明 |
 key|value|說明|
 ---|-----|----|
 mids|123 | 推送的user id
-operation|[Operation](#Operation)|推送的用意
+operation|[Operation](#operation)|推送的用意
 room|1000|推送的room id 
 type|live|房間分類
 

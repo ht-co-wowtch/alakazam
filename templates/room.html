@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>聊天室測試版</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style type="text/css">
+        .chat {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .chat li {
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px dotted #B3A9A9;
+        }
+
+        .chat li.left .chat-body {
+            margin-left: 60px;
+        }
+
+        .chat li.right .chat-body {
+            margin-right: 60px;
+        }
+
+
+        .chat li .chat-body p {
+            margin: 0;
+            color: #777777;
+        }
+
+        .panel .slidedown .glyphicon, .chat .glyphicon {
+            margin-right: 5px;
+        }
+
+        .panel-body {
+            overflow-y: scroll;
+            height: 500px;
+        }
+
+        ::-webkit-scrollbar-track {
+            -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+            background-color: #F5F5F5;
+        }
+
+        ::-webkit-scrollbar {
+            width: 12px;
+            background-color: #F5F5F5;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+            background-color: #555;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- Static navbar -->
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                        aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">聊天室測試版</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/add">新增</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">推播 <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/push/all">全部房間</a></li>
+                            <li><a href="/push/id">單一房間</a></li>
+                            <li><a href="/push/type">房間Type</a></li>
+                            <li><a href="/push/tag">房間Tag</a></li>
+                        </ul>
+                    </li>                </ul>
+            </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+    </nav>
+
+    <div class="row">
+        <dl class="dl-horizontal">
+            <dt>房間id:</dt>
+            <dd>{{ .id }}</dd>
+            <dt>房間分類:</dt>
+            <dd>{{ .type }}</dd>
+            <dt>房間標籤:</dt>
+            <dd>{{ .tag }}</dd>
+            <dt>你的名稱:</dt>
+            <dd>{{ .name }}</dd>
+        </dl>
+        <div class="col-md-7">
+            <h2>status: <span id="status"></span></h2>
+            <div class="panel panel-primary">
+                <div class="panel-collapse" id="collapseOne">
+                    <div class="panel-body">
+                        <ul class="chat" id="chat">
+
+                        </ul>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="input-group">
+                            <input id="btn-input" type="text" class="form-control input-sm"
+                                   placeholder="Type your message here..."/>
+                            <span class="input-group-btn">
+                            <button class="btn btn-warning btn-sm" id="btn-chat" onclick="send()">
+                                Send</button>
+                        </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div> <!-- /container -->
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script>
+    window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')
+
+    const rawHeaderLen = 16;
+    const packetOffset = 0;
+    const headerOffset = 4;
+    const verOffset = 6;
+    const opOffset = 8;
+    const seqOffset = 12;
+
+    var Client = function (options) {
+        var MAX_CONNECT_TIMES = 10;
+        var DELAY = 15000;
+        this.options = options || {};
+        this.createConnect(MAX_CONNECT_TIMES, DELAY);
+    }
+
+    var appendMsg = function (text) {
+        obj = JSON.parse(text);
+        if (obj.name == "{{ .name }}") {
+            document.getElementById("chat").innerHTML += "<li class=\"right clearfix\"><span class=\"chat-img pull-right\">\n" +
+                "                            <img src=\"http://placehold.it/50/FA6F57/fff&text=ME\" alt=\"User Avatar\" class=\"img-circle\"/>\n" +
+                "                        </span>\n" +
+                "                                <div class=\"chat-body clearfix\">\n" +
+                "                                    <div class=\"header\">\n" +"                                    <small class=\" text-muted\"><span class=\"\"></span></small>\n" +
+                "                                        <strong class=\"pull-right primary-font\">" + obj.name + "</strong>\n" +
+                "                                    </div>\n" +
+                "                                    <p>\n" +
+                obj.content +
+                "                                    </p>\n" +
+                "                                </div>\n" +
+                "                            </li>"
+        } else {
+            document.getElementById("chat").innerHTML += "<li class=\"left clearfix\"><span class=\"chat-img pull-left\">\n" +
+                "                            <img src=\"http://placehold.it/50/55C1E7/fff&text=U\" alt=\"User Avatar\" class=\"img-circle\"/>\n" +
+                "                        </span>\n" +
+                "                                <div class=\"chat-body clearfix\">\n" +
+                "                                    <div class=\"header\">\n" + "                                    <small class=\" text-muted\"><span class=\"\"></span></small>\n" +
+                "                                        <strong class=\"primary-font\">" + obj.name + "</strong>\n" +
+                "                                    </div>\n" +
+                "                                    <p>\n" +
+                obj.content +
+                "                                    </p>\n" +
+                "                                </div>\n" +
+                "                            </li>";
+        }
+    }
+
+    Client.prototype.createConnect = function (max, delay) {
+        var self = this;
+        if (max === 0) {
+            return;
+        }
+        connect();
+
+        var textDecoder = new TextDecoder();
+        var textEncoder = new TextEncoder();
+        var heartbeatInterval;
+
+        function connect() {
+            var ws = new WebSocket('ws://127.0.0.1:3102/sub');
+            ws.binaryType = 'arraybuffer';
+            ws.onopen = function () {
+                auth();
+            }
+
+            ws.onmessage = function (evt) {
+                var data = evt.data;
+                var dataView = new DataView(data, 0);
+                var packetLen = dataView.getInt32(packetOffset);
+                var headerLen = dataView.getInt16(headerOffset);
+                var ver = dataView.getInt16(verOffset);
+                var op = dataView.getInt32(opOffset);
+                var seq = dataView.getInt32(seqOffset);
+
+                console.log("receiveHeader: packetLen=" + packetLen, "headerLen=" + headerLen, "ver=" + ver, "op=" + op, "seq=" + seq);
+
+                switch (op) {
+                    case 8:
+                        // auth reply ok
+                        document.getElementById("status").innerHTML = "<color style='color:green'>ok<color>";
+                        console.log("receive: auth reply");
+                        // send a heartbeat to server
+                        heartbeat();
+                        heartbeatInterval = setInterval(heartbeat, 30 * 1000);
+                        break;
+                    case 3:
+                        // receive a heartbeat from server
+                        console.log("receive: heartbeat");
+                        break;
+                    case 9:
+                        // batch message
+                        for (var offset = rawHeaderLen; offset < data.byteLength; offset += packetLen) {
+                            // parse
+                            var packetLen = dataView.getInt32(offset);
+                            var headerLen = dataView.getInt16(offset + headerOffset);
+                            var ver = dataView.getInt16(offset + verOffset);
+                            var op = dataView.getInt32(offset + opOffset);
+                            var seq = dataView.getInt32(offset + seqOffset);
+                            var msgBody = textDecoder.decode(data.slice(offset + headerLen, offset + packetLen));
+                            // callback
+                            messageReceived(ver, msgBody);
+                            appendMsg(msgBody);
+                        }
+                        break;
+                    default:
+                        var msgBody = textDecoder.decode(data.slice(headerLen, packetLen));
+                        messageReceived(ver, msgBody);
+                        appendMsg(msgBody);
+                        break
+                }
+            }
+
+            ws.onclose = function () {
+                if (heartbeatInterval) clearInterval(heartbeatInterval);
+                setTimeout(reConnect, delay);
+
+                document.getElementById("status").innerHTML = "<color style='color:red'>failed<color>";
+            }
+
+            function heartbeat() {
+                var headerBuf = new ArrayBuffer(rawHeaderLen);
+                var headerView = new DataView(headerBuf, 0);
+                headerView.setInt32(packetOffset, rawHeaderLen);
+                headerView.setInt16(headerOffset, rawHeaderLen);
+                headerView.setInt16(verOffset, 1);
+                headerView.setInt32(opOffset, 2);
+                headerView.setInt32(seqOffset, 1);
+                ws.send(headerBuf);
+                console.log("send: heartbeat");
+            }
+
+            function auth() {
+                var token = '{"mid":124, "room_id":"{{ .type }}://{{ .id }}", "platform":"web", "accepts":[{{ .tag }}]}'
+                var headerBuf = new ArrayBuffer(rawHeaderLen);
+                var headerView = new DataView(headerBuf, 0);
+                var bodyBuf = textEncoder.encode(token);
+                headerView.setInt32(packetOffset, rawHeaderLen + bodyBuf.byteLength);
+                headerView.setInt16(headerOffset, rawHeaderLen);
+                headerView.setInt16(verOffset, 1);
+                headerView.setInt32(opOffset, 7);
+                headerView.setInt32(seqOffset, 1);
+                console.log(token)
+                ws.send(mergeArrayBuffer(headerBuf, bodyBuf));
+            }
+
+            function messageReceived(ver, body) {
+                var notify = self.options.notify;
+                if (notify) notify(body);
+                console.log("messageReceived:", "ver=" + ver, "body=" + body);
+            }
+
+            function mergeArrayBuffer(ab1, ab2) {
+                var u81 = new Uint8Array(ab1),
+                    u82 = new Uint8Array(ab2),
+                    res = new Uint8Array(ab1.byteLength + ab2.byteLength);
+                res.set(u81, 0);
+                res.set(u82, ab1.byteLength);
+                return res.buffer;
+            }
+        }
+
+        function reConnect() {
+            self.createConnect(--max, delay * 2);
+        }
+    }
+
+    var client = new Client({
+        notify: function (data) {
+            console.log(data);
+        }
+    });
+
+    function send() {
+        var text = document.getElementById("btn-input").value
+        $.post('http://127.0.0.1:2222/push/{{ .id }}/{{ .type }}/{{ .id }}', {text: text}, function (data) {
+        })
+        .error(function() { alert("發送失敗") });
+    }
+</script>
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</body>
+</html>
