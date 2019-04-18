@@ -201,7 +201,7 @@
         var heartbeatInterval;
 
         function connect() {
-            var ws = new WebSocket('ws://127.0.0.1:3102/sub');
+            var ws = new WebSocket('ws://'+ "{{ .host }}" +':3102/sub');
             ws.binaryType = 'arraybuffer';
             ws.onopen = function () {
                 auth();

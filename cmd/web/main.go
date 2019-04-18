@@ -96,7 +96,7 @@ func pushForm(c *gin.Context) {
 		"tag":  uniqueSlice(tag),
 		"id":   id,
 		"type": t,
-		"host": c.Request.Host,
+		"host": host,
 	})
 }
 
@@ -105,8 +105,7 @@ func push(c *gin.Context) {
 	if u, ok := users[i]; ok {
 		text := fmt.Sprintf(`{"name":"%s", "content":"%s"}`, u.name, c.PostForm("text"))
 
-		url := fmt.Sprintf("http://%s:3111/goim/push/room?operation=%s&type=%s&room=%s",
-			host,
+		url := fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?operation=%s&type=%s&room=%s",
 			c.Param("operation"),
 			c.Param("type"),
 			c.Param("id"),
@@ -127,12 +126,11 @@ func pushAll(c *gin.Context) {
 
 	switch c.PostForm("push") {
 	case "all":
-		url = []string{fmt.Sprintf("http://%s:3111/goim/push/all?operation=1", host)}
+		url = []string{"http://127.0.0.1:3111/goim/push/all?operation=1"}
 	case "id":
 		for _, v := range rooms {
 			if v.Id == key {
-				url = []string{fmt.Sprintf("http://%s:3111/goim/push/room?operation=%s&type=%s&room=%s",
-					host,
+				url = []string{fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?operation=%s&type=%s&room=%s",
 					v.Id,
 					v.Type,
 					v.Id,
@@ -142,8 +140,7 @@ func pushAll(c *gin.Context) {
 	case "type":
 		for _, v := range rooms {
 			if v.Type == key {
-				u := fmt.Sprintf("http://%s:3111/goim/push/room?operation=%s&type=%s&room=%s",
-					host,
+				u := fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?operation=%s&type=%s&room=%s",
 					v.Id,
 					v.Type,
 					v.Id,
@@ -153,7 +150,7 @@ func pushAll(c *gin.Context) {
 			}
 		}
 	case "tag":
-		url = []string{fmt.Sprintf("http://%s:3111/goim/push/all?operation=%s", host, key)}
+		url = []string{fmt.Sprintf("http://127.0.0.1:3111/goim/push/all?operation=%s", key)}
 	}
 
 	if len(url) == 0 {
@@ -182,7 +179,7 @@ func roomForm(c *gin.Context) {
 			"type": c.Param("type"),
 			"tag":  c.Param("tag"),
 			"name": u.name,
-			"host": c.Request.Host,
+			"host": host,
 		})
 	} else {
 		c.Redirect(http.StatusMovedPermanently, "/login")
