@@ -96,6 +96,7 @@ func pushForm(c *gin.Context) {
 		"tag":  uniqueSlice(tag),
 		"id":   id,
 		"type": t,
+		"host": c.Request.Host,
 	})
 }
 
@@ -175,11 +176,13 @@ func pushAll(c *gin.Context) {
 func roomForm(c *gin.Context) {
 	i, _ := c.Cookie(cookieName)
 	if u, ok := users[i]; ok {
+		fmt.Println(c.Request.Host)
 		c.HTML(http.StatusOK, "room.html", gin.H{
 			"id":   c.Param("id"),
 			"type": c.Param("type"),
 			"tag":  c.Param("tag"),
 			"name": u.name,
+			"host": c.Request.Host,
 		})
 	} else {
 		c.Redirect(http.StatusMovedPermanently, "/login")
