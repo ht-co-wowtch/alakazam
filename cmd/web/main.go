@@ -51,7 +51,7 @@ func init() {
 
 func main() {
 	g := gin.Default()
-	g.LoadHTMLGlob("./../../templates/*")
+	g.LoadHTMLGlob("./templates/*")
 
 	g.GET("login", loginForm)
 	g.POST("login", login)
