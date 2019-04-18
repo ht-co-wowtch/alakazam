@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -15,6 +16,8 @@ var (
 	rooms []room
 
 	users map[string]user
+
+	host string
 )
 
 type room struct {
@@ -50,6 +53,9 @@ func init() {
 }
 
 func main() {
+	flag.StringVar(&host, "h", "", "chat host")
+	flag.Parse()
+
 	g := gin.Default()
 	g.LoadHTMLGlob("./templates/*")
 
@@ -98,7 +104,8 @@ func push(c *gin.Context) {
 	if u, ok := users[i]; ok {
 		text := fmt.Sprintf(`{"name":"%s", "content":"%s"}`, u.name, c.PostForm("text"))
 
-		url := fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?operation=%s&type=%s&room=%s",
+		url := fmt.Sprintf("http://%s:3111/goim/push/room?operation=%s&type=%s&room=%s",
+			host,
 			c.Param("operation"),
 			c.Param("type"),
 			c.Param("id"),
@@ -119,11 +126,12 @@ func pushAll(c *gin.Context) {
 
 	switch c.PostForm("push") {
 	case "all":
-		url = []string{"http://127.0.0.1:3111/goim/push/all?operation=1"}
+		url = []string{fmt.Sprintf("http://%s:3111/goim/push/all?operation=1", host)}
 	case "id":
 		for _, v := range rooms {
 			if v.Id == key {
-				url = []string{fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?operation=%s&type=%s&room=%s",
+				url = []string{fmt.Sprintf("http://%s:3111/goim/push/room?operation=%s&type=%s&room=%s",
+					host,
 					v.Id,
 					v.Type,
 					v.Id,
@@ -133,7 +141,8 @@ func pushAll(c *gin.Context) {
 	case "type":
 		for _, v := range rooms {
 			if v.Type == key {
-				u := fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?operation=%s&type=%s&room=%s",
+				u := fmt.Sprintf("http://%s:3111/goim/push/room?operation=%s&type=%s&room=%s",
+					host,
 					v.Id,
 					v.Type,
 					v.Id,
@@ -143,7 +152,7 @@ func pushAll(c *gin.Context) {
 			}
 		}
 	case "tag":
-		url = []string{fmt.Sprintf("http://127.0.0.1:3111/goim/push/all?operation=%s", key)}
+		url = []string{fmt.Sprintf("http://%s:3111/goim/push/all?operation=%s", host, key)}
 	}
 
 	if len(url) == 0 {
