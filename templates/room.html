@@ -316,7 +316,7 @@
 
     function send() {
         var text = document.getElementById("btn-input").value
-        $.post('http://'+ "{{ .host }}" +'/push/{{ .id }}/{{ .type }}/{{ .id }}', {text: text}, function (data) {
+        $.post('http://'+ "{{ .host }}" + ":" + "{{ .port }}" +'/push/{{ .id }}/{{ .type }}/{{ .id }}', {text: text}, function (data) {
         })
         .error(function() { alert("發送失敗") });
     }

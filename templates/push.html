@@ -98,7 +98,7 @@
             key = k.value
         }
 
-        $.post('http://'+ {{ .host }} +'/pushAll', {text: text, key: key , push:"{{ .push }}"}, function (data) {
+        $.post('http://'+ "{{ .host }}" + ":" + "{{ .port }}" + '/pushAll', {text: text, key: key , push:"{{ .push }}"}, function (data) {
         }).success(function () { alert("發送成功") })
             .error(function() { alert("發送失敗") });
     }

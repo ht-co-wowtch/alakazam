@@ -18,6 +18,8 @@ var (
 	users map[string]user
 
 	host string
+
+	port string
 )
 
 type room struct {
@@ -53,7 +55,8 @@ func init() {
 }
 
 func main() {
-	flag.StringVar(&host, "h", "", "chat host")
+	flag.StringVar(&host, "h", "127.0.0.1", "chat host")
+	flag.StringVar(&port, "p", "2222", "chat port")
 	flag.Parse()
 
 	g := gin.Default()
@@ -97,6 +100,7 @@ func pushForm(c *gin.Context) {
 		"id":   id,
 		"type": t,
 		"host": host,
+		"port": port,
 	})
 }
 
@@ -180,6 +184,7 @@ func roomForm(c *gin.Context) {
 			"tag":  c.Param("tag"),
 			"name": u.name,
 			"host": host,
+			"port": port,
 		})
 	} else {
 		c.Redirect(http.StatusMovedPermanently, "/login")
