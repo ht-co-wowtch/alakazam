@@ -274,7 +274,7 @@
             }
 
             function auth() {
-                var token = '{"mid":124, "room_id":"{{ .type }}://{{ .id }}", "platform":"web", "accepts":[{{ .tag }}]}'
+                var token = '{"mid":{{ userId }}, "room_id":"{{ .type }}://{{ .id }}", "platform":"web", "accepts":[{{ .tag }}]}'
                 var headerBuf = new ArrayBuffer(rawHeaderLen);
                 var headerView = new DataView(headerBuf, 0);
                 var bodyBuf = textEncoder.encode(token);

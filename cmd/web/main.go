@@ -179,12 +179,13 @@ func roomForm(c *gin.Context) {
 	if u, ok := users[i]; ok {
 		fmt.Println(c.Request.Host)
 		c.HTML(http.StatusOK, "room.html", gin.H{
-			"id":   c.Param("id"),
-			"type": c.Param("type"),
-			"tag":  c.Param("tag"),
-			"name": u.name,
-			"host": host,
-			"port": port,
+			"id":     c.Param("id"),
+			"type":   c.Param("type"),
+			"tag":    c.Param("tag"),
+			"name":   u.name,
+			"host":   host,
+			"port":   port,
+			"userId": u.id,
 		})
 	} else {
 		c.Redirect(http.StatusMovedPermanently, "/login")
