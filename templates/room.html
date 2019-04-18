@@ -88,14 +88,16 @@
                 <ul class="nav navbar-nav">
                     <li><a href="/add">新增</a></li>
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">推播 <span class="caret"></span></a>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                           aria-expanded="false">推播 <span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li><a href="/push/all">全部房間</a></li>
                             <li><a href="/push/id">單一房間</a></li>
                             <li><a href="/push/type">房間Type</a></li>
                             <li><a href="/push/tag">房間Tag</a></li>
                         </ul>
-                    </li>                </ul>
+                    </li>
+                </ul>
             </div><!--/.nav-collapse -->
         </div><!--/.container-fluid -->
     </nav>
@@ -112,7 +114,8 @@
             <dd>{{ .name }}</dd>
         </dl>
         <div class="col-md-7">
-            <h2>status: <span id="status"></span></h2>
+            <h2>聊天室狀態: <span id="status"></span></h2>
+            <h2>線上人數: <span id="count"></span></h2>
             <div class="panel panel-primary">
                 <div class="panel-collapse" id="collapseOne">
                     <div class="panel-body">
@@ -165,7 +168,7 @@
                 "                            <img src=\"http://placehold.it/50/FA6F57/fff&text=ME\" alt=\"User Avatar\" class=\"img-circle\"/>\n" +
                 "                        </span>\n" +
                 "                                <div class=\"chat-body clearfix\">\n" +
-                "                                    <div class=\"header\">\n" +"                                    <small class=\" text-muted\"><span class=\"\"></span></small>\n" +
+                "                                    <div class=\"header\">\n" + "                                    <small class=\" text-muted\"><span class=\"\"></span></small>\n" +
                 "                                        <strong class=\"pull-right primary-font\">" + obj.name + "</strong>\n" +
                 "                                    </div>\n" +
                 "                                    <p>\n" +
@@ -201,7 +204,7 @@
         var heartbeatInterval;
 
         function connect() {
-            var ws = new WebSocket('ws://'+ "{{ .host }}" +':3102/sub');
+            var ws = new WebSocket('ws://' + "{{ .host }}" + ':3102/sub');
             ws.binaryType = 'arraybuffer';
             ws.onopen = function () {
                 auth();
@@ -271,6 +274,13 @@
                 headerView.setInt32(seqOffset, 1);
                 ws.send(headerBuf);
                 console.log("send: heartbeat");
+
+                $.get('http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/count/{{ .type }}/{{ .id }}', function (data) {
+                }).success(function (data) {
+                    document.getElementById("count").innerHTML = "<color style='color:red'>" + data.count + "<color>";
+                }).error(function () {
+                    document.getElementById("count").innerHTML = "<color style='color:red'>未知<color>";
+                });
             }
 
             function auth() {
@@ -316,9 +326,11 @@
 
     function send() {
         var text = document.getElementById("btn-input").value
-        $.post('http://'+ "{{ .host }}" + ":" + "{{ .port }}" +'/push/{{ .id }}/{{ .type }}/{{ .id }}', {text: text}, function (data) {
+        $.post('http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/push/{{ .id }}/{{ .type }}/{{ .id }}', {text: text}, function (data) {
         })
-        .error(function() { alert("發送失敗") });
+            .error(function () {
+                alert("發送失敗")
+            });
     }
 </script>
 <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>

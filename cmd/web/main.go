@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -73,6 +75,7 @@ func main() {
 	user.POST("/push/:id/:type/:operation", push)
 	user.POST("/pushAll", pushAll)
 	user.GET("/push/:type", pushForm)
+	user.GET("/count/:type/:id", count)
 
 	g.Run(":2222")
 }
@@ -271,6 +274,42 @@ func checkLogin(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/login")
 		c.Abort()
 	}
+}
+
+type co struct {
+	Code int `json:"code"`
+	Data []rco
+}
+
+type rco struct {
+	Count int `json:"count"`
+
+	RoomId string `json:"room_id"`
+}
+
+func count(c *gin.Context) {
+	r, err := http.DefaultClient.Get(fmt.Sprintf("http://127.0.0.1:3111/goim/online/top?type=%s&limit=1000", c.Param("type")))
+
+	if err == nil {
+		defer r.Body.Close()
+
+		b, _ := ioutil.ReadAll(r.Body)
+		s := co{}
+		json.Unmarshal(b, &s)
+
+		if s.Code == 0 {
+			for _, v := range s.Data {
+				if v.RoomId == c.Param("id") {
+					c.JSON(http.StatusOK, gin.H{
+						"count": v.Count,
+					})
+
+					return
+				}
+			}
+		}
+	}
+	c.JSON(http.StatusBadRequest, gin.H{})
 }
 
 func uniqueSlice(slice []string) []string {
