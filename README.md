@@ -19,3 +19,11 @@
 [Discovery](https://github.com/bilibili/discovery)
 
 [Kafka](https://kafka.apache.org/quickstart)
+
+    // Discovery
+    cd discovery
+    ./discovery -conf discovery.toml -alsologtostderr
+    
+    // cd kafka
+    cd kafka
+    docker-compose up -d
