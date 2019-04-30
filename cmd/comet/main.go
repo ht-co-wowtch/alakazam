@@ -1,32 +1,18 @@
 package main
 
 import (
-	"context"
 	"flag"
-	"fmt"
 	"math/rand"
-	"net"
 	"os"
 	"os/signal"
 	"runtime"
-	"strconv"
-	"strings"
 	"syscall"
 	"time"
 
 	"github.com/Terry-Mao/goim/internal/comet"
 	"github.com/Terry-Mao/goim/internal/comet/conf"
 	"github.com/Terry-Mao/goim/internal/comet/grpc"
-	md "github.com/Terry-Mao/goim/internal/logic/model"
-	"github.com/Terry-Mao/goim/pkg/ip"
-	"github.com/bilibili/discovery/naming"
-	resolver "github.com/bilibili/discovery/naming/grpc"
 	log "github.com/golang/glog"
-)
-
-const (
-	ver   = "2.0.0"
-	appid = "goim.comet"
 )
 
 func main() {
@@ -36,11 +22,6 @@ func main() {
 	}
 	rand.Seed(time.Now().UTC().UnixNano())
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	log.Infof("goim-comet [version: %s env: %+v] start", ver, conf.Conf.Env)
-
-	// 初始化註冊中心
-	dis := naming.New(conf.Conf.Discovery)
-	resolver.Register(dis)
 
 	// server tcp 連線
 	srv := comet.NewServer(conf.Conf)
@@ -51,9 +32,6 @@ func main() {
 	// 啟動grpc server
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
 
-	// 向註冊中心提交節點資料
-	cancel := register(dis, srv)
-
 	// 接收到close signal的處理
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
@@ -62,12 +40,8 @@ func main() {
 		log.Infof("goim-comet get a signal %s", s.String())
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-			if cancel != nil {
-				cancel()
-			}
 			rpcSrv.GracefulStop()
 			srv.Close()
-			log.Infof("goim-comet [version: %s] exit", ver)
 			log.Flush()
 			return
 		case syscall.SIGHUP:
@@ -75,54 +49,4 @@ func main() {
 			return
 		}
 	}
-}
-
-func register(dis *naming.Discovery, srv *comet.Server) context.CancelFunc {
-	env := conf.Conf.Env
-	addr := ip.InternalIP()
-	_, port, _ := net.SplitHostPort(conf.Conf.RPCServer.Addr)
-	ins := &naming.Instance{
-		Region:   env.Region,
-		Zone:     env.Zone,
-		Env:      env.DeployEnv,
-		Hostname: env.Host,
-		AppID:    appid,
-		Addrs: []string{
-			"grpc://" + addr + ":" + port,
-		},
-		Metadata: map[string]string{
-			md.MetaWeight:  strconv.FormatInt(env.Weight, 10),
-			md.MetaOffline: strconv.FormatBool(env.Offline),
-			md.MetaAddrs:   strings.Join(env.Addrs, ","),
-		},
-	}
-	cancel, err := dis.Register(ins)
-	if err != nil {
-		panic(err)
-	}
-	// renew discovery metadata
-	go func() {
-		for {
-			var (
-				err   error
-				conns int
-				ips   = make(map[string]struct{})
-			)
-			for _, bucket := range srv.Buckets() {
-				for ip := range bucket.IPCount() {
-					ips[ip] = struct{}{}
-				}
-				conns += bucket.ChannelCount()
-			}
-			ins.Metadata[md.MetaConnCount] = fmt.Sprint(conns)
-			ins.Metadata[md.MetaIPCount] = fmt.Sprint(len(ips))
-			if err = dis.Set(ins); err != nil {
-				log.Errorf("dis.Set(%+v) error(%v)", ins, err)
-				time.Sleep(time.Second)
-				continue
-			}
-			time.Sleep(time.Second * 10)
-		}
-	}()
-	return cancel
 }

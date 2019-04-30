@@ -38,7 +38,7 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 	accepts = params.Accepts
 
 	// 告知comet連線多久沒心跳就直接close
-	hb = int64(l.c.Node.Heartbeat) * int64(l.c.Node.HeartbeatMax)
+	hb = l.c.Heartbeat
 
 	if key = params.Key; key == "" {
 		key = uuid.New().String()
