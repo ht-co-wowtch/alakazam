@@ -2,12 +2,10 @@ package grpc
 
 import (
 	"context"
-	"net"
-	"time"
-
 	pb "github.com/Terry-Mao/goim/api/logic/grpc"
 	"github.com/Terry-Mao/goim/internal/logic"
 	"github.com/Terry-Mao/goim/internal/logic/conf"
+	"net"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -18,11 +16,11 @@ import (
 // New logic grpc server
 func New(c *conf.RPCServer, l *logic.Logic) *grpc.Server {
 	keepParams := grpc.KeepaliveParams(keepalive.ServerParameters{
-		MaxConnectionIdle:     time.Duration(c.IdleTimeout),
-		MaxConnectionAgeGrace: time.Duration(c.ForceCloseWait),
-		Time:                  time.Duration(c.KeepAliveInterval),
-		Timeout:               time.Duration(c.KeepAliveTimeout),
-		MaxConnectionAge:      time.Duration(c.MaxLifeTime),
+		MaxConnectionIdle:     c.IdleTimeout,
+		MaxConnectionAgeGrace: c.ForceCloseWait,
+		Time:                  c.KeepAliveInterval,
+		Timeout:               c.KeepAliveTimeout,
+		MaxConnectionAge:      c.MaxLifeTime,
 	})
 	srv := grpc.NewServer(keepParams)
 	pb.RegisterLogicServer(srv, &server{l})
