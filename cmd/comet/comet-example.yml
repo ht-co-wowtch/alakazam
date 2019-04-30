@@ -4,7 +4,7 @@ rpcClient:
   timeout: 1
 websocket:
   host:
-    - 3102
+    - :3102
 protocol:
   timer: 16
   timerSize: 1024

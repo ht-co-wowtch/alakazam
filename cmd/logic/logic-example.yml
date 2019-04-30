@@ -1,0 +1,26 @@
+node:
+  heartbeat: 240
+  heartbeatMax: 2
+
+httpServer:
+  host: :3111
+  readTimeout: 1
+  writeTimeout: 1
+
+rpcServer:
+  host: :3119
+
+redis:
+  host: :6379
+  active: 2048
+  idle: 1024
+  dialTimeout: 0.2
+  readTimeout: 0.5
+  writeTimeout: 0.5
+  idleTimeout: 120
+  expire: 1800
+
+kafka:
+  topic: "push-topic"
+  brokers:
+    - 127.0.0.1:9092

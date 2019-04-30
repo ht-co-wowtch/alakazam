@@ -22,7 +22,7 @@ func (l *Logic) NodesWeighted(c context.Context, platform, clientIP string) *pb.
 		TcpPort:      int32(l.c.Node.TCPPort),
 		WsPort:       int32(l.c.Node.WSPort),
 		WssPort:      int32(l.c.Node.WSSPort),
-		Heartbeat:    int32(time.Duration(l.c.Node.Heartbeat) / time.Second),
+		Heartbeat:    int32(l.c.Node.Heartbeat / time.Second),
 		HeartbeatMax: int32(l.c.Node.HeartbeatMax),
 		Backoff: &pb.Backoff{
 			MaxDelay:  l.c.Backoff.MaxDelay,
