@@ -6,16 +6,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/bilibili/discovery/naming"
 	"github.com/Terry-Mao/goim/internal/job"
 	"github.com/Terry-Mao/goim/internal/job/conf"
+	"github.com/bilibili/discovery/naming"
 
 	resolver "github.com/bilibili/discovery/naming/grpc"
 	log "github.com/golang/glog"
-)
-
-var (
-	ver = "2.0.0"
 )
 
 func main() {
@@ -23,7 +19,6 @@ func main() {
 	if err := conf.Init(); err != nil {
 		panic(err)
 	}
-	log.Infof("goim-job [version: %s env: %+v] start", ver, conf.Conf.Env)
 
 	// 初始化註冊中心
 	dis := naming.New(conf.Conf.Discovery)
@@ -41,7 +36,6 @@ func main() {
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			j.Close()
-			log.Infof("goim-job [version: %s] exit", ver)
 			log.Flush()
 			return
 		case syscall.SIGHUP:
