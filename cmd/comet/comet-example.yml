@@ -1,0 +1,20 @@
+rpcServer:
+  host: :3109
+rpcClient:
+  timeout: 1
+websocket:
+  host:
+    - 3102
+protocol:
+  timer: 16
+  timerSize: 1024
+  receiveProtoBuffer: 10
+  clientProto: 5
+  handshakeTimeout: 8
+bucket:
+  size: 16
+  channel: 500
+  room: 100
+  routineAmount: 5
+  routineSize: 1024
+

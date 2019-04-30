@@ -7,7 +7,7 @@ all: test build
 build:
 	rm -rf bin/
 	mkdir bin/
-	cp cmd/comet/comet-example.toml bin/comet.toml
+	cp cmd/comet/comet-example.yml bin/comet.yml
 	cp cmd/logic/logic-example.toml bin/logic.toml
 	cp cmd/job/job-example.toml bin/job.toml
 	$(GOBUILD) -o bin/comet cmd/comet/main.go
@@ -22,7 +22,7 @@ clean:
 
 run:
 	nohup bin/logic -conf=bin/logic.toml -region=sh -zone=sh001 -deploy.env=dev -weight=10 2>&1 > bin/logic.log &
-	nohup bin/comet -conf=bin/comet.toml -region=sh -zone=sh001 -deploy.env=dev -weight=10 -addrs=127.0.0.1 2>&1 > bin/comet.log &
+	nohup bin/comet -conf=bin/comet.yml 2>&1 > bin/comet.log &
 	nohup bin/job -conf=bin/job.toml -region=sh -zone=sh001 -deploy.env=dev 2>&1 > bin/job.log &
 
 stop:
