@@ -158,7 +158,7 @@ type Bucket struct {
 }
 
 func init() {
-	flag.StringVar(&confPath, "conf", "comet.yml", "default config path.")
+	flag.StringVar(&confPath, "c", "comet.yml", "default config path.")
 }
 
 // init config.

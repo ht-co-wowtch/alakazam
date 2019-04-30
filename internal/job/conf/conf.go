@@ -70,7 +70,7 @@ type Env struct {
 
 
 func init() {
-	flag.StringVar(&confPath, "conf", "job-example.yml", "default config path")
+	flag.StringVar(&confPath, "c", "job-example.yml", "default config path")
 }
 
 // init config.

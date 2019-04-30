@@ -21,9 +21,9 @@ clean:
 	rm -rf bin/
 
 run:
-	nohup bin/logic -conf=bin/logic.yml 2>&1 > bin/logic.log &
-	nohup bin/comet -conf=bin/comet.yml 2>&1 > bin/comet.log &
-	nohup bin/job -conf=bin/job.yml 2>&1 > bin/job.log &
+	nohup bin/logic -c bin/logic.yml 2>&1 > bin/logic.log &
+	nohup bin/comet -c bin/comet.yml 2>&1 > bin/comet.log &
+	nohup bin/job -c bin/job.yml 2>&1 > bin/job.log &
 
 stop:
 	pkill -f bin/logic

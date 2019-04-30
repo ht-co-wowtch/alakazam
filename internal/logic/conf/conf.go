@@ -152,7 +152,7 @@ type HTTPServer struct {
 }
 
 func init() {
-	flag.StringVar(&confPath, "conf", "logic.yml", "default config path")
+	flag.StringVar(&confPath, "c", "logic.yml", "default config path")
 }
 
 // init config.
