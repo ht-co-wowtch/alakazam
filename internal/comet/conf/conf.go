@@ -116,7 +116,6 @@ type Config struct {
 	Bucket    *Bucket
 	RPCClient *RPCClient
 	RPCServer *RPCServer
-	Whitelist *Whitelist
 }
 
 // Env is env config.
@@ -262,10 +261,4 @@ type Bucket struct {
 
 	// 每個房間推送管道最大緩衝量
 	RoutineSize int
-}
-
-// Whitelist is white list config.
-type Whitelist struct {
-	Whitelist []int64
-	WhiteLog  string
 }

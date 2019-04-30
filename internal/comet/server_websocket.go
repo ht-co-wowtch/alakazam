@@ -2,7 +2,6 @@ package comet
 
 import (
 	"context"
-	"crypto/tls"
 	"io"
 	"net"
 	"strings"
@@ -14,6 +13,10 @@ import (
 	xtime "github.com/Terry-Mao/goim/pkg/time"
 	"github.com/Terry-Mao/goim/pkg/websocket"
 	log "github.com/golang/glog"
+)
+
+const (
+	maxInt = 1<<31 - 1
 )
 
 // InitWebsocket listen all tcp.bind and start accept connections.
@@ -39,40 +42,6 @@ func InitWebsocket(server *Server, addrs []string, accept int) (err error) {
 		// 一個Tcp Port根據CPU核心數開goroutine監聽Tcp
 		for i := 0; i < accept; i++ {
 			go acceptWebsocket(server, listener)
-		}
-	}
-	return
-}
-
-// InitWebsocketWithTLS init websocket with tls.
-func InitWebsocketWithTLS(server *Server, addrs []string, certFile, privateFile string, accept int) (err error) {
-	var (
-		bind     string
-		listener net.Listener
-		cert     tls.Certificate
-		certs    []tls.Certificate
-	)
-	certFiles := strings.Split(certFile, ",")
-	privateFiles := strings.Split(privateFile, ",")
-	for i := range certFiles {
-		cert, err = tls.LoadX509KeyPair(certFiles[i], privateFiles[i])
-		if err != nil {
-			log.Errorf("Error loading certificate. error(%v)", err)
-			return
-		}
-		certs = append(certs, cert)
-	}
-	tlsCfg := &tls.Config{Certificates: certs}
-	tlsCfg.BuildNameToCertificate()
-	for _, bind = range addrs {
-		if listener, err = tls.Listen("tcp", bind, tlsCfg); err != nil {
-			log.Errorf("net.ListenTCP(tcp, %s) error(%v)", bind, err)
-			return
-		}
-		log.Infof("start wss listen: %s", bind)
-		// split N core accept
-		for i := 0; i < accept; i++ {
-			go acceptWebsocketWithTLS(server, listener)
 		}
 	}
 	return
@@ -106,28 +75,6 @@ func acceptWebsocket(server *Server, lis *net.TCPListener) {
 		// tcp寫資料的緩衝區大小，該緩衝區滿到無法發送時會阻塞，此值通常設定完後系統會自行在多一倍，設定1024會變2304
 		if err = conn.SetWriteBuffer(server.c.TCP.Sndbuf); err != nil {
 			log.Errorf("conn.SetWriteBuffer() error(%v)", err)
-			return
-		}
-		go serveWebsocket(server, conn, r)
-		if r++; r == maxInt {
-			r = 0
-		}
-	}
-}
-
-// Accept accepts connections on the listener and serves requests
-// for each incoming connection.  Accept blocks; the caller typically
-// invokes it in a go statement.
-func acceptWebsocketWithTLS(server *Server, lis net.Listener) {
-	var (
-		conn net.Conn
-		err  error
-		r    int
-	)
-	for {
-		if conn, err = lis.Accept(); err != nil {
-			// if listener close then return
-			log.Errorf("listener.Accept(\"%s\") error(%v)", lis.Addr().String(), err)
 			return
 		}
 		go serveWebsocket(server, conn, r)
@@ -173,9 +120,6 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 
 		// 心跳時間週期
 		hb time.Duration
-
-		//
-		white bool
 
 		// grpc 自訂Protocol
 		p *grpc.Proto
@@ -294,11 +238,6 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 	trd.Key = ch.Key
 	tr.Set(trd, hb)
 
-	white = whitelist.Contains(ch.Mid)
-	if white {
-		whitelist.Printf("key: %s[%s] auth\n", ch.Key, rid)
-	}
-
 	step = 5
 
 	// 處理訊息推送
@@ -310,15 +249,8 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 		if p, err = ch.CliProto.Set(); err != nil {
 			break
 		}
-
-		if white {
-			whitelist.Printf("key: %s start read proto\n", ch.Key)
-		}
 		if err = p.ReadWebsocket(ws); err != nil {
 			break
-		}
-		if white {
-			whitelist.Printf("key: %s read proto:%v\n", ch.Key, p)
 		}
 		if p.Op == grpc.OpHeartbeat {
 			// comet有心跳機制維護連線狀態，對於logic來說也需要有人利用心跳機制去告知哪個user還在線
@@ -347,20 +279,10 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 				break
 			}
 		}
-
-		if white {
-			whitelist.Printf("key: %s process proto:%v\n", ch.Key, p)
-		}
-
 		// 寫的游標要++讓Get可以取得已寫入的Proto
 		ch.CliProto.SetAdv()
-
 		// 通知負責訊息推播goroutine處理本次接收到的資料
 		ch.Signal()
-
-		if white {
-			whitelist.Printf("key: %s signal\n", ch.Key)
-		}
 	}
 
 	// 如果某人連線有異常或是server要踢人則
@@ -369,9 +291,6 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 	// 3. 回收讀Buffer，不回收寫的Buffer是因為Channel close後dispatchTCP會被通知到並回收寫的Buffer
 	// 4. 關閉連線
 	// 5. 通知logic某人下線了
-	if white {
-		whitelist.Printf("key: %s server tcp error(%v)\n", ch.Key, err)
-	}
 	if err != nil && err != io.EOF && err != websocket.ErrMessageClose && !strings.Contains(err.Error(), "closed") {
 		log.Errorf("key: %s server ws failed error(%v)", ch.Key, err)
 	}
@@ -382,9 +301,6 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 	rp.Put(rb)
 	if err = s.Disconnect(ctx, ch.Mid, ch.Key); err != nil {
 		log.Errorf("key: %s operator do disconnect error(%v)", ch.Key, err)
-	}
-	if white {
-		whitelist.Printf("key: %s disconnect error(%v)\n", ch.Key, err)
 	}
 	if conf.Conf.Debug {
 		log.Infof("websocket disconnected key: %s mid:%d", ch.Key, ch.Mid)
@@ -399,21 +315,13 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 		err    error
 		finish bool
 		online int32
-		white  = whitelist.Contains(ch.Mid)
 	)
 	if conf.Conf.Debug {
 		log.Infof("key: %s start dispatch tcp goroutine", ch.Key)
 	}
 	for {
-		if white {
-			whitelist.Printf("key: %s wait proto ready\n", ch.Key)
-		}
-
 		// 接收到別人通知説有資料要推送，沒資料時就阻塞
 		var p = ch.Ready()
-		if white {
-			whitelist.Printf("key: %s proto ready\n", ch.Key)
-		}
 		if conf.Conf.Debug {
 			log.Infof("key:%s dispatch msg:%s", ch.Key, p.Body)
 		}
@@ -421,9 +329,6 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 
 		// websocket連線要關閉
 		case grpc.ProtoFinish:
-			if white {
-				whitelist.Printf("key: %s receive proto finish\n", ch.Key)
-			}
 			if conf.Conf.Debug {
 				log.Infof("key: %s wakeup exit dispatch goroutine", ch.Key)
 			}
@@ -437,9 +342,6 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 				if p, err = ch.CliProto.Get(); err != nil {
 					break
 				}
-				if white {
-					whitelist.Printf("key: %s start write client proto%v\n", ch.Key, p)
-				}
 				if p.Op == grpc.OpHeartbeatReply {
 					if ch.Room != nil {
 						online = ch.Room.OnlineNum()
@@ -452,47 +354,24 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 						goto failed
 					}
 				}
-				if white {
-					whitelist.Printf("key: %s write client proto%v\n", ch.Key, p)
-				}
 				p.Body = nil
-
 				// 讀的游標++
 				ch.CliProto.GetAdv()
 			}
 		default:
-			if white {
-				whitelist.Printf("key: %s start write server proto%v\n", ch.Key, p)
-			}
 			if err = p.WriteWebsocket(ws); err != nil {
 				goto failed
 			}
-			if white {
-				whitelist.Printf("key: %s write server proto%v\n", ch.Key, p)
-			}
-			if conf.Conf.Debug {
-				log.Infof("websocket sent a message key:%s mid:%d proto:%+v", ch.Key, ch.Mid, p)
-			}
 		}
-		if white {
-			whitelist.Printf("key: %s start flush \n", ch.Key)
-		}
-
 		// 送出資料給client
 		if err = ws.Flush(); err != nil {
 			break
-		}
-		if white {
-			whitelist.Printf("key: %s flush\n", ch.Key)
 		}
 	}
 	// 連線有異常或是server要踢人
 	// 1. 連線close
 	// 2. 回收寫的Buffter
 failed:
-	if white {
-		whitelist.Printf("key: %s dispatch tcp error(%v)\n", ch.Key, err)
-	}
 	if err != nil && err != io.EOF && err != websocket.ErrMessageClose {
 		log.Errorf("key: %s dispatch ws error(%v)", ch.Key, err)
 	}

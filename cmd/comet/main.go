@@ -45,9 +45,6 @@ func main() {
 
 	// server tcp 連線
 	srv := comet.NewServer(conf.Conf)
-	if err := comet.InitWhitelist(conf.Conf.Whitelist); err != nil {
-		panic(err)
-	}
 	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Bind, runtime.NumCPU()); err != nil {
 		panic(err)
 	}
