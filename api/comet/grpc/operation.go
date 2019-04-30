@@ -1,26 +1,11 @@
 package grpc
 
 const (
-	//
-	OpHandshake = int32(0)
-
-	//
-	OpHandshakeReply = int32(1)
-
 	// client 發送心跳
 	OpHeartbeat = int32(2)
 
 	// server 回覆心跳結果
 	OpHeartbeatReply = int32(3)
-
-	//
-	OpSendMsg = int32(4)
-
-	//
-	OpSendMsgReply = int32(5)
-
-	//
-	OpDisconnectReply = int32(6)
 
 	// client要求連線到某一個房間
 	OpAuth = int32(7)
@@ -31,10 +16,10 @@ const (
 	// server訊息推送給client
 	OpRaw = int32(9)
 
-	// 處理tcp資料
+	// websocket送訊息要回應
 	OpProtoReady = int32(10)
 
-	// tcp close連線
+	// close連線
 	OpProtoFinish = int32(11)
 
 	// 更換房間
