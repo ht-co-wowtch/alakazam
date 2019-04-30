@@ -1,8 +1,6 @@
 package http
 
 import (
-	"context"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -38,15 +36,6 @@ func (s *Server) onlineRoom(c *gin.Context) {
 	if err != nil {
 		result(c, nil, RequestErr)
 		return
-	}
-	result(c, res, OK)
-}
-
-func (s *Server) onlineTotal(c *gin.Context) {
-	ipCount, connCount := s.logic.OnlineTotal(context.TODO())
-	res := map[string]interface{}{
-		"ip_count":   ipCount,
-		"conn_count": connCount,
 	}
 	result(c, res, OK)
 }
