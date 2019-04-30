@@ -2,9 +2,7 @@ package comet
 
 import (
 	"github.com/Terry-Mao/goim/api/comet/grpc"
-	"github.com/Terry-Mao/goim/internal/comet/conf"
 	"github.com/Terry-Mao/goim/internal/comet/errors"
-	log "github.com/golang/glog"
 )
 
 // 用於控制讀寫異步grpc.Proto的環型Pool
@@ -63,9 +61,6 @@ func (r *Ring) Get() (proto *grpc.Proto, err error) {
 // 讀游標++
 func (r *Ring) GetAdv() {
 	r.rp++
-	if conf.Conf.Debug {
-		log.Infof("ring rp: %d, idx: %d", r.rp, r.rp&r.mask)
-	}
 }
 
 // 取用於寫的grpc.Proto，讀跟寫的游標不可相差大於等於Proto數量
@@ -107,9 +102,6 @@ func (r *Ring) Set() (proto *grpc.Proto, err error) {
 // 寫游標++
 func (r *Ring) SetAdv() {
 	r.wp++
-	if conf.Conf.Debug {
-		log.Infof("ring wp: %d, idx: %d", r.wp, r.wp&r.mask)
-	}
 }
 
 // 重置讀寫游標

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/Terry-Mao/goim/api/comet/grpc"
-	"github.com/Terry-Mao/goim/internal/comet/conf"
 	"github.com/Terry-Mao/goim/pkg/bytes"
 	xtime "github.com/Terry-Mao/goim/pkg/time"
 	"github.com/Terry-Mao/goim/pkg/websocket"
@@ -96,14 +95,6 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 		// Writer Buffer
 		wp = s.round.Writer(r)
 	)
-	if conf.Conf.Debug {
-		// 本地ip:port
-		lAddr := conn.LocalAddr().String()
-
-		// tcp來源端ip:port
-		rAddr := conn.RemoteAddr().String()
-		log.Infof("start tcp serve \"%s\" with \"%s\"", lAddr, rAddr)
-	}
 	s.ServeWebsocket(conn, rp, wp, tr)
 }
 
@@ -211,9 +202,6 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 			ch.Watch(accepts...)
 			b = s.Bucket(ch.Key)
 			err = b.Put(rid, ch)
-			if conf.Conf.Debug {
-				log.Infof("websocket connnected key:%s mid:%d proto:%+v", ch.Key, ch.Mid, p)
-			}
 		}
 	}
 
@@ -269,9 +257,6 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 					lastHB = now
 				}
 			}
-			if conf.Conf.Debug {
-				log.Infof("websocket heartbeat receive key:%s, mid:%d", ch.Key, ch.Mid)
-			}
 			step++
 		} else {
 			// 非心跳動作
@@ -302,9 +287,6 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 	if err = s.Disconnect(ctx, ch.Mid, ch.Key); err != nil {
 		log.Errorf("key: %s operator do disconnect error(%v)", ch.Key, err)
 	}
-	if conf.Conf.Debug {
-		log.Infof("websocket disconnected key: %s mid:%d", ch.Key, ch.Mid)
-	}
 }
 
 // dispatch accepts connections on the listener and serves requests
@@ -316,22 +298,14 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 		finish bool
 		online int32
 	)
-	if conf.Conf.Debug {
-		log.Infof("key: %s start dispatch tcp goroutine", ch.Key)
-	}
+
 	for {
 		// 接收到別人通知説有資料要推送，沒資料時就阻塞
 		var p = ch.Ready()
-		if conf.Conf.Debug {
-			log.Infof("key:%s dispatch msg:%s", ch.Key, p.Body)
-		}
 		switch p {
 
 		// websocket連線要關閉
 		case grpc.ProtoFinish:
-			if conf.Conf.Debug {
-				log.Infof("key: %s wakeup exit dispatch goroutine", ch.Key)
-			}
 			finish = true
 			goto failed
 
@@ -380,9 +354,6 @@ failed:
 	// must ensure all channel message discard, for reader won't blocking Signal
 	for !finish {
 		finish = (ch.Ready() == grpc.ProtoFinish)
-	}
-	if conf.Conf.Debug {
-		log.Infof("key: %s dispatch goroutine exit", ch.Key)
 	}
 }
 

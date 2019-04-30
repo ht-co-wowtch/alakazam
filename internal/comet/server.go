@@ -7,7 +7,6 @@ import (
 
 	logic "github.com/Terry-Mao/goim/api/logic/grpc"
 	"github.com/Terry-Mao/goim/internal/comet/conf"
-	log "github.com/golang/glog"
 	"github.com/zhenjl/cityhash"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
@@ -119,11 +118,7 @@ func (s *Server) Buckets() []*Bucket {
 // 用意在同時間針對不同房間做推播時可以避免使用到同一把鎖，降低鎖的競爭
 // 所以可以調高bucket來增加併發量，但同時會多佔用內存
 func (s *Server) Bucket(subKey string) *Bucket {
-	idx := cityhash.CityHash32([]byte(subKey), uint32(len(subKey))) % s.bucketIdx
-	if conf.Conf.Debug {
-		log.Infof("%s hit channel bucket index: %d use cityhash", subKey, idx)
-	}
-	return s.buckets[idx]
+	return s.buckets[(cityhash.CityHash32([]byte(subKey), uint32(len(subKey))) % s.bucketIdx)]
 }
 
 // 通知logic Refresh client連線狀態的時間(心跳包的週期)

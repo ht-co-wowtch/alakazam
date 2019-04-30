@@ -21,7 +21,6 @@ var (
 	addrs     string
 	weight    int64
 	offline   bool
-	debug     bool
 
 	// Conf config
 	Conf *Config
@@ -33,7 +32,6 @@ func init() {
 		defAddrs      = os.Getenv("ADDRS")
 		defWeight, _  = strconv.ParseInt(os.Getenv("WEIGHT"), 10, 32)
 		defOffline, _ = strconv.ParseBool(os.Getenv("OFFLINE"))
-		defDebug, _   = strconv.ParseBool(os.Getenv("DEBUG"))
 	)
 	flag.StringVar(&confPath, "conf", "comet-example.toml", "default config path.")
 	flag.StringVar(&region, "region", os.Getenv("REGION"), "avaliable region. or use REGION env variable, value: sh etc.")
@@ -43,7 +41,6 @@ func init() {
 	flag.StringVar(&addrs, "addrs", defAddrs, "server public ip addrs. or use ADDRS env variable, value: 127.0.0.1 etc.")
 	flag.Int64Var(&weight, "weight", defWeight, "load balancing weight, or use WEIGHT env variable, value: 10 etc.")
 	flag.BoolVar(&offline, "offline", defOffline, "server offline. or use OFFLINE env variable, value: true/false etc.")
-	flag.BoolVar(&debug, "debug", defDebug, "server debug. or use DEBUG env variable, value: true/false etc.")
 }
 
 // Init init config.
@@ -56,7 +53,6 @@ func Init() (err error) {
 // Default new a config with specified defualt value.
 func Default() *Config {
 	return &Config{
-		Debug:     debug,
 		Env:       &Env{Region: region, Zone: zone, DeployEnv: deployEnv, Host: host, Weight: weight, Addrs: strings.Split(addrs, ","), Offline: offline},
 		Discovery: &naming.Config{Region: region, Zone: zone, Env: deployEnv, Host: host},
 		RPCClient: &RPCClient{
@@ -107,7 +103,6 @@ func Default() *Config {
 
 // Config is comet config.
 type Config struct {
-	Debug     bool
 	Env       *Env
 	Discovery *naming.Config
 	TCP       *TCP
