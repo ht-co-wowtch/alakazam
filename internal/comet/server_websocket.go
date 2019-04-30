@@ -149,7 +149,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 	step := 0
 
 	// 心跳超時後的邏輯
-	trd = tr.Add(time.Duration(s.c.Protocol.HandshakeTimeout), func() {
+	trd = tr.Add(s.c.Protocol.HandshakeTimeout, func() {
 		_ = conn.SetDeadline(time.Now().Add(time.Millisecond * 100))
 		_ = conn.Close()
 		log.Errorf("key: %s remoteIP: %s step: %d ws handshake timeout", ch.Key, conn.RemoteAddr().String(), step)

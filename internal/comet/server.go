@@ -38,7 +38,7 @@ const (
 
 func newLogicClient(c *conf.RPCClient) logic.LogicClient {
 	// grpc 連線的timeout
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.Dial))
+	ctx, cancel := context.WithTimeout(context.Background(), c.Dial)
 	defer cancel()
 	conn, err := grpc.DialContext(ctx, "discovery://default/goim.logic",
 		[]grpc.DialOption{
