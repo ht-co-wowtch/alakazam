@@ -222,6 +222,12 @@ func (p *Proto) WriteWebsocket(ws *websocket.Conn) (err error) {
 		buf     []byte
 		packLen int
 	)
+
+	if p.Op == OpRaw {
+		err = ws.WriteBody(p.Body)
+		return
+	}
+
 	packLen = _rawHeaderSize + len(p.Body)
 	if err = ws.WriteHeader(websocket.BinaryMessage, packLen); err != nil {
 		return
