@@ -11,12 +11,6 @@ import (
 )
 
 var (
-	// ErrComet commet error.
-	ErrComet = errors.New("comet rpc is not available")
-
-	// ErrCometFull comet chan full.
-	ErrCometFull = errors.New("comet proto chan full")
-
 	// ErrRoomFull room chan full.
 	ErrRoomFull = errors.New("room proto chan full")
 
@@ -27,6 +21,7 @@ var (
 // 房間訊息聚合
 type Room struct {
 	c   *conf.Room
+
 	job *Job
 
 	// 房間id

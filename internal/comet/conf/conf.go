@@ -56,13 +56,11 @@ func Default() *Config {
 		Env:       &Env{Region: region, Zone: zone, DeployEnv: deployEnv, Host: host, Weight: weight, Addrs: strings.Split(addrs, ","), Offline: offline},
 		Discovery: &naming.Config{Region: region, Zone: zone, Env: deployEnv, Host: host},
 		RPCClient: &RPCClient{
-			Dial:    xtime.Duration(time.Second),
-			Timeout: xtime.Duration(time.Second),
+			Dial: xtime.Duration(time.Second),
 		},
 		RPCServer: &RPCServer{
 			Network:           "tcp",
 			Addr:              ":3109",
-			Timeout:           xtime.Duration(time.Second),
 			IdleTimeout:       xtime.Duration(time.Second * 60),
 			MaxLifeTime:       xtime.Duration(time.Hour * 2),
 			ForceCloseWait:    xtime.Duration(time.Second * 20),
@@ -128,9 +126,6 @@ type Env struct {
 type RPCClient struct {
 	// client連線timeout
 	Dial xtime.Duration
-
-	// 好像沒用到
-	Timeout xtime.Duration
 }
 
 // RPCServer is RPC server config.
@@ -140,9 +135,6 @@ type RPCServer struct {
 
 	// port
 	Addr string
-
-	// 沒用到
-	Timeout xtime.Duration
 
 	// 當連線閒置多久後發送一個`GOAWAY` Framer 封包告知Client說太久沒活動
 	//至於Client收到`GOAWAY`後要做什麼目前要自己實現stream，server只是做通知而已，grpc server默認沒開啟此功能

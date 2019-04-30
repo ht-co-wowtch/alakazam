@@ -55,7 +55,6 @@ func Default() *Config {
 			ReadTimeout:  xtime.Duration(time.Second),
 			WriteTimeout: xtime.Duration(time.Second),
 		},
-		RPCClient: &RPCClient{Dial: xtime.Duration(time.Second), Timeout: xtime.Duration(time.Second)},
 		RPCServer: &RPCServer{
 			Network:           "tcp",
 			Addr:              "3119",
@@ -74,7 +73,6 @@ func Default() *Config {
 type Config struct {
 	Env        *Env
 	Discovery  *naming.Config
-	RPCClient  *RPCClient
 	RPCServer  *RPCServer
 	HTTPServer *HTTPServer
 	Kafka      *Kafka
@@ -164,15 +162,6 @@ type Kafka struct {
 
 	//
 	Brokers []string
-}
-
-// RPCClient is RPC client config
-type RPCClient struct {
-	// 沒用到
-	Dial xtime.Duration
-
-	// 沒用到
-	Timeout xtime.Duration
 }
 
 // RPCServer is RPC server config.
