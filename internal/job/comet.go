@@ -3,14 +3,11 @@ package job
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"sync/atomic"
 	"time"
 
 	comet "github.com/Terry-Mao/goim/api/comet/grpc"
 	"github.com/Terry-Mao/goim/internal/job/conf"
-	"github.com/bilibili/discovery/naming"
-
 	log "github.com/golang/glog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -103,30 +100,17 @@ type Comet struct {
 }
 
 // NewComet new a comet.
-func NewComet(in *naming.Instance, c *conf.Comet) (*Comet, error) {
+func NewComet(c *conf.Comet) (*Comet, error) {
 	cmt := &Comet{
-		serverID:      in.Hostname,
 		pushChan:      make([]chan *comet.PushMsgReq, c.RoutineSize),
 		roomChan:      make([]chan *comet.BroadcastRoomReq, c.RoutineSize),
 		broadcastChan: make(chan *comet.BroadcastReq, c.RoutineSize),
 		routineSize:   uint64(c.RoutineSize),
 	}
 
-	// 找出Comet server grpc host
-	var grpcAddr string
-	for _, addrs := range in.Addrs {
-		u, err := url.Parse(addrs)
-		if err == nil && u.Scheme == "grpc" {
-			grpcAddr = u.Host
-		}
-	}
-	if grpcAddr == "" {
-		return nil, fmt.Errorf("invalid grpc address:%v", in.Addrs)
-	}
-
 	// 跟Comet servers建立grpc client
 	var err error
-	if cmt.client, err = newCometClient(grpcAddr); err != nil {
+	if cmt.client, err = newCometClient(":3109"); err != nil {
 		return nil, err
 	}
 	cmt.ctx, cmt.cancel = context.WithCancel(context.Background())
@@ -178,7 +162,7 @@ func (c *Comet) process(pushChan chan *comet.PushMsgReq, roomChan chan *comet.Br
 				Speed:   broadcastArg.Speed,
 			})
 			if err != nil {
-				log.Errorf("c.client.Broadcast(%s, reply) serverId:%s error(%v)", broadcastArg, c.serverID, err)
+				log.Errorf("c.client.Broadcast(%s, reply) error(%v)", broadcastArg, err)
 			}
 		// 單一房間推送
 		case roomArg := <-roomChan:
@@ -187,7 +171,7 @@ func (c *Comet) process(pushChan chan *comet.PushMsgReq, roomChan chan *comet.Br
 				Proto:  roomArg.Proto,
 			})
 			if err != nil {
-				log.Errorf("c.client.BroadcastRoom(%s, reply) serverId:%s error(%v)", roomArg, c.serverID, err)
+				log.Errorf("c.client.BroadcastRoom(%s, reply) error(%v)", roomArg, err)
 			}
 		// 單人推送
 		case pushArg := <-pushChan:
@@ -197,7 +181,7 @@ func (c *Comet) process(pushChan chan *comet.PushMsgReq, roomChan chan *comet.Br
 				ProtoOp: pushArg.ProtoOp,
 			})
 			if err != nil {
-				log.Errorf("c.client.PushMsg(%s, reply) serverId:%s error(%v)", pushArg, c.serverID, err)
+				log.Errorf("c.client.PushMsg(%s, reply) error(%v)", pushArg, err)
 			}
 		case <-c.ctx.Done():
 			return
@@ -228,7 +212,7 @@ func (c *Comet) Close() (err error) {
 	case <-finish:
 		log.Info("close comet finish")
 	case <-time.After(5 * time.Second):
-		err = fmt.Errorf("close comet(server:%s push:%d room:%d broadcast:%d) timeout", c.serverID, len(c.pushChan), len(c.roomChan), len(c.broadcastChan))
+		err = fmt.Errorf("close comet(push:%d room:%d broadcast:%d) timeout", len(c.pushChan), len(c.roomChan), len(c.broadcastChan))
 	}
 	c.cancel()
 	return
