@@ -4,11 +4,8 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/bilibili/discovery/naming"
 	"github.com/spf13/viper"
 	"io/ioutil"
-	"os"
-	"strconv"
 	"time"
 )
 
@@ -22,25 +19,12 @@ var (
 
 // Config is comet config.
 type Config struct {
-	Env       *Env
-	Discovery *naming.Config
 	Websocket *Websocket
 	TCP       *TCP
 	Protocol  *Protocol
 	Bucket    *Bucket
 	RPCClient *RPCClient
 	RPCServer *RPCServer
-}
-
-// Env is env config.
-type Env struct {
-	Region    string
-	Zone      string
-	DeployEnv string
-	Host      string
-	Weight    int64
-	Offline   bool
-	Addrs     []string
 }
 
 // grpc client config
@@ -178,26 +162,7 @@ func Init() (err error) {
 
 // 載入config
 func load() *Config {
-	host, _ := os.Hostname()
-	offline, _ := strconv.ParseBool(os.Getenv("OFFLINE"))
-
 	return &Config{
-		Env: &Env{
-			Region:    "sh",
-			Zone:      "sh001",
-			DeployEnv: "dev",
-			Host:      host,
-			Weight:    10,
-			Addrs:     []string{"127.0.0.1"},
-			Offline:   offline,
-		},
-		Discovery: &naming.Config{
-			Nodes:  []string{":7171"},
-			Region: "sh",
-			Zone:   "sh001",
-			Env:    "dev",
-			Host:   host,
-		},
 		RPCClient: &RPCClient{
 			Dial: time.Duration(viper.GetInt("rpcClient.timeout")) * time.Second,
 		},
