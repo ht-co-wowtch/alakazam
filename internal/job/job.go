@@ -2,14 +2,11 @@ package job
 
 import (
 	"context"
-	"fmt"
-	"sync"
-	"time"
-
 	pb "github.com/Terry-Mao/goim/api/logic/grpc"
 	"github.com/Terry-Mao/goim/internal/job/conf"
-	"github.com/bilibili/discovery/naming"
 	"github.com/gogo/protobuf/proto"
+	"os"
+	"sync"
 
 	cluster "github.com/bsm/sarama-cluster"
 	log "github.com/golang/glog"
@@ -39,7 +36,13 @@ func New(c *conf.Config) *Job {
 		consumer: newKafkaSub(c.Kafka),
 		rooms:    make(map[string]*Room),
 	}
-	j.watchComet(c.Discovery)
+	host, _ := os.Hostname()
+
+	var err error
+	j.cometServers = make(map[string]*Comet, 1)
+	if j.cometServers[host], err = NewComet(c.Comet); err != nil {
+		panic(err)
+	}
 	return j
 }
 
@@ -88,77 +91,4 @@ func (j *Job) Consume() {
 			log.Infof("consume: %s/%d/%d\t%s\t%+v", msg.Topic, msg.Partition, msg.Offset, msg.Key, pushMsg)
 		}
 	}
-}
-
-// 監控註冊中心有關於comet server node
-func (j *Job) watchComet(c *naming.Config) {
-	dis := naming.New(c)
-	resolver := dis.Build("goim.comet")
-	event := resolver.Watch()
-	select {
-	case _, ok := <-event:
-		if !ok {
-			panic("watchComet init failed")
-		}
-		if ins, ok := resolver.Fetch(); ok {
-			if err := j.newAddress(ins.Instances); err != nil {
-				panic(err)
-			}
-			log.Infof("watchComet init newAddress:%+v", ins)
-		}
-	case <-time.After(10 * time.Second):
-		log.Error("watchComet init instances timeout")
-	}
-	go func() {
-		for {
-			if _, ok := <-event; !ok {
-				log.Info("watchComet exit")
-				return
-			}
-			ins, ok := resolver.Fetch()
-			if ok {
-				if err := j.newAddress(ins.Instances); err != nil {
-					log.Errorf("watchComet newAddress(%+v) error(%+v)", ins, err)
-					continue
-				}
-				log.Infof("watchComet change newAddress:%+v", ins)
-			}
-		}
-	}()
-}
-
-// 同步註冊中心comet server node
-func (j *Job) newAddress(insMap map[string][]*naming.Instance) error {
-	ins := insMap[j.c.Env.Zone]
-	if len(ins) == 0 {
-		return fmt.Errorf("watchComet instance is empty")
-	}
-
-	comets := map[string]*Comet{}
-	for _, in := range ins {
-		// 如果comet server有更新node給註冊中心則job紀錄的comet server資料也要更新
-		if old, ok := j.cometServers[in.Hostname]; ok {
-			comets[in.Hostname] = old
-			continue
-		}
-
-		// 如果comet server有向註冊中心提交新的node
-		c, err := NewComet(in, j.c.Comet)
-		if err != nil {
-			log.Errorf("watchComet NewComet(%+v) error(%v)", in, err)
-			return err
-		}
-		comets[in.Hostname] = c
-		log.Infof("watchComet AddComet grpc:%+v", in)
-	}
-
-	// 如果有comet node資料不存在註冊中心，就代表有異常需要清掉
-	for key, old := range j.cometServers {
-		if _, ok := comets[key]; !ok {
-			old.cancel()
-			log.Infof("watchComet DelComet:%s", key)
-		}
-	}
-	j.cometServers = comets
-	return nil
 }

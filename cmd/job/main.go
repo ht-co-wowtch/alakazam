@@ -8,9 +8,6 @@ import (
 
 	"github.com/Terry-Mao/goim/internal/job"
 	"github.com/Terry-Mao/goim/internal/job/conf"
-	"github.com/bilibili/discovery/naming"
-
-	resolver "github.com/bilibili/discovery/naming/grpc"
 	log "github.com/golang/glog"
 )
 
@@ -19,10 +16,6 @@ func main() {
 	if err := conf.Init(); err != nil {
 		panic(err)
 	}
-
-	// 初始化註冊中心
-	dis := naming.New(conf.Conf.Discovery)
-	resolver.Register(dis)
 
 	j := job.New(conf.Conf)
 	go j.Consume()

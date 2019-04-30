@@ -97,5 +97,5 @@ func (s *server) Receive(ctx context.Context, req *pb.ReceiveReq) (*pb.ReceiveRe
 
 //
 func (s *server) Nodes(ctx context.Context, req *pb.NodesReq) (*pb.NodesReply, error) {
-	return s.srv.NodesWeighted(ctx, req.Platform, req.ClientIP), nil
+	return &pb.NodesReply{}, nil
 }

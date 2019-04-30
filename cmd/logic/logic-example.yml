@@ -1,6 +1,6 @@
-node:
-  heartbeat: 240
-  heartbeatMax: 2
+# comet連線用戶心跳(秒)，timeout logic會清除在線紀錄
+# 一定要比redis.expire還小
+heartbeat: 240
 
 # httpServer
 httpServer:

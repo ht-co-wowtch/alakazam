@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/bilibili/discovery/naming"
 	"github.com/spf13/viper"
 	"io/ioutil"
-	"os"
 	"time"
 )
 
@@ -21,55 +19,22 @@ var (
 
 // Config config.
 type Config struct {
-	Env        *Env
-	Discovery  *naming.Config
 	RPCServer  *RPCServer
 	HTTPServer *HTTPServer
 	Kafka      *Kafka
 	Redis      *Redis
 	Node       *Node
-	Backoff    *Backoff
-	Regions    map[string][]string
-}
 
-// Env is env config.
-type Env struct {
-	Region    string
-	Zone      string
-	DeployEnv string
-	Host      string
-	Weight    int64
+	// comet連線用戶心跳，server會清除在線紀錄
+	Heartbeat int64
 }
 
 // Node node config.
 type Node struct {
-	DefaultDomain string
-	HostDomain    string
-	TCPPort       int
-	WSPort        int
-	WSSPort       int
-
 	// 心跳週期，連線沒有在既定的週期內回應，server就close
 	// Heartbeat * HeartbeatMax = 週期時間
 	HeartbeatMax int
 	Heartbeat    time.Duration
-
-	RegionWeight float64
-}
-
-// Backoff backoff.
-type Backoff struct {
-	//
-	MaxDelay int32
-
-	//
-	BaseDelay int32
-
-	//
-	Factor float32
-
-	//
-	Jitter float32
 }
 
 // Redis
@@ -168,32 +133,15 @@ func Init() (err error) {
 		fmt.Println("Using config file:", confPath)
 	}
 	Conf = load()
-	Conf.Regions = map[string][]string{
-		"sh": []string{
-			"上海", "江苏", "浙江", "安徽", "江西", "湖北", "重庆", "陕西", "青海", "河南", "台湾",
-		},
+	if Conf.Heartbeat >= Conf.Redis.Expire.Nanoseconds() {
+		panic(fmt.Errorf("comet心跳不能比redis expire還大"))
 	}
 	return
 }
 
 // 載入config
 func load() *Config {
-	host, _ := os.Hostname()
 	return &Config{
-		Env: &Env{
-			Region:    "sh",
-			Zone:      "sh001",
-			DeployEnv: "dev",
-			Host:      host,
-			Weight:    10,
-		},
-		Discovery: &naming.Config{
-			Nodes:  []string{":7171"},
-			Region: "sh",
-			Zone:   "sh001",
-			Env:    "dev",
-			Host:   host,
-		},
 		RPCServer: &RPCServer{
 			Network:           "tcp",
 			Addr:              viper.GetString("rpcServer.host"),
@@ -224,21 +172,6 @@ func load() *Config {
 			Topic:   viper.GetString("kafka.topic"),
 			Brokers: viper.GetStringSlice("kafka.brokers"),
 		},
-		Backoff: &Backoff{
-			MaxDelay:  300,
-			BaseDelay: 3,
-			Factor:    1.8,
-			Jitter:    0.3,
-		},
-		Node: &Node{
-			DefaultDomain: "conn.goim.io",
-			HostDomain:    ".goim.io",
-			Heartbeat:     time.Duration(viper.GetInt("node.heartbeat")) * time.Second,
-			HeartbeatMax:  viper.GetInt("node.heartbeatMax"),
-			TCPPort:       3101,
-			WSPort:        3102,
-			WSSPort:       3103,
-			RegionWeight:  1.6,
-		},
+		Heartbeat: (time.Duration(viper.GetInt("heartbeat")) * time.Second).Nanoseconds(),
 	}
 }

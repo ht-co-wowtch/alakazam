@@ -3,13 +3,13 @@ package comet
 import (
 	"context"
 	"math/rand"
+	"os"
 	"time"
 
 	logic "github.com/Terry-Mao/goim/api/logic/grpc"
 	"github.com/Terry-Mao/goim/internal/comet/conf"
 	"github.com/zhenjl/cityhash"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/keepalive"
 )
 
@@ -38,9 +38,9 @@ const (
 
 func newLogicClient(c *conf.RPCClient) logic.LogicClient {
 	// grpc 連線的timeout
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.Dial))
+	ctx, cancel := context.WithTimeout(context.Background(), c.Dial)
 	defer cancel()
-	conn, err := grpc.DialContext(ctx, "discovery://default/goim.logic",
+	conn, err := grpc.DialContext(ctx, ":3119",
 		[]grpc.DialOption{
 			// 與server溝通不用檢查憑證之類
 			grpc.WithInsecure(),
@@ -57,9 +57,6 @@ func newLogicClient(c *conf.RPCClient) logic.LogicClient {
 				Timeout:             grpcKeepAliveTimeout,
 				PermitWithoutStream: true,
 			}),
-
-			// 設定grpc Load Balancing，需要有service discovery
-			grpc.WithBalancerName(roundrobin.Name),
 		}...)
 	if err != nil {
 		panic(err)
@@ -102,7 +99,7 @@ func NewServer(c *conf.Config) *Server {
 		s.buckets[i] = NewBucket(c.Bucket)
 	}
 
-	s.serverID = c.Env.Host
+	s.serverID, _ = os.Hostname()
 
 	// 統計線上各房間人數
 	go s.onlineproc()

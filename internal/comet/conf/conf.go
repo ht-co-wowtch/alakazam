@@ -4,12 +4,8 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	xtime "github.com/Terry-Mao/goim/pkg/time"
-	"github.com/bilibili/discovery/naming"
 	"github.com/spf13/viper"
 	"io/ioutil"
-	"os"
-	"strconv"
 	"time"
 )
 
@@ -23,8 +19,6 @@ var (
 
 // Config is comet config.
 type Config struct {
-	Env       *Env
-	Discovery *naming.Config
 	Websocket *Websocket
 	TCP       *TCP
 	Protocol  *Protocol
@@ -33,21 +27,10 @@ type Config struct {
 	RPCServer *RPCServer
 }
 
-// Env is env config.
-type Env struct {
-	Region    string
-	Zone      string
-	DeployEnv string
-	Host      string
-	Weight    int64
-	Offline   bool
-	Addrs     []string
-}
-
 // grpc client config
 type RPCClient struct {
 	// client連線timeout
-	Dial xtime.Duration
+	Dial time.Duration
 }
 
 // RPCServer is RPC server config.
@@ -60,19 +43,19 @@ type RPCServer struct {
 
 	// 當連線閒置多久後發送一個`GOAWAY` Framer 封包告知Client說太久沒活動
 	//至於Client收到`GOAWAY`後要做什麼目前要自己實現stream，server只是做通知而已，grpc server默認沒開啟此功能
-	IdleTimeout xtime.Duration
+	IdleTimeout time.Duration
 
 	// 任何連線只要連線超過某時間就會強制被close，但是在close之前會先發送`GOAWAY`Framer 封包告知Client
-	MaxLifeTime xtime.Duration
+	MaxLifeTime time.Duration
 
 	// MaxConnectionAge要關閉之前等待的時間
-	ForceCloseWait xtime.Duration
+	ForceCloseWait time.Duration
 
 	// keepalive頻率(心跳週期)
-	KeepAliveInterval xtime.Duration
+	KeepAliveInterval time.Duration
 
 	// 每次做keepalive完後等待多少秒如果server沒有回應則將此連線close掉
-	KeepAliveTimeout xtime.Duration
+	KeepAliveTimeout time.Duration
 }
 
 // TCP is tcp config.
@@ -136,7 +119,7 @@ type Protocol struct {
 	// tcp -> 等待 ->
 	//             -> 超時close
 	//
-	HandshakeTimeout xtime.Duration
+	HandshakeTimeout time.Duration
 }
 
 // Bucket is bucket config.
@@ -179,37 +162,18 @@ func Init() (err error) {
 
 // 載入config
 func load() *Config {
-	host, _ := os.Hostname()
-	offline, _ := strconv.ParseBool(os.Getenv("OFFLINE"))
-
 	return &Config{
-		Env: &Env{
-			Region:    "sh",
-			Zone:      "sh001",
-			DeployEnv: "dev",
-			Host:      host,
-			Weight:    10,
-			Addrs:     []string{"127.0.0.1"},
-			Offline:   offline,
-		},
-		Discovery: &naming.Config{
-			Nodes:  []string{":7171"},
-			Region: "sh",
-			Zone:   "sh001",
-			Env:    "dev",
-			Host:   host,
-		},
 		RPCClient: &RPCClient{
-			Dial: xtime.Duration(time.Duration(viper.GetInt("rpcClient.timeout")) * time.Second),
+			Dial: time.Duration(viper.GetInt("rpcClient.timeout")) * time.Second,
 		},
 		RPCServer: &RPCServer{
 			Network:           "tcp",
 			Addr:              viper.GetString("rpcServer.host"),
-			IdleTimeout:       xtime.Duration(time.Second * 60),
-			MaxLifeTime:       xtime.Duration(time.Hour * 2),
-			ForceCloseWait:    xtime.Duration(time.Second * 20),
-			KeepAliveInterval: xtime.Duration(time.Second * 60),
-			KeepAliveTimeout:  xtime.Duration(time.Second * 20),
+			IdleTimeout:       time.Second * 60,
+			MaxLifeTime:       time.Hour * 2,
+			ForceCloseWait:    time.Second * 20,
+			KeepAliveInterval: time.Second * 60,
+			KeepAliveTimeout:  time.Second * 20,
 		},
 		TCP: &TCP{
 			Sndbuf:       4096,
@@ -230,7 +194,7 @@ func load() *Config {
 			TimerSize:        viper.GetInt("protocol.timerSize"),
 			CliProto:         viper.GetInt("protocol.clientProto"),
 			SvrProto:         viper.GetInt("protocol.receiveProtoBuffer"),
-			HandshakeTimeout: xtime.Duration(time.Second * time.Duration(viper.GetInt("protocol.handshakeTimeout"))),
+			HandshakeTimeout: time.Second * time.Duration(viper.GetInt("protocol.handshakeTimeout")),
 		},
 		Bucket: &Bucket{
 			Size:          viper.GetInt("bucket.size"),
