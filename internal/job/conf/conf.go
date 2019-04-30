@@ -40,16 +40,16 @@ type Room struct {
 	// 設小會提高job通知comet的頻率，設太大房間訊息會更延遲
 	Signal time.Duration
 
-	// 消息聚合goroutine等待多久都沒收到訊息自動close
+	// 消息聚合goroutine(每個房間一個)等待多久都沒收到訊息自動close
 	Idle time.Duration
 }
 
 // Comet is comet config.
 type Comet struct {
-	// 處理訊息推送給comet的chan的Buffer
+	// 處理訊息推送goroutine的chan Buffer多少
 	RoutineChan int
 
-	// 開多個goroutine併發做send grpc client
+	// 開多個goroutine併發處理訊息做send grpc client
 	RoutineSize int
 }
 

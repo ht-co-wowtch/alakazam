@@ -141,19 +141,19 @@ type Protocol struct {
 
 // Bucket is bucket config.
 type Bucket struct {
-	// 一開始需要幾個Bucket
+	// 固定幾個bucket做分散
 	Size int
 
-	// 每個Bucket一開始管理多少個Channel
+	// 每個Bucket預先管理多少個user，不夠會自動加倍開
 	Channel int
 
-	// 每個Bucket一開始管理多少個Room
+	// 每個Bucket一開始管理多少個房間，不夠會自動加倍開
 	Room int
 
 	// 每個Bucket開幾個goroutine併發做房間推送
 	RoutineAmount uint64
 
-	// 每個房間推送管道最大緩衝量
+	// 每個goroutine推送管道最大緩衝量
 	RoutineSize int
 }
 
