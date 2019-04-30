@@ -1,0 +1,12 @@
+kafka:
+  topic: push-topic
+  group: push-group-job
+  brokers:
+    - 127.0.0.1:9092
+    
+comet:
+  routineSize: 8
+  routineChan: 512
+
+room:
+  idle: 900

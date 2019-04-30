@@ -20,7 +20,7 @@ var (
 
 // 房間訊息聚合
 type Room struct {
-	c   *conf.Room
+	c *conf.Room
 
 	job *Job
 
@@ -39,7 +39,7 @@ func NewRoom(job *Job, id string, c *conf.Room) (r *Room) {
 		job:   job,
 		proto: make(chan *comet.Proto, c.Batch*2),
 	}
-	go r.pushproc(c.Batch, time.Duration(c.Signal))
+	go r.pushproc(c.Batch, c.Signal)
 	return
 }
 
@@ -129,9 +129,9 @@ func (r *Room) pushproc(batch int, sigTime time.Duration) {
 		// 設定此goroutine等待多久沒動作就close
 		n = 0
 		if r.c.Idle != 0 {
-			td.Reset(time.Duration(r.c.Idle))
+			td.Reset(r.c.Idle)
 		} else {
-			td.Reset(time.Minute)
+			td.Reset(time.Minute * 15)
 		}
 	}
 
