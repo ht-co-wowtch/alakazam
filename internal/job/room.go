@@ -4,10 +4,10 @@ import (
 	"errors"
 	"time"
 
-	comet "gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
+	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/job/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
-	log "github.com/golang/glog"
+	comet "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 )
 
 var (

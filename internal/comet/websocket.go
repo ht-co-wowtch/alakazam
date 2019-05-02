@@ -2,12 +2,13 @@ package comet
 
 import (
 	"context"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"io"
 	"net"
 	"strings"
 	"time"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	xtime "gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
@@ -240,7 +241,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 		if err = p.ReadWebsocket(ws); err != nil {
 			break
 		}
-		if p.Op == grpc.OpHeartbeat {
+		if p.Op == protocol.OpHeartbeat {
 			// comet有心跳機制維護連線狀態，對於logic來說也需要有人利用心跳機制去告知哪個user還在線
 			// 目前在不在線這個狀態都是由comet控管，但不需要每次webSocket -> 心跳 -> comet就 -> 心跳 -> logic
 			// 所以webSocket -> comet 心跳週期會比 comet -> logic還要短
@@ -250,7 +251,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 			// webSocket -> 每30秒心跳 -> comet <====== 每次只要不超過5分鐘沒心跳則comet會認為連線沒問題
 			// webSocket -> 每30秒心跳 -> comet -> 判斷是否已經快20分鐘沒通知logic(是就發) -> logic
 			tr.Set(trd, hb)
-			p.Op = grpc.OpHeartbeatReply
+			p.Op = protocol.OpHeartbeatReply
 			p.Body = nil
 			if now := time.Now(); now.Sub(lastHB) > serverHeartbeat {
 				if err1 := s.Heartbeat(ctx, ch.Mid, ch.Key); err1 == nil {
@@ -316,7 +317,7 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 				if p, err = ch.CliProto.Get(); err != nil {
 					break
 				}
-				if p.Op == grpc.OpHeartbeatReply {
+				if p.Op == protocol.OpHeartbeatReply {
 					if ch.Room != nil {
 						online = ch.Room.OnlineNum()
 					}
@@ -364,7 +365,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 		if err = p.ReadWebsocket(ws); err != nil {
 			return
 		}
-		if p.Op == grpc.OpAuth {
+		if p.Op == protocol.OpAuth {
 			break
 		} else {
 			log.Errorf("ws request operation(%d) not auth", p.Op)
@@ -375,7 +376,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 	}
 
 	// 回覆連線至某房間結果
-	p.Op = grpc.OpAuthReply
+	p.Op = protocol.OpAuthReply
 	p.Body = nil
 	if err = p.WriteWebsocket(ws); err != nil {
 		return

@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/spf13/viper"
 	"io/ioutil"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 var (
@@ -105,6 +106,9 @@ type HTTPServer struct {
 
 	// 沒用到
 	WriteTimeout time.Duration
+
+	//(Debug)開發模式
+	IsStage bool
 }
 
 func init() {
@@ -147,6 +151,7 @@ func load() *Config {
 			Addr:         viper.GetString("httpServer.host"),
 			ReadTimeout:  time.Duration(viper.GetInt("httpServer.readTimeout")) * time.Second,
 			WriteTimeout: time.Duration(viper.GetInt("httpServer.writeTimeout")) * time.Second,
+			IsStage:      viper.GetBool("httpServer.isStage"),
 		},
 		Redis: &Redis{
 			Network:      "tcp",

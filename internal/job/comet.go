@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	comet "gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
+	comet "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/job/conf"
 	log "github.com/golang/glog"
 	"google.golang.org/grpc"

@@ -3,7 +3,7 @@ package comet
 import (
 	"sync"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 )
 
