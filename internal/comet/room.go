@@ -3,8 +3,8 @@ package comet
 import (
 	"sync"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 )
 
 // 房間結構，紀錄Channel採用雙向鏈結串列結構，房間內有A,B,C 三人結構如下，此三人都是Channel
@@ -24,10 +24,10 @@ type Room struct {
 	// 房間人數是否為0
 	drop bool
 
-	// 房間總人數
+	// 房間人數(Room會分散在各個bucket，此為存在某bucket內的人數)
 	Online int32
 
-	//
+	// 此房間總人數(集合所有bucket內房間的總人數)
 	AllOnline int32
 }
 
