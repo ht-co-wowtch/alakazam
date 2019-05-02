@@ -5,7 +5,7 @@ import (
 	"net"
 	"time"
 
-	pb "gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
+	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet/errors"
