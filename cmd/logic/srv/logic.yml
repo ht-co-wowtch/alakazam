@@ -8,6 +8,7 @@ httpServer:
   readTimeout: 1
   writeTimeout: 1
   isStage: false
+
 # grpc server
 rpcServer:
   host: :3119
