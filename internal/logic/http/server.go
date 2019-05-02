@@ -1,9 +1,9 @@
 package http
 
 import (
+	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
-	"github.com/gin-gonic/gin"
 )
 
 // Server is http server.

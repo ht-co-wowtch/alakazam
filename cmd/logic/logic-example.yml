@@ -7,7 +7,7 @@ httpServer:
   host: :3111
   readTimeout: 1
   writeTimeout: 1
-
+  isStage: false
 # grpc server
 rpcServer:
   host: :3119
