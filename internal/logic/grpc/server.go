@@ -2,9 +2,9 @@ package grpc
 
 import (
 	"context"
-	pb "github.com/Terry-Mao/goim/api/logic/grpc"
-	"github.com/Terry-Mao/goim/internal/logic"
-	"github.com/Terry-Mao/goim/internal/logic/conf"
+	pb "gitlab.com/jetfueltw/cpw/alakazam/api/logic/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
 	"net"
 
 	"google.golang.org/grpc"

@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Terry-Mao/goim/internal/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
 )
 
 var (

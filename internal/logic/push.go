@@ -2,7 +2,7 @@ package logic
 
 import (
 	"context"
-	"github.com/Terry-Mao/goim/internal/logic/model"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
 
 	log "github.com/golang/glog"
 )

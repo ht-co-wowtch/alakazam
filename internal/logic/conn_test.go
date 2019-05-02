@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Terry-Mao/goim/api/comet/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
 	"github.com/stretchr/testify/assert"
 )
 

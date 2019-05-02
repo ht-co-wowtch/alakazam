@@ -2,10 +2,10 @@ package grpc
 
 import (
 	"errors"
-	"github.com/Terry-Mao/goim/pkg/bufio"
-	"github.com/Terry-Mao/goim/pkg/bytes"
-	"github.com/Terry-Mao/goim/pkg/encoding/binary"
-	"github.com/Terry-Mao/goim/pkg/websocket"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
 )
 
 const (

@@ -1,4 +1,5 @@
-### Build
+
+## Build
 ```
     make build
 ```
@@ -16,14 +17,15 @@
 ```
 
 ### Dependencies
-[Discovery](https://github.com/bilibili/discovery)
-
 [Kafka](https://kafka.apache.org/quickstart)
 
-    // Discovery
-    cd discovery
-    ./discovery -conf discovery.toml -alsologtostderr
-    
-    // cd kafka
     cd kafka
     docker-compose up -d
+    
+### tag
+
+tag|說明|
+---|----|
+v0.1.0|config改為yml
+v0.1.1|移除Discovery
+
