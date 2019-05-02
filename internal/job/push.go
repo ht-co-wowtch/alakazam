@@ -3,7 +3,7 @@ package job
 import (
 	"context"
 	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/protocol"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 
 	comet "gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
 	pb "gitlab.com/jetfueltw/cpw/alakazam/api/logic/grpc"

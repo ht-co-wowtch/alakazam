@@ -2,7 +2,7 @@ package comet
 
 import (
 	"context"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/protocol"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"time"
 
 	model "gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"

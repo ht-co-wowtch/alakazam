@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/protocol"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
