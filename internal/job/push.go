@@ -33,7 +33,6 @@ func (j *Job) push(ctx context.Context, pushMsg *grpc.PushMsg) (err error) {
 func (j *Job) pushKeys(operation int32, serverID string, subKeys []string, body []byte) (err error) {
 	buf := bytes.NewWriterSize(len(body) + 64)
 	p := &grpc.Proto{
-		Ver:  1,
 		Op:   operation,
 		Body: body,
 	}
@@ -60,7 +59,6 @@ func (j *Job) pushKeys(operation int32, serverID string, subKeys []string, body 
 func (j *Job) broadcast(operation int32, body []byte, speed int32) (err error) {
 	buf := bytes.NewWriterSize(len(body) + 64)
 	p := &grpc.Proto{
-		Ver:  1,
 		Op:   operation,
 		Body: body,
 	}
@@ -88,7 +86,6 @@ func (j *Job) broadcastRoomRawBytes(roomID string, body []byte) (err error) {
 	args := grpc.BroadcastRoomReq{
 		RoomID: roomID,
 		Proto: &grpc.Proto{
-			Ver:  1,
 			Op:   protocol.OpRaw,
 			Body: body,
 		},

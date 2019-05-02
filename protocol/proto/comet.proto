@@ -9,10 +9,9 @@ import "github.com/gogo/protobuf/gogoproto/gogo.proto";
  * protocol
  */
 message Proto {
-    int32 ver = 1 [(gogoproto.jsontag) = "ver"];
-    int32 op = 2 [(gogoproto.jsontag) = "op"];
-    int32 seq = 3 [(gogoproto.jsontag) = "seq"];
-    bytes body = 4 [(gogoproto.jsontag) = "body"];
+    int32 op = 1 [(gogoproto.jsontag) = "op"];
+    int32 seq = 2 [(gogoproto.jsontag) = "seq"];
+    bytes body = 3 [(gogoproto.jsontag) = "body"];
 }
 
 message Empty{}

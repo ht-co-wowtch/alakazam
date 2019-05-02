@@ -46,7 +46,6 @@ func NewRoom(job *Job, id string, c *conf.Room) (r *Room) {
 // 訊息放到房間訊息聚合決定何時推送給comet
 func (r *Room) Push(op int32, msg []byte) (err error) {
 	var p = &comet.Proto{
-		Ver:  1,
 		Op:   op,
 		Body: msg,
 	}

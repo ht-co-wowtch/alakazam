@@ -26,9 +26,6 @@ const (
 	// Protocol Header的byte長度
 	_headerSize = 2
 
-	// Protocol 版本號的byte長度
-	_verSize = 2
-
 	// Protocol 動作意義的byte長度
 	_opSize = 4
 
@@ -36,7 +33,7 @@ const (
 	_seqSize = 4
 
 	// Protocol Header的總長度
-	_rawHeaderSize = _packSize + _headerSize + _verSize + _opSize + _seqSize
+	_rawHeaderSize = _packSize + _headerSize + _opSize + _seqSize
 
 	// Protocol 長度的byte位置範圍
 	_packOffset = 0
@@ -45,11 +42,8 @@ const (
 	// Protocol 長度 - header長度 = Body長度
 	_headerOffset = _packOffset + _packSize
 
-	// Protocol版本號的byte位置範圍
-	_verOffset = _headerOffset + _headerSize
-
 	// Protocol動作意義的byte位置範圍
-	_opOffset = _verOffset + _verSize
+	_opOffset = _headerOffset + _headerSize
 
 	// Protocol seq意義的byte位置範圍
 	_seqOffset = _opOffset + _opSize
@@ -257,7 +251,6 @@ func dialAuth(authToken *AuthToken) (auth auth, err error) {
 	rd := bufio.NewReader(conn)
 
 	proto := new(grpc.Proto)
-	proto.Ver = 1
 	proto.Op = protocol.OpAuth
 	proto.Seq = int32(0)
 	proto.Body, _ = json.Marshal(authToken)
@@ -289,7 +282,6 @@ func writeProto(wr *bufio.Writer, p *grpc.Proto) (err error) {
 	}
 	binary.BigEndian.PutInt32(buf[_packOffset:], packLen)
 	binary.BigEndian.PutInt16(buf[_headerOffset:], int16(_rawHeaderSize))
-	binary.BigEndian.PutInt16(buf[_verOffset:], int16(p.Ver))
 	binary.BigEndian.PutInt32(buf[_opOffset:], p.Op)
 	binary.BigEndian.PutInt32(buf[_seqOffset:], p.Seq)
 	if p.Body != nil {
@@ -344,8 +336,7 @@ func read(rr *bufio.Reader, p *grpc.Proto) (packLen int32, headerLen int16, err 
 	}
 
 	packLen = binary.BigEndian.Int32(buf[_packOffset:_headerOffset])
-	headerLen = binary.BigEndian.Int16(buf[_headerOffset:_verOffset])
-	p.Ver = int32(binary.BigEndian.Int16(buf[_verOffset:_opOffset]))
+	headerLen = binary.BigEndian.Int16(buf[_headerOffset:_opOffset])
 	p.Op = binary.BigEndian.Int32(buf[_opOffset:_seqOffset])
 	p.Seq = binary.BigEndian.Int32(buf[_seqOffset:])
 	return
