@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"golang.org/x/net/websocket"
 	"io"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 )
@@ -75,7 +76,7 @@ var (
 	httpClient *http.Client
 )
 
-func init() {
+func TestMain(m *testing.M) {
 	rand.Seed(time.Now().Unix())
 	authToken = &AuthToken{
 		0,
@@ -88,6 +89,7 @@ func init() {
 	httpClient = &http.Client{
 		Timeout: time.Second * 5,
 	}
+	os.Exit(m.Run())
 }
 
 func Test_auth(t *testing.T) {
