@@ -4,9 +4,9 @@ import (
 	"context"
 	"strconv"
 
-	pb "gitlab.com/jetfueltw/cpw/alakazam/api/grpc"
 	"github.com/gogo/protobuf/proto"
 	log "github.com/golang/glog"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gopkg.in/Shopify/sarama.v1"
 )
 
@@ -15,8 +15,8 @@ import (
 // 2. user key
 // 3. operation
 func (d *Dao) PushMsg(c context.Context, op int32, server string, keys []string, msg []byte) (err error) {
-	pushMsg := &pb.PushMsg{
-		Type:      pb.PushMsg_PUSH,
+	pushMsg := &grpc.PushMsg{
+		Type:      grpc.PushMsg_PUSH,
 		Operation: op,
 		Server:    server,
 		Keys:      keys,
@@ -43,8 +43,8 @@ func (d *Dao) PushMsg(c context.Context, op int32, server string, keys []string,
 // 1. room id
 // 2. operation
 func (d *Dao) BroadcastRoomMsg(c context.Context, op int32, room string, msg []byte) (err error) {
-	pushMsg := &pb.PushMsg{
-		Type:      pb.PushMsg_ROOM,
+	pushMsg := &grpc.PushMsg{
+		Type:      grpc.PushMsg_ROOM,
 		Operation: op,
 		Room:      room,
 		Msg:       msg,
@@ -69,8 +69,8 @@ func (d *Dao) BroadcastRoomMsg(c context.Context, op int32, room string, msg []b
 // 所有房間推送，以下為條件
 // 1. operation
 func (d *Dao) BroadcastMsg(c context.Context, op, speed int32, msg []byte) (err error) {
-	pushMsg := &pb.PushMsg{
-		Type:      pb.PushMsg_BROADCAST,
+	pushMsg := &grpc.PushMsg{
+		Type:      grpc.PushMsg_BROADCAST,
 		Operation: op,
 		Speed:     speed,
 		Msg:       msg,

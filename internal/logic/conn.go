@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/api/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
 	log "github.com/golang/glog"
 	"github.com/google/uuid"

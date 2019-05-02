@@ -6,7 +6,7 @@ import (
 	"time"
 
 	log "github.com/golang/glog"
-	pd "gitlab.com/jetfueltw/cpw/alakazam/api/grpc"
+	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/strings"
 
 	"google.golang.org/grpc"

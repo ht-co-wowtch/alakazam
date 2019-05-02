@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/api/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"github.com/stretchr/testify/assert"
 )
 

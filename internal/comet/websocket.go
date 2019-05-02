@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/api/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	xtime "gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"

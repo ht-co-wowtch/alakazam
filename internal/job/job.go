@@ -2,9 +2,9 @@ package job
 
 import (
 	"context"
-	pb "gitlab.com/jetfueltw/cpw/alakazam/api/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/job/conf"
 	"github.com/gogo/protobuf/proto"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/job/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"os"
 	"sync"
 
@@ -79,7 +79,7 @@ func (j *Job) Consume() {
 			}
 			j.consumer.MarkOffset(msg, "")
 			// process push message
-			pushMsg := new(pb.PushMsg)
+			pushMsg := new(grpc.PushMsg)
 			if err := proto.Unmarshal(msg.Value, pushMsg); err != nil {
 				log.Errorf("proto.Unmarshal(%v) error(%v)", msg, err)
 				continue
