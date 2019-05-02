@@ -1,7 +1,7 @@
 package comet
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/api/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet/errors"
 )
 

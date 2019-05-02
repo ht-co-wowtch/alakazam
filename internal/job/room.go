@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	comet "gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
+	comet "gitlab.com/jetfueltw/cpw/alakazam/api/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/job/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	log "github.com/golang/glog"

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 
-	comet "gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
-	pb "gitlab.com/jetfueltw/cpw/alakazam/api/logic/grpc"
+	comet "gitlab.com/jetfueltw/cpw/alakazam/api/grpc"
+	pb "gitlab.com/jetfueltw/cpw/alakazam/api/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	log "github.com/golang/glog"
 )

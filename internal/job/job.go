@@ -2,7 +2,7 @@ package job
 
 import (
 	"context"
-	pb "gitlab.com/jetfueltw/cpw/alakazam/api/logic/grpc"
+	pb "gitlab.com/jetfueltw/cpw/alakazam/api/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/job/conf"
 	"github.com/gogo/protobuf/proto"
 	"os"

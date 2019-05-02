@@ -1,10 +1,8 @@
 syntax = "proto3";
 
-package goim.logic;
+package grpc;
 
-option go_package = "grpc";
-
-import "gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc/api.proto";
+import "comet.proto";
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 message PushMsg {
@@ -81,7 +79,7 @@ message OnlineReply {
 
 message ReceiveReq {
     int64 mid = 1;
-    comet.Proto proto = 2;
+    Proto proto = 2;
 }
 
 message ReceiveReply {
