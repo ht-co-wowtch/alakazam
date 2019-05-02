@@ -29,3 +29,13 @@ stop:
 	pkill -f bin/logic
 	pkill -f bin/job
 	pkill -f bin/comet
+
+proto-build:
+	cd protocol/proto && protoc \
+	--proto_path=${GOPATH}/src \
+	--proto_path=${GOPATH}/src/github.com/gogo/protobuf/protobuf \
+	--proto_path=. \
+	--gofast_out=plugins=grpc:../grpc *.proto \
+	*.proto
+
+
