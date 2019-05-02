@@ -7,8 +7,6 @@ import (
 
 	log "github.com/golang/glog"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/strings"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/encoding/gzip"
 )
@@ -67,18 +65,6 @@ func (s *Server) Operate(ctx context.Context, p *pd.Proto, ch *Channel, b *Bucke
 			log.Errorf("b.ChangeRoom(%s) error(%v)", p.Body, err)
 		}
 		p.Op = protocol.OpChangeRoomReply
-	// user新增operation
-	case protocol.OpSub:
-		if ops, err := strings.SplitInt32s(string(p.Body), ","); err == nil {
-			ch.Watch(ops...)
-		}
-		p.Op = protocol.OpSubReply
-	// user移除operation
-	case protocol.OpUnsub:
-		if ops, err := strings.SplitInt32s(string(p.Body), ","); err == nil {
-			ch.UnWatch(ops...)
-		}
-		p.Op = protocol.OpUnsubReply
 	default:
 		// TODO ack ok&failed
 		p.Body = nil
