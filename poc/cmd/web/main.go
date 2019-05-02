@@ -112,8 +112,7 @@ func push(c *gin.Context) {
 	if u, ok := users[i]; ok {
 		text := fmt.Sprintf(`{"name":"%s", "content":"%s"}`, u.name, c.PostForm("text"))
 
-		url := fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?operation=%s&type=%s&room=%s",
-			c.Param("operation"),
+		url := fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?type=%s&room=%s",
 			c.Param("type"),
 			c.Param("id"),
 		)
@@ -133,12 +132,11 @@ func pushAll(c *gin.Context) {
 
 	switch c.PostForm("push") {
 	case "all":
-		url = []string{"http://127.0.0.1:3111/goim/push/all?operation=1"}
+		url = []string{"http://127.0.0.1:3111/goim/push/all"}
 	case "id":
 		for _, v := range rooms {
 			if v.Id == key {
-				url = []string{fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?operation=%s&type=%s&room=%s",
-					v.Id,
+				url = []string{fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?type=%s&room=%s",
 					v.Type,
 					v.Id,
 				)}
@@ -147,8 +145,7 @@ func pushAll(c *gin.Context) {
 	case "type":
 		for _, v := range rooms {
 			if v.Type == key {
-				u := fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?operation=%s&type=%s&room=%s",
-					v.Id,
+				u := fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?type=%s&room=%s",
 					v.Type,
 					v.Id,
 				)
@@ -157,7 +154,7 @@ func pushAll(c *gin.Context) {
 			}
 		}
 	case "tag":
-		url = []string{fmt.Sprintf("http://127.0.0.1:3111/goim/push/all?operation=%s", key)}
+		url = []string{fmt.Sprintf("http://127.0.0.1:3111/goim/push/all")}
 	}
 
 	if len(url) == 0 {

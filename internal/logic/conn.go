@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"time"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
 	log "github.com/golang/glog"
 	"github.com/google/uuid"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 )
 
 // redis紀錄某人連線資訊
-func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) (mid int64, key, roomID string, accepts []int32, hb int64, err error) {
+func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) (mid int64, key, roomID string, hb int64, err error) {
 	var params struct {
 		// client id
 		Mid int64 `json:"mid"`
@@ -25,9 +25,6 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 
 		// 裝置種類
 		Platform string `json:"platform"`
-
-		// 推播接收的operation
-		Accepts []int32 `json:"accepts"`
 	}
 	if err = json.Unmarshal(token, &params); err != nil {
 		log.Errorf("json.Unmarshal(%s) error(%v)", token, err)
@@ -35,7 +32,6 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 	}
 	mid = params.Mid
 	roomID = params.RoomID
-	accepts = params.Accepts
 
 	// 告知comet連線多久沒心跳就直接close
 	hb = l.c.Heartbeat

@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"strconv"
 
 	"github.com/gogo/protobuf/proto"
@@ -14,13 +15,12 @@ import (
 // 1. server name
 // 2. user key
 // 3. operation
-func (d *Dao) PushMsg(c context.Context, op int32, server string, keys []string, msg []byte) (err error) {
+func (d *Dao) PushMsg(c context.Context, server string, keys []string, msg []byte) (err error) {
 	pushMsg := &grpc.PushMsg{
-		Type:      grpc.PushMsg_PUSH,
-		Operation: op,
-		Server:    server,
-		Keys:      keys,
-		Msg:       msg,
+		Type:   grpc.PushMsg_PUSH,
+		Server: server,
+		Keys:   keys,
+		Msg:    msg,
 	}
 	b, err := proto.Marshal(pushMsg)
 	if err != nil {
@@ -42,12 +42,11 @@ func (d *Dao) PushMsg(c context.Context, op int32, server string, keys []string,
 // 房間推送，以下為條件
 // 1. room id
 // 2. operation
-func (d *Dao) BroadcastRoomMsg(c context.Context, op int32, room string, msg []byte) (err error) {
+func (d *Dao) BroadcastRoomMsg(c context.Context, room string, msg []byte) (err error) {
 	pushMsg := &grpc.PushMsg{
-		Type:      grpc.PushMsg_ROOM,
-		Operation: op,
-		Room:      room,
-		Msg:       msg,
+		Type: grpc.PushMsg_ROOM,
+		Room: room,
+		Msg:  msg,
 	}
 	b, err := proto.Marshal(pushMsg)
 	if err != nil {
@@ -68,19 +67,18 @@ func (d *Dao) BroadcastRoomMsg(c context.Context, op int32, room string, msg []b
 
 // 所有房間推送，以下為條件
 // 1. operation
-func (d *Dao) BroadcastMsg(c context.Context, op, speed int32, msg []byte) (err error) {
+func (d *Dao) BroadcastMsg(c context.Context, speed int32, msg []byte) (err error) {
 	pushMsg := &grpc.PushMsg{
-		Type:      grpc.PushMsg_BROADCAST,
-		Operation: op,
-		Speed:     speed,
-		Msg:       msg,
+		Type:  grpc.PushMsg_BROADCAST,
+		Speed: speed,
+		Msg:   msg,
 	}
 	b, err := proto.Marshal(pushMsg)
 	if err != nil {
 		return
 	}
 	m := &sarama.ProducerMessage{
-		Key:   sarama.StringEncoder(strconv.FormatInt(int64(op), 10)),
+		Key:   sarama.StringEncoder(strconv.FormatInt(int64(protocol.OpRaw), 10)),
 		Topic: d.c.Kafka.Topic,
 		Value: sarama.ByteEncoder(b),
 	}

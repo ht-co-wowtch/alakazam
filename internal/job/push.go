@@ -15,13 +15,13 @@ func (j *Job) push(ctx context.Context, pushMsg *grpc.PushMsg) (err error) {
 	switch pushMsg.Type {
 	// 單一人推送
 	case grpc.PushMsg_PUSH:
-		err = j.pushKeys(pushMsg.Operation, pushMsg.Server, pushMsg.Keys, pushMsg.Msg)
+		err = j.pushKeys(pushMsg.Server, pushMsg.Keys, pushMsg.Msg)
 	// 單一房間推送
 	case grpc.PushMsg_ROOM:
-		err = j.getRoom(pushMsg.Room).Push(pushMsg.Operation, pushMsg.Msg)
+		err = j.getRoom(pushMsg.Room).Push(pushMsg.Msg)
 	// 所有房間推送
 	case grpc.PushMsg_BROADCAST:
-		err = j.broadcast(pushMsg.Operation, pushMsg.Msg, pushMsg.Speed)
+		err = j.broadcast(pushMsg.Msg, pushMsg.Speed)
 	// 異常資料
 	default:
 		err = fmt.Errorf("no match push type: %s", pushMsg.Type)
@@ -30,19 +30,18 @@ func (j *Job) push(ctx context.Context, pushMsg *grpc.PushMsg) (err error) {
 }
 
 // 單人訊息推送至comet server
-func (j *Job) pushKeys(operation int32, serverID string, subKeys []string, body []byte) (err error) {
+func (j *Job) pushKeys(serverID string, subKeys []string, body []byte) (err error) {
 	buf := bytes.NewWriterSize(len(body) + 64)
 	p := &grpc.Proto{
-		Op:   operation,
+		Op:   protocol.OpRaw,
 		Body: body,
 	}
 	p.WriteTo(buf)
 	p.Body = buf.Buffer()
 	p.Op = protocol.OpRaw
 	var args = grpc.PushMsgReq{
-		Keys:    subKeys,
-		ProtoOp: operation,
-		Proto:   p,
+		Keys:  subKeys,
+		Proto: p,
 	}
 
 	// 根據user所在的comet server id做發送
@@ -56,10 +55,10 @@ func (j *Job) pushKeys(operation int32, serverID string, subKeys []string, body 
 }
 
 // 多房間訊息推送給comet
-func (j *Job) broadcast(operation int32, body []byte, speed int32) (err error) {
+func (j *Job) broadcast(body []byte, speed int32) (err error) {
 	buf := bytes.NewWriterSize(len(body) + 64)
 	p := &grpc.Proto{
-		Op:   operation,
+		Op:   protocol.OpRaw,
 		Body: body,
 	}
 	p.WriteTo(buf)
@@ -68,7 +67,7 @@ func (j *Job) broadcast(operation int32, body []byte, speed int32) (err error) {
 	comets := j.cometServers
 	speed /= int32(len(comets))
 	var args = grpc.BroadcastReq{
-		ProtoOp: operation,
+		ProtoOp: protocol.OpRaw,
 		Proto:   p,
 		Speed:   speed,
 	}

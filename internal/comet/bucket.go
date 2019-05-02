@@ -4,8 +4,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 )
 
 // 用於管理Room與Channel關於推送的邏輯
@@ -180,9 +180,6 @@ func (b *Bucket) Broadcast(p *grpc.Proto, op int32) {
 	var ch *Channel
 	b.cLock.RLock()
 	for _, ch = range b.chs {
-		if !ch.NeedPush(op) {
-			continue
-		}
 		_ = ch.Push(p)
 	}
 	b.cLock.RUnlock()

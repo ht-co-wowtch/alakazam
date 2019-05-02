@@ -17,7 +17,6 @@ message Empty{}
 
 message PushMsgReq {
     repeated string keys = 1;
-    int32 protoOp = 3;
     Proto proto = 2;
 }
 

@@ -46,11 +46,10 @@ const (
 )
 
 type AuthToken struct {
-	Mid      int64   `json:"mid"`
-	Key      string  `json:"key"`
-	RoomID   string  `json:"room_id"`
-	Platform string  `json:"platform"`
-	Accepts  []int32 `json:"accepts"`
+	Mid      int64  `json:"mid"`
+	Key      string `json:"key"`
+	RoomID   string `json:"room_id"`
+	Platform string `json:"platform"`
 }
 
 type auth struct {
@@ -71,7 +70,6 @@ func TestMain(m *testing.M) {
 		"",
 		"chat://1000",
 		"web",
-		[]int32{1, 1000},
 	}
 
 	httpClient = &http.Client{
@@ -333,15 +331,15 @@ func read(rr *bufio.Reader, p *grpc.Proto) (packLen int32, headerLen int16, err 
 }
 
 func pushUser(id int64, message string) ([]byte, error) {
-	return push(fmt.Sprintf(host+"/goim/push/mids?operation=1000&mids=%d", id), bytes.NewBufferString(message))
+	return push(fmt.Sprintf(host+"/goim/push/mids?mids=%d", id), bytes.NewBufferString(message))
 }
 
 func pushRoom(roomId int, message string) ([]byte, error) {
-	return push(fmt.Sprintf(host+"/goim/push/room?operation=1000&type=chat&room=%d", roomId), bytes.NewBufferString(message))
+	return push(fmt.Sprintf(host+"/goim/push/room?type=chat&room=%d", roomId), bytes.NewBufferString(message))
 }
 
 func pushBroadcast(message string) ([]byte, error) {
-	return push(fmt.Sprintf(host+"/goim/push/all?operation=1000"), bytes.NewBufferString(message))
+	return push(fmt.Sprintf(host+"/goim/push/all"), bytes.NewBufferString(message))
 }
 
 func push(url string, message io.Reader) (body []byte, err error) {

@@ -3,8 +3,8 @@ package comet
 import (
 	"sync"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 )
 
 // 用於推送消息給user，可以把這個識別user在聊天室內的地址
@@ -44,9 +44,6 @@ type Channel struct {
 	// user ip
 	IP string
 
-	// user 類似tag的東西，可以用這個當作推送條件之一
-	watchOps map[int32]struct{}
-
 	// 讀寫鎖
 	mutex sync.RWMutex
 }
@@ -58,37 +55,7 @@ func NewChannel(cli, svr int) *Channel {
 
 	// grpc接收資料的緩充量
 	c.signal = make(chan *grpc.Proto, svr)
-	c.watchOps = make(map[int32]struct{})
 	return c
-}
-
-// 設置user operation
-func (c *Channel) Watch(accepts ...int32) {
-	c.mutex.Lock()
-	for _, op := range accepts {
-		c.watchOps[op] = struct{}{}
-	}
-	c.mutex.Unlock()
-}
-
-// 移除user operation
-func (c *Channel) UnWatch(accepts ...int32) {
-	c.mutex.Lock()
-	for _, op := range accepts {
-		delete(c.watchOps, op)
-	}
-	c.mutex.Unlock()
-}
-
-// 判斷operation是否存在user內
-func (c *Channel) NeedPush(op int32) bool {
-	c.mutex.RLock()
-	if _, ok := c.watchOps[op]; ok {
-		c.mutex.RUnlock()
-		return true
-	}
-	c.mutex.RUnlock()
-	return false
 }
 
 // 針對某人推送訊息
