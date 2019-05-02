@@ -1,9 +1,9 @@
 package comet
 
 import (
-	"github.com/Terry-Mao/goim/internal/comet/conf"
-	"github.com/Terry-Mao/goim/pkg/bytes"
-	"github.com/Terry-Mao/goim/pkg/time"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
 )
 
 // RoundOptions round options.

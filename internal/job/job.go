@@ -2,8 +2,8 @@ package job
 
 import (
 	"context"
-	pb "github.com/Terry-Mao/goim/api/logic/grpc"
-	"github.com/Terry-Mao/goim/internal/job/conf"
+	pb "gitlab.com/jetfueltw/cpw/alakazam/api/logic/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/job/conf"
 	"github.com/gogo/protobuf/proto"
 	"os"
 	"sync"

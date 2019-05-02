@@ -2,7 +2,7 @@ package logic
 
 import (
 	"context"
-	"github.com/Terry-Mao/goim/internal/logic/model"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
 )
 
 // 根據房間type與room id取房間在線人數

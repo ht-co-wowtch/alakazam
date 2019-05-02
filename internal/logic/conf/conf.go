@@ -24,18 +24,9 @@ type Config struct {
 	HTTPServer *HTTPServer
 	Kafka      *Kafka
 	Redis      *Redis
-	Node       *Node
 
 	// comet連線用戶心跳，server會清除在線紀錄
 	Heartbeat int64
-}
-
-// Node node config.
-type Node struct {
-	// 心跳週期，連線沒有在既定的週期內回應，server就close
-	// Heartbeat * HeartbeatMax = 週期時間
-	HeartbeatMax int
-	Heartbeat    time.Duration
 }
 
 // Redis

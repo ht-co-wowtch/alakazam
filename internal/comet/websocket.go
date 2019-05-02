@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Terry-Mao/goim/api/comet/grpc"
-	"github.com/Terry-Mao/goim/pkg/bytes"
-	xtime "github.com/Terry-Mao/goim/pkg/time"
-	"github.com/Terry-Mao/goim/pkg/websocket"
+	"gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
+	xtime "gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
 	log "github.com/golang/glog"
 )
 

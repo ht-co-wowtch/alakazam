@@ -3,8 +3,8 @@ package comet
 import (
 	"sync"
 
-	"github.com/Terry-Mao/goim/api/comet/grpc"
-	"github.com/Terry-Mao/goim/internal/comet/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet/errors"
 )
 
 // 房間結構，紀錄Channel採用雙向鏈結串列結構，房間內有A,B,C 三人結構如下，此三人都是Channel
