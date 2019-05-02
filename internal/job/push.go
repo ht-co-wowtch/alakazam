@@ -3,6 +3,7 @@ package job
 import (
 	"context"
 	"fmt"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/protocol"
 
 	comet "gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
 	pb "gitlab.com/jetfueltw/cpw/alakazam/api/logic/grpc"
@@ -39,7 +40,7 @@ func (j *Job) pushKeys(operation int32, serverID string, subKeys []string, body 
 	}
 	p.WriteTo(buf)
 	p.Body = buf.Buffer()
-	p.Op = comet.OpRaw
+	p.Op = protocol.OpRaw
 	var args = comet.PushMsgReq{
 		Keys:    subKeys,
 		ProtoOp: operation,
@@ -66,7 +67,7 @@ func (j *Job) broadcast(operation int32, body []byte, speed int32) (err error) {
 	}
 	p.WriteTo(buf)
 	p.Body = buf.Buffer()
-	p.Op = comet.OpRaw
+	p.Op = protocol.OpRaw
 	comets := j.cometServers
 	speed /= int32(len(comets))
 	var args = comet.BroadcastReq{
@@ -89,7 +90,7 @@ func (j *Job) broadcastRoomRawBytes(roomID string, body []byte) (err error) {
 		RoomID: roomID,
 		Proto: &comet.Proto{
 			Ver:  1,
-			Op:   comet.OpRaw,
+			Op:   protocol.OpRaw,
 			Body: body,
 		},
 	}

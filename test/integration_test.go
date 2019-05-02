@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
 	"golang.org/x/net/websocket"
@@ -187,7 +188,7 @@ func pushTest(t *testing.T, otherAuth *AuthToken, f func() ([]byte, error), ass 
 		return
 	}
 
-	assert.Equal(t, grpc.OpRaw, a.proto.Op)
+	assert.Equal(t, protocol.OpRaw, a.proto.Op)
 	assert.Equal(t, []byte(`{"code":0,"message":""}`), b)
 	ass(p, otherErr, otherProto)
 	fmt.Println("ok")
@@ -210,14 +211,14 @@ func shouldBeCloseConnection(err error, ws *websocket.Conn, t *testing.T) {
 
 func givenHeartbeat() *grpc.Proto {
 	hbProto := new(grpc.Proto)
-	hbProto.Op = grpc.OpHeartbeat
+	hbProto.Op = protocol.OpHeartbeat
 	hbProto.Seq = 1
 	hbProto.Body = nil
 	return hbProto
 }
 
 func shouldBeAuthReply(t *testing.T, a auth) {
-	assert.Equal(t, grpc.OpAuthReply, a.proto.Op)
+	assert.Equal(t, protocol.OpAuthReply, a.proto.Op)
 	fmt.Println("ok")
 }
 
@@ -232,7 +233,7 @@ func shouldBeHeartbeatReply(t *testing.T, a auth, hbProto *grpc.Proto) {
 		return
 	}
 	fmt.Println("heartbeat reply")
-	assert.Equal(t, grpc.OpHeartbeatReply, a.proto.Op)
+	assert.Equal(t, protocol.OpHeartbeatReply, a.proto.Op)
 	fmt.Println("ok")
 }
 
@@ -255,7 +256,7 @@ func dialAuth(authToken *AuthToken) (auth auth, err error) {
 
 	proto := new(grpc.Proto)
 	proto.Ver = 1
-	proto.Op = grpc.OpAuth
+	proto.Op = protocol.OpAuth
 	proto.Seq = int32(0)
 	proto.Body, _ = json.Marshal(authToken)
 

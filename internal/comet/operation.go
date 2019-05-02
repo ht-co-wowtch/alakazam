@@ -2,6 +2,7 @@ package comet
 
 import (
 	"context"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/protocol"
 	"time"
 
 	model "gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
@@ -68,23 +69,23 @@ func (s *Server) Receive(ctx context.Context, mid int64, p *model.Proto) (err er
 func (s *Server) Operate(ctx context.Context, p *model.Proto, ch *Channel, b *Bucket) error {
 	switch p.Op {
 	// 更換房間
-	case model.OpChangeRoom:
+	case protocol.OpChangeRoom:
 		if err := b.ChangeRoom(string(p.Body), ch); err != nil {
 			log.Errorf("b.ChangeRoom(%s) error(%v)", p.Body, err)
 		}
-		p.Op = model.OpChangeRoomReply
+		p.Op = protocol.OpChangeRoomReply
 	// user新增operation
-	case model.OpSub:
+	case protocol.OpSub:
 		if ops, err := strings.SplitInt32s(string(p.Body), ","); err == nil {
 			ch.Watch(ops...)
 		}
-		p.Op = model.OpSubReply
+		p.Op = protocol.OpSubReply
 	// user移除operation
-	case model.OpUnsub:
+	case protocol.OpUnsub:
 		if ops, err := strings.SplitInt32s(string(p.Body), ","); err == nil {
 			ch.UnWatch(ops...)
 		}
-		p.Op = model.OpUnsubReply
+		p.Op = protocol.OpUnsubReply
 	default:
 		// TODO ack ok&failed
 		if err := s.Receive(ctx, ch.Mid, p); err != nil {

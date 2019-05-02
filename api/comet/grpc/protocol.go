@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
@@ -85,10 +86,10 @@ var (
 
 var (
 	// 處理tcp資料的flag
-	ProtoReady = &Proto{Op: OpProtoReady}
+	ProtoReady = &Proto{Op: protocol.OpProtoReady}
 
 	// tcp close連線
-	ProtoFinish = &Proto{Op: OpProtoFinish}
+	ProtoFinish = &Proto{Op: protocol.OpProtoFinish}
 )
 
 // Proto內容寫至bytes
@@ -143,7 +144,7 @@ func (p *Proto) WriteTCP(wr *bufio.Writer) (err error) {
 		buf     []byte
 		packLen int32
 	)
-	if p.Op == OpRaw {
+	if p.Op == protocol.OpRaw {
 		_, err = wr.WriteRaw(p.Body)
 		return
 	}
