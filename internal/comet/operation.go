@@ -58,12 +58,6 @@ func (s *Server) RenewOnline(ctx context.Context, serverID string, rommCount map
 	return reply.AllRoomCount, nil
 }
 
-// Receive receive a message.
-func (s *Server) Receive(ctx context.Context, mid int64, p *pd.Proto) (err error) {
-	_, err = s.rpcClient.Receive(ctx, &pd.ReceiveReq{Mid: mid, Proto: p})
-	return
-}
-
 // 處理Proto相關邏輯
 func (s *Server) Operate(ctx context.Context, p *pd.Proto, ch *Channel, b *Bucket) error {
 	switch p.Op {
@@ -87,9 +81,6 @@ func (s *Server) Operate(ctx context.Context, p *pd.Proto, ch *Channel, b *Bucke
 		p.Op = protocol.OpUnsubReply
 	default:
 		// TODO ack ok&failed
-		if err := s.Receive(ctx, ch.Mid, p); err != nil {
-			log.Errorf("s.Report(%d) op:%d error(%v)", ch.Mid, p.Op, err)
-		}
 		p.Body = nil
 	}
 	return nil
