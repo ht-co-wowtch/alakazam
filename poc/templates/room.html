@@ -147,11 +147,10 @@
 <script>
     window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')
 
-    const rawHeaderLen = 14;
+    const rawHeaderLen = 10;
     const packetOffset = 0;
     const headerOffset = 4;
     const opOffset = 6;
-    const seqOffset = 10;
 
     var Client = function (options) {
         var MAX_CONNECT_TIMES = 10;
@@ -215,9 +214,8 @@
                 var packetLen = dataView.getInt32(packetOffset);
                 var headerLen = dataView.getInt16(headerOffset);
                 var op = dataView.getInt32(opOffset);
-                var seq = dataView.getInt32(seqOffset);
 
-                console.log("receiveHeader: packetLen=" + packetLen, "headerLen=" + headerLen, "op=" + op, "seq=" + seq);
+                console.log("receiveHeader: packetLen=" + packetLen, "headerLen=" + headerLen, "op=" + op);
 
                 switch (op) {
                     case 8:
@@ -239,7 +237,6 @@
                             var packetLen = dataView.getInt32(offset);
                             var headerLen = dataView.getInt16(offset + headerOffset);
                             var op = dataView.getInt32(offset + opOffset);
-                            var seq = dataView.getInt32(offset + seqOffset);
                             var msgBody = textDecoder.decode(data.slice(offset + headerLen, offset + packetLen));
                             // callback
                             messageReceived(msgBody);
@@ -267,7 +264,6 @@
                 headerView.setInt32(packetOffset, rawHeaderLen);
                 headerView.setInt16(headerOffset, rawHeaderLen);
                 headerView.setInt32(opOffset, 2);
-                headerView.setInt32(seqOffset, 1);
                 ws.send(headerBuf);
                 console.log("send: heartbeat");
 
@@ -287,7 +283,6 @@
                 headerView.setInt32(packetOffset, rawHeaderLen + bodyBuf.byteLength);
                 headerView.setInt16(headerOffset, rawHeaderLen);
                 headerView.setInt32(opOffset, 7);
-                headerView.setInt32(seqOffset, 1);
                 console.log(token)
                 ws.send(mergeArrayBuffer(headerBuf, bodyBuf));
             }

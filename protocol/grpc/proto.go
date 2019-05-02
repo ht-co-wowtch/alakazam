@@ -3,10 +3,10 @@ package grpc
 import (
 	"errors"
 	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 )
 
 const (
@@ -15,10 +15,10 @@ const (
 )
 
 //
-// |---------|--------|-----------|----------|---------|
-// | Package | Header | Operation | Sequence |   Body  |
-// |---------|--------|-----------|----------|---------|
-// | 4 bytes | 2 bytes|  4 bytes  |  4 bytes | ? bytes |
+// |---------|--------|-----------|---------|
+// | Package | Header | Operation |   Body  |
+// |---------|--------|-----------|---------|
+// | 4 bytes | 2 bytes|  4 bytes  | ? bytes |
 // |---------|--------|---------|-----------|----------|---------|
 // |					14 bytes					   |
 // |---------------------------------------------------|
@@ -26,7 +26,6 @@ const (
 // Package: 整個封包長度
 // Header: 整個封包表頭長度
 // Operation: 封包意義識別
-// Sequence: 類似Tcp 三項交握的seq(目前沒看到用途)
 // Body: 封包真正的內容
 // =============================================================
 // Package - Header = Body
@@ -41,14 +40,11 @@ const (
 	// Protocol 動作意義的byte長度
 	_opSize = 4
 
-	// Protocol seq的byte長度
-	_seqSize = 4
-
 	// 回覆心跳Body的byte長度
 	_heartSize = 4
 
 	// Protocol Header的總長度
-	_rawHeaderSize = _packSize + _headerSize + _opSize + _seqSize
+	_rawHeaderSize = _packSize + _headerSize + _opSize
 
 	_maxPackSize = MaxBodySize + int32(_rawHeaderSize)
 
@@ -62,11 +58,8 @@ const (
 	// Protocol動作意義的byte位置範圍
 	_opOffset = _headerOffset + _headerSize
 
-	// Protocol seq意義的byte位置範圍
-	_seqOffset = _opOffset + _opSize
-
 	// 回覆心跳Body的byte位置範圍
-	_heartOffset = _seqOffset + _seqSize
+	_heartOffset = _opOffset + _opSize
 )
 
 var (
@@ -94,7 +87,6 @@ func (p *Proto) WriteTo(b *bytes.Writer) {
 	binary.BigEndian.PutInt32(buf[_packOffset:], packLen)
 	binary.BigEndian.PutInt16(buf[_headerOffset:], int16(_rawHeaderSize))
 	binary.BigEndian.PutInt32(buf[_opOffset:], p.Op)
-	binary.BigEndian.PutInt32(buf[_seqOffset:], p.Seq)
 	if p.Body != nil {
 		b.Write(p.Body)
 	}
@@ -117,8 +109,7 @@ func (p *Proto) ReadWebsocket(ws *websocket.Conn) (err error) {
 	fmt.Println(buf)
 	packLen = binary.BigEndian.Int32(buf[_packOffset:_headerOffset])
 	headerLen = binary.BigEndian.Int16(buf[_headerOffset:_opOffset])
-	p.Op = binary.BigEndian.Int32(buf[_opOffset:_seqOffset])
-	p.Seq = binary.BigEndian.Int32(buf[_seqOffset:])
+	p.Op = binary.BigEndian.Int32(buf[_opOffset:])
 	if packLen > _maxPackSize {
 		return ErrProtoPackLen
 	}
@@ -150,7 +141,6 @@ func (p *Proto) WriteWebsocket(ws *websocket.Conn) (err error) {
 	binary.BigEndian.PutInt32(buf[_packOffset:], int32(packLen))
 	binary.BigEndian.PutInt16(buf[_headerOffset:], int16(_rawHeaderSize))
 	binary.BigEndian.PutInt32(buf[_opOffset:], p.Op)
-	binary.BigEndian.PutInt32(buf[_seqOffset:], p.Seq)
 	if p.Body != nil {
 		err = ws.WriteBody(p.Body)
 	}
@@ -175,7 +165,6 @@ func (p *Proto) WriteWebsocketHeart(wr *websocket.Conn, online int32) (err error
 	binary.BigEndian.PutInt32(buf[_packOffset:], int32(packLen))
 	binary.BigEndian.PutInt16(buf[_headerOffset:], int16(_rawHeaderSize))
 	binary.BigEndian.PutInt32(buf[_opOffset:], p.Op)
-	binary.BigEndian.PutInt32(buf[_seqOffset:], p.Seq)
 	// proto body
 	binary.BigEndian.PutInt32(buf[_heartOffset:], online)
 	return

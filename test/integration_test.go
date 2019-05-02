@@ -29,11 +29,8 @@ const (
 	// Protocol 動作意義的byte長度
 	_opSize = 4
 
-	// Protocol seq的byte長度
-	_seqSize = 4
-
 	// Protocol Header的總長度
-	_rawHeaderSize = _packSize + _headerSize + _opSize + _seqSize
+	_rawHeaderSize = _packSize + _headerSize + _opSize
 
 	// Protocol 長度的byte位置範圍
 	_packOffset = 0
@@ -44,9 +41,6 @@ const (
 
 	// Protocol動作意義的byte位置範圍
 	_opOffset = _headerOffset + _headerSize
-
-	// Protocol seq意義的byte位置範圍
-	_seqOffset = _opOffset + _opSize
 
 	host = "http://127.0.0.1:3111"
 )
@@ -208,7 +202,6 @@ func shouldBeCloseConnection(err error, ws *websocket.Conn, t *testing.T) {
 func givenHeartbeat() *grpc.Proto {
 	hbProto := new(grpc.Proto)
 	hbProto.Op = protocol.OpHeartbeat
-	hbProto.Seq = 1
 	hbProto.Body = nil
 	return hbProto
 }
@@ -252,7 +245,6 @@ func dialAuth(authToken *AuthToken) (auth auth, err error) {
 
 	proto := new(grpc.Proto)
 	proto.Op = protocol.OpAuth
-	proto.Seq = int32(0)
 	proto.Body, _ = json.Marshal(authToken)
 
 	fmt.Printf("send auth: %s\n", proto.Body)
@@ -283,7 +275,6 @@ func writeProto(wr *bufio.Writer, p *grpc.Proto) (err error) {
 	binary.BigEndian.PutInt32(buf[_packOffset:], packLen)
 	binary.BigEndian.PutInt16(buf[_headerOffset:], int16(_rawHeaderSize))
 	binary.BigEndian.PutInt32(buf[_opOffset:], p.Op)
-	binary.BigEndian.PutInt32(buf[_seqOffset:], p.Seq)
 	if p.Body != nil {
 		_, err = wr.Write(p.Body)
 	}
@@ -337,8 +328,7 @@ func read(rr *bufio.Reader, p *grpc.Proto) (packLen int32, headerLen int16, err 
 
 	packLen = binary.BigEndian.Int32(buf[_packOffset:_headerOffset])
 	headerLen = binary.BigEndian.Int16(buf[_headerOffset:_opOffset])
-	p.Op = binary.BigEndian.Int32(buf[_opOffset:_seqOffset])
-	p.Seq = binary.BigEndian.Int32(buf[_seqOffset:])
+	p.Op = binary.BigEndian.Int32(buf[_opOffset:])
 	return
 }
 
