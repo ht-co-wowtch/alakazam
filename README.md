@@ -28,4 +28,6 @@ tag|說明|
 ---|----|
 v0.1.0|config改為yml
 v0.1.1|移除Discovery
+v0.1.2|module更名
+v0.1.3|module移除沒用到的package
 

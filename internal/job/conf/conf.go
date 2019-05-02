@@ -6,10 +6,7 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	"io/ioutil"
-	"os"
 	"time"
-
-	"github.com/bilibili/discovery/naming"
 )
 
 var (
@@ -22,11 +19,9 @@ var (
 
 // Config is job config.
 type Config struct {
-	Env       *Env
-	Kafka     *Kafka
-	Discovery *naming.Config
-	Comet     *Comet
-	Room      *Room
+	Kafka *Kafka
+	Comet *Comet
+	Room  *Room
 }
 
 // 房間消息聚合
@@ -60,15 +55,6 @@ type Kafka struct {
 	Brokers []string
 }
 
-// Env is env config.
-type Env struct {
-	Region    string
-	Zone      string
-	DeployEnv string
-	Host      string
-}
-
-
 func init() {
 	flag.StringVar(&confPath, "c", "job-example.yml", "default config path")
 }
@@ -91,21 +77,7 @@ func Init() (err error) {
 
 // 載入config
 func load() *Config {
-	host, _ := os.Hostname()
 	return &Config{
-		Env: &Env{
-			Region:    "sh",
-			Zone:      "sh001",
-			DeployEnv: "dev",
-			Host:      host,
-		},
-		Discovery: &naming.Config{
-			Nodes:  []string{":7171"},
-			Region: "sh",
-			Zone:   "sh001",
-			Env:    "dev",
-			Host:   host,
-		},
 		Kafka: &Kafka{
 			Topic:   viper.GetString("kafka.topic"),
 			Group:   viper.GetString("kafka.group"),
