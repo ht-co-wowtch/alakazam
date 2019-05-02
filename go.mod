@@ -2,7 +2,6 @@ module gitlab.com/jetfueltw/cpw/alakazam
 
 require (
 	github.com/Shopify/sarama v1.22.1 // indirect
-	github.com/Terry-Mao/goim v0.0.0-20190424061838-af040a2647fa
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
 	github.com/gin-contrib/sse v0.0.0-20190301062529-5545eab6dad3 // indirect
 	github.com/gin-gonic/gin v1.3.0
@@ -18,4 +17,5 @@ require (
 	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
 	google.golang.org/grpc v1.16.0
 	gopkg.in/Shopify/sarama.v1 v1.19.0
+	gopkg.in/go-playground/validator.v8 v8.18.2 // indirect
 )
