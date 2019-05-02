@@ -18,7 +18,7 @@ type Channel struct {
 	Room *Room
 
 	// 讀寫異步的grpc.Proto緩型Pool
-	CliProto Ring
+	protoRing Ring
 
 	// 透過此管道處理Job service 送過來的資料
 	signal chan *grpc.Proto
@@ -54,7 +54,7 @@ type Channel struct {
 // NewChannel new a channel.
 func NewChannel(cli, svr int) *Channel {
 	c := new(Channel)
-	c.CliProto.Init(cli)
+	c.protoRing.Init(cli)
 
 	// grpc接收資料的緩充量
 	c.signal = make(chan *grpc.Proto, svr)
