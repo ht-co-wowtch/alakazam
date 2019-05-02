@@ -11,7 +11,6 @@ require (
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/uuid v1.0.0
 	github.com/mattn/go-isatty v0.0.7 // indirect
-	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.3.0
 	github.com/zhenjl/cityhash v0.0.0-20131128155616-cdd6a94144ab

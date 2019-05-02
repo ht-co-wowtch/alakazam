@@ -2,11 +2,27 @@ package dao
 
 import (
 	"context"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
 	"testing"
+	"time"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
 )
+
+var d *Dao
+
+func TestMain(m *testing.M) {
+	if err := conf.Read("../../../cmd/logic/logic-example.yml"); err != nil {
+		panic(err)
+	}
+	d = &Dao{
+		c:           conf.Conf,
+		kafkaPub:    nil,
+		redis:       newRedis(conf.Conf.Redis),
+		redisExpire: int32(conf.Conf.Redis.Expire / time.Second),
+	}
+}
 
 func TestDaopingRedis(t *testing.T) {
 	err := d.pingRedis(context.Background())

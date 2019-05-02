@@ -2,11 +2,9 @@ package logic
 
 import (
 	"context"
-	"flag"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
 	"os"
 	"testing"
-
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
 )
 
 var (
@@ -14,11 +12,7 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	if err := flag.Set("conf", "../../cmd/logic/logic-example.toml"); err != nil {
-		panic(err)
-	}
-	flag.Parse()
-	if err := conf.Init(); err != nil {
+	if err := conf.Read("../../cmd/logic/logic-example.yml"); err != nil {
 		panic(err)
 	}
 	lg = New(conf.Conf)

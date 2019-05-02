@@ -116,20 +116,25 @@ func init() {
 }
 
 // init config.
-func Init() (err error) {
+func Init() (error) {
+	return Read(confPath)
+}
+
+func Read(path string) (err error) {
 	viper.SetConfigType("yaml")
-	b, err := ioutil.ReadFile(confPath)
+	var b []byte
+	b, err = ioutil.ReadFile(path)
 	if err != nil {
-		panic(err)
+		return
 	}
-	if err := viper.ReadConfig(bytes.NewBuffer(b)); err != nil {
-		panic(err)
+	if err = viper.ReadConfig(bytes.NewBuffer(b)); err != nil {
+		return
 	} else {
-		fmt.Println("Using config file:", confPath)
+		fmt.Println("Using config file:", path)
 	}
 	Conf = load()
 	if Conf.Heartbeat >= Conf.Redis.Expire.Nanoseconds() {
-		panic(fmt.Errorf("comet心跳不能比redis expire還大"))
+		return fmt.Errorf("comet心跳不能比redis expire還大")
 	}
 	return
 }

@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"golang.org/x/net/websocket"
 	"io"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 )
@@ -25,17 +26,11 @@ const (
 	// Protocol Header的byte長度
 	_headerSize = 2
 
-	// Protocol 版本號的byte長度
-	_verSize = 2
-
 	// Protocol 動作意義的byte長度
 	_opSize = 4
 
-	// Protocol seq的byte長度
-	_seqSize = 4
-
 	// Protocol Header的總長度
-	_rawHeaderSize = _packSize + _headerSize + _verSize + _opSize + _seqSize
+	_rawHeaderSize = _packSize + _headerSize + _opSize
 
 	// Protocol 長度的byte位置範圍
 	_packOffset = 0
@@ -44,14 +39,8 @@ const (
 	// Protocol 長度 - header長度 = Body長度
 	_headerOffset = _packOffset + _packSize
 
-	// Protocol版本號的byte位置範圍
-	_verOffset = _headerOffset + _headerSize
-
 	// Protocol動作意義的byte位置範圍
-	_opOffset = _verOffset + _verSize
-
-	// Protocol seq意義的byte位置範圍
-	_seqOffset = _opOffset + _opSize
+	_opOffset = _headerOffset + _headerSize
 
 	host = "http://127.0.0.1:3111"
 )
@@ -75,7 +64,7 @@ var (
 	httpClient *http.Client
 )
 
-func init() {
+func TestMain(m *testing.M) {
 	rand.Seed(time.Now().Unix())
 	authToken = &AuthToken{
 		0,
@@ -88,6 +77,7 @@ func init() {
 	httpClient = &http.Client{
 		Timeout: time.Second * 5,
 	}
+	os.Exit(m.Run())
 }
 
 func Test_auth(t *testing.T) {
@@ -212,7 +202,6 @@ func shouldBeCloseConnection(err error, ws *websocket.Conn, t *testing.T) {
 func givenHeartbeat() *grpc.Proto {
 	hbProto := new(grpc.Proto)
 	hbProto.Op = protocol.OpHeartbeat
-	hbProto.Seq = 1
 	hbProto.Body = nil
 	return hbProto
 }
@@ -255,9 +244,7 @@ func dialAuth(authToken *AuthToken) (auth auth, err error) {
 	rd := bufio.NewReader(conn)
 
 	proto := new(grpc.Proto)
-	proto.Ver = 1
 	proto.Op = protocol.OpAuth
-	proto.Seq = int32(0)
 	proto.Body, _ = json.Marshal(authToken)
 
 	fmt.Printf("send auth: %s\n", proto.Body)
@@ -287,9 +274,7 @@ func writeProto(wr *bufio.Writer, p *grpc.Proto) (err error) {
 	}
 	binary.BigEndian.PutInt32(buf[_packOffset:], packLen)
 	binary.BigEndian.PutInt16(buf[_headerOffset:], int16(_rawHeaderSize))
-	binary.BigEndian.PutInt16(buf[_verOffset:], int16(p.Ver))
 	binary.BigEndian.PutInt32(buf[_opOffset:], p.Op)
-	binary.BigEndian.PutInt32(buf[_seqOffset:], p.Seq)
 	if p.Body != nil {
 		_, err = wr.Write(p.Body)
 	}
@@ -342,10 +327,8 @@ func read(rr *bufio.Reader, p *grpc.Proto) (packLen int32, headerLen int16, err 
 	}
 
 	packLen = binary.BigEndian.Int32(buf[_packOffset:_headerOffset])
-	headerLen = binary.BigEndian.Int16(buf[_headerOffset:_verOffset])
-	p.Ver = int32(binary.BigEndian.Int16(buf[_verOffset:_opOffset]))
-	p.Op = binary.BigEndian.Int32(buf[_opOffset:_seqOffset])
-	p.Seq = binary.BigEndian.Int32(buf[_seqOffset:])
+	headerLen = binary.BigEndian.Int16(buf[_headerOffset:_opOffset])
+	p.Op = binary.BigEndian.Int32(buf[_opOffset:])
 	return
 }
 

@@ -47,11 +47,6 @@ func (s *server) Ping(ctx context.Context, req *pb.PingReq) (*pb.PingReply, erro
 	return &pb.PingReply{}, nil
 }
 
-// Close Service
-func (s *server) Close(ctx context.Context, req *pb.CloseReq) (*pb.CloseReply, error) {
-	return &pb.CloseReply{}, nil
-}
-
 // 某client要做連線
 func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectReply, error) {
 	mid, key, room, accepts, hb, err := s.srv.Connect(ctx, req.Server, req.Cookie, req.Token)
@@ -85,17 +80,4 @@ func (s *server) RenewOnline(ctx context.Context, req *pb.OnlineReq) (*pb.Online
 		return &pb.OnlineReply{}, err
 	}
 	return &pb.OnlineReply{AllRoomCount: allRoomCount}, nil
-}
-
-//
-func (s *server) Receive(ctx context.Context, req *pb.ReceiveReq) (*pb.ReceiveReply, error) {
-	if err := s.srv.Receive(ctx, req.Mid, req.Proto); err != nil {
-		return &pb.ReceiveReply{}, err
-	}
-	return &pb.ReceiveReply{}, nil
-}
-
-//
-func (s *server) Nodes(ctx context.Context, req *pb.NodesReq) (*pb.NodesReply, error) {
-	return &pb.NodesReply{}, nil
 }

@@ -1,5 +1,8 @@
 package main
 
+/*
+這個 main 只開啟 HTTPServer
+*/
 import (
 	"flag"
 	"os"
@@ -7,10 +10,10 @@ import (
 	"syscall"
 
 	//"github.com/Terry-Mao/goim/internal/logic"
-	"github.com/Terry-Mao/goim/internal/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
 	//"github.com/Terry-Mao/goim/internal/logic/grpc"
-	"github.com/Terry-Mao/goim/internal/logic/http"
 	log "github.com/golang/glog"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/http"
 )
 
 func main() {

@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package grpc;
 
-import "comet.proto";
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 message PushMsg {
@@ -18,12 +17,6 @@ message PushMsg {
     string room = 5;
     repeated string keys = 6;
     bytes msg = 7;
-}
-
-message CloseReply {
-}
-
-message CloseReq {
 }
 
 message PingReply {
@@ -77,42 +70,9 @@ message OnlineReply {
     map<string, int32> allRoomCount = 1;
 }
 
-message ReceiveReq {
-    int64 mid = 1;
-    Proto proto = 2;
-}
-
-message ReceiveReply {
-}
-
-message NodesReq {
-	string platform = 1;
-	string clientIP = 2;
-}
-
-message NodesReply {
-	string domain = 1 [(gogoproto.jsontag) = "domain"];
-	int32 tcpPort = 2 [(gogoproto.jsontag) = "tcp_port"];
-	int32 wsPort = 3 [(gogoproto.jsontag) = "ws_port"];
-	int32 wssPort = 4 [(gogoproto.jsontag) = "wss_port"];
-	int32 heartbeat = 5 [(gogoproto.jsontag) = "heartbeat"];
-	repeated string nodes = 6 [(gogoproto.jsontag) = "nodes"];
-	Backoff backoff = 7 [(gogoproto.jsontag) = "backoff"];
-	int32 heartbeatMax = 8 [(gogoproto.jsontag) = "heartbeat_max"];
-}
-
-message Backoff {
-	int32	MaxDelay = 1 [(gogoproto.jsontag) = "max_delay"];
-	int32	BaseDelay = 2 [(gogoproto.jsontag) = "base_delay"];
-	float	Factor = 3 [(gogoproto.jsontag) = "factor"];
-	float	Jitter = 4 [(gogoproto.jsontag) = "jitter"];
-}
-
 service Logic {
     // Ping Service 
     rpc Ping(PingReq) returns(PingReply);
-    // Close Service 
-    rpc Close(CloseReq) returns(CloseReply);
     // Connect
     rpc Connect(ConnectReq) returns (ConnectReply);
     // Disconnect
@@ -121,8 +81,4 @@ service Logic {
     rpc Heartbeat(HeartbeatReq) returns (HeartbeatReply);
     // RenewOnline
     rpc RenewOnline(OnlineReq) returns (OnlineReply);
-    // Receive
-    rpc Receive(ReceiveReq) returns (ReceiveReply);
-	//ServerList
-	rpc Nodes(NodesReq) returns (NodesReply);
 }
