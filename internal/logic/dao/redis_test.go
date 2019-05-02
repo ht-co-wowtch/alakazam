@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Terry-Mao/goim/internal/logic/model"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
 	"github.com/stretchr/testify/assert"
 )
 

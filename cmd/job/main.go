@@ -6,8 +6,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Terry-Mao/goim/internal/job"
-	"github.com/Terry-Mao/goim/internal/job/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/job"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/job/conf"
 	log "github.com/golang/glog"
 )
 

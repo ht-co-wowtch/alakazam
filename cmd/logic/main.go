@@ -6,10 +6,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Terry-Mao/goim/internal/logic"
-	"github.com/Terry-Mao/goim/internal/logic/conf"
-	"github.com/Terry-Mao/goim/internal/logic/grpc"
-	"github.com/Terry-Mao/goim/internal/logic/http"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/http"
 	log "github.com/golang/glog"
 )
 

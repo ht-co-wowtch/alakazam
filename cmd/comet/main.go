@@ -9,10 +9,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Terry-Mao/goim/internal/comet"
-	"github.com/Terry-Mao/goim/internal/comet/conf"
-	"github.com/Terry-Mao/goim/internal/comet/grpc"
 	log "github.com/golang/glog"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet/grpc"
 )
 
 func main() {

@@ -5,9 +5,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/Terry-Mao/goim/internal/logic/conf"
-	"github.com/Terry-Mao/goim/internal/logic/dao"
-	"github.com/Terry-Mao/goim/internal/logic/model"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/dao"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
 	log "github.com/golang/glog"
 )
 

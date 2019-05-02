@@ -3,8 +3,8 @@ package comet
 import (
 	"sync"
 
-	"github.com/Terry-Mao/goim/api/comet/grpc"
-	"github.com/Terry-Mao/goim/pkg/bufio"
+	"gitlab.com/jetfueltw/cpw/alakazam/api/comet/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 )
 
 // 用於推送消息給user，可以把這個識別user在聊天室內的地址

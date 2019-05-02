@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	logic "github.com/Terry-Mao/goim/api/logic/grpc"
-	"github.com/Terry-Mao/goim/internal/comet/conf"
+	logic "gitlab.com/jetfueltw/cpw/alakazam/api/logic/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet/conf"
 	"github.com/zhenjl/cityhash"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
