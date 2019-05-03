@@ -2,8 +2,6 @@ package logic
 
 import (
 	"context"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
-
 	log "github.com/golang/glog"
 )
 
@@ -63,8 +61,8 @@ func (l *Logic) PushMids(c context.Context, mids []int64, msg []byte) (err error
 }
 
 // 單一房間推送
-func (l *Logic) PushRoom(c context.Context, typ, room string, msg []byte) (err error) {
-	return l.dao.BroadcastRoomMsg(c, model.EncodeRoomKey(typ, room), msg)
+func (l *Logic) PushRoom(c context.Context, room string, msg []byte) (err error) {
+	return l.dao.BroadcastRoomMsg(c, room, msg)
 }
 
 // 所有房間推送但有限制operation

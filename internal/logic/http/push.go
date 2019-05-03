@@ -31,7 +31,6 @@ func (s *Server) pushKeys(c *gin.Context) {
 // 以user id來推送訊息
 func (s *Server) pushMids(c *gin.Context) {
 	var arg struct {
-		Op   int32   `form:"operation"`
 		Mids []int64 `form:"mids"`
 	}
 	if err := c.BindQuery(&arg); err != nil {
@@ -53,7 +52,6 @@ func (s *Server) pushMids(c *gin.Context) {
 // 以room id來推送訊息
 func (s *Server) pushRoom(c *gin.Context) {
 	var arg struct {
-		Type string `form:"type" binding:"required"`
 		Room string `form:"room" binding:"required"`
 	}
 	if err := c.BindQuery(&arg); err != nil {
@@ -65,7 +63,7 @@ func (s *Server) pushRoom(c *gin.Context) {
 		errors(c, RequestErr, err.Error())
 		return
 	}
-	if err = s.logic.PushRoom(c, arg.Type, arg.Room, msg); err != nil {
+	if err = s.logic.PushRoom(c, arg.Room, msg); err != nil {
 		errors(c, ServerErr, err.Error())
 		return
 	}

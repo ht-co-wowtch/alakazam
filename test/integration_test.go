@@ -68,7 +68,7 @@ func TestMain(m *testing.M) {
 	authToken = &AuthToken{
 		0,
 		"",
-		"chat://1000",
+		"1000",
 		"web",
 	}
 
@@ -136,7 +136,7 @@ func Test_push_room(t *testing.T) {
 
 func Test_push_broadcast(t *testing.T) {
 	other := *authToken
-	other.RoomID = "chat://1001"
+	other.RoomID = "1001"
 	pushTest(t, &other, func() ([]byte, error) {
 		return pushBroadcast("測試")
 	}, func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto) {
@@ -335,7 +335,7 @@ func pushUser(id int64, message string) ([]byte, error) {
 }
 
 func pushRoom(roomId int, message string) ([]byte, error) {
-	return push(fmt.Sprintf(host+"/goim/push/room?type=chat&room=%d", roomId), bytes.NewBufferString(message))
+	return push(fmt.Sprintf(host+"/goim/push/room?room=%d", roomId), bytes.NewBufferString(message))
 }
 
 func pushBroadcast(message string) ([]byte, error) {
