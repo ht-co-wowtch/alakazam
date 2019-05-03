@@ -29,8 +29,6 @@ type room struct {
 
 	Title string `form:"title" binding:"required"`
 
-	Type string `form:"type" binding:"required"`
-
 	Introduction string `form:"text" binding:"required"`
 }
 
@@ -43,7 +41,6 @@ func init() {
 	rooms = append(rooms, room{
 		Title:        "聊天測試區",
 		Id:           "1000",
-		Type:         "chat",
 		Introduction: "聊天測試區",
 	})
 
@@ -65,31 +62,25 @@ func main() {
 	user.GET("/", indexForm)
 	user.GET("/add", addForm)
 	user.POST("/add", add)
-	user.GET("/room/:id/:type", roomForm)
-	user.POST("/push/:id/:type/", push)
+	user.GET("/room/:id", roomForm)
+	user.POST("/push/:id", push)
 	user.POST("/pushAll", pushAll)
 	user.GET("/push/:type", pushForm)
-	user.GET("/count/:type/:id", count)
+	user.GET("/count/:id", count)
 
 	g.Run(":2222")
 }
 
 func pushForm(c *gin.Context) {
 	id := []string{}
-	t := []string{}
 
 	for _, v := range rooms {
 		id = append(id, v.Id)
 	}
 
-	for _, v := range rooms {
-		t = append(t, v.Type)
-	}
-
 	c.HTML(http.StatusOK, "push.html", gin.H{
 		"push": c.Param("type"),
 		"id":   id,
-		"type": t,
 		"host": host,
 		"port": port,
 	})
@@ -100,8 +91,7 @@ func push(c *gin.Context) {
 	if u, ok := users[i]; ok {
 		text := fmt.Sprintf(`{"name":"%s", "content":"%s"}`, u.name, c.PostForm("text"))
 
-		url := fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?type=%s&room=%s",
-			c.Param("type"),
+		url := fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?room=%s",
 			c.Param("id"),
 		)
 
@@ -124,21 +114,9 @@ func pushAll(c *gin.Context) {
 	case "id":
 		for _, v := range rooms {
 			if v.Id == key {
-				url = []string{fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?type=%s&room=%s",
-					v.Type,
+				url = []string{fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?room=%s",
 					v.Id,
 				)}
-			}
-		}
-	case "type":
-		for _, v := range rooms {
-			if v.Type == key {
-				u := fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?type=%s&room=%s",
-					v.Type,
-					v.Id,
-				)
-
-				url = append(url, u)
 			}
 		}
 	}
@@ -166,7 +144,6 @@ func roomForm(c *gin.Context) {
 		fmt.Println(c.Request.Host)
 		c.HTML(http.StatusOK, "room.html", gin.H{
 			"id":     c.Param("id"),
-			"type":   c.Param("type"),
 			"name":   u.name,
 			"host":   host,
 			"port":   port,
@@ -250,7 +227,7 @@ type rco struct {
 }
 
 func count(c *gin.Context) {
-	r, err := http.DefaultClient.Get(fmt.Sprintf("http://127.0.0.1:3111/goim/online/top?type=%s&limit=1000", c.Param("type")))
+	r, err := http.DefaultClient.Get(fmt.Sprintf("http://127.0.0.1:3111/goim/online/top?limit=%d", c.Param("id")))
 
 	if err == nil {
 		defer r.Body.Close()

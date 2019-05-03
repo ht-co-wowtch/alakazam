@@ -38,7 +38,6 @@
                         <ul class="dropdown-menu">
                             <li><a href="/push/all">全部房間</a></li>
                             <li><a href="/push/id">單一房間</a></li>
-                            <li><a href="/push/type">房間Type</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -66,11 +65,9 @@
             <dl class="dl-horizontal">
                 <dt>房間id:</dt>
                 <dd>{{ .Id }}</dd>
-                <dt>房間分類:</dt>
-                <dd>{{ .Type }}</dd>
             </dl>
             <p>
-                <a class="btn btn-primary" href="/room/{{ .Id }}/{{ .Type }}" role="button">進入房間</a>
+                <a class="btn btn-primary" href="/room/{{ .Id }}" role="button">進入房間</a>
             </p>
         </div>
         {{ end }}

@@ -93,7 +93,6 @@
                         <ul class="dropdown-menu">
                             <li><a href="/push/all">全部房間</a></li>
                             <li><a href="/push/id">單一房間</a></li>
-                            <li><a href="/push/type">房間Type</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -105,8 +104,6 @@
         <dl class="dl-horizontal">
             <dt>房間id:</dt>
             <dd>{{ .id }}</dd>
-            <dt>房間分類:</dt>
-            <dd>{{ .type }}</dd>
             <dt>你的名稱:</dt>
             <dd>{{ .name }}</dd>
         </dl>
@@ -264,7 +261,7 @@
                 ws.send(headerBuf);
                 console.log("send: heartbeat");
 
-                $.get('http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/count/{{ .type }}/{{ .id }}', function (data) {
+                $.get('http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/count/{{ .id }}', function (data) {
                 }).success(function (data) {
                     document.getElementById("count").innerHTML = "<color style='color:red'>" + data.count + "<color>";
                 }).error(function () {
@@ -273,7 +270,7 @@
             }
 
             function auth() {
-                var token = '{"mid":{{ .userId }}, "room_id":"{{ .type }}://{{ .id }}", "platform":"web"}'
+                var token = '{"mid":{{ .userId }}, "room_id":"{{ .id }}", "platform":"web"}'
                 var headerBuf = new ArrayBuffer(rawHeaderLen);
                 var headerView = new DataView(headerBuf, 0);
                 var bodyBuf = textEncoder.encode(token);
@@ -313,7 +310,7 @@
 
     function send() {
         var text = document.getElementById("btn-input").value
-        $.post('http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/push/{{ .id }}/{{ .type }}', {text: text}, function (data) {
+        $.post('http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/push/{{ .id }}', {text: text}, function (data) {
         })
             .error(function () {
                 alert("發送失敗")
