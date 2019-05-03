@@ -126,10 +126,10 @@ func (b *Bucket) Put(rid string, ch *Channel) (err error) {
 	)
 	b.cLock.Lock()
 
-	if dch := b.chs[ch.Id]; dch != nil {
+	if dch := b.chs[ch.Key]; dch != nil {
 		dch.Close()
 	}
-	b.chs[ch.Id] = ch
+	b.chs[ch.Key] = ch
 	if rid != "" {
 		if room, ok = b.rooms[rid]; !ok {
 			room = NewRoom(rid)
@@ -155,10 +155,10 @@ func (b *Bucket) Del(dch *Channel) {
 		room *Room
 	)
 	b.cLock.Lock()
-	if ch, ok = b.chs[dch.Id]; ok {
+	if ch, ok = b.chs[dch.Key]; ok {
 		room = ch.Room
 		if ch == dch {
-			delete(b.chs, ch.Id)
+			delete(b.chs, ch.Key)
 		}
 	}
 	b.cLock.Unlock()

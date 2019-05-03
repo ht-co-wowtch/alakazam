@@ -16,7 +16,7 @@ message Proto {
 message Empty{}
 
 message PushMsgReq {
-    repeated string ids = 1;
+    repeated string keys = 1;
     Proto proto = 2;
 }
 
@@ -49,7 +49,7 @@ service Comet {
     rpc Ping(Empty) returns(Empty); 
     // Close Service 
     rpc Close(Empty) returns(Empty); 
-    //PushMsg push by id
+    //PushMsg push by key or mid
     rpc PushMsg(PushMsgReq) returns (PushMsgReply);
     // Broadcast send to every enrity
     rpc Broadcast(BroadcastReq) returns (BroadcastReply);

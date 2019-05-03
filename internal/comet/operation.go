@@ -21,23 +21,23 @@ func (s *Server) Connect(c context.Context, p *pd.Proto, cookie string) (key, ri
 	if err != nil {
 		return
 	}
-	return reply.Id, reply.RoomID, time.Duration(reply.Heartbeat), nil
+	return reply.Key, reply.RoomID, time.Duration(reply.Heartbeat), nil
 }
 
 //  client連線中斷，告知logic service需清理此人的連線資料
-func (s *Server) Disconnect(c context.Context, id string) (err error) {
+func (s *Server) Disconnect(c context.Context, key string) (err error) {
 	_, err = s.rpcClient.Disconnect(context.Background(), &pd.DisconnectReq{
 		Server: s.serverID,
-		Id:     id,
+		Key:    key,
 	})
 	return
 }
 
 // 告知logic service要刷新某人的在線狀態(session 過期時間)
-func (s *Server) Heartbeat(ctx context.Context, id string) (err error) {
+func (s *Server) Heartbeat(ctx context.Context, key string) (err error) {
 	_, err = s.rpcClient.Heartbeat(ctx, &pd.HeartbeatReq{
 		Server: s.serverID,
-		Id:     id,
+		Key:    key,
 	})
 	return
 }

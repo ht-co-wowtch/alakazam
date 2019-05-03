@@ -15,7 +15,7 @@ func (j *Job) push(ctx context.Context, pushMsg *grpc.PushMsg) (err error) {
 	switch pushMsg.Type {
 	// 單一人推送
 	case grpc.PushMsg_PUSH:
-		err = j.pushKeys(pushMsg.Server, pushMsg.Ids, pushMsg.Msg)
+		err = j.pushKeys(pushMsg.Server, pushMsg.Keys, pushMsg.Msg)
 	// 單一房間推送
 	case grpc.PushMsg_ROOM:
 		err = j.getRoom(pushMsg.Room).Push(pushMsg.Msg)
@@ -40,7 +40,7 @@ func (j *Job) pushKeys(serverID string, subKeys []string, body []byte) (err erro
 	p.Body = buf.Buffer()
 	p.Op = protocol.OpRaw
 	var args = grpc.PushMsgReq{
-		Ids:   subKeys,
+		Keys:  subKeys,
 		Proto: p,
 	}
 
