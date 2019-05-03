@@ -91,7 +91,7 @@ func push(c *gin.Context) {
 	if u, ok := users[i]; ok {
 		text := fmt.Sprintf(`{"name":"%s", "content":"%s"}`, u.name, c.PostForm("text"))
 
-		url := fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?room=%s",
+		url := fmt.Sprintf("http://127.0.0.1:3111/push/room?room=%s",
 			c.Param("id"),
 		)
 
@@ -110,11 +110,11 @@ func pushAll(c *gin.Context) {
 
 	switch c.PostForm("push") {
 	case "all":
-		url = []string{"http://127.0.0.1:3111/goim/push/all"}
+		url = []string{"http://127.0.0.1:3111/push/all"}
 	case "id":
 		for _, v := range rooms {
 			if v.Id == key {
-				url = []string{fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?room=%s",
+				url = []string{fmt.Sprintf("http://127.0.0.1:3111/push/room?room=%s",
 					v.Id,
 				)}
 			}
@@ -227,7 +227,7 @@ type rco struct {
 }
 
 func count(c *gin.Context) {
-	r, err := http.DefaultClient.Get(fmt.Sprintf("http://127.0.0.1:3111/goim/online/top?limit=%d", c.Param("id")))
+	r, err := http.DefaultClient.Get(fmt.Sprintf("http://127.0.0.1:3111/online/top?limit=%d", c.Param("id")))
 
 	if err == nil {
 		defer r.Body.Close()
