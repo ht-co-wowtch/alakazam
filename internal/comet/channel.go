@@ -49,12 +49,12 @@ type Channel struct {
 }
 
 // NewChannel new a channel.
-func NewChannel(cli, svr int) *Channel {
+func NewChannel(protoSize, revBuffer int) *Channel {
 	c := new(Channel)
-	c.protoRing.Init(cli)
+	c.protoRing.Init(protoSize)
 
 	// grpc接收資料的緩充量
-	c.signal = make(chan *grpc.Proto, svr)
+	c.signal = make(chan *grpc.Proto, revBuffer)
 	return c
 }
 

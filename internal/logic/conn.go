@@ -8,7 +8,6 @@ import (
 
 	log "github.com/golang/glog"
 	"github.com/google/uuid"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 )
 
 // redis紀錄某人連線資訊
@@ -87,10 +86,4 @@ func (l *Logic) RenewOnline(c context.Context, server string, roomCount map[stri
 		return nil, err
 	}
 	return l.roomCount, nil
-}
-
-//
-func (l *Logic) Receive(c context.Context, mid int64, proto *grpc.Proto) (err error) {
-	log.Infof("receive mid:%d message:%+v", mid, proto)
-	return
 }

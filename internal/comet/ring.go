@@ -23,13 +23,6 @@ type Ring struct {
 	data []grpc.Proto
 }
 
-// NewRing new a ring buffer.
-func NewRing(num int) *Ring {
-	r := new(Ring)
-	r.init(uint64(num))
-	return r
-}
-
 // Init init ring.
 func (r *Ring) Init(num int) {
 	r.init(uint64(num))

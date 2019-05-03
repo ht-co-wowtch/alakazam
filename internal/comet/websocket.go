@@ -2,6 +2,7 @@ package comet
 
 import (
 	"context"
+	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"io"
 	"net"
@@ -126,7 +127,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 		rb = rp.Get()
 
 		// 此tcp連線的Channel
-		ch = NewChannel(s.c.Protocol.CliProto, s.c.Protocol.SvrProto)
+		ch = NewChannel(s.c.Protocol.ProtoSize, s.c.Protocol.RevBuffer)
 
 		// Reader byte
 		rr = &ch.Reader
@@ -229,7 +230,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 	go s.dispatchWebsocket(ws, wp, wb, ch)
 
 	serverHeartbeat := s.RandServerHearbeat()
-
+	fmt.Println(serverHeartbeat)
 	for {
 		if p, err = ch.protoRing.Set(); err != nil {
 			break

@@ -107,11 +107,11 @@ type Protocol struct {
 	TimerSize int
 
 	// 每一個連線開grpc接收資料的緩充量，當寫的速度大於讀的速度這時會阻塞，透過調大此值可以有更多緩衝避免阻塞
-	SvrProto int
+	RevBuffer int
 
 	// 每一個連線開異步Proto結構緩型Pool的大小，跟client透過tcp or websocket傳遞資料做消費速度有關聯
 	// 由於寫的速度有可能大於讀的速度，這時會自行close此連線，透過調大此值可以有更多緩衝close
-	CliProto int
+	ProtoSize int
 
 	// 一開始tcp連線後等待多久沒有請求連至某房間，連線就直接close
 	//
@@ -192,8 +192,8 @@ func load() *Config {
 		Protocol: &Protocol{
 			Timer:            viper.GetInt("protocol.timer"),
 			TimerSize:        viper.GetInt("protocol.timerSize"),
-			CliProto:         viper.GetInt("protocol.clientProto"),
-			SvrProto:         viper.GetInt("protocol.receiveProtoBuffer"),
+			ProtoSize:        viper.GetInt("protocol.clientProto"),
+			RevBuffer:        viper.GetInt("protocol.receiveProtoBuffer"),
 			HandshakeTimeout: time.Second * time.Duration(viper.GetInt("protocol.handshakeTimeout")),
 		},
 		Bucket: &Bucket{
