@@ -15,11 +15,11 @@ import (
 // 1. server name
 // 2. user key
 // 3. operation
-func (d *Dao) PushMsg(c context.Context, server string, keys []string, msg []byte) (err error) {
+func (d *Dao) PushMsg(c context.Context, server string, ids []string, msg []byte) (err error) {
 	pushMsg := &grpc.PushMsg{
 		Type:   grpc.PushMsg_PUSH,
 		Server: server,
-		Keys:   keys,
+		Ids:    ids,
 		Msg:    msg,
 	}
 	b, err := proto.Marshal(pushMsg)
@@ -29,7 +29,7 @@ func (d *Dao) PushMsg(c context.Context, server string, keys []string, msg []byt
 
 	// 推送給kafka
 	m := &sarama.ProducerMessage{
-		Key:   sarama.StringEncoder(keys[0]),
+		Key:   sarama.StringEncoder(ids[0]),
 		Topic: d.c.Kafka.Topic,
 		Value: sarama.ByteEncoder(b),
 	}

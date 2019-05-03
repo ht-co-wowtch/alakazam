@@ -10,9 +10,7 @@ import (
 // 用於推送消息給user，可以把這個識別user在聊天室內的地址
 // 紀錄了當初連線至聊天室時所給的參數值
 // 1. 身處在哪一個聊天室
-// 2. user mid (user id)
-// 3. user key
-// 4. user operation
+// 2. user id
 type Channel struct {
 	// 該user進入的房間
 	Room *Room
@@ -35,8 +33,8 @@ type Channel struct {
 	// 雙向鏈結串列 llink
 	Prev *Channel
 
-	// user在logic service的key
-	Key string
+	// user在logic service的id
+	Id string
 
 	// user ip
 	IP string

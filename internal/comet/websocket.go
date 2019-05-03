@@ -150,7 +150,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 	trd = tr.Add(s.c.Protocol.HandshakeTimeout, func() {
 		_ = conn.SetDeadline(time.Now().Add(time.Millisecond * 100))
 		_ = conn.Close()
-		log.Errorf("key: %s remoteIP: %s step: %d ws handshake timeout", ch.Key, conn.RemoteAddr().String(), step)
+		log.Errorf("Id: %s remoteIP: %s step: %d ws handshake timeout", ch.Id, conn.RemoteAddr().String(), step)
 	})
 
 	ch.IP, _, _ = net.SplitHostPort(conn.RemoteAddr().String())
@@ -195,9 +195,9 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 
 	// websocket連線等待read做auth
 	if p, err = ch.protoRing.Set(); err == nil {
-		if ch.Key, rid, hb, err = s.authWebsocket(ctx, ws, p, req.Header.Get("Cookie")); err == nil {
+		if ch.Id, rid, hb, err = s.authWebsocket(ctx, ws, p, req.Header.Get("Cookie")); err == nil {
 			// 將user Channel放到某一個Bucket內做保存
-			b = s.Bucket(ch.Key)
+			b = s.Bucket(ch.Id)
 			err = b.Put(rid, ch)
 		}
 	}
@@ -214,13 +214,13 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 		wp.Put(wb)
 		tr.Del(trd)
 		if err != io.EOF && err != websocket.ErrMessageClose {
-			log.Errorf("key: %s remoteIP: %s step: %d ws handshake failed error(%v)", ch.Key, conn.RemoteAddr().String(), step, err)
+			log.Errorf("key: %s remoteIP: %s step: %d ws handshake failed error(%v)", ch.Id, conn.RemoteAddr().String(), step, err)
 		}
 		return
 	}
 
 	// 進入某房間成功後重置心跳任務
-	trd.Key = ch.Key
+	trd.Id = ch.Id
 	tr.Set(trd, hb)
 
 	step = 5
@@ -250,7 +250,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 			p.Op = protocol.OpHeartbeatReply
 			p.Body = nil
 			if now := time.Now(); now.Sub(lastHB) > serverHeartbeat {
-				if err1 := s.Heartbeat(ctx, ch.Key); err1 == nil {
+				if err1 := s.Heartbeat(ctx, ch.Id); err1 == nil {
 					lastHB = now
 				}
 			}
@@ -274,15 +274,15 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 	// 4. 關閉連線
 	// 5. 通知logic某人下線了
 	if err != nil && err != io.EOF && err != websocket.ErrMessageClose && !strings.Contains(err.Error(), "closed") {
-		log.Errorf("key: %s server ws failed error(%v)", ch.Key, err)
+		log.Errorf("key: %s server ws failed error(%v)", ch.Id, err)
 	}
 	b.Del(ch)
 	tr.Del(trd)
 	ws.Close()
 	ch.Close()
 	rp.Put(rb)
-	if err = s.Disconnect(ctx, ch.Key); err != nil {
-		log.Errorf("key: %s operator do disconnect error(%v)", ch.Key, err)
+	if err = s.Disconnect(ctx, ch.Id); err != nil {
+		log.Errorf("key: %s operator do disconnect error(%v)", ch.Id, err)
 	}
 }
 
@@ -344,7 +344,7 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 	// 2. 回收寫的Buffter
 failed:
 	if err != nil && err != io.EOF && err != websocket.ErrMessageClose {
-		log.Errorf("key: %s dispatch ws error(%v)", ch.Key, err)
+		log.Errorf("key: %s dispatch ws error(%v)", ch.Id, err)
 	}
 	ws.Close()
 	wp.Put(wb)

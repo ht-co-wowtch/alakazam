@@ -176,7 +176,7 @@ func (c *Comet) process(pushChan chan *comet.PushMsgReq, roomChan chan *comet.Br
 		// 單人推送
 		case pushArg := <-pushChan:
 			_, err := c.client.PushMsg(context.Background(), &comet.PushMsgReq{
-				Keys:  pushArg.Keys,
+				Ids:   pushArg.Ids,
 				Proto: pushArg.Proto,
 			})
 			if err != nil {

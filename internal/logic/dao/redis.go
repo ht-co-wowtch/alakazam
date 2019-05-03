@@ -15,10 +15,10 @@ import (
 
 const (
 	// user key的前綴詞，用於存儲在redis當key
-	_prefixKeyServer = "key_%s"
+	_prefixKeyServer = "id_%s"
 
 	// server name的前綴詞，用於存儲在redis當key
-	_prefixServerOnline = "ol_%s"
+	_prefixServerOnline = "server_%s"
 )
 
 func keyKeyServer(key string) string {

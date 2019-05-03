@@ -56,12 +56,12 @@ func (s *server) Close(ctx context.Context, req *pb.Empty) (*pb.Empty, error) {
 
 // 對某人訊息推送
 func (s *server) PushMsg(ctx context.Context, req *pb.PushMsgReq) (reply *pb.PushMsgReply, err error) {
-	if len(req.Keys) == 0 || req.Proto == nil {
+	if len(req.Ids) == 0 || req.Proto == nil {
 		return nil, errors.ErrPushMsgArg
 	}
-	for _, key := range req.Keys {
+	for _, id := range req.Ids {
 		// 根據key在Bucket找出對應Channel
-		if channel := s.srv.Bucket(key).Channel(key); channel != nil {
+		if channel := s.srv.Bucket(id).Channel(id); channel != nil {
 			// 針對某人推送訊息
 			if err = channel.Push(req.Proto); err != nil {
 				return

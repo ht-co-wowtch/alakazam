@@ -10,9 +10,9 @@
     make stop
 
     // or
-    go run cmd/logic/main.go -conf=bin/logic.toml -region=sh -zone=sh001 -deploy.env=dev -weight=10 2>&1 > bin/logic.log &
-    go run cmd/comet/main.go -conf=bin/comet.toml -region=sh -zone=sh001 -deploy.env=dev -weight=10 -addrs=127.0.0.1 2>&1 > bin/logic.log &
-    go run cmd/job/main.go -conf=bin/job.toml -region=sh -zone=sh001 -deploy.env=dev 2>&1 > bin/logic.log &
+    go run cmd/logic/main.go -c cmd/logic/logic-example.yml
+    go run cmd/comet/main.go -c cmd/comet/comet-example.yml
+    go run cmd/job/main.go -c cmd/job/job-example.yml
 
 ```
 

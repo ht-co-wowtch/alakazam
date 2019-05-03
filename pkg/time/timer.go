@@ -14,7 +14,7 @@ const (
 
 // 一個單向鏈結串列表結構的TimerData，用於定時器任務
 type TimerData struct {
-	Key string
+	Id string
 
 	// 多久過期
 	expire itime.Time
@@ -155,7 +155,7 @@ func (t *Timer) add(td *TimerData) {
 		}
 	}
 	if Debug {
-		log.Infof("timer: push item key: %s, expire: %s, index: %d", td.Key, td.ExpireString(), td.index)
+		log.Infof("timer: push item Id: %s, expire: %s, index: %d", td.Id, td.ExpireString(), td.index)
 	}
 }
 
@@ -180,7 +180,7 @@ func (t *Timer) del(td *TimerData) {
 	t.timers[last].index = -1 // for safety
 	t.timers = t.timers[:last]
 	if Debug {
-		log.Infof("timer: remove item key: %s, expire: %s, index: %d", td.Key, td.ExpireString(), td.index)
+		log.Infof("timer: remove item Id: %s, expire: %s, index: %d", td.Id, td.ExpireString(), td.index)
 	}
 }
 
@@ -231,7 +231,7 @@ func (t *Timer) expire() {
 			log.Warning("expire timer no fn")
 		} else {
 			if Debug {
-				log.Infof("timer key: %s, expire: %s, index: %d expired, call fn", td.Key, td.ExpireString(), td.index)
+				log.Infof("timer Id: %s, expire: %s, index: %d expired, call fn", td.Id, td.ExpireString(), td.index)
 			}
 			fn()
 		}
