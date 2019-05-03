@@ -107,8 +107,6 @@
             <dd>{{ .id }}</dd>
             <dt>房間分類:</dt>
             <dd>{{ .type }}</dd>
-            <dt>房間標籤:</dt>
-            <dd>{{ .tag }}</dd>
             <dt>你的名稱:</dt>
             <dd>{{ .name }}</dd>
         </dl>
@@ -275,7 +273,7 @@
             }
 
             function auth() {
-                var token = '{"mid":{{ .userId }}, "room_id":"{{ .type }}://{{ .id }}", "platform":"web", "accepts":[{{ .tag }}]}'
+                var token = '{"mid":{{ .userId }}, "room_id":"{{ .type }}://{{ .id }}", "platform":"web"}'
                 var headerBuf = new ArrayBuffer(rawHeaderLen);
                 var headerView = new DataView(headerBuf, 0);
                 var bodyBuf = textEncoder.encode(token);
@@ -315,7 +313,7 @@
 
     function send() {
         var text = document.getElementById("btn-input").value
-        $.post('http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/push/{{ .id }}/{{ .type }}/{{ .id }}', {text: text}, function (data) {
+        $.post('http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/push/{{ .id }}/{{ .type }}', {text: text}, function (data) {
         })
             .error(function () {
                 alert("發送失敗")
