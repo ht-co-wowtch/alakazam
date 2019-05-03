@@ -175,7 +175,7 @@ func (b *Bucket) Channel(key string) (ch *Channel) {
 	return
 }
 
-// 對Bucket內所有Channel且符合operation做訊息推送
+// 對Bucket內所有Channel
 func (b *Bucket) Broadcast(p *grpc.Proto, op int32) {
 	var ch *Channel
 	b.cLock.RLock()
