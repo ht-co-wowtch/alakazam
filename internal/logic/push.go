@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	log "github.com/golang/glog"
 )
 
 // 根據user key推送
@@ -25,6 +26,34 @@ func (l *Logic) PushKeys(c context.Context, keys []string, msg []byte) (err erro
 	// 根據server name與user key來推送，另還有operation條件是不變的
 	for server := range pushKeys {
 		if err = l.dao.PushMsg(c, server, pushKeys[server], msg); err != nil {
+			return
+		}
+	}
+	return
+}
+
+// 根據user id推送
+func (l *Logic) PushMids(c context.Context, mids []int64, msg []byte) (err error) {
+	// 根據user id拿 user key
+	keyServers, _, err := l.dao.KeysByMids(c, mids)
+	if err != nil {
+		return
+	}
+	keys := make(map[string][]string)
+
+	// key: user key
+	// server: user所在的server name
+	for key, server := range keyServers {
+		if key == "" || server == "" {
+			log.Warningf("push key:%s server:%s is empty", key, server)
+			continue
+		}
+		// 根據server name分組
+		keys[server] = append(keys[server], key)
+	}
+	// 根據server name與user key來推送，另還有operation條件是不變的
+	for server, keys := range keys {
+		if err = l.dao.PushMsg(c, server, keys, msg); err != nil {
 			return
 		}
 	}

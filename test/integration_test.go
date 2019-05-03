@@ -15,7 +15,6 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"strconv"
 	"testing"
 	"time"
 )
@@ -47,6 +46,7 @@ const (
 )
 
 type AuthToken struct {
+	Mid      int64  `json:"mid"`
 	Key      string `json:"key"`
 	RoomID   string `json:"room_id"`
 	Platform string `json:"platform"`
@@ -66,7 +66,8 @@ var (
 func TestMain(m *testing.M) {
 	rand.Seed(time.Now().Unix())
 	authToken = &AuthToken{
-		"1",
+		0,
+		"",
 		"1000",
 		"web",
 	}
@@ -115,7 +116,7 @@ func Test_not_heartbeat(t *testing.T) {
 
 func Test_push_user(t *testing.T) {
 	pushTest(t, authToken, func() ([]byte, error) {
-		return pushUser(authToken.Key, "測試")
+		return pushUser(authToken.Mid, "測試")
 	}, func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto) {
 		assert.Equal(t, []byte(`測試`), p[0].Body)
 		assert.Nil(t, otherErr)
@@ -230,7 +231,7 @@ func dial() (conn *websocket.Conn, err error) {
 }
 
 func dialAuth(authToken *AuthToken) (auth auth, err error) {
-	authToken.Key = strconv.Itoa(rand.Int())
+	authToken.Mid = rand.Int63()
 	var (
 		conn *websocket.Conn
 	)
@@ -329,8 +330,8 @@ func read(rr *bufio.Reader, p *grpc.Proto) (packLen int32, headerLen int16, err 
 	return
 }
 
-func pushUser(key string, message string) ([]byte, error) {
-	return push(fmt.Sprintf(host+"/goim/push/keys?keys=%s", key), bytes.NewBufferString(message))
+func pushUser(id int64, message string) ([]byte, error) {
+	return push(fmt.Sprintf(host+"/goim/push/mids?mids=%d", id), bytes.NewBufferString(message))
 }
 
 func pushRoom(roomId int, message string) ([]byte, error) {

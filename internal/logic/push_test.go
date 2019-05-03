@@ -17,6 +17,16 @@ func TestPushKeys(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestPushMids(t *testing.T) {
+	var (
+		c    = context.TODO()
+		mids = []int64{1, 2, 3}
+		msg  = []byte("hello")
+	)
+	err := lg.PushMids(c, mids, msg)
+	assert.Nil(t, err)
+}
+
 func TestPushRoom(t *testing.T) {
 	var (
 		c    = context.TODO()

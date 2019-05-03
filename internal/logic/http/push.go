@@ -28,6 +28,27 @@ func (s *Server) pushKeys(c *gin.Context) {
 	result(c, nil, OK)
 }
 
+// 以user id來推送訊息
+func (s *Server) pushMids(c *gin.Context) {
+	var arg struct {
+		Mids []int64 `form:"mids"`
+	}
+	if err := c.BindQuery(&arg); err != nil {
+		errors(c, RequestErr, err.Error())
+		return
+	}
+	msg, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		errors(c, RequestErr, err.Error())
+		return
+	}
+	if err = s.logic.PushMids(context.TODO(), arg.Mids, msg); err != nil {
+		errors(c, ServerErr, err.Error())
+		return
+	}
+	result(c, nil, OK)
+}
+
 // 以room id來推送訊息
 func (s *Server) pushRoom(c *gin.Context) {
 	var arg struct {

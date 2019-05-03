@@ -270,7 +270,7 @@
             }
 
             function auth() {
-                var token = '{"key":"{{ .userId }}", "room_id":"{{ .id }}", "platform":"web"}'
+                var token = '{"mid":{{ .userId }}, "room_id":"{{ .id }}", "platform":"web"}'
                 var headerBuf = new ArrayBuffer(rawHeaderLen);
                 var headerView = new DataView(headerBuf, 0);
                 var bodyBuf = textEncoder.encode(token);

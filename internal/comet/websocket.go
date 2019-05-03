@@ -195,7 +195,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 
 	// websocket連線等待read做auth
 	if p, err = ch.protoRing.Set(); err == nil {
-		if ch.Key, rid, hb, err = s.authWebsocket(ctx, ws, p, req.Header.Get("Cookie")); err == nil {
+		if ch.Mid, ch.Key, rid, hb, err = s.authWebsocket(ctx, ws, p, req.Header.Get("Cookie")); err == nil {
 			// 將user Channel放到某一個Bucket內做保存
 			b = s.Bucket(ch.Key)
 			err = b.Put(rid, ch)
@@ -250,7 +250,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 			p.Op = protocol.OpHeartbeatReply
 			p.Body = nil
 			if now := time.Now(); now.Sub(lastHB) > serverHeartbeat {
-				if err1 := s.Heartbeat(ctx, ch.Key); err1 == nil {
+				if err1 := s.Heartbeat(ctx, ch.Mid, ch.Key); err1 == nil {
 					lastHB = now
 				}
 			}
@@ -281,7 +281,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 	ws.Close()
 	ch.Close()
 	rp.Put(rb)
-	if err = s.Disconnect(ctx, ch.Key); err != nil {
+	if err = s.Disconnect(ctx, ch.Mid, ch.Key); err != nil {
 		log.Errorf("key: %s operator do disconnect error(%v)", ch.Key, err)
 	}
 }
@@ -355,7 +355,7 @@ failed:
 }
 
 // auth for goim handshake with client, use rsa & aes.
-func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.Proto, cookie string) (key, rid string, hb time.Duration, err error) {
+func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.Proto, cookie string) (mid int64, key, rid string, hb time.Duration, err error) {
 	for {
 		// 如果第一次連線送的資料不是請求連接到某房間則會一直等待
 		if err = p.ReadWebsocket(ws); err != nil {
@@ -367,7 +367,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 			log.Errorf("ws request operation(%d) not auth", p.Op)
 		}
 	}
-	if key, rid, hb, err = s.Connect(ctx, p, cookie); err != nil {
+	if mid, key, rid, hb, err = s.Connect(ctx, p, cookie); err != nil {
 		return
 	}
 
