@@ -6,9 +6,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	comet "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/job/conf"
 	log "github.com/golang/glog"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/job/conf"
+	comet "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 )
@@ -176,9 +176,8 @@ func (c *Comet) process(pushChan chan *comet.PushMsgReq, roomChan chan *comet.Br
 		// 單人推送
 		case pushArg := <-pushChan:
 			_, err := c.client.PushMsg(context.Background(), &comet.PushMsgReq{
-				Keys:    pushArg.Keys,
-				Proto:   pushArg.Proto,
-				ProtoOp: pushArg.ProtoOp,
+				Keys:  pushArg.Keys,
+				Proto: pushArg.Proto,
 			})
 			if err != nil {
 				log.Errorf("c.client.PushMsg(%s, reply) error(%v)", pushArg, err)

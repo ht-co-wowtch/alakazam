@@ -2,13 +2,11 @@ package logic
 
 import (
 	"context"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
-
 	log "github.com/golang/glog"
 )
 
 // 根據user key推送
-func (l *Logic) PushKeys(c context.Context, op int32, keys []string, msg []byte) (err error) {
+func (l *Logic) PushKeys(c context.Context, keys []string, msg []byte) (err error) {
 	// 取該user key所在的server name
 	servers, err := l.dao.ServersByKeys(c, keys)
 	if err != nil {
@@ -27,7 +25,7 @@ func (l *Logic) PushKeys(c context.Context, op int32, keys []string, msg []byte)
 	}
 	// 根據server name與user key來推送，另還有operation條件是不變的
 	for server := range pushKeys {
-		if err = l.dao.PushMsg(c, op, server, pushKeys[server], msg); err != nil {
+		if err = l.dao.PushMsg(c, server, pushKeys[server], msg); err != nil {
 			return
 		}
 	}
@@ -35,7 +33,7 @@ func (l *Logic) PushKeys(c context.Context, op int32, keys []string, msg []byte)
 }
 
 // 根據user id推送
-func (l *Logic) PushMids(c context.Context, op int32, mids []int64, msg []byte) (err error) {
+func (l *Logic) PushMids(c context.Context, mids []int64, msg []byte) (err error) {
 	// 根據user id拿 user key
 	keyServers, _, err := l.dao.KeysByMids(c, mids)
 	if err != nil {
@@ -55,7 +53,7 @@ func (l *Logic) PushMids(c context.Context, op int32, mids []int64, msg []byte) 
 	}
 	// 根據server name與user key來推送，另還有operation條件是不變的
 	for server, keys := range keys {
-		if err = l.dao.PushMsg(c, op, server, keys, msg); err != nil {
+		if err = l.dao.PushMsg(c, server, keys, msg); err != nil {
 			return
 		}
 	}
@@ -63,11 +61,11 @@ func (l *Logic) PushMids(c context.Context, op int32, mids []int64, msg []byte) 
 }
 
 // 單一房間推送
-func (l *Logic) PushRoom(c context.Context, op int32, typ, room string, msg []byte) (err error) {
-	return l.dao.BroadcastRoomMsg(c, op, model.EncodeRoomKey(typ, room), msg)
+func (l *Logic) PushRoom(c context.Context, room string, msg []byte) (err error) {
+	return l.dao.BroadcastRoomMsg(c, room, msg)
 }
 
 // 所有房間推送但有限制operation
-func (l *Logic) PushAll(c context.Context, op, speed int32, msg []byte) (err error) {
-	return l.dao.BroadcastMsg(c, op, speed, msg)
+func (l *Logic) PushAll(c context.Context, speed int32, msg []byte) (err error) {
+	return l.dao.BroadcastMsg(c, speed, msg)
 }

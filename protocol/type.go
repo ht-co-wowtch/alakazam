@@ -1,42 +1,30 @@
 package protocol
 
 const (
-	// client 發送心跳
-	OpHeartbeat = int32(2)
-
-	// server 回覆心跳結果
-	OpHeartbeatReply = int32(3)
-
 	// client要求連線到某一個房間
-	OpAuth = int32(7)
+	OpAuth = int32(1)
 
 	// server回覆連線到某一個房間結果
-	OpAuthReply = int32(8)
+	OpAuthReply = int32(2)
+
+	// client 發送心跳
+	OpHeartbeat = int32(3)
+
+	// server 回覆心跳結果
+	OpHeartbeatReply = int32(4)
 
 	// server訊息推送給client
-	OpRaw = int32(9)
-
-	// websocket送訊息要回應
-	OpProtoReady = int32(10)
-
-	// close連線
-	OpProtoFinish = int32(11)
+	OpRaw = int32(5)
 
 	// 更換房間
-	OpChangeRoom = int32(12)
+	OpChangeRoom = int32(6)
 
 	// 回覆更換房間結果
-	OpChangeRoomReply = int32(13)
+	OpChangeRoomReply = int32(7)
 
-	// user新增operation
-	OpSub = int32(14)
+	// close連線
+	OpProtoFinish = int32(20)
 
-	// 回覆user新增operation結果
-	OpSubReply = int32(15)
-
-	// user移除operation
-	OpUnsub = int32(16)
-
-	// 回覆user移除operation結果
-	OpUnsubReply = int32(17)
+	// websocket送訊息要回應
+	OpProtoReady = int32(21)
 )

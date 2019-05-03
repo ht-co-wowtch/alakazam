@@ -37,8 +37,6 @@
                         <ul class="dropdown-menu">
                             <li><a href="/push/all">全部房間</a></li>
                             <li><a href="/push/id">單一房間</a></li>
-                            <li><a href="/push/type">房間Type</a></li>
-                            <li><a href="/push/tag">房間Tag</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -46,24 +44,10 @@
         </div><!--/.container-fluid -->
     </nav>
 
-    {{ if eq .push "tag" }}
-        <select class="browser-default custom-select custom-select-lg mb-3" id="key" name="key">
-            <option selected>選擇要推送的房間標籤</option>
-            {{ range $i, $v := .tag }}
-                <option value="{{ $v }}">{{ $v }}</option>
-            {{ end }}
-        </select>
-    {{ else if eq .push "id" }}
+    {{ if eq .push "id" }}
         <select class="browser-default custom-select custom-select-lg mb-3" id="key" name="key">
             <option selected>選擇要推送的房間號碼</option>
             {{ range $i, $v := .id }}
-                <option value="{{ $v }}">{{ $v }}</option>
-            {{ end }}
-        </select>
-    {{ else if eq .push "type" }}
-        <select class="browser-default custom-select custom-select-lg mb-3" id="key" name="key">
-            <option selected>選擇要推送的房間分類</option>
-            {{ range $i, $v := .type }}
                 <option value="{{ $v }}">{{ $v }}</option>
             {{ end }}
         </select>

@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"errors"
-	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
@@ -106,7 +105,7 @@ func (p *Proto) ReadWebsocket(ws *websocket.Conn) (err error) {
 	if len(buf) < _rawHeaderSize {
 		return ErrProtoPackLen
 	}
-	fmt.Println(buf)
+
 	packLen = binary.BigEndian.Int32(buf[_packOffset:_headerOffset])
 	headerLen = binary.BigEndian.Int16(buf[_headerOffset:_opOffset])
 	p.Op = binary.BigEndian.Int32(buf[_opOffset:])

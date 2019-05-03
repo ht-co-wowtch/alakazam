@@ -62,10 +62,6 @@ func (s *server) PushMsg(ctx context.Context, req *pb.PushMsgReq) (reply *pb.Pus
 	for _, key := range req.Keys {
 		// 根據key在Bucket找出對應Channel
 		if channel := s.srv.Bucket(key).Channel(key); channel != nil {
-			// 判斷Channel是否符合推送的Operation條件
-			if !channel.NeedPush(req.ProtoOp) {
-				continue
-			}
 			// 針對某人推送訊息
 			if err = channel.Push(req.Proto); err != nil {
 				return

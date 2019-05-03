@@ -11,12 +11,11 @@ message PushMsg {
         BROADCAST = 2;
     }
     Type type = 1;
-    int32 operation = 2;
-    int32 speed = 3;
-    string server = 4;
-    string room = 5;
-    repeated string keys = 6;
-    bytes msg = 7;
+    int32 speed = 2;
+    string server = 3;
+    string room = 4;
+    repeated string keys = 5;
+    bytes msg = 6;
 }
 
 message PingReply {
@@ -36,8 +35,7 @@ message ConnectReply {
     int64 mid = 1;
     string key = 2;
     string roomID = 3;
-    repeated int32 accepts = 4;
-    int64 heartbeat = 5;
+    int64 heartbeat = 4;
 }
 
 message DisconnectReq {

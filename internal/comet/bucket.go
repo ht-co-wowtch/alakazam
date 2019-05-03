@@ -4,8 +4,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 )
 
 // 用於管理Room與Channel關於推送的邏輯
@@ -27,9 +27,6 @@ type Bucket struct {
 
 	// 用於決定由哪一個routines來做房間推送，此數字由atomic.AddUint64做原子操作遞增
 	routinesNum uint64
-
-	// 紀錄有哪些ip在此房間，key=ip value = 重覆ip數量
-	ipCnts map[string]int32
 }
 
 // 初始化Bucket結構
@@ -37,7 +34,6 @@ func NewBucket(c *conf.Bucket) (b *Bucket) {
 	b = new(Bucket)
 	b.chs = make(map[string]*Channel, c.Channel)
 	b.rooms = make(map[string]*Room, c.Room)
-	b.ipCnts = make(map[string]int32)
 	b.c = c
 
 	// 設定該Bucket需要開幾個goroutine併發做房間訊息推送
@@ -141,7 +137,6 @@ func (b *Bucket) Put(rid string, ch *Channel) (err error) {
 		}
 		ch.Room = room
 	}
-	b.ipCnts[ch.IP]++
 	b.cLock.Unlock()
 	if room != nil {
 		err = room.Put(ch)
@@ -165,11 +160,6 @@ func (b *Bucket) Del(dch *Channel) {
 		if ch == dch {
 			delete(b.chs, ch.Key)
 		}
-		if b.ipCnts[ch.IP] > 1 {
-			b.ipCnts[ch.IP]--
-		} else {
-			delete(b.ipCnts, ch.IP)
-		}
 	}
 	b.cLock.Unlock()
 	if room != nil && room.Del(ch) {
@@ -190,9 +180,6 @@ func (b *Bucket) Broadcast(p *grpc.Proto, op int32) {
 	var ch *Channel
 	b.cLock.RLock()
 	for _, ch = range b.chs {
-		if !ch.NeedPush(op) {
-			continue
-		}
 		_ = ch.Push(p)
 	}
 	b.cLock.RUnlock()
@@ -235,19 +222,6 @@ func (b *Bucket) Rooms() (res map[string]struct{}) {
 		if room.Online > 0 {
 			res[roomID] = struct{}{}
 		}
-	}
-	b.cLock.RUnlock()
-	return
-}
-
-func (b *Bucket) IPCount() (res map[string]struct{}) {
-	var (
-		ip string
-	)
-	b.cLock.RLock()
-	res = make(map[string]struct{}, len(b.ipCnts))
-	for ip = range b.ipCnts {
-		res[ip] = struct{}{}
 	}
 	b.cLock.RUnlock()
 	return

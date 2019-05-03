@@ -30,4 +30,8 @@ v0.1.0|config改為yml
 v0.1.1|移除Discovery
 v0.1.2|module更名
 v0.1.3|module移除沒用到的package
+v0.2.0|更改protobuf目錄結構
+v0.3.0|protobuf移除不必要參數與method
+v0.4.0|移除有關於Operation推送限制
+v0.5.0|移除room type推送限制
 

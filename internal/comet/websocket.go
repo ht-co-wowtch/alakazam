@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	xtime "gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
-	log "github.com/golang/glog"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 )
 
 const (
@@ -107,9 +107,6 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 		// 房間id
 		rid string
 
-		// websocket 連線的tag，可以用於設置訊息推送條件
-		accepts []int32
-
 		// 心跳時間週期
 		hb time.Duration
 
@@ -197,10 +194,9 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 	step = 3
 
 	// websocket連線等待read做auth
-	if p, err = ch.CliProto.Set(); err == nil {
-		if ch.Mid, ch.Key, rid, accepts, hb, err = s.authWebsocket(ctx, ws, p, req.Header.Get("Cookie")); err == nil {
+	if p, err = ch.protoRing.Set(); err == nil {
+		if ch.Mid, ch.Key, rid, hb, err = s.authWebsocket(ctx, ws, p, req.Header.Get("Cookie")); err == nil {
 			// 將user Channel放到某一個Bucket內做保存
-			ch.Watch(accepts...)
 			b = s.Bucket(ch.Key)
 			err = b.Put(rid, ch)
 		}
@@ -235,7 +231,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 	serverHeartbeat := s.RandServerHearbeat()
 
 	for {
-		if p, err = ch.CliProto.Set(); err != nil {
+		if p, err = ch.protoRing.Set(); err != nil {
 			break
 		}
 		if err = p.ReadWebsocket(ws); err != nil {
@@ -266,7 +262,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 			}
 		}
 		// 寫的游標要++讓Get可以取得已寫入的Proto
-		ch.CliProto.SetAdv()
+		ch.protoRing.SetAdv()
 		// 通知負責訊息推播goroutine處理本次接收到的資料
 		ch.Signal()
 	}
@@ -314,7 +310,7 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 		case grpc.ProtoReady:
 			for {
 				// 取得上次透過Set()寫入資料的Proto
-				if p, err = ch.CliProto.Get(); err != nil {
+				if p, err = ch.protoRing.Get(); err != nil {
 					break
 				}
 				if p.Op == protocol.OpHeartbeatReply {
@@ -331,7 +327,7 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 				}
 				p.Body = nil
 				// 讀的游標++
-				ch.CliProto.GetAdv()
+				ch.protoRing.GetAdv()
 			}
 		default:
 			if err = p.WriteWebsocket(ws); err != nil {
@@ -359,7 +355,7 @@ failed:
 }
 
 // auth for goim handshake with client, use rsa & aes.
-func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.Proto, cookie string) (mid int64, key, rid string, accepts []int32, hb time.Duration, err error) {
+func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.Proto, cookie string) (mid int64, key, rid string, hb time.Duration, err error) {
 	for {
 		// 如果第一次連線送的資料不是請求連接到某房間則會一直等待
 		if err = p.ReadWebsocket(ws); err != nil {
@@ -371,7 +367,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 			log.Errorf("ws request operation(%d) not auth", p.Op)
 		}
 	}
-	if mid, key, rid, accepts, hb, err = s.Connect(ctx, p, cookie); err != nil {
+	if mid, key, rid, hb, err = s.Connect(ctx, p, cookie); err != nil {
 		return
 	}
 

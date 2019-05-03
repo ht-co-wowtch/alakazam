@@ -29,12 +29,6 @@ type room struct {
 
 	Title string `form:"title" binding:"required"`
 
-	Type string `form:"type" binding:"required"`
-
-	Tag string `form:"tag"`
-
-	tag [] string
-
 	Introduction string `form:"text" binding:"required"`
 }
 
@@ -47,9 +41,6 @@ func init() {
 	rooms = append(rooms, room{
 		Title:        "聊天測試區",
 		Id:           "1000",
-		Type:         "chat",
-		Tag:          "1,1000",
-		tag:          []string{"1", "1000"},
 		Introduction: "聊天測試區",
 	})
 
@@ -71,37 +62,25 @@ func main() {
 	user.GET("/", indexForm)
 	user.GET("/add", addForm)
 	user.POST("/add", add)
-	user.GET("/room/:id/:type/:tag", roomForm)
-	user.POST("/push/:id/:type/:operation", push)
+	user.GET("/room/:id", roomForm)
+	user.POST("/push/:id", push)
 	user.POST("/pushAll", pushAll)
 	user.GET("/push/:type", pushForm)
-	user.GET("/count/:type/:id", count)
+	user.GET("/count/:id", count)
 
 	g.Run(":2222")
 }
 
 func pushForm(c *gin.Context) {
-	tag := []string{}
 	id := []string{}
-	t := []string{}
-
-	for _, v := range rooms {
-		tag = append(tag, v.tag...)
-	}
 
 	for _, v := range rooms {
 		id = append(id, v.Id)
 	}
 
-	for _, v := range rooms {
-		t = append(t, v.Type)
-	}
-
 	c.HTML(http.StatusOK, "push.html", gin.H{
 		"push": c.Param("type"),
-		"tag":  uniqueSlice(tag),
 		"id":   id,
-		"type": t,
 		"host": host,
 		"port": port,
 	})
@@ -112,9 +91,7 @@ func push(c *gin.Context) {
 	if u, ok := users[i]; ok {
 		text := fmt.Sprintf(`{"name":"%s", "content":"%s"}`, u.name, c.PostForm("text"))
 
-		url := fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?operation=%s&type=%s&room=%s",
-			c.Param("operation"),
-			c.Param("type"),
+		url := fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?room=%s",
 			c.Param("id"),
 		)
 
@@ -133,31 +110,15 @@ func pushAll(c *gin.Context) {
 
 	switch c.PostForm("push") {
 	case "all":
-		url = []string{"http://127.0.0.1:3111/goim/push/all?operation=1"}
+		url = []string{"http://127.0.0.1:3111/goim/push/all"}
 	case "id":
 		for _, v := range rooms {
 			if v.Id == key {
-				url = []string{fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?operation=%s&type=%s&room=%s",
-					v.Id,
-					v.Type,
+				url = []string{fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?room=%s",
 					v.Id,
 				)}
 			}
 		}
-	case "type":
-		for _, v := range rooms {
-			if v.Type == key {
-				u := fmt.Sprintf("http://127.0.0.1:3111/goim/push/room?operation=%s&type=%s&room=%s",
-					v.Id,
-					v.Type,
-					v.Id,
-				)
-
-				url = append(url, u)
-			}
-		}
-	case "tag":
-		url = []string{fmt.Sprintf("http://127.0.0.1:3111/goim/push/all?operation=%s", key)}
 	}
 
 	if len(url) == 0 {
@@ -183,8 +144,6 @@ func roomForm(c *gin.Context) {
 		fmt.Println(c.Request.Host)
 		c.HTML(http.StatusOK, "room.html", gin.H{
 			"id":     c.Param("id"),
-			"type":   c.Param("type"),
-			"tag":    c.Param("tag"),
 			"name":   u.name,
 			"host":   host,
 			"port":   port,
@@ -206,26 +165,6 @@ func add(c *gin.Context) {
 				return
 			}
 		}
-
-		r.tag = []string{"1", r.Id}
-
-		if r.Tag != "" {
-			t := strings.Split(r.Tag, ",")
-
-			for _, v := range t {
-				if v == r.Id {
-					c.HTML(http.StatusOK, "add.html", gin.H{
-						"msg": "請不要輸入房間號碼",
-					})
-
-					return
-				}
-			}
-
-			r.tag = append(r.tag, t...)
-		}
-
-		r.Tag = strings.Join(r.tag, ",")
 
 		rooms = append(rooms, r)
 
@@ -288,7 +227,7 @@ type rco struct {
 }
 
 func count(c *gin.Context) {
-	r, err := http.DefaultClient.Get(fmt.Sprintf("http://127.0.0.1:3111/goim/online/top?type=%s&limit=1000", c.Param("type")))
+	r, err := http.DefaultClient.Get(fmt.Sprintf("http://127.0.0.1:3111/goim/online/top?limit=%d", c.Param("id")))
 
 	if err == nil {
 		defer r.Body.Close()
@@ -310,20 +249,4 @@ func count(c *gin.Context) {
 		}
 	}
 	c.JSON(http.StatusBadRequest, gin.H{})
-}
-
-func uniqueSlice(slice []string) []string {
-	found := make(map[string]bool)
-	total := 0
-	for i, val := range slice {
-		if _, ok := found[val]; !ok {
-			found[val] = true
-			(slice)[total] = (slice)[i]
-			total++
-		}
-	}
-
-	slice = (slice)[:total]
-
-	return slice
 }

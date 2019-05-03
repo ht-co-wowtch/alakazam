@@ -2,9 +2,9 @@ package grpc
 
 import (
 	"context"
-	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
+	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"net"
 
 	"google.golang.org/grpc"
@@ -49,11 +49,11 @@ func (s *server) Ping(ctx context.Context, req *pb.PingReq) (*pb.PingReply, erro
 
 // 某client要做連線
 func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectReply, error) {
-	mid, key, room, accepts, hb, err := s.srv.Connect(ctx, req.Server, req.Cookie, req.Token)
+	mid, key, room, hb, err := s.srv.Connect(ctx, req.Server, req.Cookie, req.Token)
 	if err != nil {
 		return &pb.ConnectReply{}, err
 	}
-	return &pb.ConnectReply{Mid: mid, Key: key, RoomID: room, Accepts: accepts, Heartbeat: hb}, nil
+	return &pb.ConnectReply{Mid: mid, Key: key, RoomID: room, Heartbeat: hb}, nil
 }
 
 // 某client要中斷連線

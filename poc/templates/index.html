@@ -38,8 +38,6 @@
                         <ul class="dropdown-menu">
                             <li><a href="/push/all">全部房間</a></li>
                             <li><a href="/push/id">單一房間</a></li>
-                            <li><a href="/push/type">房間Type</a></li>
-                            <li><a href="/push/tag">房間Tag</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -49,8 +47,8 @@
 
     <div class="jumbotron">
         <h1>功能說明</h1>
-        <p>1. 單房間推送，根據房間id,分類,標籤</p>
-        <p>2. 多房間推送，根據房間分類,標籤</p>
+        <p>1. 單房間推送，根據房間id</p>
+        <p>2. 多房間推送，根據房間id</p>
         <p>3. 動態新增房間</p>
         <p>4. 沒有歷史紀錄(不保存任何資料)</p>
         <p>5. 顯示線上人數(30秒更新一次)</p>
@@ -67,13 +65,9 @@
             <dl class="dl-horizontal">
                 <dt>房間id:</dt>
                 <dd>{{ .Id }}</dd>
-                <dt>房間分類:</dt>
-                <dd>{{ .Type }}</dd>
-                <dt>房間標籤:</dt>
-                <dd>{{ .Tag }}</dd>
             </dl>
             <p>
-                <a class="btn btn-primary" href="/room/{{ .Id }}/{{ .Type }}/{{ .Tag }}" role="button">進入房間</a>
+                <a class="btn btn-primary" href="/room/{{ .Id }}" role="button">進入房間</a>
             </p>
         </div>
         {{ end }}
