@@ -50,7 +50,7 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 // redis清除某人連線資訊
 func (l *Logic) Disconnect(c context.Context, mid int64, key, server string) (has bool, err error) {
 	if has, err = l.dao.DelMapping(c, mid, key, server); err != nil {
-		log.Errorf("l.dao.DelMapping(%d,%s) error(%v)", mid, key, server)
+		log.Errorf("l.dao.DelMapping(%d,%s,%s) error(%v)", mid, key, server, err)
 		return
 	}
 	log.Infof("conn disconnected key:%s server:%s mid:%d", key, server, mid)

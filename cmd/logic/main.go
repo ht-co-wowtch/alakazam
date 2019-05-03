@@ -2,15 +2,16 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
+	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/http"
-	log "github.com/golang/glog"
 )
 
 func main() {
@@ -23,6 +24,8 @@ func main() {
 	srv := logic.New(conf.Conf)
 	httpSrv := http.New(conf.Conf.HTTPServer, srv)
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
+
+	fmt.Printf("logic start success | RpcServer: %s\n", conf.Conf.RPCServer.Addr)
 
 	// 接收到close signal的處理
 	c := make(chan os.Signal, 1)

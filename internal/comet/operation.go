@@ -62,7 +62,7 @@ func (s *Server) Operate(ctx context.Context, p *pd.Proto, ch *Channel, b *Bucke
 	// 更換房間
 	case protocol.OpChangeRoom:
 		if err := b.ChangeRoom(string(p.Body), ch); err != nil {
-			log.Errorf("b.ChangeRoom(%s) error(%v)", p.Body, err)
+			log.Errorf("Change Room (%s) error(%v)", p.Body, err)
 		}
 		p.Op = protocol.OpChangeRoomReply
 	default:

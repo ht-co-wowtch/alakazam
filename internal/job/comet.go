@@ -128,26 +128,23 @@ func NewComet(c *conf.Comet) (*Comet, error) {
 // Comet自己會預先開好多個goroutine，每個goroutine內都有一把
 // 用於單人訊息推送chan，用原子鎖遞增%goroutine總數量來輪替
 // 由哪一個goroutine，也就是平均分配推送的量給各goroutine
-func (c *Comet) Push(arg *comet.PushMsgReq) (err error) {
+func (c *Comet) Push(arg *comet.PushMsgReq) {
 	idx := atomic.AddUint64(&c.pushChanNum, 1) % c.routineSize
 	c.pushChan[idx] <- arg
-	return
 }
 
 // 房間訊息推送需要交由某個處理推送邏輯的goroutine
 // Comet自己會預先開好多個goroutine，每個goroutine內都有一把
 // 用於房間訊息推送chan，用原子鎖遞增%goroutine總數量來輪替
 // 由哪一個goroutine，也就是平均分配推送的量給各goroutine
-func (c *Comet) BroadcastRoom(arg *comet.BroadcastRoomReq) (err error) {
+func (c *Comet) BroadcastRoom(arg *comet.BroadcastRoomReq) {
 	idx := atomic.AddUint64(&c.roomChanNum, 1) % c.routineSize
 	c.roomChan[idx] <- arg
-	return
 }
 
 // 多個房間推送
-func (c *Comet) Broadcast(arg *comet.BroadcastReq) (err error) {
+func (c *Comet) Broadcast(arg *comet.BroadcastReq) {
 	c.broadcastChan <- arg
-	return
 }
 
 // 處理訊息推送給comet server
@@ -162,7 +159,7 @@ func (c *Comet) process(pushChan chan *comet.PushMsgReq, roomChan chan *comet.Br
 				Speed:   broadcastArg.Speed,
 			})
 			if err != nil {
-				log.Errorf("c.client.Broadcast(%s, reply) error(%v)", broadcastArg, err)
+				log.Errorf("c.client.Broadcast arg: %v error(%v)", broadcastArg, err)
 			}
 		// 單一房間推送
 		case roomArg := <-roomChan:
@@ -171,7 +168,7 @@ func (c *Comet) process(pushChan chan *comet.PushMsgReq, roomChan chan *comet.Br
 				Proto:  roomArg.Proto,
 			})
 			if err != nil {
-				log.Errorf("c.client.BroadcastRoom(%s, reply) error(%v)", roomArg, err)
+				log.Errorf("c.client.BroadcastRoom arg: %v error(%v)", roomArg, err)
 			}
 		// 單人推送
 		case pushArg := <-pushChan:
@@ -180,7 +177,7 @@ func (c *Comet) process(pushChan chan *comet.PushMsgReq, roomChan chan *comet.Br
 				Proto: pushArg.Proto,
 			})
 			if err != nil {
-				log.Errorf("c.client.PushMsg(%s, reply) error(%v)", pushArg, err)
+				log.Errorf("c.client.PushMsg arg: %v error(%v)", pushArg, err)
 			}
 		case <-c.ctx.Done():
 			return

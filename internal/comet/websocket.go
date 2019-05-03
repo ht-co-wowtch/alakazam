@@ -2,7 +2,6 @@ package comet
 
 import (
 	"context"
-	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"io"
 	"net"
@@ -29,14 +28,11 @@ func InitWebsocket(server *Server, host string, accept int) (err error) {
 
 	// 監聽Tcp Port
 	if addr, err = net.ResolveTCPAddr("tcp", host); err != nil {
-		log.Errorf("net.ResolveTCPAddr(tcp, %s) error(%v)", host, err)
 		return
 	}
 	if listener, err = net.ListenTCP("tcp", addr); err != nil {
-		log.Errorf("net.ListenTCP(tcp, %s) error(%v)", host, err)
 		return
 	}
-	log.Infof("start ws listen: %s", host)
 
 	// 一個Tcp Port根據CPU核心數開goroutine監聽Tcp
 	for i := 0; i < accept; i++ {
@@ -220,7 +216,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 	go s.dispatchWebsocket(ws, wp, wb, ch)
 
 	serverHeartbeat := s.RandServerHearbeat()
-	fmt.Println(serverHeartbeat)
+
 	for {
 		if p, err = ch.protoRing.Set(); err != nil {
 			break
