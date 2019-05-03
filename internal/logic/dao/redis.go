@@ -20,7 +20,7 @@ const (
 	_prefixKeyServer = "key_%s"
 
 	// server name的前綴詞，用於存儲在redis當key
-	_prefixServerOnline = "ol_%s"
+	_prefixServerOnline = "server_%s"
 )
 
 func keyMidServer(mid int64) string {

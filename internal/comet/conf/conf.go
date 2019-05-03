@@ -33,7 +33,7 @@ type RPCClient struct {
 	Dial time.Duration
 }
 
-// RPCServer is RPC server config.
+// grpc server config.
 type RPCServer struct {
 	// host
 	Network string
@@ -58,7 +58,7 @@ type RPCServer struct {
 	KeepAliveTimeout time.Duration
 }
 
-// TCP is tcp config.
+// tcp config
 type TCP struct {
 	// tcp寫資料的緩衝區大小，該緩衝區滿到無法發送時會阻塞，此值通常設定完後系統會自行在多一倍，設定1024會變2304
 	Sndbuf int
@@ -92,13 +92,13 @@ type TCP struct {
 	WriteBufSize int
 }
 
-// Websocket is websocket config.
+// websocket config
 type Websocket struct {
 	// Websocket 要監聽的port
 	Bind []string
 }
 
-// Protocol is protocol config.
+// protocol config
 type Protocol struct {
 	// 先初始化多少個time.Timer
 	Timer int
@@ -122,7 +122,7 @@ type Protocol struct {
 	HandshakeTimeout time.Duration
 }
 
-// Bucket is bucket config.
+// 紀錄各用戶Channel與Room來併發做房間推送
 type Bucket struct {
 	// 固定幾個bucket做分散
 	Size int
@@ -144,7 +144,6 @@ func init() {
 	flag.StringVar(&confPath, "c", "comet.yml", "default config path.")
 }
 
-// init config.
 func Init() (err error) {
 	viper.SetConfigType("yaml")
 	b, err := ioutil.ReadFile(confPath)

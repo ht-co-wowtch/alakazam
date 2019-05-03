@@ -67,7 +67,7 @@ func newCometClient(addr string) (comet.CometClient, error) {
 // Comet is a comet.
 type Comet struct {
 	// 某Comet server的 ip or name
-	serverID string
+	name string
 
 	// Comet grpc client
 	client comet.CometClient
@@ -99,7 +99,7 @@ type Comet struct {
 	cancel context.CancelFunc
 }
 
-// NewComet new a comet.
+// new a comet
 func NewComet(c *conf.Comet) (*Comet, error) {
 	cmt := &Comet{
 		pushChan:      make([]chan *comet.PushMsgReq, c.RoutineSize),
@@ -188,7 +188,7 @@ func (c *Comet) process(pushChan chan *comet.PushMsgReq, roomChan chan *comet.Br
 	}
 }
 
-// 關閉其他正在執行的goroutine (好像沒用到)
+// 關閉其他正在執行的goroutine
 func (c *Comet) Close() (err error) {
 	finish := make(chan bool)
 	go func() {

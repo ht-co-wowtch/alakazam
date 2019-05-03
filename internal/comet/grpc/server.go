@@ -50,7 +50,7 @@ func (s *server) Ping(ctx context.Context, req *pb.Empty) (*pb.Empty, error) {
 
 // Close Service
 func (s *server) Close(ctx context.Context, req *pb.Empty) (*pb.Empty, error) {
-	// TODO: some graceful close
+	// TODO close
 	return &pb.Empty{}, nil
 }
 

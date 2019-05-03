@@ -20,7 +20,7 @@ const (
 	maxInt = 1<<31 - 1
 )
 
-// InitWebsocket listen all tcp.bind and start accept connections.
+// 開始監聽Websocket
 func InitWebsocket(server *Server, addrs []string, accept int) (err error) {
 	var (
 		bind     string
@@ -48,9 +48,7 @@ func InitWebsocket(server *Server, addrs []string, accept int) (err error) {
 	return
 }
 
-// Accept accepts connections on the listener and serves requests
-// for each incoming connection.  Accept blocks; the caller typically
-// invokes it in a go statement.
+// 處理Websocket連線
 func acceptWebsocket(server *Server, lis *net.TCPListener) {
 	var (
 		conn *net.TCPConn
@@ -96,13 +94,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 
 		// Writer Buffer
 		wp = s.round.Writer(r)
-	)
-	s.ServeWebsocket(conn, rp, wp, tr)
-}
 
-// ServeWebsocket serve a websocket connection.
-func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Timer) {
-	var (
 		err error
 
 		// 房間id
@@ -136,6 +128,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 		wr = &ch.Writer
 
 		ws  *websocket.Conn
+
 		req *websocket.Request
 	)
 
@@ -287,9 +280,7 @@ func (s *Server) ServeWebsocket(conn net.Conn, rp, wp *bytes.Pool, tr *xtime.Tim
 	}
 }
 
-// dispatch accepts connections on the listener and serves requests
-// for each incoming connection.  dispatch blocks; the caller typically
-// invokes it in a go statement.
+// 處理Websocket訊息推送
 func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes.Buffer, ch *Channel) {
 	var (
 		err    error
@@ -355,7 +346,7 @@ failed:
 	}
 }
 
-// auth for goim handshake with client, use rsa & aes.
+// websocket請求連線至某房間
 func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.Proto, cookie string) (mid int64, key, rid string, hb time.Duration, err error) {
 	for {
 		// 如果第一次連線送的資料不是請求連接到某房間則會一直等待

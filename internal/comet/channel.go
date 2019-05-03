@@ -12,7 +12,6 @@ import (
 // 1. 身處在哪一個聊天室
 // 2. user mid (user id)
 // 3. user key
-// 4. user operation
 type Channel struct {
 	// 該user進入的房間
 	Room *Room
@@ -48,7 +47,7 @@ type Channel struct {
 	mutex sync.RWMutex
 }
 
-// NewChannel new a channel.
+// new a channel.
 func NewChannel(protoSize, revBuffer int) *Channel {
 	c := new(Channel)
 	c.protoRing.Init(protoSize)

@@ -32,7 +32,7 @@ type Room struct {
 	proto chan *comet.Proto
 }
 
-// NewRoom new a room struct, store channel room info.
+// 開一個房間訊息聚合
 func NewRoom(job *Job, id string, c *conf.Room) (r *Room) {
 	r = &Room{
 		c:     c,
@@ -122,7 +122,6 @@ func (r *Room) pushproc(batch int, sigTime time.Duration) {
 		_ = r.job.broadcastRoomRawBytes(r.id, buf.Buffer())
 
 		// TODO use reset buffer
-		// after push to room channel, renew a buffer, let old buffer gc
 		buf = bytes.NewWriterSize(buf.Size())
 
 		// 重置緩衝數量

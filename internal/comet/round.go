@@ -6,7 +6,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
 )
 
-// RoundOptions round options.
+// Round options
 type RoundOptions struct {
 	// 每次要分配多少個用於time.Timer的Pool
 	Timer int
@@ -52,6 +52,7 @@ type Round struct {
 // 2. 當一個client連線成功後需要有一個心跳機制去維護連線可不可用
 //    所以每一個client需要搭配一個倒數計時器，如果有100w+連線就要100w+ time.NewTicker
 //    為了優化這一塊所以自行實現一個time
+//  TODO time可以改用原生
 func NewRound(c *conf.Config) (r *Round) {
 	var i int
 	r = &Round{

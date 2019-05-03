@@ -145,6 +145,7 @@ func (r *Room) Close() {
 	r.rLock.RUnlock()
 }
 
+// 各房間真實總人數
 func (r *Room) OnlineNum() int32 {
 	if r.AllOnline > 0 {
 		return r.AllOnline

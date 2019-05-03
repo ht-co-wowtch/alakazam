@@ -14,7 +14,7 @@ import (
 // 告知logic service有人想要進入某個房間
 func (s *Server) Connect(c context.Context, p *pd.Proto, cookie string) (mid int64, key, rid string, heartbeat time.Duration, err error) {
 	reply, err := s.rpcClient.Connect(c, &pd.ConnectReq{
-		Server: s.serverID,
+		Server: s.name,
 		Cookie: cookie,
 		Token:  p.Body,
 	})
@@ -24,10 +24,10 @@ func (s *Server) Connect(c context.Context, p *pd.Proto, cookie string) (mid int
 	return reply.Mid, reply.Key, reply.RoomID, time.Duration(reply.Heartbeat), nil
 }
 
-//  client連線中斷，告知logic service需清理此人的連線資料
+// client連線中斷，告知logic service需清理此人的連線資料
 func (s *Server) Disconnect(c context.Context, mid int64, key string) (err error) {
 	_, err = s.rpcClient.Disconnect(context.Background(), &pd.DisconnectReq{
-		Server: s.serverID,
+		Server: s.name,
 		Mid:    mid,
 		Key:    key,
 	})
@@ -37,7 +37,7 @@ func (s *Server) Disconnect(c context.Context, mid int64, key string) (err error
 // 告知logic service要刷新某人的在線狀態(session 過期時間)
 func (s *Server) Heartbeat(ctx context.Context, mid int64, key string) (err error) {
 	_, err = s.rpcClient.Heartbeat(ctx, &pd.HeartbeatReq{
-		Server: s.serverID,
+		Server: s.name,
 		Mid:    mid,
 		Key:    key,
 	})
@@ -47,7 +47,7 @@ func (s *Server) Heartbeat(ctx context.Context, mid int64, key string) (err erro
 // 告知logic service現在房間的在線人數
 func (s *Server) RenewOnline(ctx context.Context, serverID string, rommCount map[string]int32) (allRoom map[string]int32, err error) {
 	reply, err := s.rpcClient.RenewOnline(ctx, &pd.OnlineReq{
-		Server:    s.serverID,
+		Server:    s.name,
 		RoomCount: rommCount,
 	}, grpc.UseCompressor(gzip.Name))
 	if err != nil {
@@ -66,7 +66,7 @@ func (s *Server) Operate(ctx context.Context, p *pd.Proto, ch *Channel, b *Bucke
 		}
 		p.Op = protocol.OpChangeRoomReply
 	default:
-		// TODO ack ok&failed
+		// TODO error
 		p.Body = nil
 	}
 	return nil

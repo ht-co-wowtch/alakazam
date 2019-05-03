@@ -18,7 +18,6 @@ var (
 	Conf *Config
 )
 
-// Config config.
 type Config struct {
 	RPCServer  *RPCServer
 	HTTPServer *HTTPServer
@@ -59,7 +58,7 @@ type Redis struct {
 	Expire time.Duration
 }
 
-// Kafka .
+// Kafka
 type Kafka struct {
 	// Kafka 推送與接收Topic
 	Topic string
@@ -68,7 +67,7 @@ type Kafka struct {
 	Brokers []string
 }
 
-// RPCServer is RPC server config.
+// grpc server config
 type RPCServer struct {
 	// host
 	Network string
@@ -93,7 +92,7 @@ type RPCServer struct {
 	KeepAliveTimeout time.Duration
 }
 
-// HTTPServer is http server config.
+// http server config
 type HTTPServer struct {
 	// host
 	Network string

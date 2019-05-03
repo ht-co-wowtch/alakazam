@@ -23,7 +23,6 @@ type Ring struct {
 	data []grpc.Proto
 }
 
-// Init init ring.
 func (r *Ring) Init(num int) {
 	r.init(uint64(num))
 }

@@ -48,7 +48,7 @@ type Comet struct {
 	RoutineSize int
 }
 
-// Kafka is kafka config.
+// kafka config
 type Kafka struct {
 	Topic   string
 	Group   string
