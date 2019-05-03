@@ -14,7 +14,6 @@ import (
 // 單一推送，以下為條件
 // 1. server name
 // 2. user key
-// 3. operation
 func (d *Dao) PushMsg(c context.Context, server string, keys []string, msg []byte) (err error) {
 	pushMsg := &grpc.PushMsg{
 		Type:   grpc.PushMsg_PUSH,
@@ -66,7 +65,6 @@ func (d *Dao) BroadcastRoomMsg(c context.Context, room string, msg []byte) (err 
 }
 
 // 所有房間推送，以下為條件
-// 1. operation
 func (d *Dao) BroadcastMsg(c context.Context, speed int32, msg []byte) (err error) {
 	pushMsg := &grpc.PushMsg{
 		Type:  grpc.PushMsg_BROADCAST,

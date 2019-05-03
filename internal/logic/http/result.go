@@ -14,7 +14,7 @@ const (
 	// ServerErr server error
 	ServerErr = -500
 
-	contextErrCode = "context/err/code"
+	contextErrCode = "code"
 )
 
 type resp struct {

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
 )
 
 var d *Dao
@@ -69,7 +68,7 @@ func TestDaoAddServerOnline(t *testing.T) {
 	var (
 		c      = context.Background()
 		server = "test_server"
-		online = &model.Online{
+		online = &Online{
 			RoomCount: map[string]int32{"room": 10},
 		}
 	)

@@ -33,7 +33,7 @@ type RPCClient struct {
 	Dial time.Duration
 }
 
-// RPCServer is RPC server config.
+// grpc server config.
 type RPCServer struct {
 	// host
 	Network string
@@ -58,7 +58,7 @@ type RPCServer struct {
 	KeepAliveTimeout time.Duration
 }
 
-// TCP is tcp config.
+// tcp config
 type TCP struct {
 	// tcp寫資料的緩衝區大小，該緩衝區滿到無法發送時會阻塞，此值通常設定完後系統會自行在多一倍，設定1024會變2304
 	Sndbuf int
@@ -92,13 +92,13 @@ type TCP struct {
 	WriteBufSize int
 }
 
-// Websocket is websocket config.
+// websocket config
 type Websocket struct {
 	// Websocket 要監聽的port
-	Bind []string
+	Host string
 }
 
-// Protocol is protocol config.
+// protocol config
 type Protocol struct {
 	// 先初始化多少個time.Timer
 	Timer int
@@ -107,11 +107,11 @@ type Protocol struct {
 	TimerSize int
 
 	// 每一個連線開grpc接收資料的緩充量，當寫的速度大於讀的速度這時會阻塞，透過調大此值可以有更多緩衝避免阻塞
-	SvrProto int
+	RevBuffer int
 
 	// 每一個連線開異步Proto結構緩型Pool的大小，跟client透過tcp or websocket傳遞資料做消費速度有關聯
 	// 由於寫的速度有可能大於讀的速度，這時會自行close此連線，透過調大此值可以有更多緩衝close
-	CliProto int
+	ProtoSize int
 
 	// 一開始tcp連線後等待多久沒有請求連至某房間，連線就直接close
 	//
@@ -122,7 +122,7 @@ type Protocol struct {
 	HandshakeTimeout time.Duration
 }
 
-// Bucket is bucket config.
+// 紀錄各用戶Channel與Room來併發做房間推送
 type Bucket struct {
 	// 固定幾個bucket做分散
 	Size int
@@ -144,7 +144,6 @@ func init() {
 	flag.StringVar(&confPath, "c", "comet.yml", "default config path.")
 }
 
-// init config.
 func Init() (err error) {
 	viper.SetConfigType("yaml")
 	b, err := ioutil.ReadFile(confPath)
@@ -187,13 +186,13 @@ func load() *Config {
 			WriteBufSize: 4096,
 		},
 		Websocket: &Websocket{
-			Bind: viper.GetStringSlice("websocket.host"),
+			Host: viper.GetString("websocket.host"),
 		},
 		Protocol: &Protocol{
 			Timer:            viper.GetInt("protocol.timer"),
 			TimerSize:        viper.GetInt("protocol.timerSize"),
-			CliProto:         viper.GetInt("protocol.clientProto"),
-			SvrProto:         viper.GetInt("protocol.receiveProtoBuffer"),
+			ProtoSize:        viper.GetInt("protocol.clientProto"),
+			RevBuffer:        viper.GetInt("protocol.receiveProtoBuffer"),
 			HandshakeTimeout: time.Second * time.Duration(viper.GetInt("protocol.handshakeTimeout")),
 		},
 		Bucket: &Bucket{

@@ -64,7 +64,7 @@ func newLogicClient(c *conf.RPCClient) logic.LogicClient {
 	return logic.NewLogicClient(conn)
 }
 
-// Server is comet server.
+// comet server
 type Server struct {
 	c *conf.Config
 
@@ -77,14 +77,15 @@ type Server struct {
 	// buckets總數
 	bucketIdx uint32
 
-	//
-	serverID string
+	// 此comet服務名稱，在分佈式下可能會有多組comet server
+	// 用name來區別各個comet server讓job可以準確推送訊息到某user所在的comet server
+	name string
 
 	// Logic service grpc client
 	rpcClient logic.LogicClient
 }
 
-// NewServer returns a new Server.
+// new Server
 func NewServer(c *conf.Config) *Server {
 	s := &Server{
 		c:         c,
@@ -99,7 +100,7 @@ func NewServer(c *conf.Config) *Server {
 		s.buckets[i] = NewBucket(c.Bucket)
 	}
 
-	s.serverID, _ = os.Hostname()
+	s.name, _ = os.Hostname()
 
 	// 統計線上各房間人數
 	go s.onlineproc()
@@ -119,6 +120,7 @@ func (s *Server) Bucket(subKey string) *Bucket {
 }
 
 // 通知logic Refresh client連線狀態的時間(心跳包的週期)
+// 這邊使用隨機產生時間是為了不讓用戶都在同一時間做心跳，以達到分散尖峰
 func (s *Server) RandServerHearbeat() time.Duration {
 	return (minServerHeartbeat + time.Duration(rand.Int63n(int64(maxServerHeartbeat-minServerHeartbeat))))
 }
@@ -143,7 +145,7 @@ func (s *Server) onlineproc() {
 				roomCount[roomID] += count
 			}
 		}
-		if allRoomsCount, err = s.RenewOnline(context.Background(), s.serverID, roomCount); err != nil {
+		if allRoomsCount, err = s.RenewOnline(context.Background(), s.name, roomCount); err != nil {
 			time.Sleep(time.Second)
 			continue
 		}

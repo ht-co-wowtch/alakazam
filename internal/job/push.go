@@ -3,11 +3,10 @@ package job
 import (
 	"context"
 	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-
 	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 )
 
 // 訊息推送至comet server
@@ -15,13 +14,13 @@ func (j *Job) push(ctx context.Context, pushMsg *grpc.PushMsg) (err error) {
 	switch pushMsg.Type {
 	// 單一人推送
 	case grpc.PushMsg_PUSH:
-		err = j.pushKeys(pushMsg.Server, pushMsg.Keys, pushMsg.Msg)
+		j.pushKeys(pushMsg.Server, pushMsg.Keys, pushMsg.Msg)
 	// 單一房間推送
 	case grpc.PushMsg_ROOM:
 		err = j.getRoom(pushMsg.Room).Push(pushMsg.Msg)
 	// 所有房間推送
 	case grpc.PushMsg_BROADCAST:
-		err = j.broadcast(pushMsg.Msg, pushMsg.Speed)
+		j.broadcast(pushMsg.Msg, pushMsg.Speed)
 	// 異常資料
 	default:
 		err = fmt.Errorf("no match push type: %s", pushMsg.Type)
@@ -30,7 +29,7 @@ func (j *Job) push(ctx context.Context, pushMsg *grpc.PushMsg) (err error) {
 }
 
 // 單人訊息推送至comet server
-func (j *Job) pushKeys(serverID string, subKeys []string, body []byte) (err error) {
+func (j *Job) pushKeys(serverName string, keys []string, body []byte) {
 	buf := bytes.NewWriterSize(len(body) + 64)
 	p := &grpc.Proto{
 		Op:   protocol.OpRaw,
@@ -40,22 +39,19 @@ func (j *Job) pushKeys(serverID string, subKeys []string, body []byte) (err erro
 	p.Body = buf.Buffer()
 	p.Op = protocol.OpRaw
 	var args = grpc.PushMsgReq{
-		Keys:  subKeys,
+		Keys:  keys,
 		Proto: p,
 	}
 
 	// 根據user所在的comet server id做發送
-	if c, ok := j.cometServers[serverID]; ok {
-		if err = c.Push(&args); err != nil {
-			log.Errorf("c.Push(%v) serverID:%s error(%v)", args, serverID, err)
-		}
-		log.Infof("pushKey:%s comets:%d", serverID, len(j.cometServers))
+	if c, ok := j.cometServers[serverName]; ok {
+		log.Infof("pushKey:%v server:%s", keys, serverName)
+		c.Push(&args)
 	}
-	return
 }
 
 // 多房間訊息推送給comet
-func (j *Job) broadcast(body []byte, speed int32) (err error) {
+func (j *Job) broadcast(body []byte, speed int32) {
 	buf := bytes.NewWriterSize(len(body) + 64)
 	p := &grpc.Proto{
 		Op:   protocol.OpRaw,
@@ -71,13 +67,10 @@ func (j *Job) broadcast(body []byte, speed int32) (err error) {
 		Proto:   p,
 		Speed:   speed,
 	}
-	for serverID, c := range comets {
-		if err = c.Broadcast(&args); err != nil {
-			log.Errorf("c.Broadcast(%v) serverID:%s error(%v)", args, serverID, err)
-		}
+	for serverName, c := range comets {
+		log.Infof("broadcast server:%s ", serverName)
+		c.Broadcast(&args)
 	}
-	log.Infof("broadcast comets:%d", len(comets))
-	return
 }
 
 // 房間訊息推送給comet
@@ -90,11 +83,9 @@ func (j *Job) broadcastRoomRawBytes(roomID string, body []byte) (err error) {
 		},
 	}
 	comets := j.cometServers
-	for serverID, c := range comets {
-		if err = c.BroadcastRoom(&args); err != nil {
-			log.Errorf("c.BroadcastRoom(%v) roomID:%s serverID:%s error(%v)", args, roomID, serverID, err)
-		}
+	for serverName, c := range comets {
+		log.Infof("broadcastRoom server:%s ", serverName)
+		c.BroadcastRoom(&args)
 	}
-	log.Infof("broadcastRoom comets:%d", len(comets))
 	return
 }

@@ -3,12 +3,11 @@ package logic
 import (
 	"context"
 	"encoding/json"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/dao"
 	"time"
 
 	log "github.com/golang/glog"
 	"github.com/google/uuid"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 )
 
 // redis紀錄某人連線資訊
@@ -51,7 +50,7 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 // redis清除某人連線資訊
 func (l *Logic) Disconnect(c context.Context, mid int64, key, server string) (has bool, err error) {
 	if has, err = l.dao.DelMapping(c, mid, key, server); err != nil {
-		log.Errorf("l.dao.DelMapping(%d,%s) error(%v)", mid, key, server)
+		log.Errorf("l.dao.DelMapping(%d,%s,%s) error(%v)", mid, key, server, err)
 		return
 	}
 	log.Infof("conn disconnected key:%s server:%s mid:%d", key, server, mid)
@@ -78,7 +77,7 @@ func (l *Logic) Heartbeat(c context.Context, mid int64, key, server string) (err
 
 // restart redis內存的每個房間總人數
 func (l *Logic) RenewOnline(c context.Context, server string, roomCount map[string]int32) (map[string]int32, error) {
-	online := &model.Online{
+	online := &dao.Online{
 		Server:    server,
 		RoomCount: roomCount,
 		Updated:   time.Now().Unix(),
@@ -87,10 +86,4 @@ func (l *Logic) RenewOnline(c context.Context, server string, roomCount map[stri
 		return nil, err
 	}
 	return l.roomCount, nil
-}
-
-//
-func (l *Logic) Receive(c context.Context, mid int64, proto *grpc.Proto) (err error) {
-	log.Infof("receive mid:%d message:%+v", mid, proto)
-	return
 }

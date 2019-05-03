@@ -9,8 +9,7 @@ rpcClient:
 
 # websocket連線
 websocket:
-  host:
-    - :3102
+  host: :3102
 
 # 優化參數
 protocol:

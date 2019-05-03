@@ -84,11 +84,11 @@ func (j *Job) Consume() {
 				log.Errorf("proto.Unmarshal(%v) error(%v)", msg, err)
 				continue
 			}
+			log.Infof("consume: %s/%d/%d\t%s\t%+v", msg.Topic, msg.Partition, msg.Offset, msg.Key, pushMsg)
 			// 開始處理推送至comet server
 			if err := j.push(context.Background(), pushMsg); err != nil {
 				log.Errorf("j.push(%v) error(%v)", pushMsg, err)
 			}
-			log.Infof("consume: %s/%d/%d\t%s\t%+v", msg.Topic, msg.Partition, msg.Offset, msg.Key, pushMsg)
 		}
 	}
 }

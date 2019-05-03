@@ -70,7 +70,7 @@ func (s *Server) pushRoom(c *gin.Context) {
 	result(c, nil, OK)
 }
 
-// 以operation來推送訊息
+// 所有房間推送
 func (s *Server) pushAll(c *gin.Context) {
 	var arg struct {
 		Speed int32 `form:"speed"`

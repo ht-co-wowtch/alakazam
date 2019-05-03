@@ -35,12 +35,11 @@ func New(c *conf.HTTPServer, l *logic.Logic) *Server {
 }
 
 func (s *Server) initRouter() {
-	group := s.engine.Group("/goim")
-	group.POST("/push/keys", s.pushKeys)
-	group.POST("/push/mids", s.pushMids)
-	group.POST("/push/room", s.pushRoom)
-	group.POST("/push/all", s.pushAll)
-	group.GET("/online/room", s.onlineRoom)
+	s.engine.POST("/push/keys", s.pushKeys)
+	s.engine.POST("/push/mids", s.pushMids)
+	s.engine.POST("/push/room", s.pushRoom)
+	s.engine.POST("/push/all", s.pushAll)
+	s.engine.GET("/online/room", s.onlineRoom)
 }
 
 func (s *Server) initV1() {

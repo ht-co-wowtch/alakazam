@@ -5,10 +5,9 @@ import (
 	"os"
 	"time"
 
+	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/dao"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
-	log "github.com/golang/glog"
 )
 
 const (
@@ -64,7 +63,7 @@ func (l *Logic) loadOnline() (err error) {
 		roomCount = make(map[string]int32)
 	)
 	host, _ := os.Hostname()
-	var online *model.Online
+	var online *dao.Online
 	online, err = l.dao.ServerOnline(context.Background(), host)
 	if err != nil {
 		return
