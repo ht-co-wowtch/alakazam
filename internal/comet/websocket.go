@@ -21,29 +21,26 @@ const (
 )
 
 // 開始監聽Websocket
-func InitWebsocket(server *Server, addrs []string, accept int) (err error) {
+func InitWebsocket(server *Server, host string, accept int) (err error) {
 	var (
-		bind     string
 		listener *net.TCPListener
 		addr     *net.TCPAddr
 	)
 
-	// 監聽多個Tcp Port
-	for _, bind = range addrs {
-		if addr, err = net.ResolveTCPAddr("tcp", bind); err != nil {
-			log.Errorf("net.ResolveTCPAddr(tcp, %s) error(%v)", bind, err)
-			return
-		}
-		if listener, err = net.ListenTCP("tcp", addr); err != nil {
-			log.Errorf("net.ListenTCP(tcp, %s) error(%v)", bind, err)
-			return
-		}
-		log.Infof("start ws listen: %s", bind)
+	// 監聽Tcp Port
+	if addr, err = net.ResolveTCPAddr("tcp", host); err != nil {
+		log.Errorf("net.ResolveTCPAddr(tcp, %s) error(%v)", host, err)
+		return
+	}
+	if listener, err = net.ListenTCP("tcp", addr); err != nil {
+		log.Errorf("net.ListenTCP(tcp, %s) error(%v)", host, err)
+		return
+	}
+	log.Infof("start ws listen: %s", host)
 
-		// 一個Tcp Port根據CPU核心數開goroutine監聽Tcp
-		for i := 0; i < accept; i++ {
-			go acceptWebsocket(server, listener)
-		}
+	// 一個Tcp Port根據CPU核心數開goroutine監聽Tcp
+	for i := 0; i < accept; i++ {
+		go acceptWebsocket(server, listener)
 	}
 	return
 }
@@ -127,7 +124,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 		// Writer byte
 		wr = &ch.Writer
 
-		ws  *websocket.Conn
+		ws *websocket.Conn
 
 		req *websocket.Request
 	)

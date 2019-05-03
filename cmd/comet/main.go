@@ -25,7 +25,7 @@ func main() {
 
 	// server tcp 連線
 	srv := comet.NewServer(conf.Conf)
-	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Bind, runtime.NumCPU()); err != nil {
+	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Host, runtime.NumCPU()); err != nil {
 		panic(err)
 	}
 

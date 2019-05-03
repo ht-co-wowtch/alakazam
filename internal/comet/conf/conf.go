@@ -95,7 +95,7 @@ type TCP struct {
 // websocket config
 type Websocket struct {
 	// Websocket 要監聽的port
-	Bind []string
+	Host string
 }
 
 // protocol config
@@ -186,7 +186,7 @@ func load() *Config {
 			WriteBufSize: 4096,
 		},
 		Websocket: &Websocket{
-			Bind: viper.GetStringSlice("websocket.host"),
+			Host: viper.GetString("websocket.host"),
 		},
 		Protocol: &Protocol{
 			Timer:            viper.GetInt("protocol.timer"),
