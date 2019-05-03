@@ -35,9 +35,6 @@ type Channel struct {
 	// 雙向鏈結串列 llink
 	Prev *Channel
 
-	// user id
-	Mid int64
-
 	// user在logic service的key
 	Key string
 

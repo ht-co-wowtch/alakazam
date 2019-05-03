@@ -8,15 +8,11 @@ import (
 	log "github.com/golang/glog"
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 )
 
 // redis紀錄某人連線資訊
-func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) (mid int64, key, roomID string, hb int64, err error) {
+func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) (key, roomID string, hb int64, err error) {
 	var params struct {
-		// client id
-		Mid int64 `json:"mid"`
-
 		// client key
 		Key string `json:"key"`
 
@@ -30,7 +26,6 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 		log.Errorf("json.Unmarshal(%s) error(%v)", token, err)
 		return
 	}
-	mid = params.Mid
 	roomID = params.RoomID
 
 	// 告知comet連線多久沒心跳就直接close
@@ -41,38 +36,38 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 	}
 
 	// 儲存user資料至redis
-	if err = l.dao.AddMapping(c, mid, key, server); err != nil {
-		log.Errorf("l.dao.AddMapping(%d,%s,%s) error(%v)", mid, key, server, err)
+	if err = l.dao.AddMapping(c, key, server); err != nil {
+		log.Errorf("l.dao.AddMapping(%s,%s) error(%v)", key, server, err)
 	}
-	log.Infof("conn connected key:%s server:%s mid:%d token:%s", key, server, mid, token)
+	log.Infof("conn connected key:%s server:%s token:%s", key, server, token)
 	return
 }
 
 // redis清除某人連線資訊
-func (l *Logic) Disconnect(c context.Context, mid int64, key, server string) (has bool, err error) {
-	if has, err = l.dao.DelMapping(c, mid, key, server); err != nil {
-		log.Errorf("l.dao.DelMapping(%d,%s) error(%v)", mid, key, server)
+func (l *Logic) Disconnect(c context.Context, key, server string) (has bool, err error) {
+	if has, err = l.dao.DelMapping(c, key, server); err != nil {
+		log.Errorf("l.dao.DelMapping(%s) error(%v)", key, server)
 		return
 	}
-	log.Infof("conn disconnected key:%s server:%s mid:%d", key, server, mid)
+	log.Infof("conn disconnected key:%s server:%s", key, server)
 	return
 }
 
 // 更新某人redis資訊的過期時間
-func (l *Logic) Heartbeat(c context.Context, mid int64, key, server string) (err error) {
-	has, err := l.dao.ExpireMapping(c, mid, key)
+func (l *Logic) Heartbeat(c context.Context, key, server string) (err error) {
+	has, err := l.dao.ExpireMapping(c, key)
 	if err != nil {
-		log.Errorf("l.dao.ExpireMapping(%d,%s,%s) error(%v)", mid, key, server, err)
+		log.Errorf("l.dao.ExpireMapping(%s,%s) error(%v)", key, server, err)
 		return
 	}
 	// 沒更新成功就直接做覆蓋
 	if !has {
-		if err = l.dao.AddMapping(c, mid, key, server); err != nil {
-			log.Errorf("l.dao.AddMapping(%d,%s,%s) error(%v)", mid, key, server, err)
+		if err = l.dao.AddMapping(c, key, server); err != nil {
+			log.Errorf("l.dao.AddMapping(%s,%s) error(%v)", key, server, err)
 			return
 		}
 	}
-	log.Infof("conn heartbeat key:%s server:%s mid:%d", key, server, mid)
+	log.Infof("conn heartbeat key:%s server:%s", key, server)
 	return
 }
 
@@ -87,10 +82,4 @@ func (l *Logic) RenewOnline(c context.Context, server string, roomCount map[stri
 		return nil, err
 	}
 	return l.roomCount, nil
-}
-
-//
-func (l *Logic) Receive(c context.Context, mid int64, proto *grpc.Proto) (err error) {
-	log.Infof("receive mid:%d message:%+v", mid, proto)
-	return
 }

@@ -32,16 +32,14 @@ message ConnectReq {
 }
 
 message ConnectReply {
-    int64 mid = 1;
-    string key = 2;
-    string roomID = 3;
-    int64 heartbeat = 4;
+    string key = 1;
+    string roomID = 2;
+    int64 heartbeat = 3;
 }
 
 message DisconnectReq {
-    int64 mid = 1;
-    string key = 2;
-    string server = 3;
+    string key = 1;
+    string server = 2;
 }
 
 message DisconnectReply {
@@ -49,9 +47,8 @@ message DisconnectReply {
 }
 
 message HeartbeatReq {
-    int64 mid = 1;
-    string key = 2;
-    string server = 3;
+    string key = 1;
+    string server = 2;
 }
 
 message HeartbeatReply {
