@@ -3,11 +3,11 @@ package logic
 import (
 	"context"
 	"encoding/json"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/dao"
 	"time"
 
 	log "github.com/golang/glog"
 	"github.com/google/uuid"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 )
 
@@ -78,7 +78,7 @@ func (l *Logic) Heartbeat(c context.Context, mid int64, key, server string) (err
 
 // restart redis內存的每個房間總人數
 func (l *Logic) RenewOnline(c context.Context, server string, roomCount map[string]int32) (map[string]int32, error) {
-	online := &model.Online{
+	online := &dao.Online{
 		Server:    server,
 		RoomCount: roomCount,
 		Updated:   time.Now().Unix(),

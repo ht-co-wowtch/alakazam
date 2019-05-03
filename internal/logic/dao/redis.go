@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/model"
 	log "github.com/golang/glog"
 	"github.com/gomodule/redigo/redis"
 
@@ -195,12 +194,18 @@ func (d *Dao) KeysByMids(c context.Context, mids []int64) (ress map[string]strin
 	return
 }
 
+type Online struct {
+	Server    string           `json:"server"`
+	RoomCount map[string]int32 `json:"room_count"`
+	Updated   int64            `json:"updated"`
+}
+
 // 以HSET方式儲存房間人數
 // HSET Key hashKey jsonBody
 // Key用server name
 // hashKey則是將room name以City Hash32做hash後得出一個數字，以這個數字當hashKey
 // 至於為什麼hashKey還要用City Hash32做hash就不知道
-func (d *Dao) AddServerOnline(c context.Context, server string, online *model.Online) (err error) {
+func (d *Dao) AddServerOnline(c context.Context, server string, online *Online) (err error) {
 	roomsMap := map[uint32]map[string]int32{}
 	for room, count := range online.RoomCount {
 		rMap := roomsMap[cityhash.CityHash32([]byte(room), uint32(len(room)))%64]
@@ -212,7 +217,7 @@ func (d *Dao) AddServerOnline(c context.Context, server string, online *model.On
 	}
 	key := keyServerOnline(server)
 	for hashKey, value := range roomsMap {
-		err = d.addServerOnline(c, key, strconv.FormatInt(int64(hashKey), 10), &model.Online{RoomCount: value, Server: online.Server, Updated: online.Updated})
+		err = d.addServerOnline(c, key, strconv.FormatInt(int64(hashKey), 10), &Online{RoomCount: value, Server: online.Server, Updated: online.Updated})
 		if err != nil {
 			return
 		}
@@ -223,7 +228,7 @@ func (d *Dao) AddServerOnline(c context.Context, server string, online *model.On
 // 以HSET方式儲存房間人數
 // HSET Key hashKey jsonBody
 // Key用server name
-func (d *Dao) addServerOnline(c context.Context, key string, hashKey string, online *model.Online) (err error) {
+func (d *Dao) addServerOnline(c context.Context, key string, hashKey string, online *Online) (err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
 	b, _ := json.Marshal(online)
@@ -249,8 +254,8 @@ func (d *Dao) addServerOnline(c context.Context, key string, hashKey string, onl
 }
 
 // 根據server name取線上各房間總人數
-func (d *Dao) ServerOnline(c context.Context, server string) (online *model.Online, err error) {
-	online = &model.Online{RoomCount: map[string]int32{}}
+func (d *Dao) ServerOnline(c context.Context, server string) (online *Online, err error) {
+	online = &Online{RoomCount: map[string]int32{}}
 	// server name
 	key := keyServerOnline(server)
 	for i := 0; i < 64; i++ {
@@ -269,7 +274,7 @@ func (d *Dao) ServerOnline(c context.Context, server string) (online *model.Onli
 }
 
 // 根據server name與hashKey取該server name內線上各房間總人數
-func (d *Dao) serverOnline(c context.Context, key string, hashKey string) (online *model.Online, err error) {
+func (d *Dao) serverOnline(c context.Context, key string, hashKey string) (online *Online, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
 	// b是一個json
@@ -289,7 +294,7 @@ func (d *Dao) serverOnline(c context.Context, key string, hashKey string) (onlin
 		}
 		return
 	}
-	online = new(model.Online)
+	online = new(Online)
 	if err = json.Unmarshal(b, online); err != nil {
 		log.Errorf("serverOnline json.Unmarshal(%s) error(%v)", b, err)
 		return
