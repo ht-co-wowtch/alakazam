@@ -127,8 +127,6 @@ func pushAll(c *gin.Context) {
 	}
 
 	for _, u := range url {
-		fmt.Println(u)
-		fmt.Println(text)
 		if _, err := http.DefaultClient.Post(u, "", strings.NewReader(text)); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{})
 			return
