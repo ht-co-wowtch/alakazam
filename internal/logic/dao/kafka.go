@@ -11,33 +11,6 @@ import (
 	"gopkg.in/Shopify/sarama.v1"
 )
 
-// 單一推送，以下為條件
-// 1. server name
-// 2. user key
-func (d *Dao) PushMsg(c context.Context, server string, keys []string, msg []byte) (err error) {
-	pushMsg := &grpc.PushMsg{
-		Type:   grpc.PushMsg_PUSH,
-		Server: server,
-		Keys:   keys,
-		Msg:    msg,
-	}
-	b, err := proto.Marshal(pushMsg)
-	if err != nil {
-		return
-	}
-
-	// 推送給kafka
-	m := &sarama.ProducerMessage{
-		Key:   sarama.StringEncoder(keys[0]),
-		Topic: d.c.Kafka.Topic,
-		Value: sarama.ByteEncoder(b),
-	}
-	if _, _, err = d.kafkaPub.SendMessage(m); err != nil {
-		log.Errorf("PushMsg.send(push pushMsg:%v) error(%v)", pushMsg, err)
-	}
-	return
-}
-
 // 房間推送，以下為條件
 // 1. room id
 // 2. operation

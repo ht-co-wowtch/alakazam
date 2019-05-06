@@ -54,23 +54,6 @@ func (s *server) Close(ctx context.Context, req *pb.Empty) (*pb.Empty, error) {
 	return &pb.Empty{}, nil
 }
 
-// 對某人訊息推送
-func (s *server) PushMsg(ctx context.Context, req *pb.PushMsgReq) (reply *pb.PushMsgReply, err error) {
-	if len(req.Keys) == 0 || req.Proto == nil {
-		return nil, errors.ErrPushMsgArg
-	}
-	for _, key := range req.Keys {
-		// 根據key在Bucket找出對應Channel
-		if channel := s.srv.Bucket(key).Channel(key); channel != nil {
-			// 針對某人推送訊息
-			if err = channel.Push(req.Proto); err != nil {
-				return
-			}
-		}
-	}
-	return &pb.PushMsgReply{}, nil
-}
-
 // 所有房間做推送
 func (s *server) Broadcast(ctx context.Context, req *pb.BroadcastReq) (*pb.BroadcastReply, error) {
 	if req.Proto == nil {

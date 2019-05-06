@@ -12,9 +12,6 @@ import (
 // 訊息推送至comet server
 func (j *Job) push(ctx context.Context, pushMsg *grpc.PushMsg) (err error) {
 	switch pushMsg.Type {
-	// 單一人推送
-	case grpc.PushMsg_PUSH:
-		j.pushKeys(pushMsg.Server, pushMsg.Keys, pushMsg.Msg)
 	// 單一房間推送
 	case grpc.PushMsg_ROOM:
 		err = j.getRoom(pushMsg.Room).Push(pushMsg.Msg)
@@ -26,28 +23,6 @@ func (j *Job) push(ctx context.Context, pushMsg *grpc.PushMsg) (err error) {
 		err = fmt.Errorf("no match push type: %s", pushMsg.Type)
 	}
 	return
-}
-
-// 單人訊息推送至comet server
-func (j *Job) pushKeys(serverName string, keys []string, body []byte) {
-	buf := bytes.NewWriterSize(len(body) + 64)
-	p := &grpc.Proto{
-		Op:   protocol.OpRaw,
-		Body: body,
-	}
-	p.WriteTo(buf)
-	p.Body = buf.Buffer()
-	p.Op = protocol.OpRaw
-	var args = grpc.PushMsgReq{
-		Keys:  keys,
-		Proto: p,
-	}
-
-	// 根據user所在的comet server id做發送
-	if c, ok := j.cometServers[serverName]; ok {
-		log.Infof("pushKey:%v server:%s", keys, serverName)
-		c.Push(&args)
-	}
 }
 
 // 多房間訊息推送給comet

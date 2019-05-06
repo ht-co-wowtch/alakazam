@@ -16,19 +16,12 @@ const (
 	// user id的前綴詞，用於存儲在redis當key
 	_prefixMidServer = "mid_%d"
 
-	// user key的前綴詞，用於存儲在redis當key
-	_prefixKeyServer = "key_%s"
-
 	// server name的前綴詞，用於存儲在redis當key
 	_prefixServerOnline = "server_%s"
 )
 
 func keyMidServer(mid int64) string {
 	return fmt.Sprintf(_prefixMidServer, mid)
-}
-
-func keyKeyServer(key string) string {
-	return fmt.Sprintf(_prefixKeyServer, key)
 }
 
 func keyServerOnline(key string) string {
@@ -45,27 +38,14 @@ func (d *Dao) pingRedis(c context.Context) (err error) {
 
 // 儲存user資訊
 // HSET : mid_{user id} {user key} {server name}
-// SET : key_{user key} {server name}
 func (d *Dao) AddMapping(c context.Context, mid int64, key, server string) (err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
-	var n = 2
-	if mid > 0 {
-		if err = conn.Send("HSET", keyMidServer(mid), key, server); err != nil {
-			log.Errorf("conn.Send(HSET %d,%s,%s) error(%v)", mid, server, key, err)
-			return
-		}
-		if err = conn.Send("EXPIRE", keyMidServer(mid), d.redisExpire); err != nil {
-			log.Errorf("conn.Send(EXPIRE %d,%s,%s) error(%v)", mid, key, server, err)
-			return
-		}
-		n += 2
-	}
-	if err = conn.Send("SET", keyKeyServer(key), server); err != nil {
+	if err = conn.Send("HSET", keyMidServer(mid), key, server); err != nil {
 		log.Errorf("conn.Send(HSET %d,%s,%s) error(%v)", mid, server, key, err)
 		return
 	}
-	if err = conn.Send("EXPIRE", keyKeyServer(key), d.redisExpire); err != nil {
+	if err = conn.Send("EXPIRE", keyMidServer(mid), d.redisExpire); err != nil {
 		log.Errorf("conn.Send(EXPIRE %d,%s,%s) error(%v)", mid, key, server, err)
 		return
 	}
@@ -73,7 +53,7 @@ func (d *Dao) AddMapping(c context.Context, mid int64, key, server string) (err 
 		log.Errorf("conn.Flush() error(%v)", err)
 		return
 	}
-	for i := 0; i < n; i++ {
+	for i := 0; i < 2; i++ {
 		if _, err = conn.Receive(); err != nil {
 			log.Errorf("conn.Receive() error(%v)", err)
 			return
@@ -84,19 +64,10 @@ func (d *Dao) AddMapping(c context.Context, mid int64, key, server string) (err 
 
 // restart user資料的過期時間
 // EXPIRE : mid_{user id}  (HSET)
-// EXPIRE : key_{user key} (SET)
 func (d *Dao) ExpireMapping(c context.Context, mid int64, key string) (has bool, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
-	var n = 1
-	if mid > 0 {
-		if err = conn.Send("EXPIRE", keyMidServer(mid), d.redisExpire); err != nil {
-			log.Errorf("conn.Send(EXPIRE %d,%s) error(%v)", mid, key, err)
-			return
-		}
-		n++
-	}
-	if err = conn.Send("EXPIRE", keyKeyServer(key), d.redisExpire); err != nil {
+	if err = conn.Send("EXPIRE", keyMidServer(mid), d.redisExpire); err != nil {
 		log.Errorf("conn.Send(EXPIRE %d,%s) error(%v)", mid, key, err)
 		return
 	}
@@ -104,30 +75,19 @@ func (d *Dao) ExpireMapping(c context.Context, mid int64, key string) (has bool,
 		log.Errorf("conn.Flush() error(%v)", err)
 		return
 	}
-	for i := 0; i < n; i++ {
-		if has, err = redis.Bool(conn.Receive()); err != nil {
-			log.Errorf("conn.Receive() error(%v)", err)
-			return
-		}
+	if has, err = redis.Bool(conn.Receive()); err != nil {
+		log.Errorf("conn.Receive() error(%v)", err)
+		return
 	}
 	return
 }
 
 // 移除user資訊
 // HDEL : mid_{user id} {user key}
-// DEL : key_{user key}
 func (d *Dao) DelMapping(c context.Context, mid int64, key, server string) (has bool, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
-	n := 1
-	if mid > 0 {
-		if err = conn.Send("HDEL", keyMidServer(mid), key); err != nil {
-			log.Errorf("conn.Send(HDEL %d,%s,%s) error(%v)", mid, key, server, err)
-			return
-		}
-		n++
-	}
-	if err = conn.Send("DEL", keyKeyServer(key)); err != nil {
+	if err = conn.Send("HDEL", keyMidServer(mid), key); err != nil {
 		log.Errorf("conn.Send(HDEL %d,%s,%s) error(%v)", mid, key, server, err)
 		return
 	}
@@ -135,61 +95,9 @@ func (d *Dao) DelMapping(c context.Context, mid int64, key, server string) (has 
 		log.Errorf("conn.Flush() error(%v)", err)
 		return
 	}
-	for i := 0; i < n; i++ {
-		if has, err = redis.Bool(conn.Receive()); err != nil {
-			log.Errorf("conn.Receive() error(%v)", err)
-			return
-		}
-	}
-	return
-}
-
-// 根據多組user key取各自server name
-func (d *Dao) ServersByKeys(c context.Context, keys []string) (res []string, err error) {
-	conn := d.redis.Get()
-	defer conn.Close()
-	var args []interface{}
-	for _, key := range keys {
-		args = append(args, keyKeyServer(key))
-	}
-	// res資料為各個user所在的server name
-	if res, err = redis.Strings(conn.Do("MGET", args...)); err != nil {
-		log.Errorf("conn.Do(MGET %v) error(%v)", args, err)
-	}
-	return
-}
-
-// 根據user id取user key與所在server name
-func (d *Dao) KeysByMids(c context.Context, mids []int64) (ress map[string]string, olMids []int64, err error) {
-	conn := d.redis.Get()
-	defer conn.Close()
-	ress = make(map[string]string)
-	for _, mid := range mids {
-		if err = conn.Send("HGETALL", keyMidServer(mid)); err != nil {
-			log.Errorf("conn.Do(HGETALL %d) error(%v)", mid, err)
-			return
-		}
-	}
-	if err = conn.Flush(); err != nil {
-		log.Errorf("conn.Flush() error(%v)", err)
+	if has, err = redis.Bool(conn.Receive()); err != nil {
+		log.Errorf("conn.Receive() error(%v)", err)
 		return
-	}
-	for idx := 0; idx < len(mids); idx++ {
-		var (
-			res map[string]string
-		)
-		if res, err = redis.StringMap(conn.Receive()); err != nil {
-			log.Errorf("conn.Receive() error(%v)", err)
-			return
-		}
-		// 如果查有此userId
-		if len(res) > 0 {
-			olMids = append(olMids, mids[idx])
-		}
-		// res資料為user key => server name
-		for k, v := range res {
-			ress[k] = v
-		}
 	}
 	return
 }

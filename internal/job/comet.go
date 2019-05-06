@@ -72,9 +72,6 @@ type Comet struct {
 	// Comet grpc client
 	client comet.CometClient
 
-	// 處理單人訊息推送給comet的chan
-	pushChan []chan *comet.PushMsgReq
-
 	// 處理單一房間訊息推送給comet的chan
 	roomChan []chan *comet.BroadcastRoomReq
 
@@ -102,7 +99,6 @@ type Comet struct {
 // new a comet
 func NewComet(c *conf.Comet) (*Comet, error) {
 	cmt := &Comet{
-		pushChan:      make([]chan *comet.PushMsgReq, c.RoutineSize),
 		roomChan:      make([]chan *comet.BroadcastRoomReq, c.RoutineSize),
 		broadcastChan: make(chan *comet.BroadcastReq, c.RoutineSize),
 		routineSize:   uint64(c.RoutineSize),
@@ -117,20 +113,10 @@ func NewComet(c *conf.Comet) (*Comet, error) {
 
 	// 開多個goroutine併發做send grpc client
 	for i := 0; i < c.RoutineSize; i++ {
-		cmt.pushChan[i] = make(chan *comet.PushMsgReq, c.RoutineChan)
 		cmt.roomChan[i] = make(chan *comet.BroadcastRoomReq, c.RoutineChan)
-		go cmt.process(cmt.pushChan[i], cmt.roomChan[i], cmt.broadcastChan)
+		go cmt.process(cmt.roomChan[i], cmt.broadcastChan)
 	}
 	return cmt, nil
-}
-
-// 單人訊息推送需要交由某個處理推送邏輯的goroutine
-// Comet自己會預先開好多個goroutine，每個goroutine內都有一把
-// 用於單人訊息推送chan，用原子鎖遞增%goroutine總數量來輪替
-// 由哪一個goroutine，也就是平均分配推送的量給各goroutine
-func (c *Comet) Push(arg *comet.PushMsgReq) {
-	idx := atomic.AddUint64(&c.pushChanNum, 1) % c.routineSize
-	c.pushChan[idx] <- arg
 }
 
 // 房間訊息推送需要交由某個處理推送邏輯的goroutine
@@ -148,7 +134,7 @@ func (c *Comet) Broadcast(arg *comet.BroadcastReq) {
 }
 
 // 處理訊息推送給comet server
-func (c *Comet) process(pushChan chan *comet.PushMsgReq, roomChan chan *comet.BroadcastRoomReq, broadcastChan chan *comet.BroadcastReq) {
+func (c *Comet) process(roomChan chan *comet.BroadcastRoomReq, broadcastChan chan *comet.BroadcastReq) {
 	for {
 		select {
 		// 多個房間推送
@@ -170,15 +156,6 @@ func (c *Comet) process(pushChan chan *comet.PushMsgReq, roomChan chan *comet.Br
 			if err != nil {
 				log.Errorf("c.client.BroadcastRoom arg: %v error(%v)", roomArg, err)
 			}
-		// 單人推送
-		case pushArg := <-pushChan:
-			_, err := c.client.PushMsg(context.Background(), &comet.PushMsgReq{
-				Keys:  pushArg.Keys,
-				Proto: pushArg.Proto,
-			})
-			if err != nil {
-				log.Errorf("c.client.PushMsg arg: %v error(%v)", pushArg, err)
-			}
 		case <-c.ctx.Done():
 			return
 		}
@@ -191,9 +168,6 @@ func (c *Comet) Close() (err error) {
 	go func() {
 		for {
 			n := len(c.broadcastChan)
-			for _, ch := range c.pushChan {
-				n += len(ch)
-			}
 			for _, ch := range c.roomChan {
 				n += len(ch)
 			}
@@ -208,7 +182,7 @@ func (c *Comet) Close() (err error) {
 	case <-finish:
 		log.Info("close comet finish")
 	case <-time.After(5 * time.Second):
-		err = fmt.Errorf("close comet(push:%d room:%d broadcast:%d) timeout", len(c.pushChan), len(c.roomChan), len(c.broadcastChan))
+		err = fmt.Errorf("close comet(room:%d broadcast:%d) timeout", len(c.roomChan), len(c.broadcastChan))
 	}
 	c.cancel()
 	return

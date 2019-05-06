@@ -114,16 +114,6 @@ func Test_not_heartbeat(t *testing.T) {
 	shouldBeTimeoutConnection(err, a, t)
 }
 
-func Test_push_user(t *testing.T) {
-	pushTest(t, authToken, func() ([]byte, error) {
-		return pushUser(authToken.Mid, "測試")
-	}, func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto) {
-		assert.Equal(t, []byte(`測試`), p[0].Body)
-		assert.Nil(t, otherErr)
-		assert.Len(t, otherProto, 0)
-	})
-}
-
 func Test_push_room(t *testing.T) {
 	pushTest(t, authToken, func() ([]byte, error) {
 		return pushRoom(1000, "測試")
@@ -330,16 +320,12 @@ func read(rr *bufio.Reader, p *grpc.Proto) (packLen int32, headerLen int16, err 
 	return
 }
 
-func pushUser(id int64, message string) ([]byte, error) {
-	return push(fmt.Sprintf(host+"/goim/push/mids?mids=%d", id), bytes.NewBufferString(message))
-}
-
 func pushRoom(roomId int, message string) ([]byte, error) {
-	return push(fmt.Sprintf(host+"/goim/push/room?room=%d", roomId), bytes.NewBufferString(message))
+	return push(fmt.Sprintf(host+"/push/room?room=%d", roomId), bytes.NewBufferString(message))
 }
 
 func pushBroadcast(message string) ([]byte, error) {
-	return push(fmt.Sprintf(host+"/goim/push/all"), bytes.NewBufferString(message))
+	return push(fmt.Sprintf(host+"/push/all"), bytes.NewBufferString(message))
 }
 
 func push(url string, message io.Reader) (body []byte, err error) {

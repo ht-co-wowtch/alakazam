@@ -35,8 +35,6 @@ func New(c *conf.HTTPServer, l *logic.Logic) *Server {
 }
 
 func (s *Server) initRouter() {
-	s.engine.POST("/push/keys", s.pushKeys)
-	s.engine.POST("/push/mids", s.pushMids)
 	s.engine.POST("/push/room", s.pushRoom)
 	s.engine.POST("/push/all", s.pushAll)
 	s.engine.GET("/online/room", s.onlineRoom)
