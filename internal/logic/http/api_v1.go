@@ -7,16 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type apiCommon interface {
-	mapParamters(c *gin.Context) error
-	payLoadToJson() map[string]interface{}
-	payLoadTransfer()
-	businessLogic()
-}
-
-//RequestCommonPayLoad ...
+//RequestPayLoad ...
 //通用 request payload
-type RequestCommonPayLoad struct {
+type RequestPayLoad struct {
 	action    string
 	from      string
 	to        string
@@ -29,15 +22,16 @@ type RequestCommonPayLoad struct {
 	msg       []byte
 }
 
+
 //Jinyan ...
 //禁言
 type Jinyan struct {
-	RequestCommonPayLoad
+	RequestPayLoad
 }
 
 //MapParamters ...
 //resolveURL implementation
-func (j *Jinyan) mapParamters(c *gin.Context) error {
+func (me *RequestPayLoad) mapParamters(c *gin.Context) error {
 
 	if c.Param("from") == "" /* && TODO: search white list */ {
 		return stdErrors.New("房間參數出錯")
@@ -46,47 +40,49 @@ func (j *Jinyan) mapParamters(c *gin.Context) error {
 		return stdErrors.New("指定用戶出錯")
 	}
 
-	j.action = "禁言"
-	j.from = c.Param("from")
-	j.to = c.Param("to")
-	j.content = c.Param("content")
-	j.msg = []byte(c.Param("content"))
+	me.action = "禁言"
+	me.from = c.Param("from")
+	me.to = c.Param("to")
+	me.content = c.Param("content")
+	me.msg = []byte(c.Param("content"))
 
 	return nil
 }
 
 //PayLoadToJSON ...
 // 將request payload 轉成 json
-func (j *Jinyan) payLoadToJSON() map[string]interface{} {
+func (me *RequestPayLoad) payLoadToJSON() map[string]interface{} {
 	//TODO: 需要實做 check error
 	return gin.H{
-		"action":  j.action,
-		"from":    j.from,
-		"to":      j.to,
-		"content": j.content,
-		"Type":    j.Type,
-		"Room":    j.Room,
-		"Op":      j.Op,
-		"Speed":   j.Speed,
+		"action":  me.action,
+		"from":    me.from,
+		"to":      me.to,
+		"content": me.content,
+		"Type":    me.Type,
+		"Room":    me.Room,
+		"Op":      me.Op,
+		"Speed":   me.Speed,
 	}
 }
 
 // PayLoadTransfer ...
 // 將 payload 轉成goim domain 資料
-func (j *Jinyan) payLoadTransfer() {
+func (me *RequestPayLoad) payLoadTransfer() {
 	//TODO: 需要實做 check error
-	j.Type = "Type 123"
-	j.Room = "Room 234"
-	j.Op = 123
-	j.Speed = 123
-	j.Mids = []int64{1, 2, 3, 4}
+	me.Type = "Type 123"
+	me.Room = "Room 234"
+	me.Op = 123
+	me.Speed = 123
+	me.Mids = []int64{1, 2, 3, 4}
 }
+
+
 
 // BusinessLogic ...
 // 禁言專用 BusinessLogic 處理
 func (j *Jinyan) businessLogic() {
 	//TODO: 需要實做 check error
-	fmt.Println("禁言專用 BusinessLogic 處理 ... ")
+	fmt.Println("xxx禁言專用xxx BusinessLogic 處理 ... ")
 }
 
 func (s *Server) base(c *gin.Context) {
@@ -109,7 +105,7 @@ func (s *Server) jinyan(c *gin.Context) {
 	//商業邏輯物件
 	jinyan := new(Jinyan)
 
-	//從 URI 取值	
+	//從 URI 取值
 	if err := jinyan.mapParamters(c); err != nil {
 		errors(c, RequestErr, err.Error())
 		return

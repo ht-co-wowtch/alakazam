@@ -2,6 +2,8 @@ package main
 
 /*
 這個 main 只開啟 HTTPServer
+	alakazam: go run cmd/logic/srv/main.go -c cmd/logic/srv/logic.yml 
+	srv:      go run main.go -c logic.yml
 */
 import (
 	"flag"

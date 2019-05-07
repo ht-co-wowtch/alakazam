@@ -53,7 +53,7 @@ func (s *Server) initV1() {
 		v1.POST("/action/from/to/content")
 	*/
 
-	//禁言
+	//禁言   curl -X POST http://127.0.0.1:3111/v1/jinyan/yama/zawa/1234
 	v1.POST("/jinyan/:from/:to/:content", s.jinyan)
 	//封鎖
 	v1.POST("/fengsuo/:from/:to/:content", s.fengsuo)
