@@ -21,9 +21,6 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 
 		// client要進入的room
 		RoomID string `json:"room_id"`
-
-		// 裝置種類
-		Platform string `json:"platform"`
 	}
 	if err = json.Unmarshal(token, &params); err != nil {
 		log.Errorf("json.Unmarshal(%s) error(%v)", token, err)
