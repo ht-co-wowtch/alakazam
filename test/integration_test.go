@@ -118,9 +118,9 @@ func Test_push_room(t *testing.T) {
 	pushTest(t, authToken, func() ([]byte, error) {
 		return pushRoom(1000, "測試")
 	}, func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto) {
-		assert.Equal(t, []byte(`測試`), p[0].Body)
+		assert.Equal(t, `{"name":"","avatar":"","message":"測試"}`, string(p[0].Body))
 		assert.Nil(t, otherErr)
-		assert.Equal(t, []byte(`測試`), otherProto[0].Body)
+		assert.Equal(t, `{"name":"","avatar":"","message":"測試"}`, string(otherProto[0].Body))
 	})
 }
 
@@ -130,9 +130,9 @@ func Test_push_broadcast(t *testing.T) {
 	pushTest(t, &other, func() ([]byte, error) {
 		return pushBroadcast("測試")
 	}, func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto) {
-		assert.Equal(t, []byte(`測試`), p[0].Body)
+		assert.Equal(t, `{"name":"","avatar":"","message":"測試"}`, string(p[0].Body))
 		assert.Nil(t, otherErr)
-		assert.Equal(t, []byte(`測試`), otherProto[0].Body)
+		assert.Equal(t, `{"name":"","avatar":"","message":"測試"}`, string(otherProto[0].Body))
 	})
 }
 
