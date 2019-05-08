@@ -40,6 +40,9 @@ type Channel struct {
 	// user在logic service的key
 	Key string
 
+	// 用戶名稱
+	Name string
+
 	// user ip
 	IP string
 

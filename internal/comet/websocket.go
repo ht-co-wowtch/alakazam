@@ -182,7 +182,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 
 	// websocket連線等待read做auth
 	if p, err = ch.protoRing.Set(); err == nil {
-		if ch.Mid, ch.Key, rid, hb, err = s.authWebsocket(ctx, ws, p, req.Header.Get("Cookie")); err == nil {
+		if ch.Mid, ch.Key, ch.Name, rid, hb, err = s.authWebsocket(ctx, ws, p, req.Header.Get("Cookie")); err == nil {
 			// 將user Channel放到某一個Bucket內做保存
 			b = s.Bucket(ch.Key)
 			err = b.Put(rid, ch)
@@ -237,7 +237,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 			p.Op = protocol.OpHeartbeatReply
 			p.Body = nil
 			if now := time.Now(); now.Sub(lastHB) > serverHeartbeat {
-				if err1 := s.Heartbeat(ctx, ch.Mid, ch.Key); err1 != nil {
+				if err1 := s.Heartbeat(ctx, ch.Mid, ch.Key, ch.Name); err1 != nil {
 					log.Errorf("mid: %s logic heartbeat failed error(%v)", ch.Mid, err)
 				}
 				lastHB = now
@@ -341,7 +341,7 @@ failed:
 }
 
 // websocket請求連線至某房間
-func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.Proto, cookie string) (mid int64, key, rid string, hb time.Duration, err error) {
+func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.Proto, cookie string) (mid int64, key, name, rid string, hb time.Duration, err error) {
 	for {
 		// 如果第一次連線送的資料不是請求連接到某房間則會一直等待
 		if err = p.ReadWebsocket(ws); err != nil {
@@ -353,7 +353,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 			log.Errorf("ws request operation(%d) not auth", p.Op)
 		}
 	}
-	if mid, key, rid, hb, err = s.Connect(ctx, p, cookie); err != nil {
+	if mid, key, name, rid, hb, err = s.Connect(ctx, p, cookie); err != nil {
 		return
 	}
 

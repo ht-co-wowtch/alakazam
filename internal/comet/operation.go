@@ -12,7 +12,7 @@ import (
 )
 
 // 告知logic service有人想要進入某個房間
-func (s *Server) Connect(c context.Context, p *pd.Proto, cookie string) (mid int64, key, rid string, heartbeat time.Duration, err error) {
+func (s *Server) Connect(c context.Context, p *pd.Proto, cookie string) (mid int64, key, name, rid string, heartbeat time.Duration, err error) {
 	reply, err := s.rpcClient.Connect(c, &pd.ConnectReq{
 		Server: s.name,
 		Cookie: cookie,
@@ -21,7 +21,7 @@ func (s *Server) Connect(c context.Context, p *pd.Proto, cookie string) (mid int
 	if err != nil {
 		return
 	}
-	return reply.Mid, reply.Key, reply.RoomID, time.Duration(reply.Heartbeat), nil
+	return reply.Mid, reply.Key, reply.Name, reply.RoomID, time.Duration(reply.Heartbeat), nil
 }
 
 // client連線中斷，告知logic service需清理此人的連線資料
@@ -35,11 +35,12 @@ func (s *Server) Disconnect(c context.Context, mid int64, key string) (err error
 }
 
 // 告知logic service要刷新某人的在線狀態(session 過期時間)
-func (s *Server) Heartbeat(ctx context.Context, mid int64, key string) (err error) {
+func (s *Server) Heartbeat(ctx context.Context, mid int64, key, name string) (err error) {
 	_, err = s.rpcClient.Heartbeat(ctx, &pd.HeartbeatReq{
 		Server: s.name,
 		Mid:    mid,
 		Key:    key,
+		Name:   name,
 	})
 	return
 }

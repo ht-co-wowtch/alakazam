@@ -33,8 +33,9 @@ message ConnectReq {
 message ConnectReply {
     int64 mid = 1;
     string key = 2;
-    string roomID = 3;
-    int64 heartbeat = 4;
+    string name = 3;
+    string roomID = 4;
+    int64 heartbeat = 5;
 }
 
 message DisconnectReq {
@@ -50,7 +51,8 @@ message DisconnectReply {
 message HeartbeatReq {
     int64 mid = 1;
     string key = 2;
-    string server = 3;
+    string name = 3;
+    string server = 4;
 }
 
 message HeartbeatReply {

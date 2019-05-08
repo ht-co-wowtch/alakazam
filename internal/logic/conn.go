@@ -11,13 +11,16 @@ import (
 )
 
 // redis紀錄某人連線資訊
-func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) (mid int64, key, roomID string, hb int64, err error) {
+func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) (mid int64, key, name, roomID string, hb int64, err error) {
 	var params struct {
 		// client id
 		Mid int64 `json:"mid"`
 
 		// client key
 		Key string `json:"key"`
+
+		// 認證中心token
+		Token string `json:"token"`
 
 		// client要進入的room
 		RoomID string `json:"room_id"`
@@ -36,9 +39,11 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 		key = uuid.New().String()
 	}
 
+	_, name = renew(params.Token)
+
 	// 儲存user資料至redis
-	if err = l.dao.AddMapping(c, mid, key, server); err != nil {
-		log.Errorf("l.dao.AddMapping(%d,%s,%s) error(%v)", mid, key, server, err)
+	if err = l.dao.AddMapping(c, mid, key, name, server); err != nil {
+		log.Errorf("l.dao.AddMapping(%d,%s,%s,%s) error(%v)", mid, key, name, server, err)
 	}
 	log.Infof("conn connected key:%s server:%s mid:%d token:%s", key, server, mid, token)
 	return
@@ -55,15 +60,15 @@ func (l *Logic) Disconnect(c context.Context, mid int64, key, server string) (ha
 }
 
 // 更新某人redis資訊的過期時間
-func (l *Logic) Heartbeat(c context.Context, mid int64, key, server string) (err error) {
-	has, err := l.dao.ExpireMapping(c, mid, key)
+func (l *Logic) Heartbeat(c context.Context, mid int64, key, name, server string) (err error) {
+	has, err := l.dao.ExpireMapping(c, mid)
 	if err != nil {
 		log.Errorf("l.dao.ExpireMapping(%d,%s,%s) error(%v)", mid, key, server, err)
 		return
 	}
 	// 沒更新成功就直接做覆蓋
 	if !has {
-		if err = l.dao.AddMapping(c, mid, key, server); err != nil {
+		if err = l.dao.AddMapping(c, mid, key, name, server); err != nil {
 			log.Errorf("l.dao.AddMapping(%d,%s,%s) error(%v)", mid, key, server, err)
 			return
 		}
