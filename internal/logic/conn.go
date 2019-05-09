@@ -13,12 +13,6 @@ import (
 // redis紀錄某人連線資訊
 func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) (mid int64, key, name, roomID string, hb int64, err error) {
 	var params struct {
-		// client id
-		Mid int64 `json:"mid"`
-
-		// client key
-		Key string `json:"key"`
-
 		// 認證中心token
 		Token string `json:"token"`
 
@@ -29,17 +23,14 @@ func (l *Logic) Connect(c context.Context, server, cookie string, token []byte) 
 		log.Errorf("json.Unmarshal(%s) error(%v)", token, err)
 		return
 	}
-	mid = params.Mid
 	roomID = params.RoomID
 
 	// 告知comet連線多久沒心跳就直接close
 	hb = l.c.Heartbeat
 
-	if key = params.Key; key == "" {
-		key = uuid.New().String()
-	}
+	key = uuid.New().String()
 
-	_, name = renew(params.Token)
+	mid, name = renew(params.Token)
 
 	// 儲存user資料至redis
 	if err = l.dao.AddMapping(c, mid, key, name, server); err != nil {

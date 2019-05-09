@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
@@ -46,10 +47,8 @@ const (
 )
 
 type AuthToken struct {
-	Mid      int64  `json:"mid"`
-	Key      string `json:"key"`
-	RoomID   string `json:"room_id"`
-	Platform string `json:"platform"`
+	RoomID string `json:"room_id"`
+	Token  string `json:"token"`
 }
 
 type auth struct {
@@ -66,10 +65,8 @@ var (
 func TestMain(m *testing.M) {
 	rand.Seed(time.Now().Unix())
 	authToken = &AuthToken{
-		0,
-		"",
 		"1000",
-		"web",
+		uuid.New().String(),
 	}
 
 	httpClient = &http.Client{
@@ -221,7 +218,7 @@ func dial() (conn *websocket.Conn, err error) {
 }
 
 func dialAuth(authToken *AuthToken) (auth auth, err error) {
-	authToken.Mid = rand.Int63()
+	authToken.Token = uuid.New().String()
 	var (
 		conn *websocket.Conn
 	)
