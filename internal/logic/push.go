@@ -49,11 +49,14 @@ func (l *Logic) PushRoom(c context.Context, p *PushRoomForm) error {
 }
 
 type PushRoomAllForm struct {
-	// user uid
-	Uid string `form:"uid" binding:"required"`
+	// 廣播者名稱
+	Name string `json:"name"`
 
-	// user connection key
-	Key string `form:"key" binding:"required"`
+	// 廣播者頭像
+	Avatar string `json:"avatar"`
+
+	// 要廣播的房間
+	RoomId []string `form:"room_id" binding:"required"`
 
 	// user push message
 	Message string `form:"message" binding:"required"`
@@ -61,18 +64,13 @@ type PushRoomAllForm struct {
 
 // 所有房間推送
 func (l *Logic) PushAll(c context.Context, p *PushRoomAllForm) error {
-	res, err := l.dao.UidInfo(p.Uid, p.Key)
-	if err != nil {
-		return err
-	}
-
 	msg, err := json.Marshal(message{
-		Name:    res[dao.HashNameKey],
-		Avatar:  "",
+		Name:    p.Name,
+		Avatar:  p.Avatar,
 		Message: p.Message,
 	})
 	if err != nil {
 		return err
 	}
-	return l.dao.BroadcastMsg(c, 0, msg)
+	return l.dao.BroadcastMsg(c, p.RoomId, 0, msg)
 }

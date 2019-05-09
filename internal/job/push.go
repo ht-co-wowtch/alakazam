@@ -12,9 +12,13 @@ import (
 // 訊息推送至comet server
 func (j *Job) push(ctx context.Context, pushMsg *grpc.PushMsg) (err error) {
 	switch pushMsg.Type {
-	// 單一房間推送
+	// 單一/多房間推送
 	case grpc.PushMsg_ROOM:
-		err = j.getRoom(pushMsg.Room).Push(pushMsg.Msg)
+		for _, r := range pushMsg.Room {
+			if err = j.getRoom(r).Push(pushMsg.Msg); err != nil {
+				return
+			}
+		}
 	// 所有房間推送
 	case grpc.PushMsg_BROADCAST:
 		j.broadcast(pushMsg.Msg, pushMsg.Speed)

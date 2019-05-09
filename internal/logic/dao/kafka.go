@@ -13,19 +13,16 @@ import (
 
 // 房間推送，以下為條件
 // 1. room id
-// 2. operation
 func (d *Dao) BroadcastRoomMsg(c context.Context, room string, msg []byte) (err error) {
 	pushMsg := &grpc.PushMsg{
 		Type: grpc.PushMsg_ROOM,
-		Room: room,
+		Room: []string{room},
 		Msg:  msg,
 	}
 	b, err := proto.Marshal(pushMsg)
 	if err != nil {
 		return
 	}
-
-	// 推送給kafka
 	m := &sarama.ProducerMessage{
 		Key:   sarama.StringEncoder(room),
 		Topic: d.c.Kafka.Topic,
@@ -37,17 +34,19 @@ func (d *Dao) BroadcastRoomMsg(c context.Context, room string, msg []byte) (err 
 	return
 }
 
-// 所有房間推送，以下為條件
-func (d *Dao) BroadcastMsg(c context.Context, speed int32, msg []byte) (err error) {
+// 多房間推送，以下為條件
+func (d *Dao) BroadcastMsg(c context.Context, roomIds []string, speed int32, msg []byte) (err error) {
 	pushMsg := &grpc.PushMsg{
-		Type:  grpc.PushMsg_BROADCAST,
+		Type:  grpc.PushMsg_ROOM,
 		Speed: speed,
 		Msg:   msg,
+		Room:  roomIds,
 	}
 	b, err := proto.Marshal(pushMsg)
 	if err != nil {
 		return
 	}
+	// TODO Key
 	m := &sarama.ProducerMessage{
 		Key:   sarama.StringEncoder(strconv.FormatInt(int64(protocol.OpRaw), 10)),
 		Topic: d.c.Kafka.Topic,

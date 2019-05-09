@@ -5,7 +5,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic"
 )
 
-// 以room id來推送訊息
+// 單一房間推送訊息
 func (s *Server) pushRoom(c *gin.Context) {
 	arg := new(logic.PushRoomForm)
 	if err := c.Bind(arg); err != nil {
