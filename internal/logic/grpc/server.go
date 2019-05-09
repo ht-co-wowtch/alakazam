@@ -49,7 +49,7 @@ func (s *server) Ping(ctx context.Context, req *pb.PingReq) (*pb.PingReply, erro
 
 // 某client要做連線
 func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectReply, error) {
-	mid, key, name, room, hb, err := s.srv.Connect(ctx, req.Server, req.Cookie, req.Token)
+	mid, key, name, room, hb, err := s.srv.Connect(ctx, req.Server, req.Token)
 	if err != nil {
 		return &pb.ConnectReply{}, err
 	}
@@ -64,7 +64,7 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 
 // 某client要中斷連線
 func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.DisconnectReply, error) {
-	has, err := s.srv.Disconnect(ctx, req.Mid, req.Key, req.Server)
+	has, err := s.srv.Disconnect(ctx, req.Mid, req.Server)
 	if err != nil {
 		return &pb.DisconnectReply{}, err
 	}

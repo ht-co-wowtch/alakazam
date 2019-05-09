@@ -35,7 +35,7 @@ type Channel struct {
 	Prev *Channel
 
 	// user id
-	Mid int64
+	Mid string
 
 	// user在logic service的key
 	Key string

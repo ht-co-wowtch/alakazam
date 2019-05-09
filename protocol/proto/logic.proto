@@ -26,12 +26,11 @@ message PingReq {
 message ConnectReq {
     option (gogoproto.goproto_stringer) = false;
     string server = 1;
-    string cookie = 2;
-    bytes token = 3;
+    bytes token = 2;
 }
 
 message ConnectReply {
-    int64 mid = 1;
+    string mid = 1;
     string key = 2;
     string name = 3;
     string roomID = 4;
@@ -39,7 +38,7 @@ message ConnectReply {
 }
 
 message DisconnectReq {
-    int64 mid = 1;
+    string mid = 1;
     string key = 2;
     string server = 3;
 }
@@ -49,7 +48,7 @@ message DisconnectReply {
 }
 
 message HeartbeatReq {
-    int64 mid = 1;
+    string mid = 1;
     string key = 2;
     string name = 3;
     string server = 4;

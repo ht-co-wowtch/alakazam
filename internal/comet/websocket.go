@@ -2,6 +2,7 @@ package comet
 
 import (
 	"context"
+	"encoding/json"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"io"
 	"net"
@@ -182,7 +183,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 
 	// websocket連線等待read做auth
 	if p, err = ch.protoRing.Set(); err == nil {
-		if ch.Mid, ch.Key, ch.Name, rid, hb, err = s.authWebsocket(ctx, ws, p, req.Header.Get("Cookie")); err == nil {
+		if ch.Mid, ch.Key, ch.Name, rid, hb, err = s.authWebsocket(ctx, ws, p); err == nil {
 			// 將user Channel放到某一個Bucket內做保存
 			b = s.Bucket(ch.Key)
 			err = b.Put(rid, ch)
@@ -341,7 +342,7 @@ failed:
 }
 
 // websocket請求連線至某房間
-func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.Proto, cookie string) (mid int64, key, name, rid string, hb time.Duration, err error) {
+func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.Proto) (mid, key, name, rid string, hb time.Duration, err error) {
 	for {
 		// 如果第一次連線送的資料不是請求連接到某房間則會一直等待
 		if err = p.ReadWebsocket(ws); err != nil {
@@ -353,13 +354,20 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 			log.Errorf("ws request operation(%d) not auth", p.Op)
 		}
 	}
-	if mid, key, name, rid, hb, err = s.Connect(ctx, p, cookie); err != nil {
+	if mid, key, name, rid, hb, err = s.Connect(ctx, p); err != nil {
 		return
+	}
+
+	var reply struct {
+		Uid string `json:"uid"`
+		Key string `json:"key"`
 	}
 
 	// 回覆連線至某房間結果
 	p.Op = protocol.OpAuthReply
-	p.Body = nil
+	reply.Uid = mid
+	reply.Key = key
+	p.Body, _ = json.Marshal(reply)
 	if err = p.WriteWebsocket(ws); err != nil {
 		return
 	}

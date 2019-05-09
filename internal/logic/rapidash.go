@@ -1,7 +1,11 @@
 package logic
 
-import "time"
+import (
+	"strconv"
+	"time"
+)
 
-func renew(token string) (int64, string) {
-	return time.Now().Unix(), "test"
+func renew(token string) (string, string) {
+	u := time.Now().Unix()
+	return strconv.Itoa(int(u)), "test"
 }
