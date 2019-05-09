@@ -93,11 +93,11 @@ func (d *Dao) ExpireMapping(c context.Context, uid string) (has bool, err error)
 }
 
 // 移除user資訊
-// HDEL : uid_{user id}
+// DEL : uid_{user id}
 func (d *Dao) DelMapping(c context.Context, uid, server string) (has bool, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
-	if err = conn.Send("HDEL", keyUidInfo(uid)); err != nil {
+	if err = conn.Send("DEL", keyUidInfo(uid)); err != nil {
 		log.Errorf("conn.Send(HDEL %s,%s) error(%v)", uid, server, err)
 		return
 	}
