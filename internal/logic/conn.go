@@ -33,7 +33,7 @@ func (l *Logic) Connect(c context.Context, server string, token []byte) (uid, ke
 	uid, name = renew(params.Token)
 
 	// 儲存user資料至redis
-	if err = l.dao.AddMapping(c, uid, key, name, server); err != nil {
+	if err = l.dao.AddMapping(c, uid, key, roomID, name, server); err != nil {
 		log.Errorf("l.dao.AddMapping(%s,%s,%s,%s) error(%v)", uid, key, name, server, err)
 	}
 	log.Infof("conn connected key:%s server:%s uid:%s token:%s", key, server, uid, token)
@@ -41,17 +41,17 @@ func (l *Logic) Connect(c context.Context, server string, token []byte) (uid, ke
 }
 
 // redis清除某人連線資訊
-func (l *Logic) Disconnect(c context.Context, uid, server string) (has bool, err error) {
-	if has, err = l.dao.DelMapping(c, uid, server); err != nil {
-		log.Errorf("l.dao.DelMapping(%s,%s) error(%v)", uid, server, err)
+func (l *Logic) Disconnect(c context.Context, uid, key, server string) (has bool, err error) {
+	if has, err = l.dao.DelMapping(c, uid, key, server); err != nil {
+		log.Errorf("l.dao.DelMapping(%s,%s,%s) error(%v)", uid, key, server, err)
 		return
 	}
-	log.Infof("conn disconnected server:%s uid:%s", server, uid)
+	log.Infof("conn disconnected server:%s uid:%s key:%s", server, uid, key)
 	return
 }
 
 // 更新某人redis資訊的過期時間
-func (l *Logic) Heartbeat(c context.Context, uid, key, name, server string) (err error) {
+func (l *Logic) Heartbeat(c context.Context, uid, key, roomId, name, server string) (err error) {
 	has, err := l.dao.ExpireMapping(c, uid)
 	if err != nil {
 		log.Errorf("l.dao.ExpireMapping(%s,%s,%s) error(%v)", uid, key, server, err)
@@ -59,7 +59,7 @@ func (l *Logic) Heartbeat(c context.Context, uid, key, name, server string) (err
 	}
 	// 沒更新成功就直接做覆蓋
 	if !has {
-		if err = l.dao.AddMapping(c, uid, key, name, server); err != nil {
+		if err = l.dao.AddMapping(c, uid, key, roomId, name, server); err != nil {
 			log.Errorf("l.dao.AddMapping(%s,%s,%s) error(%v)", uid, key, server, err)
 			return
 		}

@@ -98,7 +98,7 @@ func pushForm(c *gin.Context) {
 func push(c *gin.Context) {
 	i, _ := c.Cookie(cookieName)
 	if _, ok := users[i]; ok {
-		_, err := pushRoom(c.PostForm("uid"), c.PostForm("key"), c.Param("id"), c.PostForm("text"))
+		_, err := pushRoom(c.PostForm("uid"), c.PostForm("key"), c.PostForm("text"))
 		if err == nil {
 			c.JSON(http.StatusNoContent, gin.H{})
 		} else {
@@ -140,11 +140,10 @@ func pushAll(c *gin.Context) {
 	c.JSON(http.StatusNoContent, gin.H{})
 }
 
-func pushRoom(uid, key, roomId, message string) ([]byte, error) {
+func pushRoom(uid, key, message string) ([]byte, error) {
 	data := url.Values{}
 	data.Set("uid", uid)
 	data.Set("key", key)
-	data.Set("room_id", roomId)
 	data.Set("message", message)
 	return pushs(hosts+"/push/room", data)
 }

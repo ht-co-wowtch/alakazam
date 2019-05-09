@@ -64,7 +64,7 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 
 // 某client要中斷連線
 func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.DisconnectReply, error) {
-	has, err := s.srv.Disconnect(ctx, req.Uid, req.Server)
+	has, err := s.srv.Disconnect(ctx, req.Uid, req.Key, req.Server)
 	if err != nil {
 		return &pb.DisconnectReply{}, err
 	}
@@ -73,7 +73,7 @@ func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.Dis
 
 // 重置user redis過期時間
 func (s *server) Heartbeat(ctx context.Context, req *pb.HeartbeatReq) (*pb.HeartbeatReply, error) {
-	if err := s.srv.Heartbeat(ctx, req.Uid, req.Key, req.Name, req.Server); err != nil {
+	if err := s.srv.Heartbeat(ctx, req.Uid, req.Key, req.RoomId, req.Name, req.Server); err != nil {
 		return &pb.HeartbeatReply{}, err
 	}
 	return &pb.HeartbeatReply{}, nil

@@ -3,6 +3,8 @@ package logic
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/dao"
 )
 
 type message struct {
@@ -12,9 +14,6 @@ type message struct {
 }
 
 type PushRoomForm struct {
-	// 房間id
-	RoomId string `form:"room_id" binding:"required"`
-
 	// user uid
 	Uid string `form:"uid" binding:"required"`
 
@@ -31,15 +30,22 @@ func (l *Logic) PushRoom(c context.Context, p *PushRoomForm) error {
 	if err != nil {
 		return err
 	}
+	if len(res) == 0 {
+		return fmt.Errorf("帳號未登入")
+	}
+	if _, ok := res[p.Key]; !ok {
+		return fmt.Errorf("沒有在房間內")
+	}
+
 	msg, err := json.Marshal(message{
-		Name:    res[0],
+		Name:    res[dao.HashNameKey],
 		Avatar:  "",
 		Message: p.Message,
 	})
 	if err != nil {
 		return err
 	}
-	return l.dao.BroadcastRoomMsg(c, p.RoomId, msg)
+	return l.dao.BroadcastRoomMsg(c, res[p.Key], msg)
 }
 
 type PushRoomAllForm struct {
@@ -59,8 +65,9 @@ func (l *Logic) PushAll(c context.Context, p *PushRoomAllForm) error {
 	if err != nil {
 		return err
 	}
+
 	msg, err := json.Marshal(message{
-		Name:    res[0],
+		Name:    res[dao.HashNameKey],
 		Avatar:  "",
 		Message: p.Message,
 	})

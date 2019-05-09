@@ -34,12 +34,13 @@ func (s *Server) Disconnect(c context.Context, uid, key string) (err error) {
 }
 
 // 告知logic service要刷新某人的在線狀態(session 過期時間)
-func (s *Server) Heartbeat(ctx context.Context, uid, key, name string) (err error) {
+func (s *Server) Heartbeat(ctx context.Context, ch *Channel) (err error) {
 	_, err = s.rpcClient.Heartbeat(ctx, &pd.HeartbeatReq{
 		Server: s.name,
-		Uid:    uid,
-		Key:    key,
-		Name:   name,
+		Uid:    ch.Uid,
+		Key:    ch.Key,
+		Name:   ch.Name,
+		RoomId: ch.Room.ID,
 	})
 	return
 }

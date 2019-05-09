@@ -238,7 +238,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 			p.Op = protocol.OpHeartbeatReply
 			p.Body = nil
 			if now := time.Now(); now.Sub(lastHB) > serverHeartbeat {
-				if err1 := s.Heartbeat(ctx, ch.Uid, ch.Key, ch.Name); err1 != nil {
+				if err1 := s.Heartbeat(ctx, ch); err1 != nil {
 					log.Errorf("uid: %s logic heartbeat failed error(%v)", ch.Uid, err)
 				}
 				lastHB = now

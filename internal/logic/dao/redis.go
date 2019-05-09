@@ -19,6 +19,9 @@ const (
 	// server name的前綴詞，用於存儲在redis當key
 	_prefixServerOnline = "server_%s"
 
+	// user hash table name key
+	HashNameKey = "name"
+
 	// user hash table status key
 	hashStatusKey = "status"
 
@@ -45,13 +48,14 @@ func (d *Dao) pingRedis(c context.Context) (err error) {
 // 儲存user資訊
 // HSET :
 // 主key => uid_{user id}
-// user key => user name
+// user key => user roomId
+// name => user name
 // status => user status
 // server => comet server name
-func (d *Dao) AddMapping(c context.Context, uid, key, name, server string) (err error) {
+func (d *Dao) AddMapping(c context.Context, uid, key, roomId, name, server string) (err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
-	if err = conn.Send("HSET", keyUidInfo(uid), key, name, hashStatusKey, "", hashServerKey, server); err != nil {
+	if err = conn.Send("HSET", keyUidInfo(uid), key, roomId, HashNameKey, name, hashStatusKey, "", hashServerKey, server); err != nil {
 		log.Errorf("conn.Send(HSET %s,%s) error(%v)", uid, key, err)
 		return
 	}
@@ -94,10 +98,10 @@ func (d *Dao) ExpireMapping(c context.Context, uid string) (has bool, err error)
 
 // 移除user資訊
 // DEL : uid_{user id}
-func (d *Dao) DelMapping(c context.Context, uid, server string) (has bool, err error) {
+func (d *Dao) DelMapping(c context.Context, uid, key, server string) (has bool, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
-	if err = conn.Send("DEL", keyUidInfo(uid)); err != nil {
+	if err = conn.Send("HDEL", keyUidInfo(uid), key); err != nil {
 		log.Errorf("conn.Send(HDEL %s,%s) error(%v)", uid, server, err)
 		return
 	}
@@ -113,15 +117,20 @@ func (d *Dao) DelMapping(c context.Context, uid, server string) (has bool, err e
 }
 
 // 取user資料
-func (d *Dao) UidInfo(uid string, key string) (res []string, err error) {
+func (d *Dao) UidInfo(uid string, key string) (res map[string]string, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
-	res, err = redis.Strings(conn.Do("HMGET", keyUidInfo(uid), key, hashStatusKey))
-	if err != nil {
-		log.Errorf("conn.Do(HGET %s,%s) error(%v)", uid, key, err)
+	if err = conn.Send("HGETALL", keyUidInfo(uid)); err != nil {
+		log.Errorf("conn.Do(HGETALL %s) error(%v)", uid, err)
+		return
 	}
-	if res == nil {
-		return res, fmt.Errorf("帳號未登入")
+	if err = conn.Flush(); err != nil {
+		log.Errorf("conn.Flush() error(%v)", err)
+		return
+	}
+	if res, err = redis.StringMap(conn.Receive()); err != nil {
+		log.Errorf("conn.Receive() error(%v)", err)
+		return
 	}
 	return
 }
