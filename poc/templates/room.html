@@ -131,7 +131,8 @@
             </div>
         </div>
     </div>
-
+    <input type="hidden" id="uid" name="uid" value="">
+    <input type="hidden" id="key" name="key" value="">
 </div> <!-- /container -->
 
 <!-- Bootstrap core JavaScript
@@ -164,7 +165,7 @@
                 "                                        <strong class=\"pull-right primary-font\">" + obj.name + "</strong>\n" +
                 "                                    </div>\n" +
                 "                                    <p>\n" +
-                obj.content +
+                obj.message +
                 "                                    </p>\n" +
                 "                                </div>\n" +
                 "                            </li>"
@@ -177,7 +178,7 @@
                 "                                        <strong class=\"primary-font\">" + obj.name + "</strong>\n" +
                 "                                    </div>\n" +
                 "                                    <p>\n" +
-                obj.content +
+                obj.message +
                 "                                    </p>\n" +
                 "                                </div>\n" +
                 "                            </li>";
@@ -213,9 +214,16 @@
 
                 switch (op) {
                     case 2:
+                        var json = textDecoder.decode(data.slice(headerLen, packetLen));
+                        var msgBody = JSON.parse(json)
+
+                        document.getElementById("uid").value = msgBody.uid
+                        document.getElementById("key").value = msgBody.key
+
                         // auth reply ok
                         document.getElementById("status").innerHTML = "<color style='color:green'>ok<color>";
                         console.log("receive: auth reply");
+                        console.log(msgBody);
                         // send a heartbeat to server
                         heartbeat();
                         heartbeatInterval = setInterval(heartbeat, 30 * 1000);
@@ -270,7 +278,7 @@
             }
 
             function auth() {
-                var token = '{"mid":{{ .userId }}, "room_id":"{{ .id }}", "platform":"web"}'
+                var token = '{"token":"123", "room_id":"{{ .id }}"}'
                 var headerBuf = new ArrayBuffer(rawHeaderLen);
                 var headerView = new DataView(headerBuf, 0);
                 var bodyBuf = textEncoder.encode(token);
@@ -310,7 +318,7 @@
 
     function send() {
         var text = document.getElementById("btn-input").value
-        $.post('http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/push/{{ .id }}', {text: text}, function (data) {
+        $.post('http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/push/{{ .id }}', {text: text, uid:document.getElementById("uid").value, key:document.getElementById("key").value}, function (data) {
         })
             .error(function () {
                 alert("發送失敗")

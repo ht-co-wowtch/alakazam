@@ -13,7 +13,7 @@ type message struct {
 
 type PushRoomForm struct {
 	// 房間id
-	RoomId string `form:"roomId" binding:"required"`
+	RoomId string `form:"room_id" binding:"required"`
 
 	// user uid
 	Uid string `form:"uid" binding:"required"`

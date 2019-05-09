@@ -335,7 +335,7 @@ func pushRoom(uid, key, roomId, message string) ([]byte, error) {
 	data := url.Values{}
 	data.Set("uid", uid)
 	data.Set("key", key)
-	data.Set("roomId", roomId)
+	data.Set("room_id", roomId)
 	data.Set("message", message)
 	return push(host+"/push/room", data)
 }

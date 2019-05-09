@@ -7,12 +7,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
 )
 
 const cookieName = "chat"
+const hosts = "http://127.0.0.1:3111"
 
 var (
 	rooms []room
@@ -22,6 +24,8 @@ var (
 	host string
 
 	port string
+
+	httpClient *http.Client
 )
 
 type room struct {
@@ -34,6 +38,7 @@ type room struct {
 
 type user struct {
 	id   string
+	key  string
 	name string
 }
 
@@ -45,6 +50,10 @@ func init() {
 	})
 
 	users = make(map[string]user, 10)
+
+	httpClient = &http.Client{
+		Timeout: time.Second * 5,
+	}
 }
 
 func main() {
@@ -88,14 +97,9 @@ func pushForm(c *gin.Context) {
 
 func push(c *gin.Context) {
 	i, _ := c.Cookie(cookieName)
-	if u, ok := users[i]; ok {
-		text := fmt.Sprintf(`{"name":"%s", "content":"%s"}`, u.name, c.PostForm("text"))
-
-		url := fmt.Sprintf("http://127.0.0.1:3111/push/room?room=%s",
-			c.Param("id"),
-		)
-
-		if _, err := http.DefaultClient.Post(url, "", strings.NewReader(text)); err == nil {
+	if _, ok := users[i]; ok {
+		_, err := pushRoom(c.PostForm("uid"), c.PostForm("key"), c.Param("id"), c.PostForm("text"))
+		if err == nil {
 			c.JSON(http.StatusNoContent, gin.H{})
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{})
@@ -136,10 +140,56 @@ func pushAll(c *gin.Context) {
 	c.JSON(http.StatusNoContent, gin.H{})
 }
 
+func pushRoom(uid, key, roomId, message string) ([]byte, error) {
+	data := url.Values{}
+	data.Set("uid", uid)
+	data.Set("key", key)
+	data.Set("room_id", roomId)
+	data.Set("message", message)
+	return pushs(hosts+"/push/room", data)
+}
+
+func pushBroadcast(uid, key, message string) ([]byte, error) {
+	data := url.Values{}
+	data.Set("uid", uid)
+	data.Set("key", key)
+	data.Set("message", message)
+	return pushs(fmt.Sprintf(hosts+"/push/all"), data)
+}
+
+func pushs(url string, data url.Values) (body []byte, err error) {
+	resp, err := httpPost(url, data)
+	if err != nil {
+		return
+	}
+
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+	err = resp.Body.Close()
+	fmt.Printf("response %s\n", string(body))
+	return
+}
+
+func httpPost(url string, body url.Values) (*http.Response, error) {
+	req, err := http.NewRequest("POST", url, strings.NewReader(body.Encode()))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
 func roomForm(c *gin.Context) {
 	i, _ := c.Cookie(cookieName)
 	if u, ok := users[i]; ok {
-		fmt.Println(c.Request.Host)
 		c.HTML(http.StatusOK, "room.html", gin.H{
 			"id":     c.Param("id"),
 			"name":   u.name,
