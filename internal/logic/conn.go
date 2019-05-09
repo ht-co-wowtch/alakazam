@@ -11,7 +11,7 @@ import (
 )
 
 // redis紀錄某人連線資訊
-func (l *Logic) Connect(c context.Context, server string, token []byte) (mid, key, name, roomID string, hb int64, err error) {
+func (l *Logic) Connect(c context.Context, server string, token []byte) (uid, key, name, roomID string, hb int64, err error) {
 	var params struct {
 		// 認證中心token
 		Token string `json:"token"`
@@ -30,41 +30,41 @@ func (l *Logic) Connect(c context.Context, server string, token []byte) (mid, ke
 
 	key = uuid.New().String()
 
-	mid, name = renew(params.Token)
+	uid, name = renew(params.Token)
 
 	// 儲存user資料至redis
-	if err = l.dao.AddMapping(c, mid, key, name, server); err != nil {
-		log.Errorf("l.dao.AddMapping(%s,%s,%s,%s) error(%v)", mid, key, name, server, err)
+	if err = l.dao.AddMapping(c, uid, key, name, server); err != nil {
+		log.Errorf("l.dao.AddMapping(%s,%s,%s,%s) error(%v)", uid, key, name, server, err)
 	}
-	log.Infof("conn connected key:%s server:%s mid:%s token:%s", key, server, mid, token)
+	log.Infof("conn connected key:%s server:%s uid:%s token:%s", key, server, uid, token)
 	return
 }
 
 // redis清除某人連線資訊
-func (l *Logic) Disconnect(c context.Context, mid, server string) (has bool, err error) {
-	if has, err = l.dao.DelMapping(c, mid, server); err != nil {
-		log.Errorf("l.dao.DelMapping(%s,%s) error(%v)", mid, server, err)
+func (l *Logic) Disconnect(c context.Context, uid, server string) (has bool, err error) {
+	if has, err = l.dao.DelMapping(c, uid, server); err != nil {
+		log.Errorf("l.dao.DelMapping(%s,%s) error(%v)", uid, server, err)
 		return
 	}
-	log.Infof("conn disconnected server:%s mid:%s", server, mid)
+	log.Infof("conn disconnected server:%s uid:%s", server, uid)
 	return
 }
 
 // 更新某人redis資訊的過期時間
-func (l *Logic) Heartbeat(c context.Context, mid, key, name, server string) (err error) {
-	has, err := l.dao.ExpireMapping(c, mid)
+func (l *Logic) Heartbeat(c context.Context, uid, key, name, server string) (err error) {
+	has, err := l.dao.ExpireMapping(c, uid)
 	if err != nil {
-		log.Errorf("l.dao.ExpireMapping(%s,%s,%s) error(%v)", mid, key, server, err)
+		log.Errorf("l.dao.ExpireMapping(%s,%s,%s) error(%v)", uid, key, server, err)
 		return
 	}
 	// 沒更新成功就直接做覆蓋
 	if !has {
-		if err = l.dao.AddMapping(c, mid, key, name, server); err != nil {
-			log.Errorf("l.dao.AddMapping(%s,%s,%s) error(%v)", mid, key, server, err)
+		if err = l.dao.AddMapping(c, uid, key, name, server); err != nil {
+			log.Errorf("l.dao.AddMapping(%s,%s,%s) error(%v)", uid, key, server, err)
 			return
 		}
 	}
-	log.Infof("conn heartbeat key:%s server:%s mid:%d", key, server, mid)
+	log.Infof("conn heartbeat key:%s server:%s uid:%d", key, server, uid)
 	return
 }
 

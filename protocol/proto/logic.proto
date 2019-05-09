@@ -30,7 +30,7 @@ message ConnectReq {
 }
 
 message ConnectReply {
-    string mid = 1;
+    string uid = 1;
     string key = 2;
     string name = 3;
     string roomID = 4;
@@ -38,7 +38,7 @@ message ConnectReply {
 }
 
 message DisconnectReq {
-    string mid = 1;
+    string uid = 1;
     string key = 2;
     string server = 3;
 }
@@ -48,7 +48,7 @@ message DisconnectReply {
 }
 
 message HeartbeatReq {
-    string mid = 1;
+    string uid = 1;
     string key = 2;
     string name = 3;
     string server = 4;

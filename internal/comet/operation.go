@@ -12,7 +12,7 @@ import (
 )
 
 // 告知logic service有人想要進入某個房間
-func (s *Server) Connect(c context.Context, p *pd.Proto) (mid, key, name, rid string, heartbeat time.Duration, err error) {
+func (s *Server) Connect(c context.Context, p *pd.Proto) (uid, key, name, rid string, heartbeat time.Duration, err error) {
 	reply, err := s.rpcClient.Connect(c, &pd.ConnectReq{
 		Server: s.name,
 		Token:  p.Body,
@@ -20,24 +20,24 @@ func (s *Server) Connect(c context.Context, p *pd.Proto) (mid, key, name, rid st
 	if err != nil {
 		return
 	}
-	return reply.Mid, reply.Key, reply.Name, reply.RoomID, time.Duration(reply.Heartbeat), nil
+	return reply.Uid, reply.Key, reply.Name, reply.RoomID, time.Duration(reply.Heartbeat), nil
 }
 
 // client連線中斷，告知logic service需清理此人的連線資料
-func (s *Server) Disconnect(c context.Context, mid, key string) (err error) {
+func (s *Server) Disconnect(c context.Context, uid, key string) (err error) {
 	_, err = s.rpcClient.Disconnect(context.Background(), &pd.DisconnectReq{
 		Server: s.name,
-		Mid:    mid,
+		Uid:    uid,
 		Key:    key,
 	})
 	return
 }
 
 // 告知logic service要刷新某人的在線狀態(session 過期時間)
-func (s *Server) Heartbeat(ctx context.Context, mid, key, name string) (err error) {
+func (s *Server) Heartbeat(ctx context.Context, uid, key, name string) (err error) {
 	_, err = s.rpcClient.Heartbeat(ctx, &pd.HeartbeatReq{
 		Server: s.name,
-		Mid:    mid,
+		Uid:    uid,
 		Key:    key,
 		Name:   name,
 	})

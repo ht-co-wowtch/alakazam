@@ -26,7 +26,7 @@ const (
 	hashServerKey = "server"
 )
 
-func keyMidInfo(uid string) string {
+func keyUidInfo(uid string) string {
 	return fmt.Sprintf(_prefixUidInfo, uid)
 }
 
@@ -51,11 +51,11 @@ func (d *Dao) pingRedis(c context.Context) (err error) {
 func (d *Dao) AddMapping(c context.Context, uid, key, name, server string) (err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
-	if err = conn.Send("HSET", keyMidInfo(uid), key, name, hashStatusKey, "", hashServerKey, server); err != nil {
+	if err = conn.Send("HSET", keyUidInfo(uid), key, name, hashStatusKey, "", hashServerKey, server); err != nil {
 		log.Errorf("conn.Send(HSET %s,%s) error(%v)", uid, key, err)
 		return
 	}
-	if err = conn.Send("EXPIRE", keyMidInfo(uid), d.redisExpire); err != nil {
+	if err = conn.Send("EXPIRE", keyUidInfo(uid), d.redisExpire); err != nil {
 		log.Errorf("conn.Send(EXPIRE %s,%s) error(%v)", uid, key, err)
 		return
 	}
@@ -73,11 +73,11 @@ func (d *Dao) AddMapping(c context.Context, uid, key, name, server string) (err 
 }
 
 // restart user資料的過期時間
-// EXPIRE : mid_{user id}  (HSET)
+// EXPIRE : uid_{user id}  (HSET)
 func (d *Dao) ExpireMapping(c context.Context, uid string) (has bool, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
-	if err = conn.Send("EXPIRE", keyMidInfo(uid), d.redisExpire); err != nil {
+	if err = conn.Send("EXPIRE", keyUidInfo(uid), d.redisExpire); err != nil {
 		log.Errorf("conn.Send(EXPIRE %s) error(%v)", uid, err)
 		return
 	}
@@ -93,11 +93,11 @@ func (d *Dao) ExpireMapping(c context.Context, uid string) (has bool, err error)
 }
 
 // 移除user資訊
-// HDEL : mid_{user id}
+// HDEL : uid_{user id}
 func (d *Dao) DelMapping(c context.Context, uid, server string) (has bool, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
-	if err = conn.Send("HDEL", keyMidInfo(uid)); err != nil {
+	if err = conn.Send("HDEL", keyUidInfo(uid)); err != nil {
 		log.Errorf("conn.Send(HDEL %s,%s) error(%v)", uid, server, err)
 		return
 	}
@@ -116,7 +116,7 @@ func (d *Dao) DelMapping(c context.Context, uid, server string) (has bool, err e
 func (d *Dao) UidInfo(uid string, key string) (res []string, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
-	res, err = redis.Strings(conn.Do("HMGET", keyMidInfo(uid), key, hashStatusKey))
+	res, err = redis.Strings(conn.Do("HMGET", keyUidInfo(uid), key, hashStatusKey))
 	if err != nil {
 		log.Errorf("conn.Do(HGET %s,%s) error(%v)", uid, key, err)
 	}

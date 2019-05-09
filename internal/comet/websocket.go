@@ -183,7 +183,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 
 	// websocket連線等待read做auth
 	if p, err = ch.protoRing.Set(); err == nil {
-		if ch.Mid, ch.Key, ch.Name, rid, hb, err = s.authWebsocket(ctx, ws, p); err == nil {
+		if ch.Uid, ch.Key, ch.Name, rid, hb, err = s.authWebsocket(ctx, ws, p); err == nil {
 			// 將user Channel放到某一個Bucket內做保存
 			b = s.Bucket(ch.Key)
 			err = b.Put(rid, ch)
@@ -238,8 +238,8 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 			p.Op = protocol.OpHeartbeatReply
 			p.Body = nil
 			if now := time.Now(); now.Sub(lastHB) > serverHeartbeat {
-				if err1 := s.Heartbeat(ctx, ch.Mid, ch.Key, ch.Name); err1 != nil {
-					log.Errorf("mid: %s logic heartbeat failed error(%v)", ch.Mid, err)
+				if err1 := s.Heartbeat(ctx, ch.Uid, ch.Key, ch.Name); err1 != nil {
+					log.Errorf("uid: %s logic heartbeat failed error(%v)", ch.Uid, err)
 				}
 				lastHB = now
 			}
@@ -270,7 +270,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 	ws.Close()
 	ch.Close()
 	rp.Put(rb)
-	if err = s.Disconnect(ctx, ch.Mid, ch.Key); err != nil {
+	if err = s.Disconnect(ctx, ch.Uid, ch.Key); err != nil {
 		log.Errorf("key: %s operator do disconnect error(%v)", ch.Key, err)
 	}
 }
@@ -342,7 +342,7 @@ failed:
 }
 
 // websocket請求連線至某房間
-func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.Proto) (mid, key, name, rid string, hb time.Duration, err error) {
+func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.Proto) (uid, key, name, rid string, hb time.Duration, err error) {
 	for {
 		// 如果第一次連線送的資料不是請求連接到某房間則會一直等待
 		if err = p.ReadWebsocket(ws); err != nil {
@@ -354,7 +354,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 			log.Errorf("ws request operation(%d) not auth", p.Op)
 		}
 	}
-	if mid, key, name, rid, hb, err = s.Connect(ctx, p); err != nil {
+	if uid, key, name, rid, hb, err = s.Connect(ctx, p); err != nil {
 		return
 	}
 
@@ -365,7 +365,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 
 	// 回覆連線至某房間結果
 	p.Op = protocol.OpAuthReply
-	reply.Uid = mid
+	reply.Uid = uid
 	reply.Key = key
 	p.Body, _ = json.Marshal(reply)
 	if err = p.WriteWebsocket(ws); err != nil {
