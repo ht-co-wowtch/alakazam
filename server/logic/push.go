@@ -9,10 +9,10 @@ import (
 )
 
 type Message struct {
-	Name    string    `json:"name"`
-	Avatar  string    `json:"avatar"`
-	Message string    `json:"message"`
-	Time    time.Time `json:"time"`
+	Name    string `json:"name"`
+	Avatar  string `json:"avatar"`
+	Message string `json:"message"`
+	Time    string `json:"time"`
 }
 
 type PushRoomForm struct {
@@ -43,7 +43,7 @@ func (l *Logic) PushRoom(c context.Context, p *PushRoomForm) error {
 		Name:    res[dao.HashNameKey],
 		Avatar:  "",
 		Message: p.Message,
-		Time:    time.Now(),
+		Time:    time.Now().Format("15:04:05"),
 	})
 	if err != nil {
 		return err
@@ -68,7 +68,7 @@ func (l *Logic) PushAll(c context.Context, p *PushRoomAllForm) error {
 		Name:    "管理员",
 		Avatar:  p.Avatar,
 		Message: p.Message,
-		Time:    time.Now(),
+		Time:    time.Now().Format("15:04:05"),
 	})
 	if err != nil {
 		return err

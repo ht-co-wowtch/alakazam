@@ -204,6 +204,6 @@ v0.4.0|移除有關於Operation推送限制
 v0.5.0|移除room type推送限制
 v0.6.0|refactor log or name
 v0.7.0|移除單人訊息推送 
-v0.7.1|訊息推送內容改json格式且包含user name, avatar，推送認證改用uid & key當pk
+v0.7.1|訊息推送內容改json格式且包含user name, avatar,time，推送認證改用uid & key當pk
 
 ## Q&A
