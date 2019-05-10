@@ -61,14 +61,25 @@ type auth struct {
 	proto *grpc.Proto
 }
 
+type resp struct {
+	a          auth
+	p          []grpc.Proto
+	body       []byte
+	statusCode int
+	err        error
+
+	otherProto []grpc.Proto
+	otherErr   error
+}
+
 var (
-	authToken  *AuthToken
+	authToken  AuthToken
 	httpClient *http.Client
 )
 
 func TestMain(m *testing.M) {
 	rand.Seed(time.Now().Unix())
-	authToken = &AuthToken{
+	authToken = AuthToken{
 		"1000",
 		uuid.New().String(),
 	}
@@ -79,9 +90,9 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+// 進入房間成功
 func Test_auth(t *testing.T) {
 	a, err := dialAuth(authToken)
-	time.Sleep(time.Minute * 2)
 	if err != nil {
 		assert.Error(t, err)
 		return
@@ -89,6 +100,7 @@ func Test_auth(t *testing.T) {
 	shouldBeAuthReply(t, a)
 }
 
+// 進入房間失敗
 func Test_not_auth(t *testing.T) {
 	ws, err := dial()
 	if err != nil {
@@ -98,6 +110,7 @@ func Test_not_auth(t *testing.T) {
 	shouldBeCloseConnection(err, ws, t)
 }
 
+// 房間心跳成功
 func Test_heartbeat(t *testing.T) {
 	a, err := dialAuth(authToken)
 	if err != nil {
@@ -107,6 +120,7 @@ func Test_heartbeat(t *testing.T) {
 	shouldBeHeartbeatReply(t, a, givenHeartbeat())
 }
 
+// 房間不心跳
 func Test_not_heartbeat(t *testing.T) {
 	a, err := dialAuth(authToken)
 	if err != nil {
@@ -116,22 +130,39 @@ func Test_not_heartbeat(t *testing.T) {
 	shouldBeTimeoutConnection(err, a, t)
 }
 
+// 房間訊息推送成功
 func Test_push_room(t *testing.T) {
-	pushTest(t, authToken, func(a auth) ([]byte, int, error) {
+	a, err := dialAuth(authToken)
+	if err != nil {
+		assert.Fail(t, err.Error())
+		return
+	}
+	r := pushRoom(a.uid, a.key, "測試")
+
+	assert.Equal(t, http.StatusNoContent, r.statusCode)
+	assert.Empty(t, r.body)
+	fmt.Println("ok")
+}
+
+// 讀取房間訊息
+func Test_read_room_message(t *testing.T) {
+	pushTest(t, authToken, func(a auth) resp {
 		return pushRoom(a.uid, a.key, "測試")
-	}, func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto) {
-		assert.Len(t, p, 1)
-		assert.Nil(t, otherErr)
-		assert.Len(t, otherProto, 1)
+	}, func(r resp) {
+		assert.Equal(t, protocol.OpRaw, r.a.proto.Op)
+		assert.Len(t, r.p, 1)
+		assert.Nil(t, r.otherErr)
+		assert.Len(t, r.otherProto, 1)
 	})
 }
 
-func Test_push_room_by_message(t *testing.T) {
-	pushTest(t, authToken, func(a auth) ([]byte, int, error) {
+// 讀取房間訊息格式
+func Test_read_room_message_payload(t *testing.T) {
+	pushTest(t, authToken, func(a auth) resp {
 		return pushRoom(a.uid, a.key, "測試")
-	}, func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto) {
+	}, func(r resp) {
 		l := new(logic.Message)
-		json.Unmarshal(p[0].Body, l)
+		json.Unmarshal(r.p[0].Body, l)
 		tz, _ := time.Parse("15:04:05", l.Time)
 		assert.Equal(t, "test", l.Name)
 		assert.Equal(t, "", l.Avatar)
@@ -140,19 +171,33 @@ func Test_push_room_by_message(t *testing.T) {
 	})
 }
 
+// 廣播訊息推送
 func Test_push_broadcast(t *testing.T) {
-	other := *authToken
-	other.RoomID = "1001"
-	pushTest(t, &other, func(a auth) ([]byte, int, error) {
+	a, err := dialAuth(authToken)
+	if err != nil {
+		assert.Fail(t, err.Error())
+		return
+	}
+	r := pushBroadcast(a.uid, a.key, "測試", []string{"1000", "1001"})
+
+	assert.Equal(t, http.StatusNoContent, r.statusCode)
+	assert.Empty(t, r.body)
+	fmt.Println("ok")
+}
+
+// 讀取廣播房間訊息
+func Test_read_broadcast_message(t *testing.T) {
+	pushTest(t, authToken, func(a auth) resp {
 		return pushBroadcast(a.uid, a.key, "測試", []string{"1000", "1001"})
-	}, func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto) {
-		assert.Len(t, p, 1)
-		assert.Nil(t, otherErr)
-		assert.Len(t, otherProto, 1)
+	}, func(r resp) {
+		assert.Equal(t, protocol.OpRaw, r.a.proto.Op)
+		assert.Len(t, r.p, 1)
+		assert.Nil(t, r.otherErr)
+		assert.Len(t, r.otherProto, 1)
 	})
 }
 
-func pushTest(t *testing.T, otherAuth *AuthToken, f func(a auth) ([]byte, int, error), ass func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto)) {
+func pushTest(t *testing.T, otherAuth AuthToken, f func(a auth) (resp), ass func(r resp)) {
 	a, err := dialAuth(authToken)
 	if err != nil {
 		assert.Fail(t, err.Error())
@@ -170,7 +215,7 @@ func pushTest(t *testing.T, otherAuth *AuthToken, f func(a auth) ([]byte, int, e
 		otherProto, otherErr = readMessageProto(other.rd, other.proto)
 	}()
 
-	b, c, err := f(a)
+	r := f(a)
 	if err != nil {
 		assert.Fail(t, err.Error())
 		return
@@ -182,10 +227,12 @@ func pushTest(t *testing.T, otherAuth *AuthToken, f func(a auth) ([]byte, int, e
 		return
 	}
 
-	assert.Equal(t, protocol.OpRaw, a.proto.Op)
-	assert.Equal(t, http.StatusNoContent, c)
-	assert.Empty(t, b)
-	ass(p, otherErr, otherProto)
+	r.p = p
+	r.a = a
+	r.otherErr = otherErr
+	r.otherProto = otherProto
+
+	ass(r)
 	fmt.Println("ok")
 }
 
@@ -237,7 +284,7 @@ func dial() (conn *websocket.Conn, err error) {
 	return
 }
 
-func dialAuth(authToken *AuthToken) (auth auth, err error) {
+func dialAuth(authToken AuthToken) (auth auth, err error) {
 	authToken.Token = uuid.New().String()
 	var (
 		conn *websocket.Conn
@@ -347,7 +394,7 @@ func read(rr *bufio.Reader, p *grpc.Proto) (packLen int32, headerLen int16, err 
 	return
 }
 
-func pushRoom(uid, key, message string) ([]byte, int, error) {
+func pushRoom(uid, key, message string) resp {
 	data := url.Values{}
 	data.Set("uid", uid)
 	data.Set("key", key)
@@ -355,7 +402,7 @@ func pushRoom(uid, key, message string) ([]byte, int, error) {
 	return push(host+"/push/room", data)
 }
 
-func pushBroadcast(uid, key, message string, roomId []string, ) ([]byte, int, error) {
+func pushBroadcast(uid, key, message string, roomId []string, ) resp {
 	data := url.Values{
 		"room_id": roomId,
 	}
@@ -365,18 +412,20 @@ func pushBroadcast(uid, key, message string, roomId []string, ) ([]byte, int, er
 	return push(fmt.Sprintf(host+"/push/all"), data)
 }
 
-func push(url string, data url.Values) (body []byte, status int, err error) {
-	resp, err := httpPost(url, data)
+func push(url string, data url.Values) (re resp) {
+	r, err := httpPost(url, data)
 	if err != nil {
 		return
 	}
 
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return
 	}
-	err = resp.Body.Close()
-	status = resp.StatusCode
+
+	re.err = r.Body.Close()
+	re.statusCode = r.StatusCode
+	re.body = body
 	fmt.Printf("response %s\n", string(body))
 	return
 }
