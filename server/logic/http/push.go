@@ -3,6 +3,7 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
+	"net/http"
 )
 
 // 單一房間推送訊息
@@ -16,7 +17,7 @@ func (s *Server) pushRoom(c *gin.Context) {
 		errors(c, ServerErr, err.Error())
 		return
 	}
-	result(c, nil, OK)
+	c.Status(http.StatusNoContent)
 }
 
 // 所有房間推送
@@ -30,5 +31,5 @@ func (s *Server) pushAll(c *gin.Context) {
 		errors(c, ServerErr, err.Error())
 		return
 	}
-	result(c, nil, OK)
+	c.Status(http.StatusNoContent)
 }

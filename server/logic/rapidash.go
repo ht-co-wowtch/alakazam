@@ -1,5 +1,5 @@
 package logic
 
 func renew(token string) (string, string) {
-	return "12333122112", "test"
+	return "82ea16cd2d6a49d887440066ef739669", "test"
 }
