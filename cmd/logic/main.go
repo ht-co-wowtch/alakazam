@@ -8,10 +8,10 @@ import (
 	"syscall"
 
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/http"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/http"
 )
 
 func main() {
@@ -32,7 +32,7 @@ func main() {
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
 	for {
 		s := <-c
-		log.Infof("goim-logic get a signal %s", s.String())
+		log.Infof("logic get a signal %s", s.String())
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			srv.Close()

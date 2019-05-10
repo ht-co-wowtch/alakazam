@@ -1,20 +1,23 @@
 package test
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
 	"golang.org/x/net/websocket"
 	"io"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
 	"testing"
 	"time"
 )
@@ -46,13 +49,13 @@ const (
 )
 
 type AuthToken struct {
-	Mid      int64  `json:"mid"`
-	Key      string `json:"key"`
-	RoomID   string `json:"room_id"`
-	Platform string `json:"platform"`
+	RoomID string `json:"room_id"`
+	Token  string `json:"token"`
 }
 
 type auth struct {
+	uid   string
+	key   string
 	wr    *bufio.Writer
 	rd    *bufio.Reader
 	proto *grpc.Proto
@@ -66,10 +69,8 @@ var (
 func TestMain(m *testing.M) {
 	rand.Seed(time.Now().Unix())
 	authToken = &AuthToken{
-		0,
-		"",
 		"1000",
-		"web",
+		uuid.New().String(),
 	}
 
 	httpClient = &http.Client{
@@ -80,6 +81,7 @@ func TestMain(m *testing.M) {
 
 func Test_auth(t *testing.T) {
 	a, err := dialAuth(authToken)
+	time.Sleep(time.Minute * 2)
 	if err != nil {
 		assert.Error(t, err)
 		return
@@ -114,42 +116,45 @@ func Test_not_heartbeat(t *testing.T) {
 	shouldBeTimeoutConnection(err, a, t)
 }
 
-func Test_push_user(t *testing.T) {
-	pushTest(t, authToken, func() ([]byte, error) {
-		return pushUser(authToken.Mid, "測試")
+func Test_push_room(t *testing.T) {
+	pushTest(t, authToken, func(a auth) ([]byte, error) {
+		return pushRoom(a.uid, a.key, "測試")
 	}, func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto) {
-		assert.Equal(t, []byte(`測試`), p[0].Body)
+		assert.Len(t, p, 1)
 		assert.Nil(t, otherErr)
-		assert.Len(t, otherProto, 0)
+		assert.Len(t, otherProto, 1)
 	})
 }
 
-func Test_push_room(t *testing.T) {
-	pushTest(t, authToken, func() ([]byte, error) {
-		return pushRoom(1000, "測試")
+func Test_push_room_by_message(t *testing.T) {
+	pushTest(t, authToken, func(a auth) ([]byte, error) {
+		return pushRoom(a.uid, a.key, "測試")
 	}, func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto) {
-		assert.Equal(t, []byte(`測試`), p[0].Body)
-		assert.Nil(t, otherErr)
-		assert.Equal(t, []byte(`測試`), otherProto[0].Body)
+		l := new(logic.Message)
+		json.Unmarshal(p[0].Body, l)
+		assert.Equal(t, "test", l.Name)
+		assert.Equal(t, "", l.Avatar)
+		assert.Equal(t, "測試", l.Message)
+		assert.False(t, l.Time.IsZero())
 	})
 }
 
 func Test_push_broadcast(t *testing.T) {
 	other := *authToken
 	other.RoomID = "1001"
-	pushTest(t, &other, func() ([]byte, error) {
-		return pushBroadcast("測試")
+	pushTest(t, &other, func(a auth) ([]byte, error) {
+		return pushBroadcast(a.uid, a.key, "測試")
 	}, func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto) {
-		assert.Equal(t, []byte(`測試`), p[0].Body)
+		assert.Equal(t, `{"name":"test","avatar":"","message":"測試",}`, string(p[0].Body))
 		assert.Nil(t, otherErr)
-		assert.Equal(t, []byte(`測試`), otherProto[0].Body)
+		assert.Equal(t, `{"name":"test","avatar":"","message":"測試"}`, string(otherProto[0].Body))
 	})
 }
 
-func pushTest(t *testing.T, otherAuth *AuthToken, f func() ([]byte, error), ass func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto)) {
+func pushTest(t *testing.T, otherAuth *AuthToken, f func(a auth) ([]byte, error), ass func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto)) {
 	a, err := dialAuth(authToken)
 	if err != nil {
-		assert.Error(t, err)
+		panic(err)
 		return
 	}
 
@@ -164,15 +169,15 @@ func pushTest(t *testing.T, otherAuth *AuthToken, f func() ([]byte, error), ass 
 		otherProto, otherErr = readMessageProto(other.rd, other.proto)
 	}()
 
-	b, err := f()
+	b, err := f(a)
 	if err != nil {
-		assert.Error(t, err)
+		panic(err)
 		return
 	}
 	time.Sleep(time.Second * 3)
 	var p []grpc.Proto
 	if p, err = readMessageProto(a.rd, a.proto); err != nil {
-		assert.Error(t, err)
+		panic(err)
 		return
 	}
 
@@ -231,7 +236,7 @@ func dial() (conn *websocket.Conn, err error) {
 }
 
 func dialAuth(authToken *AuthToken) (auth auth, err error) {
-	authToken.Mid = rand.Int63()
+	authToken.Token = uuid.New().String()
 	var (
 		conn *websocket.Conn
 	)
@@ -252,11 +257,21 @@ func dialAuth(authToken *AuthToken) (auth auth, err error) {
 	if err = readProto(rd, proto); err != nil {
 		return
 	}
-	fmt.Println("auth reply")
+	fmt.Printf("auth reply: %s\n", proto.Body)
 
 	auth.wr = wr
 	auth.rd = rd
 	auth.proto = proto
+
+	var reply struct {
+		Uid string `json:"uid"`
+		Key string `json:"key"`
+	}
+	if err = json.Unmarshal(proto.Body, &reply); err != nil {
+		return
+	}
+	auth.uid = string(reply.Uid)
+	auth.key = reply.Key
 	return
 }
 
@@ -330,20 +345,24 @@ func read(rr *bufio.Reader, p *grpc.Proto) (packLen int32, headerLen int16, err 
 	return
 }
 
-func pushUser(id int64, message string) ([]byte, error) {
-	return push(fmt.Sprintf(host+"/goim/push/mids?mids=%d", id), bytes.NewBufferString(message))
+func pushRoom(uid, key, message string) ([]byte, error) {
+	data := url.Values{}
+	data.Set("uid", uid)
+	data.Set("key", key)
+	data.Set("message", message)
+	return push(host+"/push/room", data)
 }
 
-func pushRoom(roomId int, message string) ([]byte, error) {
-	return push(fmt.Sprintf(host+"/goim/push/room?room=%d", roomId), bytes.NewBufferString(message))
+func pushBroadcast(uid, key, message string) ([]byte, error) {
+	data := url.Values{}
+	data.Set("uid", uid)
+	data.Set("key", key)
+	data.Set("message", message)
+	return push(fmt.Sprintf(host+"/push/all"), data)
 }
 
-func pushBroadcast(message string) ([]byte, error) {
-	return push(fmt.Sprintf(host+"/goim/push/all"), bytes.NewBufferString(message))
-}
-
-func push(url string, message io.Reader) (body []byte, err error) {
-	resp, err := httpPost(url, "", message)
+func push(url string, data url.Values) (body []byte, err error) {
+	resp, err := httpPost(url, data)
 	if err != nil {
 		return
 	}
@@ -357,13 +376,13 @@ func push(url string, message io.Reader) (body []byte, err error) {
 	return
 }
 
-func httpPost(url string, contentType string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest("POST", url, body)
+func httpPost(url string, body url.Values) (*http.Response, error) {
+	req, err := http.NewRequest("POST", url, strings.NewReader(body.Encode()))
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
