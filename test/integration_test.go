@@ -9,6 +9,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
 	"golang.org/x/net/websocket"
 	"io"
 	"io/ioutil"
@@ -117,11 +118,24 @@ func Test_not_heartbeat(t *testing.T) {
 
 func Test_push_room(t *testing.T) {
 	pushTest(t, authToken, func(a auth) ([]byte, error) {
-		return pushRoom(a.uid, a.key, "1000", "測試")
+		return pushRoom(a.uid, a.key, "測試")
 	}, func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto) {
-		assert.Equal(t, `{"name":"test","avatar":"","message":"測試"}`, string(p[0].Body))
+		assert.Len(t, p, 1)
 		assert.Nil(t, otherErr)
-		assert.Equal(t, `{"name":"test","avatar":"","message":"測試"}`, string(otherProto[0].Body))
+		assert.Len(t, otherProto, 1)
+	})
+}
+
+func Test_push_room_by_message(t *testing.T) {
+	pushTest(t, authToken, func(a auth) ([]byte, error) {
+		return pushRoom(a.uid, a.key, "測試")
+	}, func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto) {
+		l := new(logic.Message)
+		json.Unmarshal(p[0].Body, l)
+		assert.Equal(t, "test", l.Name)
+		assert.Equal(t, "", l.Avatar)
+		assert.Equal(t, "測試", l.Message)
+		assert.False(t, l.Time.IsZero())
 	})
 }
 
@@ -131,7 +145,7 @@ func Test_push_broadcast(t *testing.T) {
 	pushTest(t, &other, func(a auth) ([]byte, error) {
 		return pushBroadcast(a.uid, a.key, "測試")
 	}, func(p []grpc.Proto, otherErr error, otherProto []grpc.Proto) {
-		assert.Equal(t, `{"name":"test","avatar":"","message":"測試"}`, string(p[0].Body))
+		assert.Equal(t, `{"name":"test","avatar":"","message":"測試",}`, string(p[0].Body))
 		assert.Nil(t, otherErr)
 		assert.Equal(t, `{"name":"test","avatar":"","message":"測試"}`, string(otherProto[0].Body))
 	})
@@ -331,11 +345,10 @@ func read(rr *bufio.Reader, p *grpc.Proto) (packLen int32, headerLen int16, err 
 	return
 }
 
-func pushRoom(uid, key, roomId, message string) ([]byte, error) {
+func pushRoom(uid, key, message string) ([]byte, error) {
 	data := url.Values{}
 	data.Set("uid", uid)
 	data.Set("key", key)
-	data.Set("room_id", roomId)
 	data.Set("message", message)
 	return push(host+"/push/room", data)
 }

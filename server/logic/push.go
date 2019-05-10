@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
+	"time"
 )
 
-type message struct {
-	Name    string `json:"name"`
-	Avatar  string `json:"avatar"`
-	Message string `json:"message"`
+type Message struct {
+	Name    string    `json:"name"`
+	Avatar  string    `json:"avatar"`
+	Message string    `json:"message"`
+	Time    time.Time `json:"time"`
 }
 
 type PushRoomForm struct {
@@ -37,10 +39,11 @@ func (l *Logic) PushRoom(c context.Context, p *PushRoomForm) error {
 		return fmt.Errorf("沒有在房間內")
 	}
 
-	msg, err := json.Marshal(message{
+	msg, err := json.Marshal(Message{
 		Name:    res[dao.HashNameKey],
 		Avatar:  "",
 		Message: p.Message,
+		Time:    time.Now(),
 	})
 	if err != nil {
 		return err
@@ -61,10 +64,11 @@ type PushRoomAllForm struct {
 
 // 所有房間推送
 func (l *Logic) PushAll(c context.Context, p *PushRoomAllForm) error {
-	msg, err := json.Marshal(message{
+	msg, err := json.Marshal(Message{
 		Name:    "管理员",
 		Avatar:  p.Avatar,
 		Message: p.Message,
+		Time:    time.Now(),
 	})
 	if err != nil {
 		return err
