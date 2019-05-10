@@ -3,7 +3,7 @@ package job
 import (
 	"context"
 	"github.com/gogo/protobuf/proto"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/job/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/job/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"os"
 	"sync"

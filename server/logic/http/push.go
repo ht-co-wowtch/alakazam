@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
 )
 
 // 單一房間推送訊息

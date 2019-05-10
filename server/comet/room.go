@@ -3,7 +3,7 @@ package comet
 import (
 	"sync"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/comet/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 )
 

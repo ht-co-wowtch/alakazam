@@ -3,7 +3,7 @@ package logic
 import (
 	"context"
 	"encoding/json"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/dao"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
 	"time"
 
 	log "github.com/golang/glog"

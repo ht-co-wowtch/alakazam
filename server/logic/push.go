@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/dao"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
 )
 
 type message struct {

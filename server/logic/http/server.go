@@ -2,8 +2,8 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
 )
 
 // Server is http server.

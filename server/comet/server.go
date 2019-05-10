@@ -7,7 +7,7 @@ import (
 	"time"
 
 	logic "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/comet/conf"
 	"github.com/zhenjl/cityhash"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"

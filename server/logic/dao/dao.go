@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
 	"github.com/gomodule/redigo/redis"
 	kafka "gopkg.in/Shopify/sarama.v1"
 )

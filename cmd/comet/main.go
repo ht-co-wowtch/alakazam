@@ -11,9 +11,9 @@ import (
 	"time"
 
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/comet/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/comet"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/comet/grpc"
 )
 
 func main() {

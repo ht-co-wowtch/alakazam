@@ -8,10 +8,10 @@ import (
 	"syscall"
 
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/http"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/http"
 )
 
 func main() {

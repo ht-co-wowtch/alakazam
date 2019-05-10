@@ -6,8 +6,8 @@ import (
 	"time"
 
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/dao"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
 )
 
 const (

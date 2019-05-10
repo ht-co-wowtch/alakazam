@@ -2,8 +2,8 @@ package grpc
 
 import (
 	"context"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic"
-	"gitlab.com/jetfueltw/cpw/alakazam/internal/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
 	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"net"
 
