@@ -49,9 +49,6 @@ func (l *Logic) PushRoom(c context.Context, p *PushRoomForm) error {
 }
 
 type PushRoomAllForm struct {
-	// 廣播者名稱
-	Name string `json:"name"`
-
 	// 廣播者頭像
 	Avatar string `json:"avatar"`
 
@@ -65,7 +62,7 @@ type PushRoomAllForm struct {
 // 所有房間推送
 func (l *Logic) PushAll(c context.Context, p *PushRoomAllForm) error {
 	msg, err := json.Marshal(message{
-		Name:    p.Name,
+		Name:    "管理员",
 		Avatar:  p.Avatar,
 		Message: p.Message,
 	})
