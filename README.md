@@ -1,17 +1,15 @@
 # 聊天室
+- [快速開始使用服務](#quick-reference)
 - [快速建置聊天室服務](#quick-start)
   - [編譯](#build)
   - [運行](#run)
 - [依賴工具](#dependencies)
 - [架構圖](#architecture)
-- [如何使用聊天室各服務](#quick-reference)
 - [聊天室Web Socket協定](#protocol-body)
 - [Web Socket](#web-socket)
-- [前台API](#frontend-api)
-- [後台 API](#admin-api)
 - [會員身份權限](#member-permissions)
 - [訊息規則](#message-rule)
-- [系統訊息](#system-message)
+- [錯誤訊息](#system-message)
 - [聊天室版本](#tag)
 - [Q&A](#q-and-a)
 
@@ -50,19 +48,22 @@
 ## Quick Reference
 
 前台：
-1. 如何跟進入聊天室
-2. 如何在聊天室發訊息
-3. 如何接收聊天室訊息
-4. 如何知道被禁言
-5. 如何知道被封鎖
-6. 如何在聊天室發紅包
-7. 如何搶紅包
-8. 如何在聊天室發跟注
-9. 如何跟注
-10. 如何切換聊天室房間
-11. 如何拿到歷史紀錄
-12. 如何知道會員現在可不可以發紅包,跟注等權限操作
-13. 如何跟聊天室做心跳
+1. 如何跟進入聊天室 [答案](#room)
+2. 如何知道進入聊天室有沒有成功 `答案:失敗會直接close連線，成功請`[看](#response)
+3. 如何在聊天室發訊息 [前台訊息推送](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649)
+4. 如何接收聊天室訊息
+5. 如何知道被禁言
+6. 如何知道被封鎖
+7. 如何在聊天室發紅包
+8. 如何搶紅包
+9. 如何在聊天室發跟注
+10. 如何跟注
+11. 如何切換聊天室房間
+12. 如何拿到歷史紀錄
+13. 如何知道會員現在可不可以發紅包,跟注等權限操作
+14. 如何跟聊天室做心跳 [答案](#heartbeat)
+15. 聊天室心跳週期是多少 `答案:每分鐘心跳一次`
+16. 如何產生一個跟websocket溝通的Protocol [答案](#buffer)
 
 後台：
 1. 如何以管理員身份廣播多個聊天室
@@ -99,12 +100,12 @@ Body |不固定|傳送的資料16bytes之後就是Body|json格式
 用於表示本次傳輸的binary內容總長度是多少(header + body)
 
 ### Header
-用來說明binary Header是多少
+用來說明Protocol Header binary 長度是多少
 
 ### Operation
 不同的Operation說明本次Protocol資料是什麼，如心跳回覆,訊息等等
 
-name | 說明 |
+value | 說明 |
 -----|-----|
 1|要求連線到某一個房間
 2|連線到某一個房間結果回覆
@@ -117,11 +118,140 @@ name | 說明 |
 ### Body
 聊天室的訊息內容
 
+###  Buffer
+如何在前端產生一個Protocol Body，以進入聊天室為例子
+> 本例子js只是解釋如何產生一個Protocol，實際寫法請自行實作
+
+```
+// websocket傳輸模式要設定成binary
+ws.binaryType = 'arraybuffer'
+
+// 準備好body內容
+var token = '{"token":"efk350dmdh20kdf", "room_id":"123"}'
+
+// 一個長度為10的ArrayBuffer，因為如何在前端產生一個Protocol Header長度為10
+// 請看本章解上圖4+2+4 = 10
+var headerBuf = new ArrayBuffer(10)
+
+// 產生一個用於header DataView
+var headerView = new DataView(headerBuf, 0)
+
+// encoder body
+var bodyBuf = textEncoder.encode(token)
+
+// 根據set Protocol Package欄位內容，原因請看本章解上述Package解釋
+// 從第0個byte開始放資料，由於是in32所以會佔4byte
+headerView.setInt32(0, 10 + bodyBuf.byteLength)
+
+// 根據set Protocol Header欄位內容，原因請看本章解上述Header解釋
+// 從第4個byte開始放資料，由於是int16所以會佔2byte
+headerView.setInt16(4, rawHeaderLen)
+
+// 根據set Protocol Operation欄位內容，原因請看本章解上述Operation解釋
+// 從第6個byte開始放資料，由於是int32所以會佔4byte
+// 參數1代表此Protocol表示進入某房間
+headerView.setInt32(6, 1)
+
+// 將headerView與bodyBuf兩個轉成Uint8Array在做合併
+var u81 = new Uint8Array(headerBuf)
+var u82 = new Uint8Array(bodyBuf)
+res = new Uint8Array(headerBuf.byteLength + bodyBuf.byteLength)
+res.set(u81, 0)
+res.set(u82, headerBuf.byteLength)
+
+// 輸出成binary傳給websocket
+ws.send(res.buffer)
+```
+
+接收到回覆
+
+```
+ws.onmessage = function (evt) {
+	var data = evt.data
+	var dataView = new DataView(data, 0)
+	
+    // Protocol Package欄位內容
+	var packetLen = dataView.getInt32(0)
+	
+    // Protocol Header欄位內容
+	var headerLen = dataView.getInt16(4)
+	
+    // Protocol Operation欄位內容
+	var op = dataView.getInt32(6)
+    
+	switch (op) {
+   	    // 回覆進入房間結果
+		case 2:
+  		    // 擷取出body內容
+			var json = textDecoder.decode(data.slice(headerLen, packetLen))
+			var msgBody = JSON.parse(json)
+			console.log(msgBody)
+			break
+		// 回覆心跳結果，心跳body為空所以不做事	
+		case 4:
+			console.log("receive: heartbeat")
+			break
+	}
+}
+```
+
+### Response
+
+Operation = `2`=> 連線到某一個房間結果回覆Body
+
+```
+{
+    "uid": "12333122112",
+    "key": "0693bade-cee5-4e74-ae0d-e526d7e0f3fe"
+}
+```
+name|說明|
+----|-----|
+uid|user uid，發送訊息會用到
+key|這次web socket連線id，發送訊息會用到
+
+Operation = `4`=> 回覆心跳結果
+```
+body是空的，有收到Operation = 4 就是成功
+```
+
 ## Web Socket
 
-## Frontend API
+### room
 
-##  Admin API
+跟websocket建立完連線後將以下json包裝成[Protocol](#protocol-body)發送至websocket，Protocol Operation[參考](#operation)
+
+```
+  {
+      "token": "gM18QgsqI0zFFmdLyvHQxKa0N95BRZSh",
+      "room_id": 123
+  }
+```
+name|說明|
+----|-----|
+token|認證中心發行的token，在paras的jwt claims內
+room_id|想要進入的房間id，透過paras取得
+
+結果|說明|
+----|-----|
+成功|[Response](#response)
+失敗|server會把websocket close
+
+### heartbeat
+進入房間成功後websocket需要每分鐘做一次心跳，讓server確保websocket健康狀況，請利用送一個body為空的[Protocol](#protocol-body)，以下是一個簡單的js範例，至於為什麼這樣寫[請看](#buffer)
+
+```
+var headerBuf = new ArrayBuffer(rawHeaderLen);
+var headerView = new DataView(headerBuf, 0);
+headerView.setInt32(packetOffset, rawHeaderLen);
+headerView.setInt16(headerOffset, rawHeaderLen);
+headerView.setInt32(opOffset, 3);
+```
+
+結果|說明|
+----|-----|
+成功|[Response](#response)
+失敗|不會怎樣，但在最後期限心跳失敗就會close連線
 
 ## Member Permissions
 會員權限與身份
