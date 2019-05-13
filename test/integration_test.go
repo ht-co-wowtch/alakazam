@@ -31,12 +31,19 @@ type AuthToken struct {
 	Token  string `json:"token"`
 }
 
+type ConnectReply struct {
+	Uid string `json:"uid"`
+	Key string `json:"key"`
+	Err string `json:"err"`
+}
+
 type auth struct {
 	uid   string
 	key   string
 	wr    *bufio.Writer
 	rd    *bufio.Reader
 	proto *grpc.Proto
+	reply *ConnectReply
 }
 
 type resp struct {
@@ -119,6 +126,17 @@ func Test_push_room(t *testing.T) {
 
 	assert.Equal(t, http.StatusNoContent, r.statusCode)
 	assert.Empty(t, r.body)
+	fmt.Println("ok")
+}
+
+// 封鎖
+func Test_push_room_blockade(t *testing.T) {
+	a, err := dialAuthToken(authToken, "0")
+	if err != nil {
+		assert.Fail(t, err.Error())
+		return
+	}
+	assert.Equal(t, "您在封鎖状态，无法进入聊天室", a.reply.Err)
 	fmt.Println("ok")
 }
 
@@ -284,12 +302,15 @@ func shouldBeHeartbeatReply(t *testing.T, a auth, hbProto *grpc.Proto) {
 
 func dial() (conn *websocket.Conn, err error) {
 	conn, err = websocket.Dial("ws://127.0.0.1:3102/sub", "", "http://127.0.0.1")
-
 	return
 }
 
 func dialAuth(authToken AuthToken) (auth auth, err error) {
-	authToken.Token = uuid.New().String()
+	return dialAuthToken(authToken, uuid.New().String())
+}
+
+func dialAuthToken(authToken AuthToken, token string) (auth auth, err error) {
+	authToken.Token = token
 	var (
 		conn *websocket.Conn
 	)
@@ -316,15 +337,14 @@ func dialAuth(authToken AuthToken) (auth auth, err error) {
 	auth.rd = rd
 	auth.proto = proto
 
-	var reply struct {
-		Uid string `json:"uid"`
-		Key string `json:"key"`
-	}
+	reply := new(ConnectReply)
+
 	if err = json.Unmarshal(proto.Body, &reply); err != nil {
 		return
 	}
 	auth.uid = string(reply.Uid)
 	auth.key = reply.Key
+	auth.reply = reply
 	return
 }
 

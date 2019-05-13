@@ -2,25 +2,19 @@ package comet
 
 import (
 	"context"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
-	"time"
-
 	log "github.com/golang/glog"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/encoding/gzip"
 )
 
 // 告知logic service有人想要進入某個房間
-func (s *Server) Connect(c context.Context, p *pd.Proto) (uid, key, name, rid string, heartbeat time.Duration, err error) {
-	reply, err := s.rpcClient.Connect(c, &pd.ConnectReq{
+func (s *Server) Connect(c context.Context, p *pd.Proto) (*pd.ConnectReply, error) {
+	return s.rpcClient.Connect(c, &pd.ConnectReq{
 		Server: s.name,
 		Token:  p.Body,
 	})
-	if err != nil {
-		return
-	}
-	return reply.Uid, reply.Key, reply.Name, reply.RoomID, time.Duration(reply.Heartbeat), nil
 }
 
 // client連線中斷，告知logic service需清理此人的連線資料

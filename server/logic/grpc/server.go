@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/business"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
 	"net"
@@ -49,16 +50,17 @@ func (s *server) Ping(ctx context.Context, req *pb.PingReq) (*pb.PingReply, erro
 
 // 某client要做連線
 func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectReply, error) {
-	uid, key, name, room, hb, err := s.srv.Connect(ctx, req.Server, req.Token)
+	r, err := s.srv.Connect(ctx, req.Server, req.Token)
 	if err != nil {
 		return &pb.ConnectReply{}, err
 	}
 	return &pb.ConnectReply{
-		Uid:       uid,
-		Key:       key,
-		Name:      name,
-		RoomID:    room,
-		Heartbeat: hb,
+		Uid:       r.Uid,
+		Key:       r.Key,
+		Name:      r.Name,
+		RoomID:    r.RoomId,
+		Heartbeat: r.Hb,
+		Status:    r.Permission != business.Blockade,
 	}, nil
 }
 

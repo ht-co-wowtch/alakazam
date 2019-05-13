@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/comet/errors"
 	"io"
 	"net"
 	"strings"
@@ -354,13 +355,24 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 			log.Errorf("ws request operation(%d) not auth", p.Op)
 		}
 	}
-	if uid, key, name, rid, hb, err = s.Connect(ctx, p); err != nil {
-		return
-	}
 
 	var reply struct {
 		Uid string `json:"uid"`
 		Key string `json:"key"`
+		Err string `json:"error"`
+	}
+	c := new(grpc.ConnectReply)
+	if c, err = s.Connect(ctx, p); err != nil {
+		return
+	}
+	uid = c.Uid
+	key = c.Key
+	name = c.Name
+	rid = c.RoomID
+	hb = time.Duration(c.Heartbeat)
+	if !c.Status {
+		reply.Err = errors.Blockade
+		err = errors.BlockadeError
 	}
 
 	// 回覆連線至某房間結果

@@ -52,10 +52,10 @@ func (d *Dao) pingRedis(c context.Context) (err error) {
 // name => user name
 // status => user status
 // server => comet server name
-func (d *Dao) AddMapping(c context.Context, uid, key, roomId, name, server string) (err error) {
+func (d *Dao) AddMapping(c context.Context, uid, key, roomId, name, server string, status int) (err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
-	if err = conn.Send("HSET", keyUidInfo(uid), key, roomId, HashNameKey, name, hashStatusKey, "", hashServerKey, server); err != nil {
+	if err = conn.Send("HSET", keyUidInfo(uid), key, roomId, HashNameKey, name, hashStatusKey, status, hashServerKey, server); err != nil {
 		log.Errorf("conn.Send(HSET %s,%s) error(%v)", uid, key, err)
 		return
 	}

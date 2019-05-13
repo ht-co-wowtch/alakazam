@@ -78,7 +78,7 @@
 12. 如何得到禁言名單
 13. 如何得到封鎖名單
 14. 如何得到某聊天室名單
-15. 如何設定聊天設定(比如充值多少才能聊天)
+15. 如何設定聊天設定(比如`充值`&`打碼量`多少才能聊天)
 
 ## Protocol Body格式
 
@@ -240,13 +240,17 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 ```
 {
     "uid": "12333122112",
-    "key": "0693bade-cee5-4e74-ae0d-e526d7e0f3fe"
+    "key": "0693bade-cee5-4e74-ae0d-e526d7e0f3fe",
+    "error":""
 }
 ```
 name|說明|
 ----|-----|
 uid|user uid，發送訊息會用到
 key|這次web socket連線id，發送訊息會用到
+error|如為空值表示進入房間成功，反之為失敗
+
+> 目前error非空會顯示"您在封鎖状态，无法进入聊天室"
 
 Operation = `4`=> 回覆心跳結果
 ```
@@ -279,7 +283,7 @@ room_id|想要進入的房間id，透過paras取得
 結果|說明|
 ----|-----|
 成功|[Response](#response)
-失敗|server會把websocket close
+失敗(非封鎖造成)|server會把websocket close
 
 ### heartbeat
 進入房間成功後websocket需要每分鐘做一次心跳，讓server確保websocket健康狀況，請利用送一個body為空的[Protocol](#protocol-body)，以下是一個簡單的js範例，至於為什麼這樣寫[請看](#buffer)
@@ -314,12 +318,12 @@ Boyd內容帶想要切換的房間Id即可
 
 身份 |進入聊天室 |查看聊天 | 聊天 |發紅包|搶紅包|跟注|發跟注|訊息置頂|充值限制聊天|打碼量聊天|
 -----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-帶玩帳號|yes|yes|yes|yes|yes|yes|yes|no|
-一般帳號|yes|yes|yes|yes|yes|yes|yes|no|
-試玩帳號|yes|yes|no|no|no|no|no|no|
-假人|no|no|no|no|no|no|yes|no|
-後台|no|no|yes|yes|no|no|no|yes|
-未登入|no|no|no|no|no|no|no|no|
+帶玩帳號|yes|yes|yes|yes|yes|yes|yes|no|no|no
+一般帳號|yes|yes|yes|yes|yes|yes|yes|no|yes|yes
+試玩帳號|yes|yes|no|no|no|no|no|no|no|no
+假人|no|no|no|no|no|no|yes|no|no|no
+後台|no|no|yes|yes|no|no|no|yes|no|no
+未登入|no|no|no|no|no|no|no|no|no|no
 
 > 帶玩帳號,後台,假人都不算帳
 
