@@ -253,6 +253,12 @@ Operation = `4`=> 回覆心跳結果
 body是空的，有收到Operation = 4 就是成功
 ```
 
+Operation = `8`=> 回覆更換房間結果
+
+```
+body是新房間id，有收到Operation = 8 就是成功
+```
+
 ## Web Socket
 
 ### room
@@ -285,11 +291,18 @@ headerView.setInt32(packetOffset, rawHeaderLen);
 headerView.setInt16(headerOffset, rawHeaderLen);
 headerView.setInt32(opOffset, 3);
 ```
+![arch](./doc/heartbeat.png)
+
+### Change Room
+
+Boyd內容帶想要切換的房間Id即可
+
+![arch](./doc/changeRoom.png)
 
 結果|說明|
 ----|-----|
 成功|[Response](#response)
-失敗|不會怎樣，但在最後期限心跳失敗就會close連線
+失敗|失敗就會close連線
 
 ## Member Permissions
 會員權限與身份
