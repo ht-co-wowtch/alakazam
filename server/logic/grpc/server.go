@@ -2,9 +2,9 @@ package grpc
 
 import (
 	"context"
+	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
-	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"net"
 
 	"google.golang.org/grpc"
@@ -69,6 +69,11 @@ func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.Dis
 		return &pb.DisconnectReply{}, err
 	}
 	return &pb.DisconnectReply{Has: has}, nil
+}
+
+// user當前連線要切換房間
+func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.ChangeRoomReply, error) {
+	return &pb.ChangeRoomReply{}, s.srv.ChangeRoom(ctx, req.Uid, req.Key, req.RoomID)
 }
 
 // 重置user redis過期時間

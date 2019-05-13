@@ -64,6 +64,12 @@ func (s *Server) Operate(ctx context.Context, p *pd.Proto, ch *Channel, b *Bucke
 	case protocol.OpChangeRoom:
 		if err := b.ChangeRoom(string(p.Body), ch); err != nil {
 			log.Errorf("Change Room (%s) error(%v)", p.Body, err)
+		} else if _, err := s.rpcClient.ChangeRoom(ctx, &pd.ChangeRoomReq{
+			Uid:    ch.Uid,
+			Key:    ch.Key,
+			RoomID: string(p.Body),
+		}); err != nil {
+			return err
 		}
 		p.Op = protocol.OpChangeRoomReply
 	default:

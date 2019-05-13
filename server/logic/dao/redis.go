@@ -76,6 +76,31 @@ func (d *Dao) AddMapping(c context.Context, uid, key, roomId, name, server strin
 	return
 }
 
+// 更換房間
+func (d *Dao) ChangeRoom(c context.Context, uid, key, roomId string) (err error) {
+	conn := d.redis.Get()
+	defer conn.Close()
+	if err = conn.Send("HSET", keyUidInfo(uid), key, roomId); err != nil {
+		log.Errorf("conn.Send(HSET %s,%s) error(%v)", uid, key, err)
+		return
+	}
+	if err = conn.Send("EXPIRE", keyUidInfo(uid), d.redisExpire); err != nil {
+		log.Errorf("conn.Send(EXPIRE %s,%s) error(%v)", uid, key, err)
+		return
+	}
+	if err = conn.Flush(); err != nil {
+		log.Errorf("conn.Flush() error(%v)", err)
+		return
+	}
+	for i := 0; i < 2; i++ {
+		if _, err = conn.Receive(); err != nil {
+			log.Errorf("conn.Receive() error(%v)", err)
+			return
+		}
+	}
+	return
+}
+
 // restart user資料的過期時間
 // EXPIRE : uid_{user id}  (HSET)
 func (d *Dao) ExpireMapping(c context.Context, uid string) (has bool, err error) {

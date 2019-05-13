@@ -197,6 +197,31 @@ func Test_read_broadcast_message(t *testing.T) {
 	})
 }
 
+// 切換房間
+func Test_change_room(t *testing.T) {
+	a, err := dialAuth(authToken)
+	if err != nil {
+		assert.Fail(t, err.Error())
+		return
+	}
+
+	proto := new(grpc.Proto)
+	proto.Op = protocol.OpChangeRoom
+	proto.Body = []byte(`1001`)
+	if err = writeProto(a.wr, proto); err != nil {
+		assert.Fail(t, err.Error())
+		return
+	}
+	if err := readProto(a.rd, a.proto); err != nil {
+		assert.Fail(t, err.Error())
+		return
+	}
+
+	assert.Equal(t, protocol.OpChangeRoomReply, a.proto.Op)
+	assert.Equal(t, "1001", string(a.proto.Body))
+	fmt.Println("ok")
+}
+
 func pushTest(t *testing.T, otherAuth AuthToken, f func(a auth) (resp), ass func(r resp)) {
 	a, err := dialAuth(authToken)
 	if err != nil {

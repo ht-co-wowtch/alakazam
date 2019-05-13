@@ -50,6 +50,16 @@ func (l *Logic) Disconnect(c context.Context, uid, key, server string) (has bool
 	return
 }
 
+// user key更換房間
+func (l *Logic) ChangeRoom(c context.Context, uid, key, roomId string) (err error) {
+	if err = l.dao.ChangeRoom(c, uid, key, roomId); err != nil {
+		log.Errorf("l.dao.DelMapping(%s,%s)", uid, key)
+		return
+	}
+	log.Infof("conn ChangeRoom  uid:%s key:%s roomId:%s", uid, key, roomId)
+	return
+}
+
 // 更新某人redis資訊的過期時間
 func (l *Logic) Heartbeat(c context.Context, uid, key, roomId, name, server string) (err error) {
 	has, err := l.dao.ExpireMapping(c, uid)
