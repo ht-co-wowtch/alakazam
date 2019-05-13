@@ -13,14 +13,17 @@ const (
 	// server 回覆心跳結果
 	OpHeartbeatReply = int32(4)
 
+	// server批次訊息推送給client
+	OpBatchRaw = int32(5)
+
 	// server訊息推送給client
-	OpRaw = int32(5)
+	OpRaw = int32(6)
 
 	// 更換房間
-	OpChangeRoom = int32(6)
+	OpChangeRoom = int32(7)
 
 	// 回覆更換房間結果
-	OpChangeRoomReply = int32(7)
+	OpChangeRoomReply = int32(8)
 
 	// close連線
 	OpProtoFinish = int32(20)

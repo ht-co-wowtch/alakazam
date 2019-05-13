@@ -7,8 +7,8 @@ import (
 	"time"
 
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/job/conf"
 	comet "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/job/conf"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 )
@@ -140,9 +140,8 @@ func (c *Comet) process(roomChan chan *comet.BroadcastRoomReq, broadcastChan cha
 		// 多個房間推送
 		case broadcastArg := <-broadcastChan:
 			_, err := c.client.Broadcast(context.Background(), &comet.BroadcastReq{
-				Proto:   broadcastArg.Proto,
-				ProtoOp: broadcastArg.ProtoOp,
-				Speed:   broadcastArg.Speed,
+				Proto: broadcastArg.Proto,
+				Speed: broadcastArg.Speed,
 			})
 			if err != nil {
 				log.Errorf("c.client.Broadcast arg: %v error(%v)", broadcastArg, err)

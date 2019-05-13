@@ -149,7 +149,7 @@ func Test_read_room_message(t *testing.T) {
 	pushTest(t, authToken, func(a auth) resp {
 		return pushRoom(a.uid, a.key, "測試")
 	}, func(r resp) {
-		assert.Equal(t, protocol.OpRaw, r.a.proto.Op)
+		assert.Equal(t, protocol.OpBatchRaw, r.a.proto.Op)
 		assert.Len(t, r.p, 1)
 		assert.Nil(t, r.otherErr)
 		assert.Len(t, r.otherProto, 1)
@@ -190,7 +190,7 @@ func Test_read_broadcast_message(t *testing.T) {
 	pushTest(t, authToken, func(a auth) resp {
 		return pushBroadcast(a.uid, a.key, "測試", []string{"1000", "1001"})
 	}, func(r resp) {
-		assert.Equal(t, protocol.OpRaw, r.a.proto.Op)
+		assert.Equal(t, protocol.OpBatchRaw, r.a.proto.Op)
 		assert.Len(t, r.p, 1)
 		assert.Nil(t, r.otherErr)
 		assert.Len(t, r.otherProto, 1)

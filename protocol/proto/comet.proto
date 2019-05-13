@@ -16,9 +16,8 @@ message Proto {
 message Empty{}
 
 message BroadcastReq{
-    int32 protoOp = 1;
-    Proto proto = 2;
-    int32 speed = 3;
+    Proto proto = 1;
+    int32 speed = 2;
 }
 
 message BroadcastReply{}

@@ -50,7 +50,7 @@
 1. 如何跟進入聊天室 [答案](#room)
 2. 如何知道進入聊天室有沒有成功 `答案:失敗會直接close連線，成功請`[看](#response)
 3. 如何在聊天室發訊息 [前台訊息推送](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649)
-4. 如何接收聊天室訊息
+4. 如何接收聊天室訊息 [答案](#message)
 5. 如何知道被禁言or封鎖
 6. 如何在聊天室發紅包
 7. 如何搶紅包
@@ -109,9 +109,10 @@ value | 說明 |
 2|連線到某一個房間結果回覆
 3|發送心跳
 4|回覆心跳結果
-5|聊天室訊息
-6|更換房間
-7|回覆更換房間結果
+5|聊天室批次訊息
+6|聊天室訊息
+7|更換房間
+8|回覆更換房間結果
 
 ### Body
 聊天室的訊息內容
@@ -190,6 +191,45 @@ ws.onmessage = function (evt) {
 			console.log("receive: heartbeat")
 			break
 	}
+}
+```
+
+### Message
+
+聊天室一次推送的訊息不一定只有一筆，依照當下該房間發話的速度決定(房間訊息聚合)，以一個簡單js做說明
+
+![arch](./doc/message.png)
+
+```
+ws.onmessage = function (evt) {
+    // 取出header
+    var data = evt.data;
+    var dataView = new DataView(data, 0);
+    var packetLen = dataView.getInt32(0);
+    var headerLen = dataView.getInt16(4);
+    var op = dataView.getInt32(6);
+
+    switch (op) {
+        // 判斷是否為訊息
+        case 5:
+            // 一開始offset為本次Protocol Header長度，因為Body內有多筆訊息
+            // 所以需要for將body內所有訊息取出來，每一則訊息還是依照解析 Protocol
+            // 的方式從header取到足夠資訊來找出Body位置
+            for (var offset = headerLen; offset < data.byteLength; offset += packetLen) {
+                var packetLen = dataView.getInt32(offset);
+                var headerLen = dataView.getInt16(offset + 4);
+                var op = dataView.getInt32(offset + 6);
+                
+                // 確認是否為訊息
+                if op == 6 {
+                  var json = textDecoder.decode(data.slice(offset + headerLen, offset + packetLen));
+                
+                  var msgBody = JSON.parse(json)
+                  console.log(msgBody)
+                }
+            }
+            break
+    }
 }
 ```
 
