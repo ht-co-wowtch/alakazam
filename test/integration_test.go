@@ -23,28 +23,6 @@ import (
 )
 
 const (
-	// Protocol 長度的byte長度
-	_packSize = 4
-
-	// Protocol Header的byte長度
-	_headerSize = 2
-
-	// Protocol 動作意義的byte長度
-	_opSize = 4
-
-	// Protocol Header的總長度
-	_rawHeaderSize = _packSize + _headerSize + _opSize
-
-	// Protocol 長度的byte位置範圍
-	_packOffset = 0
-
-	// Protocol 整個header長度的byte位置範圍
-	// Protocol 長度 - header長度 = Body長度
-	_headerOffset = _packOffset + _packSize
-
-	// Protocol動作意義的byte位置範圍
-	_opOffset = _headerOffset + _headerSize
-
 	host = "http://127.0.0.1:3111"
 )
 
@@ -208,6 +186,7 @@ func Test_change_room(t *testing.T) {
 	proto := new(grpc.Proto)
 	proto.Op = protocol.OpChangeRoom
 	proto.Body = []byte(`1001`)
+
 	if err = writeProto(a.wr, proto); err != nil {
 		assert.Fail(t, err.Error())
 		return
@@ -355,13 +334,13 @@ func writeProto(wr *bufio.Writer, p *grpc.Proto) (err error) {
 		packLen int32
 	)
 
-	packLen = _rawHeaderSize + int32(len(p.Body))
-	if buf, err = wr.Peek(_rawHeaderSize); err != nil {
+	packLen = grpc.RawHeaderSize + int32(len(p.Body))
+	if buf, err = wr.Peek(grpc.RawHeaderSize); err != nil {
 		return
 	}
-	binary.BigEndian.PutInt32(buf[_packOffset:], packLen)
-	binary.BigEndian.PutInt16(buf[_headerOffset:], int16(_rawHeaderSize))
-	binary.BigEndian.PutInt32(buf[_opOffset:], p.Op)
+	binary.BigEndian.PutInt32(buf[grpc.PackOffset:], packLen)
+	binary.BigEndian.PutInt16(buf[grpc.HeaderOffset:], int16(grpc.RawHeaderSize))
+	binary.BigEndian.PutInt32(buf[grpc.OpOffset:], p.Op)
 	if p.Body != nil {
 		_, err = wr.Write(p.Body)
 	}
@@ -409,13 +388,13 @@ func read(rr *bufio.Reader, p *grpc.Proto) (packLen int32, headerLen int16, err 
 	var (
 		buf []byte
 	)
-	if buf, err = rr.Pop(_rawHeaderSize); err != nil {
+	if buf, err = rr.Pop(grpc.RawHeaderSize); err != nil {
 		return
 	}
 
-	packLen = binary.BigEndian.Int32(buf[_packOffset:_headerOffset])
-	headerLen = binary.BigEndian.Int16(buf[_headerOffset:_opOffset])
-	p.Op = binary.BigEndian.Int32(buf[_opOffset:])
+	packLen = binary.BigEndian.Int32(buf[grpc.PackOffset:grpc.HeaderOffset])
+	headerLen = binary.BigEndian.Int16(buf[grpc.HeaderOffset:grpc.OpOffset])
+	p.Op = binary.BigEndian.Int32(buf[grpc.OpOffset:])
 	return
 }
 
