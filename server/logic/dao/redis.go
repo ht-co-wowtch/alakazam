@@ -142,7 +142,7 @@ func (d *Dao) DelMapping(c context.Context, uid, key, server string) (has bool, 
 }
 
 // 取user資料
-func (d *Dao) UidInfo(uid string, key string) (roomId, name string, status int, err error) {
+func (d *Dao) UserData(uid string, key string) (roomId, name string, status int, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
 	if err = conn.Send("HGETALL", keyUidInfo(uid)); err != nil {

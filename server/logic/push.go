@@ -28,8 +28,8 @@ type PushRoomForm struct {
 
 // 單一房間推送
 func (l *Logic) PushRoom(c context.Context, p *PushRoomForm) error {
-	rId, name, w, err := l.dao.UidInfo(p.Uid, p.Key)
-	
+	rId, name, w, err := l.dao.UserData(p.Uid, p.Key)
+
 	if err != nil {
 		return err
 	}
