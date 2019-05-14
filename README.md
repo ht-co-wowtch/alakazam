@@ -52,18 +52,17 @@
 3. 如何在聊天室發訊息 [請看前台訊息推送API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649)
 4. 如何接收聊天室訊息 [答案](#message)
 5. 封鎖狀態下進入聊天室會怎樣 [請看Operation = 2](#response)
-6. 禁言狀態下聊天會怎樣 [請看前台訊息推送API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649)
-7. 如何知道用戶在聊天室相關權限，如聊天，發紅包等等動作
+6. 禁言狀態下聊天會怎樣 [請看前台訊息推送API範例](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649)
+7. 如何知道用戶在聊天室相關權限，如聊天，發紅包等等動作 [請看Operation = 2](#response)
 8. 如何在聊天室發紅包
 9. 如何搶紅包
 10. 如何在聊天室發跟注
 11. 如何跟注
 12. 如何切換聊天室房間[答案](#change-room)
 13. 如何拿到歷史紀錄
-14. 如何知道會員現在可不可以發紅包,跟注等權限操作
-15. 如何跟聊天室做心跳 [答案](#heartbeat)
-16. 聊天室心跳週期是多少 `答案:每分鐘心跳一次`
-17. 如何產生一個跟websocket溝通的Protocol [答案](#buffer)
+14. 如何跟聊天室做心跳 [答案](#heartbeat)
+15. 聊天室心跳週期是多少 `答案:每分鐘心跳一次`
+16. 如何產生一個跟websocket溝通的Protocol [答案](#buffer)
 
 後台：
 1. 如何以管理員身份廣播多個聊天室
@@ -241,14 +240,26 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 
 ```
 {
-    "uid": "12333122112",
-    "key": "0693bade-cee5-4e74-ae0d-e526d7e0f3fe"
+    "uid": "82ea16cd2d6a49d887440066ef739669",
+    "key": "defb108d-3d51-475a-b266-4a7f459e7a59",
+    "permission": {
+        "message": true,
+        "send_bonus": true,
+        "get_bonus": true,
+        "send_follow": true,
+        "get_follow": true
+    }
 }
 ```
 name|說明|
 ----|-----|
 uid|user uid，發送訊息會用到
 key|這次web socket連線id，發送訊息會用到
+permission.message|是否可以聊天
+permission.send_bonus|是否可以發紅包
+permission.get_bonus|是否可以搶紅包
+permission.send_follow|是否可以發跟注
+permission.get_follow|是否可以跟注
 
 被封鎖Body內容如下
 

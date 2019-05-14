@@ -9,6 +9,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/business"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
 	"golang.org/x/net/websocket"
@@ -33,9 +34,9 @@ type AuthToken struct {
 }
 
 type ConnectReply struct {
-	Uid string `json:"uid"`
-	Key string `json:"key"`
-	Err string `json:"error"`
+	Uid        string              `json:"uid"`
+	Key        string              `json:"key"`
+	Permission business.Permission `json:"permission"`
 }
 
 type auth struct {
@@ -297,6 +298,11 @@ func givenHeartbeat() *grpc.Proto {
 
 func shouldBeAuthReply(t *testing.T, a auth) {
 	assert.Equal(t, protocol.OpAuthReply, a.proto.Op)
+	assert.True(t, a.reply.Permission.Message)
+	assert.True(t, a.reply.Permission.SendBonus)
+	assert.True(t, a.reply.Permission.GetBonus)
+	assert.True(t, a.reply.Permission.SendFollow)
+	assert.True(t, a.reply.Permission.GetFollow)
 }
 
 func shouldBeHeartbeatReply(t *testing.T, a auth, hbProto *grpc.Proto) {

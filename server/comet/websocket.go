@@ -375,8 +375,9 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 	// 需要回覆給client告知uid與key
 	// 因為後續發話需依靠這兩個欄位來做pk
 	var reply struct {
-		Uid string `json:"uid"`
-		Key string `json:"key"`
+		Uid        string               `json:"uid"`
+		Key        string               `json:"key"`
+		Permission *business.Permission `json:"permission"`
 	}
 	uid = c.Uid
 	key = c.Key
@@ -386,6 +387,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 
 	reply.Uid = uid
 	reply.Key = key
+	reply.Permission = business.NewPermission(int(c.Status))
 	b, _ := json.Marshal(reply)
 	err = authReply(ws, p, b)
 	return
