@@ -3,7 +3,6 @@ package grpc
 import (
 	"context"
 	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/business"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
 	"net"
@@ -60,7 +59,7 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 		Name:      r.Name,
 		RoomID:    r.RoomId,
 		Heartbeat: r.Hb,
-		Status:    r.Permission != business.Blockade,
+		Status:    int32(r.Permission),
 	}, nil
 }
 

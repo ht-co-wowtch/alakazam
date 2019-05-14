@@ -3,8 +3,8 @@ package logic
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
 	"time"
 )
 
@@ -34,13 +34,13 @@ func (l *Logic) PushRoom(c context.Context, p *PushRoomForm) error {
 		return err
 	}
 	if name == "" {
-		return fmt.Errorf("帳號未登入")
+		return errors.LoginError
 	}
 	if rId == "" {
-		return fmt.Errorf("沒有在房間內")
+		return errors.RoomError
 	}
 	if business.IsBanned(w) {
-		return BannedError
+		return errors.BannedError
 	}
 
 	msg, err := json.Marshal(Message{

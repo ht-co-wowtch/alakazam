@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
+	Err "gitlab.com/jetfueltw/cpw/alakazam/server/errors"
 )
 
 const (
@@ -10,9 +11,6 @@ const (
 
 	// RequestErr request error
 	RequestErr = -400
-
-	// ServerErr server error
-	ServerErr = -500
 
 	contextErrCode = "code"
 )
@@ -23,12 +21,17 @@ type resp struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
-func errors(c *gin.Context, code int, msg string) {
-	c.Set(contextErrCode, code)
-	c.JSON(200, resp{
-		Code:    code,
-		Message: msg,
-	})
+func errors(c *gin.Context, err error) {
+	e, ok := err.(Err.Error)
+	if !ok {
+		e = Err.TypeError
+	}
+	errorE(c, e)
+}
+
+func errorE(c *gin.Context, e Err.Error) {
+	c.Set(contextErrCode, e.Code)
+	c.JSON(e.Status, e)
 }
 
 func result(c *gin.Context, data interface{}, code int) {

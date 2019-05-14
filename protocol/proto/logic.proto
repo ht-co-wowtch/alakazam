@@ -35,7 +35,7 @@ message ConnectReply {
     string name = 3;
     string roomID = 4;
     int64 heartbeat = 5;
-    bool status = 6;
+    int32 status = 6;
 }
 
 message DisconnectReq {

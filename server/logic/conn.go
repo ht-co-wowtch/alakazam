@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/remote"
 	"time"
@@ -44,7 +45,7 @@ func (l *Logic) Connect(c context.Context, server string, token []byte) (*Connec
 	r := new(ConnectReply)
 	if err := json.Unmarshal(token, &params); err != nil {
 		log.Errorf("json.Unmarshal(%s) error(%v)", token, err)
-		return r, ConnectError
+		return r, errors.ConnectError
 	}
 
 	if r.Uid, r.Name, r.Permission = remote.Renew(params.Token); r.Permission == business.Blockade {

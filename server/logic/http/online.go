@@ -10,7 +10,7 @@ func (s *Server) onlineRoom(c *gin.Context) {
 		Rooms []string `form:"rooms" binding:"required"`
 	}
 	if err := c.BindQuery(&arg); err != nil {
-		errors(c, RequestErr, err.Error())
+		errors(c, err)
 		return
 	}
 	res, err := s.logic.OnlineRoom(c, arg.Rooms)

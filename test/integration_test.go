@@ -9,6 +9,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
 	"golang.org/x/net/websocket"
 	"io"
@@ -135,7 +136,11 @@ func Test_push_room_blockade(t *testing.T) {
 		assert.Fail(t, err.Error())
 		return
 	}
-	assert.Equal(t, "您在封鎖状态，无法进入聊天室", a.reply.Err)
+	e := new(errors.Error)
+	json.Unmarshal(a.proto.Body, e)
+
+	assert.Equal(t, 10024011, e.Code)
+	assert.Equal(t, "您在封鎖状态，无法进入聊天室", e.Message)
 }
 
 // 禁言
@@ -147,7 +152,12 @@ func Test_push_room_banned(t *testing.T) {
 	}
 	r := pushRoom(a.uid, a.key, "測試")
 
-	assert.Equal(t, `{"code":-500,"message":"您在禁言状态，无法进入聊天室"}`, string(r.body))
+	e := new(errors.Error)
+	json.Unmarshal(r.body, e)
+
+	assert.Equal(t, http.StatusUnauthorized, r.statusCode)
+	assert.Equal(t, 10024013, e.Code)
+	assert.Equal(t, "您在禁言状态，无法发言", e.Message)
 }
 
 // 讀取房間訊息
@@ -319,6 +329,9 @@ func dialAuthToken(authToken AuthToken, token string) (auth auth, err error) {
 	)
 
 	conn, err = dial()
+	if err != nil {
+		return
+	}
 
 	wr := bufio.NewWriter(conn)
 	rd := bufio.NewReader(conn)
