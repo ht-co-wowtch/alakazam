@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
 	"net/http"
@@ -14,6 +15,7 @@ func (s *Server) pushRoom(c *gin.Context) {
 		return
 	}
 	if err := s.logic.PushRoom(c, arg); err != nil {
+		fmt.Println(err)
 		errors(c, ServerErr, err.Error())
 		return
 	}

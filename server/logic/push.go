@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/business"
 	"time"
 )
 
@@ -28,19 +28,23 @@ type PushRoomForm struct {
 
 // 單一房間推送
 func (l *Logic) PushRoom(c context.Context, p *PushRoomForm) error {
-	res, err := l.dao.UidInfo(p.Uid, p.Key)
+	rId, name, w, err := l.dao.UidInfo(p.Uid, p.Key)
+	fmt.Println(w)
 	if err != nil {
 		return err
 	}
-	if len(res) == 0 {
+	if name == "" {
 		return fmt.Errorf("帳號未登入")
 	}
-	if _, ok := res[p.Key]; !ok {
+	if rId == "" {
 		return fmt.Errorf("沒有在房間內")
+	}
+	if business.IsBanned(w) {
+		return BannedError
 	}
 
 	msg, err := json.Marshal(Message{
-		Name:    res[dao.HashNameKey],
+		Name:    name,
 		Avatar:  "",
 		Message: p.Message,
 		Time:    time.Now().Format("15:04:05"),
@@ -48,7 +52,7 @@ func (l *Logic) PushRoom(c context.Context, p *PushRoomForm) error {
 	if err != nil {
 		return err
 	}
-	return l.dao.BroadcastRoomMsg(c, res[p.Key], msg)
+	return l.dao.BroadcastRoomMsg(c, rId, msg)
 }
 
 type PushRoomAllForm struct {

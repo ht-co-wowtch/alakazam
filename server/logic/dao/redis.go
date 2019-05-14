@@ -142,7 +142,7 @@ func (d *Dao) DelMapping(c context.Context, uid, key, server string) (has bool, 
 }
 
 // 取user資料
-func (d *Dao) UidInfo(uid string, key string) (res map[string]string, err error) {
+func (d *Dao) UidInfo(uid string, key string) (roomId, name string, status int, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
 	if err = conn.Send("HGETALL", keyUidInfo(uid)); err != nil {
@@ -153,9 +153,17 @@ func (d *Dao) UidInfo(uid string, key string) (res map[string]string, err error)
 		log.Errorf("conn.Flush() error(%v)", err)
 		return
 	}
-	if res, err = redis.StringMap(conn.Receive()); err != nil {
+	res, err := redis.StringMap(conn.Receive())
+	if err != nil {
 		log.Errorf("conn.Receive() error(%v)", err)
 		return
+	}
+	roomId = res[key]
+	name = res[HashNameKey]
+
+	// TODO 自行實作redis.StringMap
+	if s, err := strconv.Atoi(res[hashStatusKey]); err == nil {
+		status = s
 	}
 	return
 }

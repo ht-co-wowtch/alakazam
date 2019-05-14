@@ -34,7 +34,7 @@ type AuthToken struct {
 type ConnectReply struct {
 	Uid string `json:"uid"`
 	Key string `json:"key"`
-	Err string `json:"err"`
+	Err string `json:"error"`
 }
 
 type auth struct {
@@ -137,6 +137,19 @@ func Test_push_room_blockade(t *testing.T) {
 		return
 	}
 	assert.Equal(t, "您在封鎖状态，无法进入聊天室", a.reply.Err)
+	fmt.Println("ok")
+}
+
+// 禁言
+func Test_push_room_banned(t *testing.T) {
+	a, err := dialAuthToken(authToken, "1")
+	if err != nil {
+		assert.Fail(t, err.Error())
+		return
+	}
+	r := pushRoom(a.uid, a.key, "測試")
+
+	assert.Equal(t, `{"code":-500,"message":"您在禁言状态，无法进入聊天室"}`, string(r.body))
 	fmt.Println("ok")
 }
 

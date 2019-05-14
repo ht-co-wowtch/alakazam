@@ -46,3 +46,8 @@ const (
 	// 後台權限
 	adminDefaultPermission = message + sendBonus + messageTop
 )
+
+// 是否禁言
+func IsBanned(weight int) bool {
+	return (message & weight) != message
+}
