@@ -126,7 +126,6 @@ func Test_push_room(t *testing.T) {
 
 	assert.Equal(t, http.StatusNoContent, r.statusCode)
 	assert.Empty(t, r.body)
-	fmt.Println("ok")
 }
 
 // 封鎖
@@ -137,7 +136,6 @@ func Test_push_room_blockade(t *testing.T) {
 		return
 	}
 	assert.Equal(t, "您在封鎖状态，无法进入聊天室", a.reply.Err)
-	fmt.Println("ok")
 }
 
 // 禁言
@@ -150,7 +148,6 @@ func Test_push_room_banned(t *testing.T) {
 	r := pushRoom(a.uid, a.key, "測試")
 
 	assert.Equal(t, `{"code":-500,"message":"您在禁言状态，无法进入聊天室"}`, string(r.body))
-	fmt.Println("ok")
 }
 
 // 讀取房間訊息
@@ -191,7 +188,6 @@ func Test_push_broadcast(t *testing.T) {
 
 	assert.Equal(t, http.StatusNoContent, r.statusCode)
 	assert.Empty(t, r.body)
-	fmt.Println("ok")
 }
 
 // 讀取廣播房間訊息
@@ -229,7 +225,6 @@ func Test_change_room(t *testing.T) {
 
 	assert.Equal(t, protocol.OpChangeRoomReply, a.proto.Op)
 	assert.Equal(t, "1001", string(a.proto.Body))
-	fmt.Println("ok")
 }
 
 func pushTest(t *testing.T, otherAuth AuthToken, f func(a auth) (resp), ass func(r resp)) {
@@ -268,7 +263,6 @@ func pushTest(t *testing.T, otherAuth AuthToken, f func(a auth) (resp), ass func
 	r.otherProto = otherProto
 
 	ass(r)
-	fmt.Println("ok")
 }
 
 func shouldBeTimeoutConnection(err error, a auth, t *testing.T) {
@@ -276,14 +270,12 @@ func shouldBeTimeoutConnection(err error, a auth, t *testing.T) {
 	err = readProto(a.rd, a.proto)
 	fmt.Println(time.Now())
 	assert.Equal(t, io.EOF, err)
-	fmt.Println("ok")
 }
 
 func shouldBeCloseConnection(err error, ws *websocket.Conn, t *testing.T) {
 	b := make([]byte, 100)
 	_, err = ws.Read(b)
 	assert.Equal(t, io.EOF, err)
-	fmt.Println("ok")
 }
 
 func givenHeartbeat() *grpc.Proto {
@@ -295,7 +287,6 @@ func givenHeartbeat() *grpc.Proto {
 
 func shouldBeAuthReply(t *testing.T, a auth) {
 	assert.Equal(t, protocol.OpAuthReply, a.proto.Op)
-	fmt.Println("ok")
 }
 
 func shouldBeHeartbeatReply(t *testing.T, a auth, hbProto *grpc.Proto) {
@@ -310,7 +301,6 @@ func shouldBeHeartbeatReply(t *testing.T, a auth, hbProto *grpc.Proto) {
 	}
 	fmt.Println("heartbeat reply")
 	assert.Equal(t, protocol.OpHeartbeatReply, a.proto.Op)
-	fmt.Println("ok")
 }
 
 func dial() (conn *websocket.Conn, err error) {
