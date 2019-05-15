@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+const (
+	host      = "http://127.0.0.1:3111"
+	adminHost = "http://127.0.0.1:3112"
+)
+
 var httpClient *http.Client
 
 func init() {
@@ -54,27 +59,4 @@ func post(url string, body url.Values) (*http.Response, error) {
 	}
 
 	return resp, nil
-}
-
-const (
-	host      = "http://127.0.0.1:3111"
-	adminHost = "http://127.0.0.1:3112"
-)
-
-func PushRoom(uid, key, message string) Response {
-	data := url.Values{}
-	data.Set("uid", uid)
-	data.Set("key", key)
-	data.Set("message", message)
-	return push(host+"/push/room", data)
-}
-
-func PushBroadcast(uid, key, message string, roomId []string, ) Response {
-	data := url.Values{
-		"room_id": roomId,
-	}
-	data.Set("uid", uid)
-	data.Set("key", key)
-	data.Set("message", message)
-	return push(fmt.Sprintf(adminHost+"/push/all"), data)
 }
