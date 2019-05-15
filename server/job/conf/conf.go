@@ -2,7 +2,6 @@ package conf
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"github.com/spf13/viper"
 	"io/ioutil"
@@ -10,9 +9,6 @@ import (
 )
 
 var (
-	// config path
-	confPath string
-
 	// Conf config
 	Conf *Config
 )
@@ -66,21 +62,16 @@ type Kafka struct {
 	Brokers []string
 }
 
-func init() {
-	flag.StringVar(&confPath, "c", "job-example.yml", "default config path")
-}
-
-// init config.
-func Init() (err error) {
+func Read(path string) (err error) {
 	viper.SetConfigType("yaml")
-	b, err := ioutil.ReadFile(confPath)
+	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
 	if err := viper.ReadConfig(bytes.NewBuffer(b)); err != nil {
 		panic(err)
 	} else {
-		fmt.Println("Using config file:", confPath)
+		fmt.Println("Using config file:", path)
 	}
 	Conf = load()
 	return

@@ -9,11 +9,19 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/request"
+	"gitlab.com/jetfueltw/cpw/alakazam/test/run"
 	"golang.org/x/net/websocket"
 	"io"
+	"os"
 	"testing"
 	"time"
 )
+
+func TestMain(m *testing.M) {
+	r := run.Run("./run")
+	defer r()
+	os.Exit(m.Run())
+}
 
 // 進入房間成功
 func TestAuth(t *testing.T) {

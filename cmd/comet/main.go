@@ -16,9 +16,15 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/server/comet/grpc"
 )
 
+var (
+	// config path
+	confPath string
+)
+
 func main() {
+	flag.StringVar(&confPath, "c", "comet.yml", "default config path.")
 	flag.Parse()
-	if err := conf.Init(); err != nil {
+	if err := conf.Read(confPath); err != nil {
 		panic(err)
 	}
 	rand.Seed(time.Now().UTC().UnixNano())

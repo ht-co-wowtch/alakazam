@@ -16,9 +16,15 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/http"
 )
 
+var (
+	// config path
+	confPath string
+)
+
 func main() {
+	flag.StringVar(&confPath, "c", "logic.yml", "default config path")
 	flag.Parse()
-	if err := conf.Init(); err != nil {
+	if err := conf.Read(confPath); err != nil {
 		panic(err)
 	}
 

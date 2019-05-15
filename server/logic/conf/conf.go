@@ -2,7 +2,6 @@ package conf
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"time"
@@ -11,9 +10,6 @@ import (
 )
 
 var (
-	// config path
-	confPath string
-
 	// Conf config
 	Conf *Config
 )
@@ -103,15 +99,6 @@ type HTTPServer struct {
 
 	// 沒用到
 	WriteTimeout time.Duration
-}
-
-func init() {
-	flag.StringVar(&confPath, "c", "logic.yml", "default config path")
-}
-
-// init config.
-func Init() (error) {
-	return Read(confPath)
 }
 
 func Read(path string) (err error) {

@@ -3,9 +3,17 @@ package admin
 import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/request"
+	"gitlab.com/jetfueltw/cpw/alakazam/test/run"
 	"net/http"
+	"os"
 	"testing"
 )
+
+func TestMain(m *testing.M) {
+	r := run.Run("../run")
+	defer r()
+	os.Exit(m.Run())
+}
 
 // 廣播訊息推送
 func TestPushBroadcast(t *testing.T) {

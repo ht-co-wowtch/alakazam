@@ -12,9 +12,15 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/server/job/conf"
 )
 
+var (
+	// config path
+	confPath string
+)
+
 func main() {
+	flag.StringVar(&confPath, "c", "job-example.yml", "default config path")
 	flag.Parse()
-	if err := conf.Init(); err != nil {
+	if err := conf.Read(confPath); err != nil {
 		panic(err)
 	}
 
