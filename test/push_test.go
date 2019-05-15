@@ -7,6 +7,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/test/request"
 	"net/http"
 	"testing"
+	"time"
 )
 
 // 房間訊息推送成功
@@ -24,11 +25,13 @@ func TestPushRoom(t *testing.T) {
 
 // 禁言
 func TestPushRoomBanned(t *testing.T) {
-	a, err := request.DialAuthToken("1000", "1")
+	a, err := request.DialAuth("1000")
 	if err != nil {
 		assert.Fail(t, err.Error())
 		return
 	}
+
+	request.SetBanned(a.Uid, "測試", 3)
 	r := request.PushRoom(a.Uid, a.Key, "測試")
 
 	e := new(errors.Error)
@@ -37,4 +40,9 @@ func TestPushRoomBanned(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, r.StatusCode)
 	assert.Equal(t, 10024013, e.Code)
 	assert.Equal(t, "您在禁言状态，无法发言", e.Message)
+
+	time.Sleep(time.Second * 4)
+
+	r = request.PushRoom(a.Uid, a.Key, "測試")
+	assert.Equal(t, http.StatusNoContent, r.StatusCode)
 }

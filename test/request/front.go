@@ -13,7 +13,7 @@ func PushRoom(uid, key, message string) Response {
 	return Post(host+"/push/room", data)
 }
 
-func PushBroadcast(uid, key, message string, roomId []string, ) Response {
+func PushBroadcast(uid, key, message string, roomId []string) Response {
 	data := url.Values{
 		"room_id": roomId,
 	}

@@ -18,7 +18,7 @@ func (s *Server) setBanned(c *gin.Context) {
 		response.ErrorE(c, errors.DataError)
 		return
 	}
-	if err := s.logic.Banned(params.Uid, params.Remark, params.Expired); err != nil {
+	if err := s.logic.SetBanned(params.Uid, params.Remark, params.Expired); err != nil {
 		response.ErrorE(c, errors.FailureError)
 		return
 	}

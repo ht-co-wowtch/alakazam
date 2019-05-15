@@ -8,7 +8,7 @@ const (
 	look = 1
 
 	// 聊天
-	message = 2
+	Message = 2
 
 	// 發紅包
 	sendBonus = 4
@@ -32,21 +32,21 @@ const (
 	messageTop = 256
 
 	// 一般權限
-	PlayDefaultPermission = look + message + sendBonus + getBonus + sendFollow + getFollow + recharge + dml
+	PlayDefaultPermission = look + Message + sendBonus + getBonus + sendFollow + getFollow + recharge + dml
 
 	// 試玩權限
 	GuestDefaultPermission = look
 
 	// 營運權限
-	marketDefaultPermission = look + message + sendBonus + getBonus + sendFollow + getFollow
+	marketDefaultPermission = look + Message + sendBonus + getBonus + sendFollow + getFollow
 
 	// 後台權限
-	adminDefaultPermission = message + sendBonus + messageTop
+	adminDefaultPermission = Message + sendBonus + messageTop
 )
 
 // 是否禁言
 func IsBanned(weight int) bool {
-	return (message & weight) != message
+	return (Message & weight) != Message
 }
 
 // 是否可查看聊天
@@ -76,7 +76,7 @@ func IsGetFollow(weight int) bool {
 
 // 用戶權限
 type Permission struct {
-	Message    bool `json:"message"`
+	Message    bool `json:"Message"`
 	SendBonus  bool `json:"send_bonus"`
 	GetBonus   bool `json:"get_bonus"`
 	SendFollow bool `json:"send_follow"`

@@ -23,7 +23,7 @@ type resp struct {
 
 // 讀取房間訊息
 func TestReadRoomMessage(t *testing.T) {
-	pushTest(t, func(a request.Auth) request.Response {
+	pushTest(t, "1000", "1000", func(a request.Auth) request.Response {
 		return request.PushRoom(a.Uid, a.Key, "測試")
 	}, func(r resp) {
 		assert.Equal(t, pd.OpBatchRaw, r.a.Proto.Op)
@@ -35,7 +35,7 @@ func TestReadRoomMessage(t *testing.T) {
 
 // 讀取房間訊息格式
 func TestReadRoomMessagePayload(t *testing.T) {
-	pushTest(t, func(a request.Auth) request.Response {
+	pushTest(t, "2000", "2000", func(a request.Auth) request.Response {
 		return request.PushRoom(a.Uid, a.Key, "測試")
 	}, func(r resp) {
 		l := new(logic.Message)
@@ -50,8 +50,8 @@ func TestReadRoomMessagePayload(t *testing.T) {
 
 // 讀取廣播房間訊息
 func TestReadBroadcastMessage(t *testing.T) {
-	pushTest(t, func(a request.Auth) request.Response {
-		return request.PushBroadcast(a.Uid, a.Key, "測試", []string{"1000", "1001"})
+	pushTest(t, "3000", "3001", func(a request.Auth) request.Response {
+		return request.PushBroadcast(a.Uid, a.Key, "測試", []string{"3000", "3001"})
 	}, func(r resp) {
 		assert.Equal(t, pd.OpBatchRaw, r.a.Proto.Op)
 		assert.Len(t, r.p, 1)
@@ -60,8 +60,8 @@ func TestReadBroadcastMessage(t *testing.T) {
 	})
 }
 
-func pushTest(t *testing.T, f func(a request.Auth) (request.Response), ass func(resp)) {
-	a, err := request.DialAuth("1000")
+func pushTest(t *testing.T, roomId string, otherRoomId string, f func(a request.Auth) (request.Response), ass func(resp)) {
+	a, err := request.DialAuth(roomId)
 	if err != nil {
 		assert.Fail(t, err.Error())
 		return
@@ -74,12 +74,12 @@ func pushTest(t *testing.T, f func(a request.Auth) (request.Response), ass func(
 	)
 
 	go func() {
-		other, otherErr = request.DialAuth("1000")
+		other, otherErr = request.DialAuth(otherRoomId)
 		otherProto, otherErr = protocol.ReadMessage(other.Rd, other.Proto)
 	}()
 
 	r := f(a)
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 2)
 	var p []grpc.Proto
 	if p, err = protocol.ReadMessage(a.Rd, a.Proto); err != nil {
 		assert.Fail(t, err.Error())

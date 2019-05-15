@@ -3,7 +3,6 @@ package logic
 import (
 	"context"
 	"encoding/json"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
 	"time"
 )
@@ -39,7 +38,7 @@ func (l *Logic) PushRoom(c context.Context, p *PushRoomForm) error {
 	if rId == "" {
 		return errors.RoomError
 	}
-	if business.IsBanned(w) {
+	if l.IsBanned(p.Uid, w) {
 		return errors.BannedError
 	}
 

@@ -1,6 +1,6 @@
 # comet連線用戶心跳(秒)，timeout logic會清除在線紀錄
 # 一定要比redis.expire還小
-heartbeat: 10
+heartbeat: 20
 
 # httpServer
 httpServer:
