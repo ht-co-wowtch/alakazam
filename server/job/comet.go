@@ -35,11 +35,11 @@ const (
 )
 
 // 與Comet server 建立grpc client
-func newCometClient(addr string) (comet.CometClient, error) {
+func newCometClient(c *conf.RPCClient) (comet.CometClient, error) {
 	// grpc 連線的timeout
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.Timeout))
 	defer cancel()
-	conn, err := grpc.DialContext(ctx, addr,
+	conn, err := grpc.DialContext(ctx, c.Addr,
 		[]grpc.DialOption{
 			// 與server溝通不用檢查憑證之類
 			grpc.WithInsecure(),
@@ -106,7 +106,7 @@ func NewComet(c *conf.Comet) (*Comet, error) {
 
 	// 跟Comet servers建立grpc client
 	var err error
-	if cmt.client, err = newCometClient(":3109"); err != nil {
+	if cmt.client, err = newCometClient(c.RPCClient); err != nil {
 		return nil, err
 	}
 	cmt.ctx, cmt.cancel = context.WithCancel(context.Background())

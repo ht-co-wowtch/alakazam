@@ -39,6 +39,15 @@ type Room struct {
 	Idle time.Duration
 }
 
+// grpc client config
+type RPCClient struct {
+	// grpc client host
+	Addr string
+
+	// client連線timeout
+	Timeout time.Duration
+}
+
 // Comet is comet config.
 type Comet struct {
 	// 處理訊息推送goroutine的chan Buffer多少
@@ -46,6 +55,8 @@ type Comet struct {
 
 	// 開多個goroutine併發處理訊息做send grpc client
 	RoutineSize int
+
+	RPCClient *RPCClient
 }
 
 // kafka config
@@ -86,6 +97,10 @@ func load() *Config {
 		Comet: &Comet{
 			RoutineChan: viper.GetInt("comet.routineChan"),
 			RoutineSize: viper.GetInt("comet.routineSize"),
+			RPCClient: &RPCClient{
+				Addr:    viper.GetString("rpcClient.host"),
+				Timeout: time.Duration(viper.GetInt("rpcClient.timeout")) * time.Second,
+			},
 		},
 		Room: &Room{
 			Batch:  20,

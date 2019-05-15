@@ -4,6 +4,7 @@ rpcServer:
 
 # grpc client
 rpcClient:
+  host: :3119
   # 連線超時
   timeout: 1
 

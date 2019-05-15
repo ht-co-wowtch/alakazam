@@ -29,8 +29,11 @@ type Config struct {
 
 // grpc client config
 type RPCClient struct {
+	// grpc client host
+	Addr string
+
 	// client連線timeout
-	Dial time.Duration
+	Timeout time.Duration
 }
 
 // grpc server config.
@@ -163,7 +166,8 @@ func Init() (err error) {
 func load() *Config {
 	return &Config{
 		RPCClient: &RPCClient{
-			Dial: time.Duration(viper.GetInt("rpcClient.timeout")) * time.Second,
+			Addr:    viper.GetString("rpcClient.host"),
+			Timeout: time.Duration(viper.GetInt("rpcClient.timeout")) * time.Second,
 		},
 		RPCServer: &RPCServer{
 			Network:           "tcp",

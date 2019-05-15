@@ -5,6 +5,12 @@ kafka:
   brokers:
     - 127.0.0.1:9092
 
+# grpc client for comet
+rpcClient:
+  host: :3109
+  # 連線超時
+  timeout: 1
+
 # 推送給comet
 comet:
   # 開多個goroutine併發處理訊息做send grpc client

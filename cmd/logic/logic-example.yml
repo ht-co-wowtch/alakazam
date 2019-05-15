@@ -13,7 +13,7 @@ httpAdminServer:
   host: :3112
   readTimeout: 1
   writeTimeout: 1
-  
+
 # grpc server
 rpcServer:
   host: :3119
