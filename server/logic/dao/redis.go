@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"time"
 
 	log "github.com/golang/glog"
 	"github.com/gomodule/redigo/redis"
@@ -15,6 +16,9 @@ import (
 const (
 	// user id的前綴詞，用於存儲在redis當key
 	_prefixUidInfo = "uid_%s"
+
+	// user 禁言key的前綴詞
+	_prefixBannedInfo = "b_%s"
 
 	// server name的前綴詞，用於存儲在redis當key
 	_prefixServerOnline = "server_%s"
@@ -31,6 +35,10 @@ const (
 
 func keyUidInfo(uid string) string {
 	return fmt.Sprintf(_prefixUidInfo, uid)
+}
+
+func keyBannedInfo(uid string) string {
+	return fmt.Sprintf(_prefixBannedInfo, uid)
 }
 
 func keyServerOnline(key string) string {
@@ -166,6 +174,31 @@ func (d *Dao) UserData(uid string, key string) (roomId, name string, status int,
 		status = s
 	}
 	return
+}
+
+// 設定禁言
+func (d *Dao) SetBanned(uid string, expired time.Duration) error {
+	conn := d.redis.Get()
+	defer conn.Close()
+	if err := conn.Send("SET", keyBannedInfo(uid), expired); err != nil {
+		log.Errorf("conn.Send(SET %s) error(%v)", uid, err)
+		return err
+	}
+	if err := conn.Send("EXPIRE", keyBannedInfo(uid), d.redisExpire); err != nil {
+		log.Errorf("conn.Send(EXPIRE %s,%s) error(%v)", uid, err)
+		return err
+	}
+	if err := conn.Flush(); err != nil {
+		log.Errorf("conn.Flush() error(%v)", err)
+		return err
+	}
+	for i := 0; i < 2; i++ {
+		if _, err := conn.Receive(); err != nil {
+			log.Errorf("conn.Receive() error(%v)", err)
+			return err
+		}
+	}
+	return nil
 }
 
 type Online struct {
