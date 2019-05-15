@@ -78,7 +78,7 @@ func TestMain(m *testing.M) {
 }
 
 // 進入房間成功
-func Test_auth(t *testing.T) {
+func TestAuth(t *testing.T) {
 	a, err := dialAuth(authToken)
 	if err != nil {
 		assert.Error(t, err)
@@ -88,7 +88,7 @@ func Test_auth(t *testing.T) {
 }
 
 // 進入房間失敗
-func Test_not_auth(t *testing.T) {
+func TestNotAuth(t *testing.T) {
 	ws, err := dial()
 	if err != nil {
 		assert.Error(t, err)
@@ -98,7 +98,7 @@ func Test_not_auth(t *testing.T) {
 }
 
 // 房間心跳成功
-func Test_heartbeat(t *testing.T) {
+func TestHeartbeat(t *testing.T) {
 	a, err := dialAuth(authToken)
 	if err != nil {
 		assert.Error(t, err)
@@ -108,7 +108,7 @@ func Test_heartbeat(t *testing.T) {
 }
 
 // 房間不心跳
-func Test_not_heartbeat(t *testing.T) {
+func TestNotHeartbeat(t *testing.T) {
 	a, err := dialAuth(authToken)
 	if err != nil {
 		assert.Error(t, err)
@@ -118,7 +118,7 @@ func Test_not_heartbeat(t *testing.T) {
 }
 
 // 房間訊息推送成功
-func Test_push_room(t *testing.T) {
+func TestPushRoom(t *testing.T) {
 	a, err := dialAuth(authToken)
 	if err != nil {
 		assert.Fail(t, err.Error())
@@ -131,7 +131,7 @@ func Test_push_room(t *testing.T) {
 }
 
 // 封鎖
-func Test_push_room_blockade(t *testing.T) {
+func TestPushRoomBlockade(t *testing.T) {
 	a, err := dialAuthToken(authToken, "0")
 	if err != nil {
 		assert.Fail(t, err.Error())
@@ -145,7 +145,7 @@ func Test_push_room_blockade(t *testing.T) {
 }
 
 // 禁言
-func Test_push_room_banned(t *testing.T) {
+func TestPushRoomBanned(t *testing.T) {
 	a, err := dialAuthToken(authToken, "1")
 	if err != nil {
 		assert.Fail(t, err.Error())
@@ -162,7 +162,7 @@ func Test_push_room_banned(t *testing.T) {
 }
 
 // 讀取房間訊息
-func Test_read_room_message(t *testing.T) {
+func TestReadRoomMessage(t *testing.T) {
 	pushTest(t, authToken, func(a auth) resp {
 		return pushRoom(a.uid, a.key, "測試")
 	}, func(r resp) {
@@ -174,7 +174,7 @@ func Test_read_room_message(t *testing.T) {
 }
 
 // 讀取房間訊息格式
-func Test_read_room_message_payload(t *testing.T) {
+func TestReadRoomMessagePayload(t *testing.T) {
 	pushTest(t, authToken, func(a auth) resp {
 		return pushRoom(a.uid, a.key, "測試")
 	}, func(r resp) {
@@ -189,7 +189,7 @@ func Test_read_room_message_payload(t *testing.T) {
 }
 
 // 廣播訊息推送
-func Test_push_broadcast(t *testing.T) {
+func TestPushBroadcast(t *testing.T) {
 	a, err := dialAuth(authToken)
 	if err != nil {
 		assert.Fail(t, err.Error())
@@ -202,7 +202,7 @@ func Test_push_broadcast(t *testing.T) {
 }
 
 // 讀取廣播房間訊息
-func Test_read_broadcast_message(t *testing.T) {
+func TestReadBroadcastMessage(t *testing.T) {
 	pushTest(t, authToken, func(a auth) resp {
 		return pushBroadcast(a.uid, a.key, "測試", []string{"1000", "1001"})
 	}, func(r resp) {
@@ -214,7 +214,7 @@ func Test_read_broadcast_message(t *testing.T) {
 }
 
 // 切換房間
-func Test_change_room(t *testing.T) {
+func TestChangeRoom(t *testing.T) {
 	a, err := dialAuth(authToken)
 	if err != nil {
 		assert.Fail(t, err.Error())
