@@ -18,14 +18,14 @@ type Server struct {
 }
 
 // New new a http server.
-func New(c *conf.HTTPServer, l *logic.Logic) *Server {
+func New(c *conf.HTTPServer, l *logic.Logic, route func(s *Server, engine *gin.Engine)) *Server {
 	engine := gin.New()
 	engine.Use(loggerHandler, recoverHandler)
 	s := &Server{
 		logic: l,
 	}
 
-	s.initRouter(engine)
+	route(s, engine)
 
 	s.server = &http.Server{
 		Addr:    c.Addr,
@@ -42,8 +42,11 @@ func New(c *conf.HTTPServer, l *logic.Logic) *Server {
 	return s
 }
 
-func (s *Server) initRouter(engine *gin.Engine) {
+func InitRouter(s *Server, engine *gin.Engine) {
 	engine.POST("/push/room", s.pushRoom)
+}
+
+func InitAdminRouter(s *Server, engine *gin.Engine) {
 	engine.POST("/push/all", s.pushAll)
 	engine.GET("/online/room", s.onlineRoom)
 }

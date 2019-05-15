@@ -25,7 +25,8 @@ import (
 )
 
 const (
-	host = "http://127.0.0.1:3111"
+	host      = "http://127.0.0.1:3111"
+	adminHost = "http://127.0.0.1:3112"
 )
 
 type AuthToken struct {
@@ -455,7 +456,7 @@ func pushBroadcast(uid, key, message string, roomId []string, ) resp {
 	data.Set("uid", uid)
 	data.Set("key", key)
 	data.Set("message", message)
-	return push(fmt.Sprintf(host+"/push/all"), data)
+	return push(fmt.Sprintf(adminHost+"/push/all"), data)
 }
 
 func push(url string, data url.Values) (re resp) {

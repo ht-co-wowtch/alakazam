@@ -22,7 +22,8 @@ func main() {
 
 	// new srever
 	srv := logic.New(conf.Conf)
-	httpSrv := http.New(conf.Conf.HTTPServer, srv)
+	httpSrv := http.New(conf.Conf.HTTPServer, srv, http.InitRouter)
+	httpAdminSrv := http.New(conf.Conf.HTTPAdminServer, srv, http.InitAdminRouter)
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
 
 	fmt.Printf("logic start success | RpcServer: %s\n", conf.Conf.RPCServer.Addr)
@@ -37,6 +38,7 @@ func main() {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			srv.Close()
 			httpSrv.Close()
+			httpAdminSrv.Close()
 			rpcSrv.GracefulStop()
 			log.Flush()
 			return
