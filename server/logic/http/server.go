@@ -17,8 +17,12 @@ type Server struct {
 	logic  *logic.Logic
 }
 
+type HttpServer interface {
+	Close()
+}
+
 // New new a http server.
-func New(c *conf.HTTPServer, l *logic.Logic, route func(s *Server, engine *gin.Engine)) *Server {
+func New(c *conf.HTTPServer, l *logic.Logic, route func(s *Server, engine *gin.Engine)) HttpServer {
 	engine := gin.New()
 	engine.Use(loggerHandler, recoverHandler)
 	s := &Server{
