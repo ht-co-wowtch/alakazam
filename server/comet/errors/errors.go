@@ -18,8 +18,4 @@ var (
 
 	// room
 	ErrRoomDroped = errors.New("room droped")
-
-	Blockade = "您在封鎖状态，无法进入聊天室"
-
-	BlockadeError = errors.New(Blockade)
 )

@@ -40,9 +40,6 @@ const (
 	// 營運權限
 	marketDefaultPermission = look + message + sendBonus + getBonus + sendFollow + getFollow
 
-	// 機器人權限
-	fakeDefaultPermission = sendFollow
-
 	// 後台權限
 	adminDefaultPermission = message + sendBonus + messageTop
 )
