@@ -339,8 +339,6 @@ Boyd內容帶想要切換的房間Id即可
 帶玩帳號|yes|yes|yes|yes|yes|yes|yes|no|no|no
 一般帳號|yes|yes|yes|yes|yes|yes|yes|no|yes|yes
 試玩帳號|yes|yes|no|no|no|no|no|no|no|no
-假人|no|no|no|no|no|no|yes|no|no|no
-後台|no|no|yes|yes|no|no|no|yes|no|no
 未登入|no|no|no|no|no|no|no|no|no|no
 
 > 帶玩帳號,後台,假人都不算帳
@@ -401,9 +399,6 @@ Error Code|異常狀況| 訊息
 |10024013|被禁言者發言|您在禁言状态，无法发言|
 |10024220|聊天室發話資料有誤|资料验证错误|
 |10025000|預料之外的錯誤|应用程序错误|
-||試玩發言|请先登入会员
-||試玩搶紅包|请先登入会员
-||試玩發紅包|请先登入会员
 ||後台執行禁言|[会员名称] 被禁言
 ||後台執行封鎖|[会员名称] 被封鎖
 ||不符後台條件發言|您无法发言，当前发言条件：前两天充值不少于[  ]元；打码量不少于[  ]元
