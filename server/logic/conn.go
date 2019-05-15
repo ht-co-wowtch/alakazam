@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/google/uuid"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/remote"

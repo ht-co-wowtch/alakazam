@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
 	"io"
 	"net"

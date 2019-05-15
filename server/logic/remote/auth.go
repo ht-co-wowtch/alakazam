@@ -1,6 +1,8 @@
 package remote
 
-import "gitlab.com/jetfueltw/cpw/alakazam/server/business"
+import (
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
+)
 
 func Renew(token string) (string, string, int) {
 	if token == "0" {
