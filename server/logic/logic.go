@@ -46,6 +46,7 @@ func (l *Logic) Ping(c context.Context) (err error) {
 // Close close resources.
 func (l *Logic) Close() {
 	l.dao.Close()
+	log.Infof("logic close")
 }
 
 func (l *Logic) onlineproc() {
