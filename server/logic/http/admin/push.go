@@ -12,7 +12,7 @@ import (
 func (s *Server) pushAll(c *gin.Context) {
 	arg := new(logic.PushRoomAllForm)
 	if err := c.ShouldBind(arg); err != nil {
-		response.ErrorE(c, errors.PushRoomDataError)
+		response.ErrorE(c, errors.DataError)
 		return
 	}
 	if err := s.logic.PushAll(c, arg); err != nil {
