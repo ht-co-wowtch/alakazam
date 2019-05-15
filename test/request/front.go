@@ -10,7 +10,7 @@ func PushRoom(uid, key, message string) Response {
 	data.Set("uid", uid)
 	data.Set("key", key)
 	data.Set("message", message)
-	return push(host+"/push/room", data)
+	return Post(host+"/push/room", data)
 }
 
 func PushBroadcast(uid, key, message string, roomId []string, ) Response {
@@ -20,5 +20,5 @@ func PushBroadcast(uid, key, message string, roomId []string, ) Response {
 	data.Set("uid", uid)
 	data.Set("key", key)
 	data.Set("message", message)
-	return push(fmt.Sprintf(adminHost+"/push/all"), data)
+	return Post(fmt.Sprintf(adminHost+"/push/all"), data)
 }
