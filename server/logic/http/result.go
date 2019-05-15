@@ -6,12 +6,6 @@ import (
 )
 
 const (
-	// OK ok
-	OK = 0
-
-	// RequestErr request error
-	RequestErr = -400
-
 	contextErrCode = "code"
 )
 
@@ -21,20 +15,20 @@ type resp struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
-func errors(c *gin.Context, err error) {
+func Errors(c *gin.Context, err error) {
 	e, ok := err.(Err.Error)
 	if !ok {
 		e = Err.TypeError
 	}
-	errorE(c, e)
+	ErrorE(c, e)
 }
 
-func errorE(c *gin.Context, e Err.Error) {
+func ErrorE(c *gin.Context, e Err.Error) {
 	c.Set(contextErrCode, e.Code)
 	c.JSON(e.Status, e)
 }
 
-func result(c *gin.Context, data interface{}, code int) {
+func Result(c *gin.Context, data interface{}, code int) {
 	c.Set(contextErrCode, code)
 	c.JSON(200, resp{
 		Code: code,

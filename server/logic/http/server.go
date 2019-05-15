@@ -4,37 +4,40 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
 	"net/http"
 )
 
-// Server is http server.
-type Server struct {
-	ctx    context.Context
-	cancel context.CancelFunc
-	server *http.Server
-	logic  *logic.Logic
+type LogicHttpServer interface {
+	InitRoute(e *gin.Engine)
 }
 
-type HttpServer interface {
-	Close()
+// Server is http server.
+type Server struct {
+	ctx context.Context
+
+	cancel context.CancelFunc
+
+	// http server 結構
+	server *http.Server
+
+	// 各個不同的http server (後台 or 前台)
+	logic LogicHttpServer
 }
 
 // New new a http server.
-func New(c *conf.HTTPServer, l *logic.Logic, route func(s *Server, engine *gin.Engine)) HttpServer {
+func New(c *conf.HTTPServer, srv LogicHttpServer) *Server {
 	engine := gin.New()
 	engine.Use(loggerHandler, recoverHandler)
 	s := &Server{
-		logic: l,
+		server: &http.Server{
+			Addr:    c.Addr,
+			Handler: engine,
+		},
+		logic: srv,
 	}
 
-	route(s, engine)
-
-	s.server = &http.Server{
-		Addr:    c.Addr,
-		Handler: engine,
-	}
+	s.logic.InitRoute(engine)
 
 	go func() {
 		if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -44,15 +47,6 @@ func New(c *conf.HTTPServer, l *logic.Logic, route func(s *Server, engine *gin.E
 
 	s.ctx, s.cancel = context.WithCancel(context.Background())
 	return s
-}
-
-func InitRouter(s *Server, engine *gin.Engine) {
-	engine.POST("/push/room", s.pushRoom)
-}
-
-func InitAdminRouter(s *Server, engine *gin.Engine) {
-	engine.POST("/push/all", s.pushAll)
-	engine.GET("/online/room", s.onlineRoom)
 }
 
 // Close close the server.

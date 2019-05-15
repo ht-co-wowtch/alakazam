@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/http/admin"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/http/front"
 	"os"
 	"os/signal"
 	"syscall"
@@ -22,8 +24,8 @@ func main() {
 
 	// new srever
 	srv := logic.New(conf.Conf)
-	httpSrv := http.New(conf.Conf.HTTPServer, srv, http.InitRouter)
-	httpAdminSrv := http.New(conf.Conf.HTTPAdminServer, srv, http.InitAdminRouter)
+	httpSrv := http.New(conf.Conf.HTTPServer, front.New(srv))
+	httpAdminSrv := http.New(conf.Conf.HTTPAdminServer, admin.New(srv))
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
 
 	fmt.Printf("logic start success | RpcServer: %s\n", conf.Conf.RPCServer.Addr)
