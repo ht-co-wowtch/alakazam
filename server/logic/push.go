@@ -57,19 +57,27 @@ func (l *Logic) PushRoom(p *PushRoomForm) error {
 	return nil
 }
 
+type PushRoomAllForm struct {
+	// 要廣播的房間
+	RoomId []string `json:"room_id" binding:"required"`
+
+	// user push message
+	Message string `json:"message" binding:"required"`
+}
+
 // 所有房間推送
-func (l *Logic) PushAll(roomId []string, message string) error {
+func (l *Logic) PushAll(p *PushRoomAllForm) error {
 	msg, err := json.Marshal(Message{
 		Name:    "管理员",
 		Avatar:  "",
-		Message: message,
+		Message: p.Message,
 		Time:    time.Now().Format("15:04:05"),
 	})
 	if err != nil {
 		log.Errorf("pushAll json.Marshal() error(%v)", err)
 		return errors.FailureError
 	}
-	if err := l.dao.BroadcastMsg(roomId, msg); err != nil {
+	if err := l.dao.BroadcastMsg(p.RoomId, msg); err != nil {
 		return errors.FailureError
 	}
 	return nil
