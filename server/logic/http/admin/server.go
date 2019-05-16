@@ -18,6 +18,7 @@ func New(l *logic.Logic) *Server {
 func (s *Server) InitRoute(e *gin.Engine) {
 	e.POST("/blockade", s.setBlockade)
 	e.POST("/banned", s.setBanned)
+	e.DELETE("/banned", s.removeBanned)
 
 	e.POST("/push/all", s.pushAll)
 }

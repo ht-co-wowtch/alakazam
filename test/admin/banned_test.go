@@ -15,3 +15,10 @@ func TestSetBanned(t *testing.T) {
 	assert.Empty(t, string(r.Body))
 }
 
+// 解除某會員禁言
+func TestDeleteBanned(t *testing.T) {
+	r := request.DeleteBanned("82ea16cd2d6a49d887440066ef739669")
+	assert.Nil(t, r.Error)
+	assert.Equal(t, http.StatusNoContent, r.StatusCode)
+	assert.Empty(t, string(r.Body))
+}

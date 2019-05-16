@@ -24,3 +24,19 @@ func (s *Server) setBanned(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
+
+// 解除禁言
+func (s *Server) removeBanned(c *gin.Context) {
+	var params struct {
+		Uid string `form:"uid" binding:"required"`
+	}
+	if err := c.ShouldBindQuery(&params); err != nil {
+		response.ErrorE(c, errors.DataError)
+		return
+	}
+	if !s.logic.RemoveBanned(params.Uid) {
+		response.ErrorE(c, errors.FailureError)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}

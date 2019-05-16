@@ -1,6 +1,9 @@
 package request
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"net/url"
+)
 
 func SetBanned(uid, remark string, sec int) Response {
 	j := map[string]interface{}{
@@ -10,6 +13,12 @@ func SetBanned(uid, remark string, sec int) Response {
 	}
 	b, _ := json.Marshal(j)
 	return PostJson(adminHost+"/banned", b)
+}
+
+func DeleteBanned(uid string) Response {
+	d := url.Values{}
+	d.Set("uid", uid)
+	return Delete(adminHost+"/banned", d)
 }
 
 func SetBlockade(uid, remark string) Response {

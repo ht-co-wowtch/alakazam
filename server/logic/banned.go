@@ -27,3 +27,9 @@ func (l *Logic) IsBanned(uid string, status int) bool {
 	}
 	return false
 }
+
+func (l *Logic) RemoveBanned(uid string) bool {
+	// TODO 待實作 從redis刪除禁言資料並對此user增加發話權限
+	// 用DelBanned method
+	return true
+}

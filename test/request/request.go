@@ -37,6 +37,10 @@ func PostJson(url string, body []byte) Response {
 	return response(postJson(url, body))
 }
 
+func Delete(url string, data url.Values) Response {
+	return response(deletes(url, data))
+}
+
 func response(r *http.Response, err error) (re Response) {
 	if err != nil {
 		return
@@ -76,6 +80,20 @@ func postJson(url string, body []byte) (*http.Response, error) {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func deletes(url string, body url.Values) (*http.Response, error) {
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s?%s", url, body.Encode()), nil)
+	if err != nil {
+		return nil, err
+	}
+
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
