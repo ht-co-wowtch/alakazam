@@ -15,8 +15,6 @@ func TestIsNotBanned(t *testing.T) {
 }
 
 func TestIsBanned(t *testing.T) {
-	l, d := newTestDao()
-
 	err := d.SetBanned("456", 10)
 	assert.Nil(t, err)
 
@@ -25,8 +23,6 @@ func TestIsBanned(t *testing.T) {
 }
 
 func TestBannedExpire(t *testing.T) {
-	l, d := newTestDao()
-
 	err := d.AddMapping("789", "1", "", "", "", 1)
 	assert.Nil(t, err)
 
@@ -45,16 +41,4 @@ func TestBannedError(t *testing.T) {
 
 	is := l.isBanned("", 1)
 	assert.False(t, is)
-}
-
-func newTestDao() (Logic, *dao.Dao) {
-	initTestConfig()
-	d := dao.New(conf.Conf)
-	return Logic{dao: d}, d
-}
-
-func initTestConfig() {
-	if err := conf.Read("../../test/run/logic.yml"); err != nil {
-		panic(err)
-	}
 }
