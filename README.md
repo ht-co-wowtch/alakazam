@@ -65,14 +65,14 @@
 16. 如何產生一個跟websocket溝通的Protocol [答案](#buffer)
 
 後台：
-1. 如何以管理員身份廣播多個聊天室
+1. 如何以管理員身份廣播多個聊天室 [請看後台訊息推送API範例](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#c14d247c-4210-446e-aa0d-97989e4fd03c)
 2. 如何以系統公告身份廣播多個聊天室
 3. 如何得到線上所有聊天室清單與在線人數
 4. 如何得到某聊天室歷史紀錄
-5. 如何禁言某會員
-6. 如何封鎖某會員
-7. 如何解禁言某會員
-8. 如何解封鎖某會員
+5. 如何禁言某會員 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#1f05bf12-bceb-431c-b50a-cda72b61804e)
+6. 如何封鎖某會員 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#c84c8a03-1e15-412d-889d-642c537d0d45)
+7. 如何解禁言某會員 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#b39e8934-9ca3-4dae-8d23-d1931e1bf5ee)
+8. 如何解封鎖某會員 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#db157cff-a26b-4d07-a109-ff7d676f9ecb)
 9. 如何在聊天室發紅包
 10. 如何在聊天室發跟注
 11. 如何將訊息置頂
