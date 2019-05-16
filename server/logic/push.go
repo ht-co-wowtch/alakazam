@@ -2,6 +2,7 @@ package logic
 
 import (
 	"encoding/json"
+	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
 	"time"
 )
@@ -27,9 +28,8 @@ type PushRoomForm struct {
 // 單一房間推送
 func (l *Logic) PushRoom(p *PushRoomForm) error {
 	rId, name, w, err := l.dao.UserData(p.Uid, p.Key)
-
 	if err != nil {
-		return err
+		return errors.FailureError
 	}
 	if name == "" {
 		return errors.LoginError
@@ -48,9 +48,13 @@ func (l *Logic) PushRoom(p *PushRoomForm) error {
 		Time:    time.Now().Format("15:04:05"),
 	})
 	if err != nil {
-		return err
+		log.Errorf("json.Marshal(uid: %s ) error(%v)", p.Uid, err)
+		return errors.FailureError
 	}
-	return l.dao.BroadcastRoomMsg(rId, msg)
+	if err := l.dao.BroadcastRoomMsg(rId, msg); err != nil {
+		return errors.FailureError
+	}
+	return nil
 }
 
 type PushRoomAllForm struct {
