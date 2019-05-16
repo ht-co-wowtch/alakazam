@@ -10,8 +10,7 @@ import (
 )
 
 const (
-	onlineTick     = time.Second * 10
-	onlineDeadline = time.Minute * 5
+	onlineTick = time.Second * 30
 )
 
 // Logic struct
@@ -68,9 +67,7 @@ func (l *Logic) loadOnline() (err error) {
 	if err != nil {
 		return
 	}
-	if time.Since(time.Unix(online.Updated, 0)) > onlineDeadline {
-		_ = l.dao.DelServerOnline(host)
-	}
+
 	for roomID, count := range online.RoomCount {
 		roomCount[roomID] += count
 	}

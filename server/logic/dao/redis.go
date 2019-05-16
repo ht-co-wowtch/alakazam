@@ -266,17 +266,17 @@ type Online struct {
 // HSET Key hashKey jsonBody
 // Key用server name
 // hashKey則是將room name以City Hash32做hash後得出一個數字，以這個數字當hashKey
-// 至於為什麼hashKey還要用City Hash32做hash就不知道
 func (d *Dao) AddServerOnline(server string, online *Online) (err error) {
 	roomsMap := map[uint32]map[string]int32{}
 	for room, count := range online.RoomCount {
-		rMap := roomsMap[cityhash.CityHash32([]byte(room), uint32(len(room)))%64]
+		rMap := roomsMap[cityhash.CityHash32([]byte(room), uint32(len(room)))%8]
 		if rMap == nil {
 			rMap = make(map[string]int32)
-			roomsMap[cityhash.CityHash32([]byte(room), uint32(len(room)))%64] = rMap
+			roomsMap[cityhash.CityHash32([]byte(room), uint32(len(room)))%8] = rMap
 		}
 		rMap[room] = count
 	}
+	
 	key := keyServerOnline(server)
 	for hashKey, value := range roomsMap {
 		err = d.addServerOnline(key, strconv.FormatInt(int64(hashKey), 10), &Online{RoomCount: value, Server: online.Server, Updated: online.Updated})
@@ -320,7 +320,7 @@ func (d *Dao) ServerOnline(server string) (online *Online, err error) {
 	online = &Online{RoomCount: map[string]int32{}}
 	// server name
 	key := keyServerOnline(server)
-	for i := 0; i < 64; i++ {
+	for i := 0; i < 8; i++ {
 		ol, err := d.serverOnline(key, strconv.FormatInt(int64(i), 10))
 		if err == nil && ol != nil {
 			online.Server = ol.Server
@@ -343,11 +343,11 @@ func (d *Dao) serverOnline(key string, hashKey string) (online *Online, err erro
 	// {
 	// 		"server":"ne0002de-MacBook-Pro.local",
 	// 		"room_count":{
-	// 			"chat://1000":1
+	// 			"1000":1
 	// 		 },
 	// 		 "updated":1556368160
 	// }"
-	// chat://1000是房間type + id，1是人數
+	// 1000是房間id，1是人數
 	// updated是資料更新時間
 	b, err := redis.Bytes(conn.Do("HGET", key, hashKey))
 	if err != nil {

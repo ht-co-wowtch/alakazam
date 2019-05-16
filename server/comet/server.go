@@ -145,6 +145,7 @@ func (s *Server) onlineproc() {
 				roomCount[roomID] += count
 			}
 		}
+
 		if allRoomsCount, err = s.RenewOnline(context.Background(), s.name, roomCount); err != nil {
 			time.Sleep(time.Second)
 			continue
@@ -153,7 +154,7 @@ func (s *Server) onlineproc() {
 			bucket.UpRoomsCount(allRoomsCount)
 		}
 
-		// 每10秒統計一次發給logic
-		time.Sleep(time.Second * 10)
+		// 每15秒統計一次發給logic
+		time.Sleep(time.Second * 15)
 	}
 }
