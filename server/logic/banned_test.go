@@ -23,13 +23,12 @@ func TestIsBanned(t *testing.T) {
 }
 
 func TestBannedExpire(t *testing.T) {
-	err := d.AddMapping("789", "1", "", "", "", 1)
-	assert.Nil(t, err)
+	addUser(t, "789", "1", "", "", 1)
 
 	is := l.isBanned("789", 1)
 	assert.False(t, is)
 
-	_, _, s, _ := d.UserData("789", "1")
+	_, _, s := getUser(t, "789", "1")
 	assert.Equal(t, 1+business.Message, s)
 }
 

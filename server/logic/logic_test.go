@@ -1,9 +1,9 @@
 package logic
 
 import (
-	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
+	test "gitlab.com/jetfueltw/cpw/alakazam/test/dao"
 	"os"
 	"testing"
 )
@@ -30,7 +30,10 @@ func initTestConfig() {
 	}
 }
 
-func addUser(t *testing.T, uid, key, roomId, name string) {
-	err := d.AddMapping(uid, key, roomId, name, "", 0)
-	assert.Nil(t, err)
+func addUser(t *testing.T, uid, key, roomId, name string, status int) {
+	test.AddUser(d, t, uid, key, roomId, name, status)
+}
+
+func getUser(t *testing.T, uid, key string) (string, string, int) {
+	return test.GetUser(d, t, uid, key)
 }

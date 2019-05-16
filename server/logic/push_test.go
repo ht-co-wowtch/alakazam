@@ -17,7 +17,7 @@ func TestPushRoomNotLogin(t *testing.T) {
 }
 
 func TestPushRoomNotRoomIdEmpty(t *testing.T) {
-	addUser(t, "123", "", "", "test")
+	addUser(t, "123", "", "", "test", 0)
 
 	p := &PushRoomForm{
 		Uid:     "123",
@@ -29,7 +29,7 @@ func TestPushRoomNotRoomIdEmpty(t *testing.T) {
 }
 
 func TestPushRoomNotKey(t *testing.T) {
-	addUser(t, "123", "1", "1000", "test")
+	addUser(t, "123", "1", "1000", "test", 0)
 
 	p := &PushRoomForm{
 		Uid:     "123",
@@ -41,7 +41,7 @@ func TestPushRoomNotKey(t *testing.T) {
 }
 
 func TestPushRoomNotUid(t *testing.T) {
-	addUser(t, "123", "1", "1000", "test")
+	addUser(t, "123", "1", "1000", "test", 0)
 
 	p := &PushRoomForm{
 		Uid:     "",
