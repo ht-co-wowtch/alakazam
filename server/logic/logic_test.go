@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 func newTestDao() (Logic, *dao.Dao) {
 	initTestConfig()
 	d := dao.New(conf.Conf)
-	return Logic{dao: d}, d
+	return Logic{c: conf.Conf, dao: d}, d
 }
 
 func initTestConfig() {
