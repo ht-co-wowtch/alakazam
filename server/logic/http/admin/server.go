@@ -16,7 +16,11 @@ func New(l *logic.Logic) *Server {
 }
 
 func (s *Server) InitRoute(e *gin.Engine) {
+	// 封鎖
 	e.POST("/blockade", s.setBlockade)
+	e.DELETE("/blockade", s.removeBlockade)
+
+	// 禁言
 	e.POST("/banned", s.setBanned)
 	e.DELETE("/banned", s.removeBanned)
 

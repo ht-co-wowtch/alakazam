@@ -22,3 +22,18 @@ func (s *Server) setBlockade(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
+
+func (s *Server) removeBlockade(c *gin.Context) {
+	var params struct {
+		Uid string `form:"uid" binding:"required"`
+	}
+	if err := c.ShouldBindQuery(&params); err != nil {
+		response.ErrorE(c, errors.DataError)
+		return
+	}
+	if err := s.logic.RemoveBlockade(params.Uid); err != nil {
+		response.ErrorE(c, errors.FailureError)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}

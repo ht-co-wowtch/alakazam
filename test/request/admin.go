@@ -29,3 +29,9 @@ func SetBlockade(uid, remark string) Response {
 	b, _ := json.Marshal(j)
 	return PostJson(adminHost+"/blockade", b)
 }
+
+func DeleteBlockade(uid string) Response {
+	d := url.Values{}
+	d.Set("uid", uid)
+	return Delete(adminHost+"/blockade", d)
+}
