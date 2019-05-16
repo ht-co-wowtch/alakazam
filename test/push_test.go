@@ -25,10 +25,27 @@ func TestPushRoom(t *testing.T) {
 
 // 禁言
 func TestPushRoomBanned(t *testing.T) {
+	a := givenBanned(t)
+	time.Sleep(time.Second * 4)
+	r := request.PushRoom(a.Uid, a.Key, "測試")
+
+	assert.Equal(t, http.StatusNoContent, r.StatusCode)
+}
+
+// 解除禁言
+func TestPushRoomRemoveBanned(t *testing.T) {
+	a := givenBanned(t)
+	request.DeleteBanned(a.Uid)
+	r := request.PushRoom(a.Uid, a.Key, "測試")
+
+	assert.Equal(t, http.StatusNoContent, r.StatusCode)
+}
+
+func givenBanned(t *testing.T) request.Auth {
 	a, err := request.DialAuth("1000")
 	if err != nil {
 		assert.Fail(t, err.Error())
-		return
+		return a
 	}
 
 	request.SetBanned(a.Uid, "測試", 3)
@@ -40,9 +57,5 @@ func TestPushRoomBanned(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, r.StatusCode)
 	assert.Equal(t, 10024013, e.Code)
 	assert.Equal(t, "您在禁言状态，无法发言", e.Message)
-
-	time.Sleep(time.Second * 4)
-
-	r = request.PushRoom(a.Uid, a.Key, "測試")
-	assert.Equal(t, http.StatusNoContent, r.StatusCode)
+	return a
 }

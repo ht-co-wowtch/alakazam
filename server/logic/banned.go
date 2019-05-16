@@ -29,7 +29,9 @@ func (l *Logic) isBanned(uid string, status int) bool {
 }
 
 func (l *Logic) RemoveBanned(uid string) error {
-	// TODO 待實作 從redis刪除禁言資料並對此user增加發話權限
-	// 用DelBanned method
+	if err := l.dao.DelBanned(uid); err != nil {
+		log.Errorf("dao.DelBanned(uid: %s) error(%v)", uid, err)
+		return err
+	}
 	return nil
 }
