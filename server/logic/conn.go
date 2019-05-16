@@ -96,6 +96,7 @@ func (l *Logic) Heartbeat(uid, key, roomId, name, server string) (err error) {
 	}
 	// 沒更新成功就直接做覆蓋
 	if !has {
+		// TODO 要重抓user 權限值帶到status欄位
 		if err = l.dao.AddMapping(uid, key, roomId, name, server, 0); err != nil {
 			log.Errorf("l.dao.AddMapping(%s,%s,%s) error(%v)", uid, key, server, err)
 			return
