@@ -9,12 +9,6 @@ import (
 	"testing"
 )
 
-func TestMain(m *testing.M) {
-	r := run.Run("../run")
-	defer r()
-	os.Exit(m.Run())
-}
-
 // 廣播訊息推送
 func TestPushBroadcast(t *testing.T) {
 	a, err := request.DialAuth("1000")
