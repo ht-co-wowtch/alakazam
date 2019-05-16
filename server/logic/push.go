@@ -15,13 +15,13 @@ type Message struct {
 
 type PushRoomForm struct {
 	// user uid
-	Uid string `form:"uid" binding:"required"`
+	Uid string `json:"uid" binding:"required"`
 
 	// user connection key
-	Key string `form:"key" binding:"required"`
+	Key string `json:"key" binding:"required"`
 
 	// user push message
-	Message string `form:"message" binding:"required"`
+	Message string `json:"message" binding:"required"`
 }
 
 // 單一房間推送
