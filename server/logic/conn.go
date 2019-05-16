@@ -101,7 +101,7 @@ func (l *Logic) Heartbeat(uid, key, roomId, name, server string) (err error) {
 			return
 		}
 	}
-	log.Infof("conn heartbeat key:%s server:%s uid:%d", key, server, uid)
+	log.Infof("conn heartbeat key:%s server:%s uid:%s", key, server, uid)
 	return
 }
 
