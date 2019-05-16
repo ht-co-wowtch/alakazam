@@ -7,12 +7,12 @@ import (
 	"net/http"
 )
 
-// 所有房間推送
+// 設定禁言
 func (s *Server) setBanned(c *gin.Context) {
 	var params struct {
-		Uid     string `json:"uid"`
-		Expired int    `json:"expired"`
-		Remark  string `json:"remark"`
+		Uid     string `json:"uid" binding:"required"`
+		Expired int    `json:"expired" binding:"required"`
+		Remark  string `json:"remark" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&params); err != nil {
 		response.ErrorE(c, errors.DataError)
