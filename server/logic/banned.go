@@ -9,7 +9,7 @@ func (l *Logic) SetBanned(uid, remark string, expired int) error {
 	return l.dao.SetBanned(uid, expired)
 }
 
-func (l *Logic) IsBanned(uid string, status int) bool {
+func (l *Logic) isBanned(uid string, status int) bool {
 	if !business.IsBanned(status) {
 		return false
 	}

@@ -37,7 +37,7 @@ func (l *Logic) PushRoom(p *PushRoomForm) error {
 	if rId == "" {
 		return errors.RoomError
 	}
-	if l.IsBanned(p.Uid, w) {
+	if l.isBanned(p.Uid, w) {
 		return errors.BannedError
 	}
 
