@@ -15,7 +15,7 @@ func (s *Server) pushAll(c *gin.Context) {
 		response.ErrorE(c, errors.DataError)
 		return
 	}
-	if err := s.logic.PushAll(c, arg); err != nil {
+	if err := s.logic.PushAll(arg); err != nil {
 		response.Errors(c, err)
 		return
 	}

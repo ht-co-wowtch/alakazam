@@ -1,11 +1,10 @@
 package dao
 
 import (
-	"context"
 	"time"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
 	"github.com/gomodule/redigo/redis"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
 	kafka "gopkg.in/Shopify/sarama.v1"
 )
 
@@ -65,6 +64,6 @@ func (d *Dao) Close() error {
 }
 
 // ping redis是否活著
-func (d *Dao) Ping(c context.Context) error {
-	return d.pingRedis(c)
+func (d *Dao) Ping() error {
+	return d.pingRedis()
 }

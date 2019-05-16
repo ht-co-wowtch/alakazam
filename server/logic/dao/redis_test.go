@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"context"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -30,8 +29,7 @@ func TestExpiredBanned(t *testing.T) {
 }
 
 func TestDeleteBanned(t *testing.T) {
-	ctx, _ := context.WithCancel(context.Background())
-	err := d.AddMapping(ctx, "123", "", "", "", "", 2)
+	err := d.AddMapping("123", "", "", "", "", 2)
 	assert.Nil(t, err)
 
 	err = d.SetBanned("123", 10)

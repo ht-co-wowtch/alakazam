@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"context"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
 	"os"
 	"testing"
@@ -16,13 +15,13 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	d = New(conf.Conf)
-	if err := d.Ping(context.TODO()); err != nil {
+	if err := d.Ping(); err != nil {
 		os.Exit(-1)
 	}
 	if err := d.Close(); err != nil {
 		os.Exit(-1)
 	}
-	if err := d.Ping(context.TODO()); err == nil {
+	if err := d.Ping(); err == nil {
 		os.Exit(-1)
 	}
 	d = New(conf.Conf)

@@ -1,11 +1,10 @@
 package logic
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/google/uuid"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/remote"
 	"time"
@@ -34,7 +33,7 @@ type ConnectReply struct {
 }
 
 // redis紀錄某人連線資訊
-func (l *Logic) Connect(c context.Context, server string, token []byte) (*ConnectReply, error) {
+func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	var params struct {
 		// 認證中心token
 		Token string `json:"token"`
@@ -61,7 +60,7 @@ func (l *Logic) Connect(c context.Context, server string, token []byte) (*Connec
 	r.Key = uuid.New().String()
 
 	// 儲存user資料至redis
-	if err := l.dao.AddMapping(c, r.Uid, r.Key, r.RoomId, r.Name, server, r.Permission); err != nil {
+	if err := l.dao.AddMapping(r.Uid, r.Key, r.RoomId, r.Name, server, r.Permission); err != nil {
 		log.Errorf("l.dao.AddMapping(%s,%s,%s,%s) error(%v)", r.Uid, r.Key, r.Name, server, err)
 	}
 	log.Infof("conn connected key:%s server:%s uid:%s token:%s", r.Key, server, r.Uid, token)
@@ -69,8 +68,8 @@ func (l *Logic) Connect(c context.Context, server string, token []byte) (*Connec
 }
 
 // redis清除某人連線資訊
-func (l *Logic) Disconnect(c context.Context, uid, key, server string) (has bool, err error) {
-	if has, err = l.dao.DelMapping(c, uid, key, server); err != nil {
+func (l *Logic) Disconnect(uid, key, server string) (has bool, err error) {
+	if has, err = l.dao.DelMapping(uid, key, server); err != nil {
 		log.Errorf("l.dao.DelMapping(%s,%s,%s) error(%v)", uid, key, server, err)
 		return
 	}
@@ -79,8 +78,8 @@ func (l *Logic) Disconnect(c context.Context, uid, key, server string) (has bool
 }
 
 // user key更換房間
-func (l *Logic) ChangeRoom(c context.Context, uid, key, roomId string) (err error) {
-	if err = l.dao.ChangeRoom(c, uid, key, roomId); err != nil {
+func (l *Logic) ChangeRoom(uid, key, roomId string) (err error) {
+	if err = l.dao.ChangeRoom(uid, key, roomId); err != nil {
 		log.Errorf("l.dao.DelMapping(%s,%s)", uid, key)
 		return
 	}
@@ -89,15 +88,15 @@ func (l *Logic) ChangeRoom(c context.Context, uid, key, roomId string) (err erro
 }
 
 // 更新某人redis資訊的過期時間
-func (l *Logic) Heartbeat(c context.Context, uid, key, roomId, name, server string) (err error) {
-	has, err := l.dao.ExpireMapping(c, uid)
+func (l *Logic) Heartbeat(uid, key, roomId, name, server string) (err error) {
+	has, err := l.dao.ExpireMapping(uid)
 	if err != nil {
 		log.Errorf("l.dao.ExpireMapping(%s,%s,%s) error(%v)", uid, key, server, err)
 		return
 	}
 	// 沒更新成功就直接做覆蓋
 	if !has {
-		if err = l.dao.AddMapping(c, uid, key, roomId, name, server, 0); err != nil {
+		if err = l.dao.AddMapping(uid, key, roomId, name, server, 0); err != nil {
 			log.Errorf("l.dao.AddMapping(%s,%s,%s) error(%v)", uid, key, server, err)
 			return
 		}
@@ -107,13 +106,13 @@ func (l *Logic) Heartbeat(c context.Context, uid, key, roomId, name, server stri
 }
 
 // restart redis內存的每個房間總人數
-func (l *Logic) RenewOnline(c context.Context, server string, roomCount map[string]int32) (map[string]int32, error) {
+func (l *Logic) RenewOnline(server string, roomCount map[string]int32) (map[string]int32, error) {
 	online := &dao.Online{
 		Server:    server,
 		RoomCount: roomCount,
 		Updated:   time.Now().Unix(),
 	}
-	if err := l.dao.AddServerOnline(context.Background(), server, online); err != nil {
+	if err := l.dao.AddServerOnline(server, online); err != nil {
 		return nil, err
 	}
 	return l.roomCount, nil

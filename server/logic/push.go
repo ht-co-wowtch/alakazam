@@ -1,7 +1,6 @@
 package logic
 
 import (
-	"context"
 	"encoding/json"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
 	"time"
@@ -26,7 +25,7 @@ type PushRoomForm struct {
 }
 
 // 單一房間推送
-func (l *Logic) PushRoom(c context.Context, p *PushRoomForm) error {
+func (l *Logic) PushRoom(p *PushRoomForm) error {
 	rId, name, w, err := l.dao.UserData(p.Uid, p.Key)
 
 	if err != nil {
@@ -51,7 +50,7 @@ func (l *Logic) PushRoom(c context.Context, p *PushRoomForm) error {
 	if err != nil {
 		return err
 	}
-	return l.dao.BroadcastRoomMsg(c, rId, msg)
+	return l.dao.BroadcastRoomMsg(rId, msg)
 }
 
 type PushRoomAllForm struct {
@@ -63,7 +62,7 @@ type PushRoomAllForm struct {
 }
 
 // 所有房間推送
-func (l *Logic) PushAll(c context.Context, p *PushRoomAllForm) error {
+func (l *Logic) PushAll(p *PushRoomAllForm) error {
 	msg, err := json.Marshal(Message{
 		Name:    "管理员",
 		Avatar:  "",
@@ -73,5 +72,5 @@ func (l *Logic) PushAll(c context.Context, p *PushRoomAllForm) error {
 	if err != nil {
 		return err
 	}
-	return l.dao.BroadcastMsg(c, p.RoomId, 0, msg)
+	return l.dao.BroadcastMsg(p.RoomId, 0, msg)
 }

@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"context"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"strconv"
 
@@ -13,7 +12,7 @@ import (
 
 // 房間推送，以下為條件
 // 1. room id
-func (d *Dao) BroadcastRoomMsg(c context.Context, room string, msg []byte) (err error) {
+func (d *Dao) BroadcastRoomMsg(room string, msg []byte) (err error) {
 	pushMsg := &grpc.PushMsg{
 		Type: grpc.PushMsg_ROOM,
 		Room: []string{room},
@@ -35,7 +34,7 @@ func (d *Dao) BroadcastRoomMsg(c context.Context, room string, msg []byte) (err 
 }
 
 // 多房間推送，以下為條件
-func (d *Dao) BroadcastMsg(c context.Context, roomIds []string, speed int32, msg []byte) (err error) {
+func (d *Dao) BroadcastMsg(roomIds []string, speed int32, msg []byte) (err error) {
 	pushMsg := &grpc.PushMsg{
 		Type:  grpc.PushMsg_ROOM,
 		Speed: speed,

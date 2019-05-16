@@ -1,7 +1,6 @@
 package logic
 
 import (
-	"context"
 	"os"
 	"time"
 
@@ -39,8 +38,8 @@ func New(c *conf.Config) (l *Logic) {
 }
 
 // Ping ping resources is ok.
-func (l *Logic) Ping(c context.Context) (err error) {
-	return l.dao.Ping(c)
+func (l *Logic) Ping() (err error) {
+	return l.dao.Ping()
 }
 
 // Close close resources.
@@ -65,12 +64,12 @@ func (l *Logic) loadOnline() (err error) {
 	)
 	host, _ := os.Hostname()
 	var online *dao.Online
-	online, err = l.dao.ServerOnline(context.Background(), host)
+	online, err = l.dao.ServerOnline(host)
 	if err != nil {
 		return
 	}
 	if time.Since(time.Unix(online.Updated, 0)) > _onlineDeadline {
-		_ = l.dao.DelServerOnline(context.Background(), host)
+		_ = l.dao.DelServerOnline(host)
 	}
 	for roomID, count := range online.RoomCount {
 		roomCount[roomID] += count
