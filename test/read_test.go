@@ -51,7 +51,7 @@ func TestReadRoomMessagePayload(t *testing.T) {
 // 讀取廣播房間訊息
 func TestReadBroadcastMessage(t *testing.T) {
 	pushTest(t, "3000", "3001", func(a request.Auth) request.Response {
-		return request.PushBroadcast(a.Uid, a.Key, "測試", []string{"3000", "3001"})
+		return request.PushBroadcast([]string{"3000", "3001"}, "測試")
 	}, func(r resp) {
 		assert.Equal(t, pd.OpBatchRaw, r.a.Proto.Op)
 		assert.Len(t, r.p, 1)

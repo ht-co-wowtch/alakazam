@@ -34,12 +34,11 @@ func (d *Dao) BroadcastRoomMsg(room string, msg []byte) (err error) {
 }
 
 // 多房間推送，以下為條件
-func (d *Dao) BroadcastMsg(roomIds []string, speed int32, msg []byte) (err error) {
+func (d *Dao) BroadcastMsg(roomIds []string, msg []byte) (err error) {
 	pushMsg := &grpc.PushMsg{
-		Type:  grpc.PushMsg_ROOM,
-		Speed: speed,
-		Msg:   msg,
-		Room:  roomIds,
+		Type: grpc.PushMsg_ROOM,
+		Msg:  msg,
+		Room: roomIds,
 	}
 	b, err := proto.Marshal(pushMsg)
 	if err != nil {
