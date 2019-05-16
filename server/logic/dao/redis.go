@@ -18,6 +18,9 @@ const (
 	// user 禁言key的前綴詞
 	_prefixBannedInfo = "b_%s"
 
+	// user 封鎖前綴詞 
+	_prefixBlockadeInfo = "xb_%s"
+
 	// server name的前綴詞，用於存儲在redis當key
 	_prefixServerOnline = "server_%s"
 
@@ -37,6 +40,10 @@ func keyUidInfo(uid string) string {
 
 func keyBannedInfo(uid string) string {
 	return fmt.Sprintf(_prefixBannedInfo, uid)
+}
+
+func keyBlockadeInfo(uid string) string {
+	return fmt.Sprintf(_prefixBlockadeInfo, uid)
 }
 
 func keyServerOnline(key string) string {
