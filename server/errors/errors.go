@@ -13,7 +13,7 @@ var (
 	BlockadeError, BlockadeMessage = eNewB(http.StatusUnauthorized, 10024011, "您在封鎖状态，无法进入聊天室")
 	LoginError                     = eNew(http.StatusUnauthorized, 10024012, "请先登入会员")
 	BannedError                    = eNew(http.StatusUnauthorized, 10024013, "您在禁言状态，无法发言")
-	PushRoomDataError              = eNew(http.StatusUnprocessableEntity, 10024220, "资料验证错误")
+	DataError              = eNew(http.StatusUnprocessableEntity, 10024220, "资料验证错误")
 	TypeError                      = eNew(http.StatusInternalServerError, 10025000, "应用程序错误")
 )
 
