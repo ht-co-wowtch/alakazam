@@ -10,7 +10,7 @@ var (
 	ErrRingFull  = errors.New("ring buffer full")
 
 	// channel
-	ErrPushMsgArg   = errors.New("rpc pushmsg arg error")
+	ErrPushMsgArg = errors.New("rpc pushmsg arg error")
 
 	// bucket
 	ErrBroadCastArg     = errors.New("rpc broadcast arg error")

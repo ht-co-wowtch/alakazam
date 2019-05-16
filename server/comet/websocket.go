@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
 	"io"
 	"net"
 	"strings"
@@ -354,20 +356,47 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 			log.Errorf("ws request operation(%d) not auth", p.Op)
 		}
 	}
-	if uid, key, name, rid, hb, err = s.Connect(ctx, p); err != nil {
+
+	// 有兩種情況會無法進入聊天室
+	// 1. 請求進入聊天室資料有誤
+	// 2. 被封鎖
+	c := new(grpc.ConnectReply)
+	if c, err = s.Connect(ctx, p); err != nil {
 		return
 	}
 
-	var reply struct {
-		Uid string `json:"uid"`
-		Key string `json:"key"`
+	if c.Status == business.Blockade {
+		if e := authReply(ws, p, errors.BlockadeMessage); e != nil {
+			err = e
+		}
+		return
 	}
 
-	// 回覆連線至某房間結果
-	p.Op = protocol.OpAuthReply
+	// 需要回覆給client告知uid與key
+	// 因為後續發話需依靠這兩個欄位來做pk
+	var reply struct {
+		Uid        string               `json:"uid"`
+		Key        string               `json:"key"`
+		Permission *business.Permission `json:"permission"`
+	}
+	uid = c.Uid
+	key = c.Key
+	name = c.Name
+	rid = c.RoomID
+	hb = time.Duration(c.Heartbeat)
+
 	reply.Uid = uid
 	reply.Key = key
-	p.Body, _ = json.Marshal(reply)
+	reply.Permission = business.NewPermission(int(c.Status))
+	b, _ := json.Marshal(reply)
+	err = authReply(ws, p, b)
+	return
+}
+
+// 回覆連線至某房間結果
+func authReply(ws *websocket.Conn, p *grpc.Proto, b []byte) (err error) {
+	p.Op = protocol.OpAuthReply
+	p.Body = b
 	if err = p.WriteWebsocket(ws); err != nil {
 		return
 	}

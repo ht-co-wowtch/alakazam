@@ -35,6 +35,7 @@ message ConnectReply {
     string name = 3;
     string roomID = 4;
     int64 heartbeat = 5;
+    int32 status = 6;
 }
 
 message DisconnectReq {
@@ -42,6 +43,14 @@ message DisconnectReq {
     string key = 2;
     string server = 3;
 }
+
+message ChangeRoomReq {
+     string uid = 1;
+     string key = 2;
+     string roomID = 3;
+}
+
+message ChangeRoomReply {}
 
 message DisconnectReply {
     bool has = 1;
@@ -76,6 +85,8 @@ service Logic {
     rpc Connect(ConnectReq) returns (ConnectReply);
     // Disconnect
     rpc Disconnect(DisconnectReq) returns (DisconnectReply);
+    // ChangeRoom
+    rpc ChangeRoom(ChangeRoomReq) returns (ChangeRoomReply);
     // Heartbeat
     rpc Heartbeat(HeartbeatReq) returns (HeartbeatReply);
     // RenewOnline

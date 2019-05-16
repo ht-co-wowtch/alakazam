@@ -1,10 +1,9 @@
 package logic
 
 import (
-	"context"
 	"encoding/json"
-	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
+	log "github.com/golang/glog"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
 	"time"
 )
 
@@ -17,61 +16,69 @@ type Message struct {
 
 type PushRoomForm struct {
 	// user uid
-	Uid string `form:"uid" binding:"required"`
+	Uid string `json:"uid" binding:"required"`
 
 	// user connection key
-	Key string `form:"key" binding:"required"`
+	Key string `json:"key" binding:"required"`
 
 	// user push message
-	Message string `form:"message" binding:"required"`
+	Message string `json:"message" binding:"required"`
 }
 
 // 單一房間推送
-func (l *Logic) PushRoom(c context.Context, p *PushRoomForm) error {
-	res, err := l.dao.UidInfo(p.Uid, p.Key)
+func (l *Logic) PushRoom(p *PushRoomForm) error {
+	rId, name, w, err := l.dao.UserData(p.Uid, p.Key)
 	if err != nil {
-		return err
+		return errors.FailureError
 	}
-	if len(res) == 0 {
-		return fmt.Errorf("帳號未登入")
+	if name == "" {
+		return errors.LoginError
 	}
-	if _, ok := res[p.Key]; !ok {
-		return fmt.Errorf("沒有在房間內")
+	if rId == "" {
+		return errors.RoomError
+	}
+	if l.isBanned(p.Uid, w) {
+		return errors.BannedError
 	}
 
 	msg, err := json.Marshal(Message{
-		Name:    res[dao.HashNameKey],
+		Name:    name,
 		Avatar:  "",
 		Message: p.Message,
 		Time:    time.Now().Format("15:04:05"),
 	})
 	if err != nil {
-		return err
+		log.Errorf("pushRoom json.Marshal(uid: %s ) error(%v)", p.Uid, err)
+		return errors.FailureError
 	}
-	return l.dao.BroadcastRoomMsg(c, res[p.Key], msg)
+	if err := l.dao.BroadcastRoomMsg(rId, msg); err != nil {
+		return errors.FailureError
+	}
+	return nil
 }
 
 type PushRoomAllForm struct {
-	// 廣播者頭像
-	Avatar string `json:"avatar"`
-
 	// 要廣播的房間
-	RoomId []string `form:"room_id" binding:"required"`
+	RoomId []string `json:"room_id" binding:"required"`
 
 	// user push message
-	Message string `form:"message" binding:"required"`
+	Message string `json:"message" binding:"required"`
 }
 
 // 所有房間推送
-func (l *Logic) PushAll(c context.Context, p *PushRoomAllForm) error {
+func (l *Logic) PushAll(p *PushRoomAllForm) error {
 	msg, err := json.Marshal(Message{
 		Name:    "管理员",
-		Avatar:  p.Avatar,
+		Avatar:  "",
 		Message: p.Message,
 		Time:    time.Now().Format("15:04:05"),
 	})
 	if err != nil {
-		return err
+		log.Errorf("pushAll json.Marshal() error(%v)", err)
+		return errors.FailureError
 	}
-	return l.dao.BroadcastMsg(c, p.RoomId, 0, msg)
+	if err := l.dao.BroadcastMsg(p.RoomId, msg); err != nil {
+		return errors.FailureError
+	}
+	return nil
 }

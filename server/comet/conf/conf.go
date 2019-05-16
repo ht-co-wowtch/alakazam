@@ -2,7 +2,6 @@ package conf
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"github.com/spf13/viper"
 	"io/ioutil"
@@ -10,9 +9,6 @@ import (
 )
 
 var (
-	// config path
-	confPath string
-
 	// Conf config
 	Conf *Config
 )
@@ -29,8 +25,11 @@ type Config struct {
 
 // grpc client config
 type RPCClient struct {
+	// grpc client host
+	Addr string
+
 	// client連線timeout
-	Dial time.Duration
+	Timeout time.Duration
 }
 
 // grpc server config.
@@ -140,20 +139,16 @@ type Bucket struct {
 	RoutineSize int
 }
 
-func init() {
-	flag.StringVar(&confPath, "c", "comet.yml", "default config path.")
-}
-
-func Init() (err error) {
+func Read(path string) (err error) {
 	viper.SetConfigType("yaml")
-	b, err := ioutil.ReadFile(confPath)
+	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
 	if err := viper.ReadConfig(bytes.NewBuffer(b)); err != nil {
 		panic(err)
 	} else {
-		fmt.Println("Using config file:", confPath)
+		fmt.Println("Using config file:", path)
 	}
 	Conf = load()
 	return
@@ -163,7 +158,8 @@ func Init() (err error) {
 func load() *Config {
 	return &Config{
 		RPCClient: &RPCClient{
-			Dial: time.Duration(viper.GetInt("rpcClient.timeout")) * time.Second,
+			Addr:    viper.GetString("rpcClient.host"),
+			Timeout: time.Duration(viper.GetInt("rpcClient.timeout")) * time.Second,
 		},
 		RPCServer: &RPCServer{
 			Network:           "tcp",

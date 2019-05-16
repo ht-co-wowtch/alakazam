@@ -2,9 +2,9 @@ package grpc
 
 import (
 	"context"
+	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
-	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"net"
 
 	"google.golang.org/grpc"
@@ -49,31 +49,37 @@ func (s *server) Ping(ctx context.Context, req *pb.PingReq) (*pb.PingReply, erro
 
 // 某client要做連線
 func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectReply, error) {
-	uid, key, name, room, hb, err := s.srv.Connect(ctx, req.Server, req.Token)
+	r, err := s.srv.Connect(req.Server, req.Token)
 	if err != nil {
 		return &pb.ConnectReply{}, err
 	}
 	return &pb.ConnectReply{
-		Uid:       uid,
-		Key:       key,
-		Name:      name,
-		RoomID:    room,
-		Heartbeat: hb,
+		Uid:       r.Uid,
+		Key:       r.Key,
+		Name:      r.Name,
+		RoomID:    r.RoomId,
+		Heartbeat: r.Hb,
+		Status:    int32(r.Permission),
 	}, nil
 }
 
 // 某client要中斷連線
 func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.DisconnectReply, error) {
-	has, err := s.srv.Disconnect(ctx, req.Uid, req.Key, req.Server)
+	has, err := s.srv.Disconnect(req.Uid, req.Key, req.Server)
 	if err != nil {
 		return &pb.DisconnectReply{}, err
 	}
 	return &pb.DisconnectReply{Has: has}, nil
 }
 
+// user當前連線要切換房間
+func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.ChangeRoomReply, error) {
+	return &pb.ChangeRoomReply{}, s.srv.ChangeRoom(req.Uid, req.Key, req.RoomID)
+}
+
 // 重置user redis過期時間
 func (s *server) Heartbeat(ctx context.Context, req *pb.HeartbeatReq) (*pb.HeartbeatReply, error) {
-	if err := s.srv.Heartbeat(ctx, req.Uid, req.Key, req.RoomId, req.Name, req.Server); err != nil {
+	if err := s.srv.Heartbeat(req.Uid, req.Key, req.RoomId, req.Name, req.Server); err != nil {
 		return &pb.HeartbeatReply{}, err
 	}
 	return &pb.HeartbeatReply{}, nil
@@ -81,7 +87,7 @@ func (s *server) Heartbeat(ctx context.Context, req *pb.HeartbeatReq) (*pb.Heart
 
 // 更新每個房間線上總人數資料
 func (s *server) RenewOnline(ctx context.Context, req *pb.OnlineReq) (*pb.OnlineReply, error) {
-	allRoomCount, err := s.srv.RenewOnline(ctx, req.Server, req.RoomCount)
+	allRoomCount, err := s.srv.RenewOnline(req.Server, req.RoomCount)
 	if err != nil {
 		return &pb.OnlineReply{}, err
 	}

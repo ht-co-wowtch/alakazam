@@ -176,7 +176,7 @@ func (b *Bucket) Channel(key string) (ch *Channel) {
 }
 
 // 對Bucket內所有Channel
-func (b *Bucket) Broadcast(p *grpc.Proto, op int32) {
+func (b *Bucket) Broadcast(p *grpc.Proto) {
 	var ch *Channel
 	b.cLock.RLock()
 	for _, ch = range b.chs {

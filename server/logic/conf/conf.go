@@ -2,7 +2,6 @@ package conf
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"time"
@@ -11,18 +10,16 @@ import (
 )
 
 var (
-	// config path
-	confPath string
-
 	// Conf config
 	Conf *Config
 )
 
 type Config struct {
-	RPCServer  *RPCServer
-	HTTPServer *HTTPServer
-	Kafka      *Kafka
-	Redis      *Redis
+	RPCServer       *RPCServer
+	HTTPServer      *HTTPServer
+	HTTPAdminServer *HTTPServer
+	Kafka           *Kafka
+	Redis           *Redis
 
 	// comet連線用戶心跳，server會清除在線紀錄
 	Heartbeat int64
@@ -94,9 +91,6 @@ type RPCServer struct {
 
 // http server config
 type HTTPServer struct {
-	// host
-	Network string
-
 	// port
 	Addr string
 
@@ -105,15 +99,6 @@ type HTTPServer struct {
 
 	// 沒用到
 	WriteTimeout time.Duration
-}
-
-func init() {
-	flag.StringVar(&confPath, "c", "logic.yml", "default config path")
-}
-
-// init config.
-func Init() (error) {
-	return Read(confPath)
 }
 
 func Read(path string) (err error) {
@@ -148,10 +133,14 @@ func load() *Config {
 			KeepAliveTimeout:  time.Second * 20,
 		},
 		HTTPServer: &HTTPServer{
-			Network:      "tcp",
 			Addr:         viper.GetString("httpServer.host"),
 			ReadTimeout:  time.Duration(viper.GetInt("httpServer.readTimeout")) * time.Second,
 			WriteTimeout: time.Duration(viper.GetInt("httpServer.writeTimeout")) * time.Second,
+		},
+		HTTPAdminServer: &HTTPServer{
+			Addr:         viper.GetString("httpAdminServer.host"),
+			ReadTimeout:  time.Duration(viper.GetInt("httpAdminServer.readTimeout")) * time.Second,
+			WriteTimeout: time.Duration(viper.GetInt("httpAdminServer.writeTimeout")) * time.Second,
 		},
 		Redis: &Redis{
 			Network:      "tcp",

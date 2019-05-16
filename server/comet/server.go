@@ -6,9 +6,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/zhenjl/cityhash"
 	logic "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/comet/conf"
-	"github.com/zhenjl/cityhash"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 )
@@ -38,9 +38,9 @@ const (
 
 func newLogicClient(c *conf.RPCClient) logic.LogicClient {
 	// grpc 連線的timeout
-	ctx, cancel := context.WithTimeout(context.Background(), c.Dial)
+	ctx, cancel := context.WithTimeout(context.Background(), c.Timeout)
 	defer cancel()
-	conn, err := grpc.DialContext(ctx, ":3119",
+	conn, err := grpc.DialContext(ctx, c.Addr,
 		[]grpc.DialOption{
 			// 與server溝通不用檢查憑證之類
 			grpc.WithInsecure(),

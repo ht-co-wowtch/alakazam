@@ -238,10 +238,13 @@
                             var packetLen = dataView.getInt32(offset);
                             var headerLen = dataView.getInt16(offset + headerOffset);
                             var op = dataView.getInt32(offset + opOffset);
-                            var msgBody = textDecoder.decode(data.slice(offset + headerLen, offset + packetLen));
-                            // callback
-                            messageReceived(msgBody);
-                            appendMsg(msgBody);
+
+                            if (op == 6) {
+                                var msgBody = textDecoder.decode(data.slice(offset + headerLen, offset + packetLen));
+                                // callback
+                                messageReceived(msgBody);
+                                appendMsg(msgBody);
+                            }
                         }
                         break;
                     default:
@@ -268,12 +271,12 @@
                 ws.send(headerBuf);
                 console.log("send: heartbeat");
 
-                $.get('http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/count/{{ .id }}', function (data) {
-                }).success(function (data) {
-                    document.getElementById("count").innerHTML = "<color style='color:red'>" + data.count + "<color>";
-                }).error(function () {
-                    document.getElementById("count").innerHTML = "<color style='color:red'>未知<color>";
-                });
+                {{/*$.get('http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/count/{{ .id }}', function (data) {*/}}
+                {{/*}).success(function (data) {*/}}
+                {{/*    document.getElementById("count").innerHTML = "<color style='color:red'>" + data.count + "<color>";*/}}
+                {{/*}).error(function () {*/}}
+                {{/*    document.getElementById("count").innerHTML = "<color style='color:red'>未知<color>";*/}}
+                {{/*});*/}}
             }
 
             function auth() {

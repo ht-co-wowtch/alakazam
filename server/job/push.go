@@ -38,13 +38,12 @@ func (j *Job) broadcast(body []byte, speed int32) {
 	}
 	p.WriteTo(buf)
 	p.Body = buf.Buffer()
-	p.Op = protocol.OpRaw
+	p.Op = protocol.OpBatchRaw
 	comets := j.cometServers
 	speed /= int32(len(comets))
 	var args = grpc.BroadcastReq{
-		ProtoOp: protocol.OpRaw,
-		Proto:   p,
-		Speed:   speed,
+		Proto: p,
+		Speed: speed,
 	}
 	for serverName, c := range comets {
 		log.Infof("broadcast server:%s ", serverName)
@@ -57,7 +56,7 @@ func (j *Job) broadcastRoomRawBytes(roomID string, body []byte) (err error) {
 	args := grpc.BroadcastRoomReq{
 		RoomID: roomID,
 		Proto: &grpc.Proto{
-			Op:   protocol.OpRaw,
+			Op:   protocol.OpBatchRaw,
 			Body: body,
 		},
 	}

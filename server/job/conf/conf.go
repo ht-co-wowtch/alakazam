@@ -2,7 +2,6 @@ package conf
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"github.com/spf13/viper"
 	"io/ioutil"
@@ -10,9 +9,6 @@ import (
 )
 
 var (
-	// config path
-	confPath string
-
 	// Conf config
 	Conf *Config
 )
@@ -39,6 +35,15 @@ type Room struct {
 	Idle time.Duration
 }
 
+// grpc client config
+type RPCClient struct {
+	// grpc client host
+	Addr string
+
+	// client連線timeout
+	Timeout time.Duration
+}
+
 // Comet is comet config.
 type Comet struct {
 	// 處理訊息推送goroutine的chan Buffer多少
@@ -46,6 +51,8 @@ type Comet struct {
 
 	// 開多個goroutine併發處理訊息做send grpc client
 	RoutineSize int
+
+	RPCClient *RPCClient
 }
 
 // kafka config
@@ -55,21 +62,16 @@ type Kafka struct {
 	Brokers []string
 }
 
-func init() {
-	flag.StringVar(&confPath, "c", "job-example.yml", "default config path")
-}
-
-// init config.
-func Init() (err error) {
+func Read(path string) (err error) {
 	viper.SetConfigType("yaml")
-	b, err := ioutil.ReadFile(confPath)
+	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
 	if err := viper.ReadConfig(bytes.NewBuffer(b)); err != nil {
 		panic(err)
 	} else {
-		fmt.Println("Using config file:", confPath)
+		fmt.Println("Using config file:", path)
 	}
 	Conf = load()
 	return
@@ -86,6 +88,10 @@ func load() *Config {
 		Comet: &Comet{
 			RoutineChan: viper.GetInt("comet.routineChan"),
 			RoutineSize: viper.GetInt("comet.routineSize"),
+			RPCClient: &RPCClient{
+				Addr:    viper.GetString("rpcClient.host"),
+				Timeout: time.Duration(viper.GetInt("rpcClient.timeout")) * time.Second,
+			},
 		},
 		Room: &Room{
 			Batch:  20,

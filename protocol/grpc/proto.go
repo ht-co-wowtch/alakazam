@@ -31,34 +31,34 @@ const (
 //
 const (
 	// Protocol 長度的byte長度
-	_packSize = 4
+	PackSize = 4
 
 	// Protocol Header的byte長度
-	_headerSize = 2
+	HeaderSize = 2
 
 	// Protocol 動作意義的byte長度
-	_opSize = 4
+	OpSize = 4
 
 	// 回覆心跳Body的byte長度
-	_heartSize = 4
+	HeartSize = 4
 
 	// Protocol Header的總長度
-	_rawHeaderSize = _packSize + _headerSize + _opSize
+	RawHeaderSize = PackSize + HeaderSize + OpSize
 
-	_maxPackSize = MaxBodySize + int32(_rawHeaderSize)
+	maxPackSize = MaxBodySize + int32(RawHeaderSize)
 
 	// Protocol 長度的byte位置範圍
-	_packOffset = 0
+	PackOffset = 0
 
 	// Protocol 整個header長度的byte位置範圍
 	// Protocol 長度 - header長度 = Body長度
-	_headerOffset = _packOffset + _packSize
+	HeaderOffset = PackOffset + PackSize
 
 	// Protocol動作意義的byte位置範圍
-	_opOffset = _headerOffset + _headerSize
+	OpOffset = HeaderOffset + HeaderSize
 
 	// 回覆心跳Body的byte位置範圍
-	_heartOffset = _opOffset + _opSize
+	heartOffset = OpOffset + OpSize
 )
 
 var (
@@ -80,12 +80,12 @@ var (
 // Proto內容寫至bytes
 func (p *Proto) WriteTo(b *bytes.Writer) {
 	var (
-		packLen = _rawHeaderSize + int32(len(p.Body))
-		buf     = b.Peek(_rawHeaderSize)
+		packLen = RawHeaderSize + int32(len(p.Body))
+		buf     = b.Peek(RawHeaderSize)
 	)
-	binary.BigEndian.PutInt32(buf[_packOffset:], packLen)
-	binary.BigEndian.PutInt16(buf[_headerOffset:], int16(_rawHeaderSize))
-	binary.BigEndian.PutInt32(buf[_opOffset:], p.Op)
+	binary.BigEndian.PutInt32(buf[PackOffset:], packLen)
+	binary.BigEndian.PutInt16(buf[HeaderOffset:], int16(RawHeaderSize))
+	binary.BigEndian.PutInt32(buf[OpOffset:], p.Op)
 	if p.Body != nil {
 		b.Write(p.Body)
 	}
@@ -102,17 +102,17 @@ func (p *Proto) ReadWebsocket(ws *websocket.Conn) (err error) {
 	if _, buf, err = ws.ReadMessage(); err != nil {
 		return
 	}
-	if len(buf) < _rawHeaderSize {
+	if len(buf) < RawHeaderSize {
 		return ErrProtoPackLen
 	}
 
-	packLen = binary.BigEndian.Int32(buf[_packOffset:_headerOffset])
-	headerLen = binary.BigEndian.Int16(buf[_headerOffset:_opOffset])
-	p.Op = binary.BigEndian.Int32(buf[_opOffset:])
-	if packLen > _maxPackSize {
+	packLen = binary.BigEndian.Int32(buf[PackOffset:HeaderOffset])
+	headerLen = binary.BigEndian.Int16(buf[HeaderOffset:OpOffset])
+	p.Op = binary.BigEndian.Int32(buf[OpOffset:])
+	if packLen > maxPackSize {
 		return ErrProtoPackLen
 	}
-	if headerLen != _rawHeaderSize {
+	if headerLen != RawHeaderSize {
 		return ErrProtoHeaderLen
 	}
 	if bodyLen = int(packLen - int32(headerLen)); bodyLen > 0 {
@@ -130,16 +130,16 @@ func (p *Proto) WriteWebsocket(ws *websocket.Conn) (err error) {
 		packLen int
 	)
 
-	packLen = _rawHeaderSize + len(p.Body)
+	packLen = RawHeaderSize + len(p.Body)
 	if err = ws.WriteHeader(websocket.BinaryMessage, packLen); err != nil {
 		return
 	}
-	if buf, err = ws.Peek(_rawHeaderSize); err != nil {
+	if buf, err = ws.Peek(RawHeaderSize); err != nil {
 		return
 	}
-	binary.BigEndian.PutInt32(buf[_packOffset:], int32(packLen))
-	binary.BigEndian.PutInt16(buf[_headerOffset:], int16(_rawHeaderSize))
-	binary.BigEndian.PutInt32(buf[_opOffset:], p.Op)
+	binary.BigEndian.PutInt32(buf[PackOffset:], int32(packLen))
+	binary.BigEndian.PutInt16(buf[HeaderOffset:], int16(RawHeaderSize))
+	binary.BigEndian.PutInt32(buf[OpOffset:], p.Op)
 	if p.Body != nil {
 		err = ws.WriteBody(p.Body)
 	}
@@ -152,7 +152,7 @@ func (p *Proto) WriteWebsocketHeart(wr *websocket.Conn, online int32) (err error
 		buf     []byte
 		packLen int
 	)
-	packLen = _rawHeaderSize + _heartSize
+	packLen = RawHeaderSize + HeartSize
 	// websocket header
 	if err = wr.WriteHeader(websocket.BinaryMessage, packLen); err != nil {
 		return
@@ -161,10 +161,10 @@ func (p *Proto) WriteWebsocketHeart(wr *websocket.Conn, online int32) (err error
 		return
 	}
 	// proto header
-	binary.BigEndian.PutInt32(buf[_packOffset:], int32(packLen))
-	binary.BigEndian.PutInt16(buf[_headerOffset:], int16(_rawHeaderSize))
-	binary.BigEndian.PutInt32(buf[_opOffset:], p.Op)
+	binary.BigEndian.PutInt32(buf[PackOffset:], int32(packLen))
+	binary.BigEndian.PutInt16(buf[HeaderOffset:], int16(RawHeaderSize))
+	binary.BigEndian.PutInt32(buf[OpOffset:], p.Op)
 	// proto body
-	binary.BigEndian.PutInt32(buf[_heartOffset:], online)
+	binary.BigEndian.PutInt32(buf[heartOffset:], online)
 	return
 }

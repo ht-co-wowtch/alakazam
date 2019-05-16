@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/http/admin"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/http/front"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,15 +16,22 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/http"
 )
 
+var (
+	// config path
+	confPath string
+)
+
 func main() {
+	flag.StringVar(&confPath, "c", "logic.yml", "default config path")
 	flag.Parse()
-	if err := conf.Init(); err != nil {
+	if err := conf.Read(confPath); err != nil {
 		panic(err)
 	}
 
 	// new srever
 	srv := logic.New(conf.Conf)
-	httpSrv := http.New(conf.Conf.HTTPServer, srv)
+	httpSrv := http.New(conf.Conf.HTTPServer, front.New(srv))
+	httpAdminSrv := http.New(conf.Conf.HTTPAdminServer, admin.New(srv))
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
 
 	fmt.Printf("logic start success | RpcServer: %s\n", conf.Conf.RPCServer.Addr)
@@ -37,6 +46,7 @@ func main() {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			srv.Close()
 			httpSrv.Close()
+			httpAdminSrv.Close()
 			rpcSrv.GracefulStop()
 			log.Flush()
 			return
