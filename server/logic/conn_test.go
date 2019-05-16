@@ -22,3 +22,33 @@ func TestConnect(t *testing.T) {
 	assert.Equal(t, c.Name, n)
 	assert.Equal(t, c.Permission, s)
 }
+
+func TestDisconnect(t *testing.T) {
+	err := d.AddMapping("123", "", "", "", "", 0)
+	assert.Nil(t, err)
+
+	has, err := l.Disconnect("123", "", "")
+
+	assert.True(t, has)
+	assert.Nil(t, err)
+}
+
+func TestChangeRoom(t *testing.T) {
+	err := d.AddMapping("456", "", "1000", "", "", 0)
+	assert.Nil(t, err)
+
+	err = l.ChangeRoom("456", "", "1001")
+	assert.Nil(t, err)
+
+	r, _, _, err := d.UserData("456", "")
+	assert.Nil(t, err)
+	assert.Equal(t, "1001", r)
+}
+
+func TestHeartbeat(t *testing.T) {
+	err := d.AddMapping("789", "", "1000", "", "", 0)
+	assert.Nil(t, err)
+
+	err = l.Heartbeat("789", "", "", "", "")
+	assert.Nil(t, err)
+}
