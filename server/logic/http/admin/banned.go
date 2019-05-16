@@ -34,7 +34,7 @@ func (s *Server) removeBanned(c *gin.Context) {
 		response.ErrorE(c, errors.DataError)
 		return
 	}
-	if !s.logic.RemoveBanned(params.Uid) {
+	if err := s.logic.RemoveBanned(params.Uid); err != nil {
 		response.ErrorE(c, errors.FailureError)
 		return
 	}
