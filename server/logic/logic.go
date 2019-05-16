@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	_onlineTick     = time.Second * 10
-	_onlineDeadline = time.Minute * 5
+	onlineTick     = time.Second * 10
+	onlineDeadline = time.Minute * 5
 )
 
 // Logic struct
@@ -50,7 +50,7 @@ func (l *Logic) Close() {
 
 func (l *Logic) onlineproc() {
 	for {
-		time.Sleep(_onlineTick)
+		time.Sleep(onlineTick)
 		if err := l.loadOnline(); err != nil {
 			log.Errorf("onlineproc error(%v)", err)
 		}
@@ -68,7 +68,7 @@ func (l *Logic) loadOnline() (err error) {
 	if err != nil {
 		return
 	}
-	if time.Since(time.Unix(online.Updated, 0)) > _onlineDeadline {
+	if time.Since(time.Unix(online.Updated, 0)) > onlineDeadline {
 		_ = l.dao.DelServerOnline(host)
 	}
 	for roomID, count := range online.RoomCount {
