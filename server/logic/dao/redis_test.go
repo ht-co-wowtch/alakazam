@@ -43,7 +43,7 @@ func TestDeleteBanned(t *testing.T) {
 	assert.Nil(t, err)
 	assert.False(t, ok)
 
-	_, _, s, err := d.UserData("123", "")
+	_, _, s, err := d.GetUser("123", "")
 	assert.Nil(t, err)
 	assert.Equal(t, 2, s)
 }

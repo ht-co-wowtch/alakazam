@@ -148,14 +148,14 @@ func (d *Dao) DelMapping(uid, key, server string) (has bool, err error) {
 }
 
 // 取user資料
-func (d *Dao) UserData(uid string, key string) (roomId, name string, status int, err error) {
+func (d *Dao) GetUser(uid string, key string) (roomId, name string, status int, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
-	if err = conn.Send("HGETALL", keyUidInfo(uid)); err != nil {
+	if err := conn.Send("HGETALL", keyUidInfo(uid)); err != nil {
 		log.Errorf("conn.Do(HGETALL %s) error(%v)", uid, err)
 		return
 	}
-	if err = conn.Flush(); err != nil {
+	if err := conn.Flush(); err != nil {
 		log.Errorf("conn.Flush() error(%v)", err)
 		return
 	}
@@ -169,7 +169,7 @@ func (d *Dao) UserData(uid string, key string) (roomId, name string, status int,
 	if s, err := strconv.Atoi(res[hashStatusKey]); err == nil {
 		status = s
 	}
-	return
+	return res[key], res[HashNameKey], status, err
 }
 
 // 設定禁言
@@ -312,7 +312,7 @@ func (d *Dao) AddServerOnline(server string, online *Online) (err error) {
 		}
 		rMap[room] = count
 	}
-	
+
 	key := keyServerOnline(server)
 	for hashKey, value := range roomsMap {
 		err = d.addServerOnline(key, strconv.FormatInt(int64(hashKey), 10), &Online{RoomCount: value, Server: online.Server, Updated: online.Updated})

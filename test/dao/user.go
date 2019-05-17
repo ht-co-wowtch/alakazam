@@ -12,7 +12,7 @@ func AddUser(d *dao.Dao, t *testing.T, uid, key, roomId, name string, status int
 }
 
 func GetUser(d *dao.Dao, t *testing.T, uid, key string) (string, string, int) {
-	roomId, name, status, err := d.UserData(uid, key)
+	roomId, name, status, err := d.GetUser(uid, key)
 	assert.Nil(t, err)
 	return roomId, name, status
 }
