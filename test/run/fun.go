@@ -1,9 +1,9 @@
 package run
 
-func Run(path string) func() {
-	l := RunLogic(path)
-	c := RunComet(path)
-	j := RunJob(path)
+func Run(configPath string) func() {
+	l := RunLogic(configPath)
+	c := RunComet(configPath)
+	j := RunJob(configPath)
 	return func() {
 		l()
 		c()

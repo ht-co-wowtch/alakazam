@@ -18,7 +18,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	r := run.Run("./run")
+	r := run.Run("./config")
 	defer r()
 	os.Exit(m.Run())
 }

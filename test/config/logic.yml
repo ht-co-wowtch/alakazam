@@ -32,9 +32,9 @@ redis:
   # write多久(秒)沒回覆則放棄
   writeTimeout: 0.5
   # 空閒連線多久(秒)沒做事就close
-  idleTimeout: 120
+  idleTimeout: 30
   # redis過期時間(秒
-  expire: 1800
+  expire: 60
 
 # kafka push
 kafka:
