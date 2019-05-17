@@ -1,6 +1,7 @@
 module gitlab.com/jetfueltw/cpw/alakazam
 
 require (
+	github.com/DATA-DOG/go-txdb v0.1.2
 	github.com/Shopify/sarama v1.22.1 // indirect
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
 	github.com/gin-contrib/sse v0.0.0-20190301062529-5545eab6dad3 // indirect

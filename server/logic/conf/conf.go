@@ -146,6 +146,7 @@ func Read(path string) (err error) {
 // 載入config
 func load() *Config {
 	db := new(Database)
+	db.Driver = "mysql"
 	db.Host = viper.GetString("db.host")
 	db.Port = viper.GetString("db.port")
 	db.Database = viper.GetString("db.database")

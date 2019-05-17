@@ -64,8 +64,7 @@ func newRedis(c *conf.Redis) *redis.Pool {
 }
 
 func newDB(c *conf.Database) *sql.DB {
-	source := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=%v&collation=%v&parseTime=true&timeout=2s&loc=Local", c.User, c.Password, c.Host, c.Port, c.Database, c.Charset, c.Collation)
-	db, err := sql.Open("mysql", source)
+	db, err := sql.Open(c.Driver, DatabaseDns(c))
 	if err != nil {
 		panic(err)
 	}
@@ -78,6 +77,10 @@ func newDB(c *conf.Database) *sql.DB {
 		panic(err)
 	}
 	return db
+}
+
+func DatabaseDns(c *conf.Database) string {
+	return fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=%v&collation=%v&parseTime=true&timeout=2s&loc=Local", c.User, c.Password, c.Host, c.Port, c.Database, c.Charset, c.Collation)
 }
 
 // Close close the resource.
