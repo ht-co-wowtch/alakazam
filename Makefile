@@ -26,6 +26,9 @@ run:
 	nohup bin/comet -c bin/comet.yml -stderrthreshold=INFO 2>&1 > bin/comet.log &
 	nohup bin/job -c bin/job.yml -stderrthreshold=INFO 2>&1 > bin/job.log &
 
+migration:
+	./bin/migration -run -c ./bin/logic.yml
+
 stop:
 	pkill -f bin/logic
 	pkill -f bin/job
