@@ -41,3 +41,19 @@ kafka:
   topic: "push-topic"
   brokers:
     - 127.0.0.1:9092
+
+db:
+  driver: mysql
+  host: 127.0.0.1
+  port: 3306
+  database: alakazam
+  user: root
+  password: root
+  charset: utf8mb4
+  collation: utf8mb4_unicode_ci
+  # 最大連線總數
+  active: 1000
+  # 最大保留的閒置連線數
+  idle: 500
+  # 空閒連線多久(秒)沒做事就close
+  idleTimeout: 120

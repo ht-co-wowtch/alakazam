@@ -13,6 +13,7 @@ build:
 	$(GOBUILD) -o bin/comet cmd/comet/main.go
 	$(GOBUILD) -o bin/logic cmd/logic/main.go
 	$(GOBUILD) -o bin/job cmd/job/main.go
+	$(GOBUILD) -o bin/migration cmd/migration/main.go
 
 test:
 	$(GOTEST) -v ./...

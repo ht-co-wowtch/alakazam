@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/spf13/viper"
@@ -18,11 +19,33 @@ type Config struct {
 	RPCServer       *RPCServer
 	HTTPServer      *HTTPServer
 	HTTPAdminServer *HTTPServer
+	DB              *Database
 	Kafka           *Kafka
 	Redis           *Redis
 
 	// comet連線用戶心跳，server會清除在線紀錄
 	Heartbeat int64
+}
+
+// Database 相關設定
+type Database struct {
+	Driver    string
+	Host      string
+	Port      string
+	Database  string
+	User      string
+	Password  string
+	Charset   string
+	Collation string
+
+	// 最大連線總數
+	MaxOpenConn int
+
+	// 最大保留的閒置連線數
+	MaxIdleConn int
+
+	// 空閒連線多久(秒)沒做事就close
+	ConnMaxLifetime time.Duration
 }
 
 // Redis
@@ -122,7 +145,31 @@ func Read(path string) (err error) {
 
 // 載入config
 func load() *Config {
+	db := new(Database)
+	db.Driver = viper.GetString("db.driver")
+	db.Host = viper.GetString("db.host")
+	db.Port = viper.GetString("db.port")
+	db.Database = viper.GetString("db.database")
+	db.Charset = viper.GetString("db.charset")
+	db.Collation = viper.GetString("db.collation")
+	db.MaxOpenConn = viper.GetInt("db.active")
+	db.MaxIdleConn = viper.GetInt("db.idle")
+	db.MaxIdleConn = viper.GetInt("db.idleTimeout")
+
+	if u := viper.GetString("db.user"); u != "" {
+		db.User = u
+	} else {
+		db.User = os.Getenv("DB_USER")
+	}
+
+	if p := viper.GetString("db.password"); p != "" {
+		db.Password = p
+	} else {
+		db.Password = os.Getenv("DB_PASSWORD")
+	}
+
 	return &Config{
+		DB: db,
 		RPCServer: &RPCServer{
 			Network:           "tcp",
 			Addr:              viper.GetString("rpcServer.host"),

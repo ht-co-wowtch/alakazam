@@ -1,17 +1,28 @@
 package dao
 
 import (
-	"time"
-
+	"database/sql"
+	"errors"
+	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gomodule/redigo/redis"
+	_ "github.com/mattn/go-sqlite3"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
 	kafka "gopkg.in/Shopify/sarama.v1"
+	"time"
+)
+
+const (
+	MysqlDriver = "mysql"
+
+	Sqlite3Driver = "sqlite3"
 )
 
 type Dao struct {
 	c        *conf.Config
 	kafkaPub kafka.SyncProducer
 	redis    *redis.Pool
+	db       *sql.DB
 
 	// redis 過期時間
 	redisExpire int32
@@ -20,6 +31,7 @@ type Dao struct {
 func New(c *conf.Config) *Dao {
 	d := &Dao{
 		c:           c,
+		db:          newDB(c.DB),
 		kafkaPub:    newKafkaPub(c.Kafka),
 		redis:       newRedis(c.Redis),
 		redisExpire: int32(c.Redis.Expire / time.Second),
@@ -30,7 +42,7 @@ func New(c *conf.Config) *Dao {
 func newKafkaPub(c *conf.Kafka) kafka.SyncProducer {
 	kc := kafka.NewConfig()
 	kc.Producer.RequiredAcks = kafka.WaitForAll
-	kc.Producer.Retry.Max = 10               
+	kc.Producer.Retry.Max = 10
 	kc.Producer.Return.Successes = true
 	pub, err := kafka.NewSyncProducer(c.Brokers, kc)
 	if err != nil {
@@ -56,6 +68,31 @@ func newRedis(c *conf.Redis) *redis.Pool {
 			return conn, nil
 		},
 	}
+}
+
+func newDB(c *conf.Database) *sql.DB {
+	source := ""
+	switch c.Driver {
+	case MysqlDriver:
+		source = fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=%v&collation=%v&parseTime=true&timeout=2s&loc=Local", c.User, c.Password, c.Host, c.Port, c.Database, c.Charset, c.Collation)
+	case Sqlite3Driver:
+		source = ":memory:"
+	default:
+		panic(errors.New("database driver not found"))
+	}
+	db, err := sql.Open(c.Driver, source)
+	if err != nil {
+		panic(err)
+	}
+
+	db.SetMaxOpenConns(c.MaxOpenConn)
+	db.SetMaxIdleConns(c.MaxIdleConn)
+	db.SetConnMaxLifetime(time.Duration(c.ConnMaxLifetime) * time.Second)
+
+	if err := db.Ping(); err != nil {
+		panic(err)
+	}
+	return db
 }
 
 // Close close the resource.
