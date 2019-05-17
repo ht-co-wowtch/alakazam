@@ -2,7 +2,6 @@ package dao
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gomodule/redigo/redis"
@@ -10,12 +9,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
 	kafka "gopkg.in/Shopify/sarama.v1"
 	"time"
-)
-
-const (
-	MysqlDriver = "mysql"
-
-	Sqlite3Driver = "sqlite3"
 )
 
 type Dao struct {
@@ -71,16 +64,8 @@ func newRedis(c *conf.Redis) *redis.Pool {
 }
 
 func newDB(c *conf.Database) *sql.DB {
-	source := ""
-	switch c.Driver {
-	case MysqlDriver:
-		source = fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=%v&collation=%v&parseTime=true&timeout=2s&loc=Local", c.User, c.Password, c.Host, c.Port, c.Database, c.Charset, c.Collation)
-	case Sqlite3Driver:
-		source = ":memory:"
-	default:
-		panic(errors.New("database driver not found"))
-	}
-	db, err := sql.Open(c.Driver, source)
+	source := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=%v&collation=%v&parseTime=true&timeout=2s&loc=Local", c.User, c.Password, c.Host, c.Port, c.Database, c.Charset, c.Collation)
+	db, err := sql.Open("mysql", source)
 	if err != nil {
 		panic(err)
 	}

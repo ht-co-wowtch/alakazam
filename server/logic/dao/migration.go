@@ -17,7 +17,7 @@ func runMigration(path string) {
 	driver, _ := mysql.WithInstance(db, &mysql.Config{})
 	m, err := migrate.NewWithDatabaseInstance(
 		fmt.Sprintf("file://%s", path),
-		conf.Conf.DB.Driver,
+		"mysql",
 		driver,
 	)
 
