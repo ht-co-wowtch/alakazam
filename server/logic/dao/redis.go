@@ -18,9 +18,6 @@ const (
 	// user 禁言key的前綴詞
 	_prefixBannedInfo = "b_%s"
 
-	// user 封鎖前綴詞 
-	_prefixBlockadeInfo = "xb_%s"
-
 	// server name的前綴詞，用於存儲在redis當key
 	_prefixServerOnline = "server_%s"
 
@@ -40,10 +37,6 @@ func keyUidInfo(uid string) string {
 
 func keyBannedInfo(uid string) string {
 	return fmt.Sprintf(_prefixBannedInfo, uid)
-}
-
-func keyBlockadeInfo(uid string) string {
-	return fmt.Sprintf(_prefixBlockadeInfo, uid)
 }
 
 func keyServerOnline(key string) string {
@@ -171,8 +164,6 @@ func (d *Dao) UserData(uid string, key string) (roomId, name string, status int,
 		log.Errorf("conn.Receive() error(%v)", err)
 		return
 	}
-	roomId = res[key]
-	name = res[HashNameKey]
 
 	// TODO 自行實作redis.StringMap
 	if s, err := strconv.Atoi(res[hashStatusKey]); err == nil {
@@ -261,6 +252,44 @@ func (d *Dao) DelBanned(uid string) (err error) {
 		}
 	}
 	return
+}
+
+// 設定封鎖
+func (d *Dao) SetBlockade(uid, remark string) error {
+	conn := d.redis.Get()
+	defer conn.Close()
+	if err := conn.Send("HSET", keyUidInfo(uid), hashStatusKey, business.Blockade); err != nil {
+		log.Errorf("conn.Send(HSET %s) error(%v)", uid, err)
+		return err
+	}
+	if err := conn.Flush(); err != nil {
+		log.Errorf("conn.Flush() error(%v)", err)
+		return err
+	}
+	if _, err := conn.Receive(); err != nil {
+		log.Errorf("conn.Receive() error(%v)", err)
+		return err
+	}
+	return nil
+}
+
+// 解除封鎖
+func (d *Dao) RemoveBlockade(uid string) error {
+	conn := d.redis.Get()
+	defer conn.Close()
+	if err := conn.Send("HSET", keyUidInfo(uid), hashStatusKey, business.PlayDefaultPermission); err != nil {
+		log.Errorf("conn.Send(HSET %s) error(%v)", uid, err)
+		return err
+	}
+	if err := conn.Flush(); err != nil {
+		log.Errorf("conn.Flush() error(%v)", err)
+		return err
+	}
+	if _, err := conn.Receive(); err != nil {
+		log.Errorf("conn.Receive() error(%v)", err)
+		return err
+	}
+	return nil
 }
 
 type Online struct {
