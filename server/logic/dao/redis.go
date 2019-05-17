@@ -151,24 +151,24 @@ func (d *Dao) DelMapping(uid, key, server string) (has bool, err error) {
 func (d *Dao) GetUser(uid string, key string) (roomId, name string, status int, err error) {
 	conn := d.redis.Get()
 	defer conn.Close()
-	if err := conn.Send("HGETALL", keyUidInfo(uid)); err != nil {
+	if err = conn.Send("HGETALL", keyUidInfo(uid)); err != nil {
 		log.Errorf("conn.Do(HGETALL %s) error(%v)", uid, err)
 		return
 	}
-	if err := conn.Flush(); err != nil {
+	if err = conn.Flush(); err != nil {
 		log.Errorf("conn.Flush() error(%v)", err)
 		return
 	}
-	res, err := redis.StringMap(conn.Receive())
+	var res map[string]string
+	res, err = redis.StringMap(conn.Receive())
 	if err != nil {
 		log.Errorf("conn.Receive() error(%v)", err)
 		return
 	}
 
 	// TODO 自行實作redis.StringMap
-	if s, err := strconv.Atoi(res[hashStatusKey]); err == nil {
-		status = s
-	}
+	status, err = strconv.Atoi(res[hashStatusKey])
+
 	return res[key], res[HashNameKey], status, err
 }
 
