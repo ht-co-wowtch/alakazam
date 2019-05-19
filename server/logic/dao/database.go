@@ -2,7 +2,7 @@ package dao
 
 import "database/sql"
 
-type store struct {
+type Store struct {
 	*sql.DB
 }
 

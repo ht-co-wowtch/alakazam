@@ -21,6 +21,8 @@ type Logic struct {
 	// kafka and redis Dao
 	dao *dao.Dao
 
+	db *dao.Store
+
 	// 房間在線人數，key是房間id
 	roomCount map[string]int32
 }
@@ -30,6 +32,7 @@ func New(c *conf.Config) (l *Logic) {
 	l = &Logic{
 		c:   c,
 		dao: dao.New(c),
+		db:  &dao.Store{dao.NewDB(c.DB)},
 	}
 	_ = l.loadOnline()
 	go l.onlineproc()

@@ -15,7 +15,7 @@ type Dao struct {
 	c        *conf.Config
 	kafkaPub kafka.SyncProducer
 	Cache    *cache
-	DB       *store
+	DB       *Store
 }
 
 func New(c *conf.Config) *Dao {
@@ -23,7 +23,7 @@ func New(c *conf.Config) *Dao {
 		c:        c,
 		kafkaPub: newKafkaPub(c.Kafka),
 		Cache:    &cache{newRedis(c.Redis), int32(c.Redis.Expire / time.Second)},
-		DB:       &store{newDB(c.DB)},
+		DB:       &Store{NewDB(c.DB)},
 	}
 	return d
 }
@@ -59,7 +59,7 @@ func newRedis(c *conf.Redis) *redis.Pool {
 	}
 }
 
-func newDB(c *conf.Database) *sql.DB {
+func NewDB(c *conf.Database) *sql.DB {
 	db, err := sql.Open(c.Driver, DatabaseDns(c))
 	if err != nil {
 		panic(err)

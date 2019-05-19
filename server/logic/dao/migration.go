@@ -13,7 +13,7 @@ func RunMigration(path string) {
 }
 
 func runMigration(path string) {
-	db := newDB(conf.Conf.DB)
+	db := NewDB(conf.Conf.DB)
 	driver, _ := mysql.WithInstance(db, &mysql.Config{})
 	m, err := migrate.NewWithDatabaseInstance(
 		fmt.Sprintf("file://%s", path),
