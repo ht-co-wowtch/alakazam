@@ -11,7 +11,7 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	if err := conf.Read("../../../test/run/logic.yml"); err != nil {
+	if err := conf.Read("../../../test/config/logic.yml"); err != nil {
 		panic(err)
 	}
 	d = New(conf.Conf)

@@ -60,7 +60,7 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	r.Key = uuid.New().String()
 
 	// 儲存user資料至redis
-	if err := l.dao.AddMapping(r.Uid, r.Key, r.RoomId, r.Name, server, r.Permission); err != nil {
+	if err := l.dao.Cache.AddMapping(r.Uid, r.Key, r.RoomId, r.Name, server, r.Permission); err != nil {
 		log.Errorf("l.dao.AddMapping(%s,%s,%s,%s) error(%v)", r.Uid, r.Key, r.Name, server, err)
 	}
 	log.Infof("conn connected key:%s server:%s uid:%s token:%s", r.Key, server, r.Uid, token)
@@ -69,7 +69,7 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 
 // redis清除某人連線資訊
 func (l *Logic) Disconnect(uid, key, server string) (has bool, err error) {
-	if has, err = l.dao.DelMapping(uid, key, server); err != nil {
+	if has, err = l.dao.Cache.DelMapping(uid, key, server); err != nil {
 		log.Errorf("l.dao.DelMapping(%s,%s,%s) error(%v)", uid, key, server, err)
 		return
 	}
@@ -79,7 +79,7 @@ func (l *Logic) Disconnect(uid, key, server string) (has bool, err error) {
 
 // user key更換房間
 func (l *Logic) ChangeRoom(uid, key, roomId string) (err error) {
-	if err = l.dao.ChangeRoom(uid, key, roomId); err != nil {
+	if err = l.dao.Cache.ChangeRoom(uid, key, roomId); err != nil {
 		log.Errorf("l.dao.DelMapping(%s,%s)", uid, key)
 		return
 	}
@@ -89,7 +89,7 @@ func (l *Logic) ChangeRoom(uid, key, roomId string) (err error) {
 
 // 更新某人redis資訊的過期時間
 func (l *Logic) Heartbeat(uid, key, roomId, name, server string) (err error) {
-	has, err := l.dao.ExpireMapping(uid)
+	has, err := l.dao.Cache.ExpireMapping(uid)
 	if err != nil {
 		log.Errorf("l.dao.ExpireMapping(%s,%s,%s) error(%v)", uid, key, server, err)
 		return
@@ -97,7 +97,7 @@ func (l *Logic) Heartbeat(uid, key, roomId, name, server string) (err error) {
 	// 沒更新成功就直接做覆蓋
 	if !has {
 		// TODO 要重抓user 權限值帶到status欄位
-		if err = l.dao.AddMapping(uid, key, roomId, name, server, 0); err != nil {
+		if err = l.dao.Cache.AddMapping(uid, key, roomId, name, server, 0); err != nil {
 			log.Errorf("l.dao.AddMapping(%s,%s,%s) error(%v)", uid, key, server, err)
 			return
 		}
@@ -113,7 +113,7 @@ func (l *Logic) RenewOnline(server string, roomCount map[string]int32) (map[stri
 		RoomCount: roomCount,
 		Updated:   time.Now().Unix(),
 	}
-	if err := l.dao.AddServerOnline(server, online); err != nil {
+	if err := l.dao.Cache.AddServerOnline(server, online); err != nil {
 		return nil, err
 	}
 	return l.roomCount, nil

@@ -63,7 +63,7 @@ func (l *Logic) loadOnline() (err error) {
 	)
 	host, _ := os.Hostname()
 	var online *dao.Online
-	online, err = l.dao.ServerOnline(host)
+	online, err = l.dao.Cache.ServerOnline(host)
 	if err != nil {
 		return
 	}

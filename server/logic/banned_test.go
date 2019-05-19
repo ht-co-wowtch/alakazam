@@ -15,7 +15,7 @@ func TestIsNotBanned(t *testing.T) {
 }
 
 func TestIsBanned(t *testing.T) {
-	err := d.SetBanned("456", 10)
+	err := d.Cache.SetBanned("456", 10)
 	assert.Nil(t, err)
 
 	is := l.isBanned("456", 1)

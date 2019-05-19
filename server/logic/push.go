@@ -27,7 +27,7 @@ type PushRoomForm struct {
 
 // 單一房間推送
 func (l *Logic) PushRoom(p *PushRoomForm) error {
-	rId, name, w, err := l.dao.GetUser(p.Uid, p.Key)
+	rId, name, w, err := l.dao.Cache.GetUser(p.Uid, p.Key)
 	if err != nil {
 		return errors.FailureError
 	}

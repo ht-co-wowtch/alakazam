@@ -14,20 +14,16 @@ import (
 type Dao struct {
 	c        *conf.Config
 	kafkaPub kafka.SyncProducer
-	redis    *redis.Pool
+	Cache    *cache
 	db       *sql.DB
-
-	// redis 過期時間
-	redisExpire int32
 }
 
 func New(c *conf.Config) *Dao {
 	d := &Dao{
-		c:           c,
-		db:          newDB(c.DB),
-		kafkaPub:    newKafkaPub(c.Kafka),
-		redis:       newRedis(c.Redis),
-		redisExpire: int32(c.Redis.Expire / time.Second),
+		c:        c,
+		db:       newDB(c.DB),
+		kafkaPub: newKafkaPub(c.Kafka),
+		Cache:    &cache{newRedis(c.Redis), int32(c.Redis.Expire / time.Second)},
 	}
 	return d
 }
@@ -85,7 +81,7 @@ func DatabaseDns(c *conf.Database) string {
 
 // Close close the resource.
 func (d *Dao) Close() error {
-	return d.redis.Close()
+	return d.Cache.Close()
 }
 
 // ping redis是否活著

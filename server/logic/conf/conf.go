@@ -48,7 +48,7 @@ type Database struct {
 	ConnMaxLifetime time.Duration
 }
 
-// Redis
+// Cache
 type Redis struct {
 	// host
 	Network string
