@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"database/sql"
 	"encoding/json"
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
@@ -41,17 +42,32 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 		// client要進入的room
 		RoomID string `json:"room_id"`
 	}
-	r := new(ConnectReply)
 	if err := json.Unmarshal(token, &params); err != nil {
 		log.Errorf("json.Unmarshal(%s) error(%v)", token, err)
-		return r, errors.ConnectError
+		return nil, errors.ConnectError
 	}
 
-	if r.Uid, r.Name, r.Permission = remote.Renew(params.Token); r.Permission == business.Blockade {
+	r := new(ConnectReply)
+	r.Uid, r.Name = remote.Renew(params.Token)
+	permission, isBlockade, err := l.db.FindUserPermission(r.Uid)
+
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Errorf("FindUserPermission(uid:%s) error(%v)", r.Uid, err)
+			return r, errors.ConnectError
+		}
+		if aff, err := l.db.CreateUser(r.Uid, business.PlayDefaultPermission); err != nil || aff <= 0 {
+			log.Errorf("CreateUser(uid:%s) affected %d error(%v)", r.Uid, aff, err)
+			return r, errors.ConnectError
+		}
+		permission = business.PlayDefaultPermission
+	} else if isBlockade {
+		r.Permission = business.Blockade
 		log.Infof("conn blockade uid:%s token:%s", r.Uid, token)
 		return r, nil
 	}
 
+	r.Permission = permission
 	r.RoomId = params.RoomID
 
 	// 告知comet連線多久沒心跳就直接close
