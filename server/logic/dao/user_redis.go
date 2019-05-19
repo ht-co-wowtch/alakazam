@@ -13,7 +13,7 @@ import (
 // name => user name
 // status => user status
 // server => comet server name
-func (d *cache) AddMapping(uid, key, roomId, name, server string, status int) (err error) {
+func (d *Cache) AddMapping(uid, key, roomId, name, server string, status int) (err error) {
 	conn := d.Get()
 	defer conn.Close()
 	if err = conn.Send("HSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, status, hashServerKey, server); err != nil {
@@ -39,7 +39,7 @@ func (d *cache) AddMapping(uid, key, roomId, name, server string, status int) (e
 
 // restart user資料的過期時間
 // EXPIRE : uid_{user id}  (HSET)
-func (d *cache) ExpireMapping(uid string) (has bool, err error) {
+func (d *Cache) ExpireMapping(uid string) (has bool, err error) {
 	conn := d.Get()
 	defer conn.Close()
 	if err = conn.Send("EXPIRE", keyUidInfo(uid), d.expire); err != nil {
@@ -59,7 +59,7 @@ func (d *cache) ExpireMapping(uid string) (has bool, err error) {
 
 // 移除user資訊
 // DEL : uid_{user id}
-func (d *cache) DelMapping(uid, key, server string) (has bool, err error) {
+func (d *Cache) DelMapping(uid, key, server string) (has bool, err error) {
 	conn := d.Get()
 	defer conn.Close()
 	if err = conn.Send("HDEL", keyUidInfo(uid), key); err != nil {
@@ -77,7 +77,7 @@ func (d *cache) DelMapping(uid, key, server string) (has bool, err error) {
 	return
 }
 
-func (d *cache) GetUser(uid string, key string) (roomId, name string, status int, err error) {
+func (d *Cache) GetUser(uid string, key string) (roomId, name string, status int, err error) {
 	conn := d.Get()
 	defer conn.Close()
 	if err = conn.Send("HGETALL", keyUidInfo(uid)); err != nil {
@@ -102,7 +102,7 @@ func (d *cache) GetUser(uid string, key string) (roomId, name string, status int
 }
 
 // 更換房間
-func (d *cache) ChangeRoom(uid, key, roomId string) (err error) {
+func (d *Cache) ChangeRoom(uid, key, roomId string) (err error) {
 	conn := d.Get()
 	defer conn.Close()
 	if err = conn.Send("HSET", keyUidInfo(uid), key, roomId); err != nil {

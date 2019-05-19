@@ -14,7 +14,7 @@ import (
 type Dao struct {
 	c        *conf.Config
 	kafkaPub kafka.SyncProducer
-	Cache    *cache
+	Cache    *Cache
 	DB       *Store
 }
 
@@ -22,7 +22,7 @@ func New(c *conf.Config) *Dao {
 	d := &Dao{
 		c:        c,
 		kafkaPub: newKafkaPub(c.Kafka),
-		Cache:    &cache{newRedis(c.Redis), int32(c.Redis.Expire / time.Second)},
+		Cache:    NewRedis(c.Redis),
 		DB:       &Store{NewDB(c.DB)},
 	}
 	return d
@@ -40,8 +40,8 @@ func newKafkaPub(c *conf.Kafka) kafka.SyncProducer {
 	return pub
 }
 
-func newRedis(c *conf.Redis) *redis.Pool {
-	return &redis.Pool{
+func NewRedis(c *conf.Redis) *Cache {
+	p := &redis.Pool{
 		MaxIdle:     c.Idle,
 		MaxActive:   c.Active,
 		IdleTimeout: c.IdleTimeout,
@@ -56,6 +56,10 @@ func newRedis(c *conf.Redis) *redis.Pool {
 			}
 			return conn, nil
 		},
+	}
+	return &Cache{
+		Pool:   p,
+		expire: int32(c.Expire / time.Second),
 	}
 }
 
@@ -86,5 +90,5 @@ func (d *Dao) Close() error {
 
 // ping redis是否活著
 func (d *Dao) Ping() error {
-	return d.pingRedis()
+	return d.Cache.Ping()
 }

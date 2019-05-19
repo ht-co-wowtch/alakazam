@@ -6,14 +6,14 @@ import (
 )
 
 func (l *Logic) SetBanned(uid, remark string, expired int) error {
-	return l.dao.Cache.SetBanned(uid, expired)
+	return l.cache.SetBanned(uid, expired)
 }
 
 func (l *Logic) isBanned(uid string, status int) bool {
 	if !business.IsBanned(status) {
 		return false
 	}
-	_, ok, err := l.dao.Cache.GetBanned(uid)
+	_, ok, err := l.cache.GetBanned(uid)
 	if err != nil {
 		log.Errorf("dao.GetBanned(uid: %s) error(%v)", uid, err)
 		return false
@@ -21,7 +21,7 @@ func (l *Logic) isBanned(uid string, status int) bool {
 	if ok {
 		return true
 	}
-	if err := l.dao.Cache.DelBanned(uid); err != nil {
+	if err := l.cache.DelBanned(uid); err != nil {
 		log.Errorf("dao.DelBanned(uid: %s) error(%v)", uid, err)
 		return true
 	}
@@ -29,7 +29,7 @@ func (l *Logic) isBanned(uid string, status int) bool {
 }
 
 func (l *Logic) RemoveBanned(uid string) error {
-	if err := l.dao.Cache.DelBanned(uid); err != nil {
+	if err := l.cache.DelBanned(uid); err != nil {
 		log.Errorf("dao.DelBanned(uid: %s) error(%v)", uid, err)
 		return err
 	}

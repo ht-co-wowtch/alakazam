@@ -6,7 +6,7 @@ import (
 )
 
 // 設定封鎖
-func (c *cache) SetBlockade(uid string) error {
+func (c *Cache) SetBlockade(uid string) error {
 	conn := c.Get()
 	defer conn.Close()
 	if err := conn.Send("HSET", keyUidInfo(uid), hashStatusKey, business.Blockade); err != nil {
@@ -25,7 +25,7 @@ func (c *cache) SetBlockade(uid string) error {
 }
 
 // 解除封鎖
-func (d *cache) RemoveBlockade(uid string) error {
+func (d *Cache) RemoveBlockade(uid string) error {
 	conn := d.Get()
 	defer conn.Close()
 	if err := conn.Send("HSET", keyUidInfo(uid), hashStatusKey, business.PlayDefaultPermission); err != nil {

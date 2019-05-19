@@ -5,7 +5,7 @@ import (
 )
 
 func (l *Logic) SetBlockade(uid, remark string) error {
-	if err := l.dao.Cache.SetBlockade(uid); err != nil {
+	if err := l.cache.SetBlockade(uid); err != nil {
 		log.Errorf("logic.SetBlockade uid:%s error(%v)", uid, err)
 		return err
 	}
@@ -13,7 +13,7 @@ func (l *Logic) SetBlockade(uid, remark string) error {
 }
 
 func (l *Logic) RemoveBlockade(uid string) error {
-	if err := l.dao.Cache.RemoveBlockade(uid); err != nil {
+	if err := l.cache.RemoveBlockade(uid); err != nil {
 		log.Errorf("logic.RemoveBlockade uid:%s error(%v)", uid, err)
 		return err
 	}

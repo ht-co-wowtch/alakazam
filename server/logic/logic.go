@@ -23,6 +23,8 @@ type Logic struct {
 
 	db *dao.Store
 
+	cache *dao.Cache
+
 	// 房間在線人數，key是房間id
 	roomCount map[string]int32
 }
@@ -30,23 +32,19 @@ type Logic struct {
 // New init
 func New(c *conf.Config) (l *Logic) {
 	l = &Logic{
-		c:   c,
-		dao: dao.New(c),
-		db:  &dao.Store{dao.NewDB(c.DB)},
+		c:     c,
+		dao:   dao.New(c),
+		db:    &dao.Store{dao.NewDB(c.DB)},
+		cache: dao.NewRedis(c.Redis),
 	}
 	_ = l.loadOnline()
 	go l.onlineproc()
 	return l
 }
 
-// Ping ping resources is ok.
-func (l *Logic) Ping() (err error) {
-	return l.dao.Ping()
-}
-
 // Close close resources.
 func (l *Logic) Close() {
-	l.dao.Close()
+	l.cache.Close()
 	log.Infof("logic close")
 }
 
@@ -66,7 +64,7 @@ func (l *Logic) loadOnline() (err error) {
 	)
 	host, _ := os.Hostname()
 	var online *dao.Online
-	online, err = l.dao.Cache.ServerOnline(host)
+	online, err = l.cache.ServerOnline(host)
 	if err != nil {
 		return
 	}

@@ -18,7 +18,7 @@ type Online struct {
 // HSET Key hashKey jsonBody
 // Key用server name
 // hashKey則是將room name以City Hash32做hash後得出一個數字，以這個數字當hashKey
-func (d *cache) AddServerOnline(server string, online *Online) (err error) {
+func (d *Cache) AddServerOnline(server string, online *Online) (err error) {
 	roomsMap := map[uint32]map[string]int32{}
 	for room, count := range online.RoomCount {
 		rMap := roomsMap[cityhash.CityHash32([]byte(room), uint32(len(room)))%8]
@@ -42,7 +42,7 @@ func (d *cache) AddServerOnline(server string, online *Online) (err error) {
 // 以HSET方式儲存房間人數
 // HSET Key hashKey jsonBody
 // Key用server name
-func (d *cache) addServerOnline(key string, hashKey string, online *Online) (err error) {
+func (d *Cache) addServerOnline(key string, hashKey string, online *Online) (err error) {
 	conn := d.Get()
 	defer conn.Close()
 	b, _ := json.Marshal(online)
@@ -68,7 +68,7 @@ func (d *cache) addServerOnline(key string, hashKey string, online *Online) (err
 }
 
 // 根據server name取線上各房間總人數
-func (d *cache) ServerOnline(server string) (online *Online, err error) {
+func (d *Cache) ServerOnline(server string) (online *Online, err error) {
 	online = &Online{RoomCount: map[string]int32{}}
 	// server name
 	key := keyServerOnline(server)
@@ -88,7 +88,7 @@ func (d *cache) ServerOnline(server string) (online *Online, err error) {
 }
 
 // 根據server name與hashKey取該server name內線上各房間總人數
-func (d *cache) serverOnline(key string, hashKey string) (online *Online, err error) {
+func (d *Cache) serverOnline(key string, hashKey string) (online *Online, err error) {
 	conn := d.Get()
 	defer conn.Close()
 	// b是一個json
@@ -117,7 +117,7 @@ func (d *cache) serverOnline(key string, hashKey string) (online *Online, err er
 }
 
 // 根據server name 刪除線上各房間總人數
-func (d *cache) DelServerOnline(server string) (err error) {
+func (d *Cache) DelServerOnline(server string) (err error) {
 	conn := d.Get()
 	defer conn.Close()
 	key := keyServerOnline(server)

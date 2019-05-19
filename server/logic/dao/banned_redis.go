@@ -8,7 +8,7 @@ import (
 )
 
 // 設定禁言
-func (d *cache) SetBanned(uid string, expired int) (err error) {
+func (d *Cache) SetBanned(uid string, expired int) (err error) {
 	sec := time.Duration(expired) * time.Second
 	conn := d.Get()
 	defer conn.Close()
@@ -38,7 +38,7 @@ func (d *cache) SetBanned(uid string, expired int) (err error) {
 }
 
 // 取得禁言時效
-func (d *cache) GetBanned(uid string) (t time.Time, is bool, err error) {
+func (d *Cache) GetBanned(uid string) (t time.Time, is bool, err error) {
 	conn := d.Get()
 	defer conn.Close()
 	var r interface{}
@@ -65,7 +65,7 @@ func (d *cache) GetBanned(uid string) (t time.Time, is bool, err error) {
 }
 
 // 解除禁言
-func (d *cache) DelBanned(uid string) (err error) {
+func (d *Cache) DelBanned(uid string) (err error) {
 	conn := d.Get()
 	defer conn.Close()
 	if err = conn.Send("DEL", keyBannedInfo(uid)); err != nil {

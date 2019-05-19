@@ -25,7 +25,7 @@ const (
 	hashServerKey = "server"
 )
 
-type cache struct {
+type Cache struct {
 	*redis.Pool
 
 	expire int32
@@ -44,10 +44,9 @@ func keyServerOnline(key string) string {
 }
 
 // ping redis是否活著
-func (d *Dao) pingRedis() (err error) {
-	conn := d.Cache.Get()
-	_, err = conn.Do("SET", "PING", "PONG")
+func (d *Cache) Ping() error {
+	conn := d.Get()
+	_, err := conn.Do("SET", "PING", "PONG")
 	conn.Close()
-	return
+	return err
 }
-
