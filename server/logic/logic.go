@@ -34,7 +34,7 @@ func New(c *conf.Config) (l *Logic) {
 	l = &Logic{
 		c:     c,
 		dao:   dao.New(c),
-		db:    &dao.Store{dao.NewDB(c.DB)},
+		db:    dao.NewStore(c.DB),
 		cache: dao.NewRedis(c.Redis),
 	}
 	_ = l.loadOnline()

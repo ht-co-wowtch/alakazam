@@ -1,6 +1,7 @@
 module gitlab.com/jetfueltw/cpw/alakazam
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.3.3
 	github.com/DATA-DOG/go-txdb v0.1.2
 	github.com/Shopify/sarama v1.22.1 // indirect
 	github.com/bsm/sarama-cluster v2.1.15+incompatible

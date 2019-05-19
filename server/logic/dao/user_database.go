@@ -17,6 +17,6 @@ func (d *Store) CreateUser(uid string, permission int) (int64, error) {
 
 // 找會員
 func (d *Store) FindUserPermission(uid string) (permission int, isBlockade bool, err error) {
-	sql := "SELECT permission, is_blockade FROM `members` WHERE uid = ?"
+	sql := "SELECT permission, is_blockade FROM members WHERE uid = ?"
 	return permission, isBlockade, d.QueryRow(sql, uid).Scan(&permission, &isBlockade)
 }

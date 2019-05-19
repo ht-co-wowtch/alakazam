@@ -15,7 +15,7 @@ func TestIsNotBanned(t *testing.T) {
 }
 
 func TestIsBanned(t *testing.T) {
-	err := d.Cache.SetBanned("456", 10)
+	err := d.SetBanned("456", 10)
 	assert.Nil(t, err)
 
 	is := l.isBanned("456", 1)
@@ -35,8 +35,7 @@ func TestBannedExpire(t *testing.T) {
 func TestBannedError(t *testing.T) {
 	initTestConfig()
 	conf.Conf.Redis.Addr = ":1111"
-	d := dao.New(conf.Conf)
-	l := Logic{dao: d}
+	l := Logic{cache: dao.NewRedis(conf.Conf.Redis)}
 
 	is := l.isBanned("", 1)
 	assert.False(t, is)

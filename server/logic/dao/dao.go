@@ -23,7 +23,7 @@ func New(c *conf.Config) *Dao {
 		c:        c,
 		kafkaPub: newKafkaPub(c.Kafka),
 		Cache:    NewRedis(c.Redis),
-		DB:       &Store{NewDB(c.DB)},
+		DB:       NewStore(c.DB),
 	}
 	return d
 }
@@ -61,6 +61,10 @@ func NewRedis(c *conf.Redis) *Cache {
 		Pool:   p,
 		expire: int32(c.Expire / time.Second),
 	}
+}
+
+func NewStore(c *conf.Database) *Store {
+	return &Store{NewDB(c)}
 }
 
 func NewDB(c *conf.Database) *sql.DB {

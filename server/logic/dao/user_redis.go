@@ -95,8 +95,10 @@ func (d *Cache) GetUser(uid string, key string) (roomId, name string, status int
 		return
 	}
 
-	// TODO 自行實作redis.StringMap
-	status, err = strconv.Atoi(res[hashStatusKey])
+	if i, ok := res[hashStatusKey]; ok {
+		// TODO 自行實作redis.StringMap
+		status, err = strconv.Atoi(i)
+	}
 
 	return res[key], res[hashNameKey], status, err
 }

@@ -1,11 +1,21 @@
 package logic
 
 import (
+	"database/sql"
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
 	"testing"
 )
 
 func TestConnect(t *testing.T) {
+	mockDB.ExpectQuery("^SELECT").
+		WithArgs(sqlmock.AnyArg()).
+		WillReturnError(sql.ErrNoRows)
+	mockDB.ExpectExec("^INSERT INTO members").
+		WithArgs(sqlmock.AnyArg(), business.PlayDefaultPermission).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+
 	c, err := l.Connect("", []byte(`{"token":"","room_id":"1000"}`))
 	assert.Nil(t, err)
 
