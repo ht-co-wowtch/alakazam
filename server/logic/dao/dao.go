@@ -15,15 +15,15 @@ type Dao struct {
 	c        *conf.Config
 	kafkaPub kafka.SyncProducer
 	Cache    *cache
-	db       *sql.DB
+	DB       *store
 }
 
 func New(c *conf.Config) *Dao {
 	d := &Dao{
 		c:        c,
-		db:       newDB(c.DB),
 		kafkaPub: newKafkaPub(c.Kafka),
 		Cache:    &cache{newRedis(c.Redis), int32(c.Redis.Expire / time.Second)},
+		DB:       &store{newDB(c.DB)},
 	}
 	return d
 }
