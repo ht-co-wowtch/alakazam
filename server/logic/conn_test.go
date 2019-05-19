@@ -9,12 +9,8 @@ import (
 )
 
 func TestConnect(t *testing.T) {
-	mockDB.ExpectQuery("^SELECT").
-		WithArgs(sqlmock.AnyArg()).
-		WillReturnError(sql.ErrNoRows)
-	mockDB.ExpectExec("^INSERT INTO members").
-		WithArgs(sqlmock.AnyArg(), business.PlayDefaultPermission).
-		WillReturnResult(sqlmock.NewResult(0, 1))
+	mockDBFindUserPermission()
+	mockDBCreateUser()
 
 	c, err := l.Connect("", []byte(`{"token":"","room_id":"1000"}`))
 	assert.Nil(t, err)
@@ -56,4 +52,16 @@ func TestHeartbeat(t *testing.T) {
 
 	err := l.Heartbeat("789", "", "", "", "")
 	assert.Nil(t, err)
+}
+
+func mockDBFindUserPermission() {
+	mockDB.ExpectQuery("^SELECT").
+		WithArgs(sqlmock.AnyArg()).
+		WillReturnError(sql.ErrNoRows)
+}
+
+func mockDBCreateUser() {
+	mockDB.ExpectExec("^INSERT INTO members").
+		WithArgs(sqlmock.AnyArg(), business.PlayDefaultPermission).
+		WillReturnResult(sqlmock.NewResult(0, 1))
 }
