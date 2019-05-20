@@ -76,8 +76,8 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	r.Key = uuid.New().String()
 
 	// 儲存user資料至redis
-	if err := l.cache.AddMapping(r.Uid, r.Key, r.RoomId, r.Name, server, r.Permission); err != nil {
-		log.Errorf("l.dao.AddMapping(%s,%s,%s,%s) error(%v)", r.Uid, r.Key, r.Name, server, err)
+	if err := l.cache.SetUser(r.Uid, r.Key, r.RoomId, r.Name, server, r.Permission); err != nil {
+		log.Errorf("l.dao.SetUser(%s,%s,%s,%s) error(%v)", r.Uid, r.Key, r.Name, server, err)
 	}
 	log.Infof("conn connected key:%s server:%s uid:%s token:%s", r.Key, server, r.Uid, token)
 	return r, nil
@@ -85,8 +85,8 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 
 // redis清除某人連線資訊
 func (l *Logic) Disconnect(uid, key, server string) (has bool, err error) {
-	if has, err = l.cache.DelMapping(uid, key, server); err != nil {
-		log.Errorf("l.dao.DelMapping(%s,%s,%s) error(%v)", uid, key, server, err)
+	if has, err = l.cache.DeleteUser(uid, key, server); err != nil {
+		log.Errorf("l.dao.DeleteUser(%s,%s,%s) error(%v)", uid, key, server, err)
 		return
 	}
 	log.Infof("conn disconnected server:%s uid:%s key:%s", server, uid, key)
@@ -96,7 +96,7 @@ func (l *Logic) Disconnect(uid, key, server string) (has bool, err error) {
 // user key更換房間
 func (l *Logic) ChangeRoom(uid, key, roomId string) (err error) {
 	if err = l.cache.ChangeRoom(uid, key, roomId); err != nil {
-		log.Errorf("l.dao.DelMapping(%s,%s)", uid, key)
+		log.Errorf("l.dao.DeleteUser(%s,%s)", uid, key)
 		return
 	}
 	log.Infof("conn ChangeRoom  uid:%s key:%s roomId:%s", uid, key, roomId)
@@ -105,16 +105,16 @@ func (l *Logic) ChangeRoom(uid, key, roomId string) (err error) {
 
 // 更新某人redis資訊的過期時間
 func (l *Logic) Heartbeat(uid, key, roomId, name, server string) (err error) {
-	has, err := l.cache.ExpireMapping(uid)
+	has, err := l.cache.RefreshUserExpire(uid)
 	if err != nil {
-		log.Errorf("l.dao.ExpireMapping(%s,%s,%s) error(%v)", uid, key, server, err)
+		log.Errorf("l.dao.RefreshUserExpire(%s,%s,%s) error(%v)", uid, key, server, err)
 		return
 	}
 	// 沒更新成功就直接做覆蓋
 	if !has {
 		// TODO 要重抓user 權限值帶到status欄位
-		if err = l.cache.AddMapping(uid, key, roomId, name, server, 0); err != nil {
-			log.Errorf("l.dao.AddMapping(%s,%s,%s) error(%v)", uid, key, server, err)
+		if err = l.cache.SetUser(uid, key, roomId, name, server, 0); err != nil {
+			log.Errorf("l.dao.SetUser(%s,%s,%s) error(%v)", uid, key, server, err)
 			return
 		}
 	}

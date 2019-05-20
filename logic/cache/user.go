@@ -13,7 +13,7 @@ import (
 // name => user name
 // status => user status
 // server => comet server name
-func (d *Cache) AddMapping(uid, key, roomId, name, server string, status int) (err error) {
+func (d *Cache) SetUser(uid, key, roomId, name, server string, status int) (err error) {
 	conn := d.Get()
 	defer conn.Close()
 	if err = conn.Send("HSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, status, hashServerKey, server); err != nil {
@@ -39,7 +39,7 @@ func (d *Cache) AddMapping(uid, key, roomId, name, server string, status int) (e
 
 // restart user資料的過期時間
 // EXPIRE : uid_{user id}  (HSET)
-func (d *Cache) ExpireMapping(uid string) (has bool, err error) {
+func (d *Cache) RefreshUserExpire(uid string) (has bool, err error) {
 	conn := d.Get()
 	defer conn.Close()
 	if err = conn.Send("EXPIRE", keyUidInfo(uid), d.expire); err != nil {
@@ -59,7 +59,7 @@ func (d *Cache) ExpireMapping(uid string) (has bool, err error) {
 
 // 移除user資訊
 // DEL : uid_{user id}
-func (d *Cache) DelMapping(uid, key, server string) (has bool, err error) {
+func (d *Cache) DeleteUser(uid, key, server string) (has bool, err error) {
 	conn := d.Get()
 	defer conn.Close()
 	if err = conn.Send("HDEL", keyUidInfo(uid), key); err != nil {

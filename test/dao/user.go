@@ -7,7 +7,7 @@ import (
 )
 
 func AddUser(d *cache.Cache, t *testing.T, uid, key, roomId, name string, status int) {
-	err := d.AddMapping(uid, key, roomId, name, "", status)
+	err := d.SetUser(uid, key, roomId, name, "", status)
 	assert.Nil(t, err)
 }
 
