@@ -2,6 +2,7 @@ package logic
 
 import (
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/store"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/stream"
 	"os"
 	"time"
 
@@ -23,7 +24,7 @@ type Logic struct {
 
 	cache *dao.Cache
 
-	stream *dao.Stream
+	stream *stream.Stream
 
 	// 房間在線人數，key是房間id
 	roomCount map[string]int32
@@ -35,7 +36,7 @@ func New(c *conf.Config) (l *Logic) {
 		c:      c,
 		db:     store.NewStore(c.DB),
 		cache:  dao.NewRedis(c.Redis),
-		stream: dao.NewKafkaPub(c.Kafka),
+		stream: stream.NewKafkaPub(c.Kafka),
 	}
 	_ = l.loadOnline()
 	go l.onlineproc()

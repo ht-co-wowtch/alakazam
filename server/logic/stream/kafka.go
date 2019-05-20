@@ -1,13 +1,12 @@
-package dao
+package stream
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
-	"strconv"
-
 	"github.com/gogo/protobuf/proto"
 	log "github.com/golang/glog"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gopkg.in/Shopify/sarama.v1"
+	"strconv"
 )
 
 // 房間推送，以下為條件
