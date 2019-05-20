@@ -16,6 +16,12 @@ func (s *Server) setBlockade(c *gin.Context) {
 		response.ErrorE(c, errors.DataError)
 		return
 	}
+	//TODO:
+	//update database goes here
+
+	//send kick somebody off goes here
+
+
 	if err := s.logic.SetBlockade(params.Uid, params.Remark); err != nil {
 		response.ErrorE(c, errors.FailureError)
 		return
@@ -31,6 +37,10 @@ func (s *Server) removeBlockade(c *gin.Context) {
 		response.ErrorE(c, errors.DataError)
 		return
 	}
+	//TODO:
+	//update database goes here
+
+
 	if err := s.logic.RemoveBlockade(params.Uid); err != nil {
 		response.ErrorE(c, errors.FailureError)
 		return
