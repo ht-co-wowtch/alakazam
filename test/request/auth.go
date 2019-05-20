@@ -7,7 +7,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/business"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/protocol"
 	"golang.org/x/net/websocket"
 	"math/rand"

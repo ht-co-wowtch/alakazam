@@ -2,9 +2,8 @@ package main
 
 import (
 	"flag"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/store"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 )
 
 var (

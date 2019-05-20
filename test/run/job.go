@@ -1,8 +1,8 @@
 package run
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/server/job"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/job/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/job"
+	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
 )
 
 func RunJob(path string) func() {

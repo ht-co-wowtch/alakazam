@@ -11,9 +11,9 @@ import (
 	"time"
 
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/comet"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/comet/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/comet/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/grpc"
 )
 
 var (

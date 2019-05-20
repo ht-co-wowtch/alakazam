@@ -3,17 +3,17 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/http/admin"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/http/front"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/admin"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/front"
 	"os"
 	"os/signal"
 	"syscall"
 
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/http"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
 )
 
 var (

@@ -5,7 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/request"
 	"testing"

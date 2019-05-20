@@ -3,7 +3,7 @@ package test
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/request"
 	"net/http"
 	"testing"
