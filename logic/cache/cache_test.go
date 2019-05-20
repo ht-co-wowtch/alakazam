@@ -1,29 +1,22 @@
 package cache
 
 import (
+	"github.com/gomodule/redigo/redis"
+	"github.com/rafaeljusto/redigomock"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"os"
 	"testing"
 )
 
 var (
-	d *Cache
+	d    *Cache
+	mock *redigomock.Conn
 )
 
 func TestMain(m *testing.M) {
-	if err := conf.Read("../../../test/config/logic.yml"); err != nil {
-		panic(err)
-	}
-	d = NewRedis(conf.Conf.Redis)
-	if err := d.Ping(); err != nil {
-		os.Exit(-1)
-	}
-	if err := d.Close(); err != nil {
-		os.Exit(-1)
-	}
-	if err := d.Ping(); err == nil {
-		os.Exit(-1)
-	}
-	d = NewRedis(conf.Conf.Redis)
+	mock = redigomock.NewConn()
+	d = NewRedisDial(new(conf.Redis), func() (conn redis.Conn, e error) {
+		return mock, nil
+	})
 	os.Exit(m.Run())
 }

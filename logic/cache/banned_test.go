@@ -1,49 +1,74 @@
 package cache
 
 import (
+	"github.com/rafaeljusto/redigomock"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/business"
+	"strconv"
 	"testing"
 	"time"
 )
 
-func TestBanned(t *testing.T) {
-	now := time.Now().Add(time.Second * 5)
-	err := d.SetBanned("123", 5)
-	assert.Nil(t, err)
+func TestSetBanned(t *testing.T) {
+	expire := 5
+	uid := "123"
 
-	ex, ok, err := d.GetBanned("123")
+	mockSetBanned(uid, expire)
+	err := d.SetBanned(uid, expire)
+
 	assert.Nil(t, err)
-	assert.True(t, ok)
-	assert.Equal(t, ex.Format(time.RFC3339), now.Format(time.RFC3339))
 }
 
-func TestExpiredBanned(t *testing.T) {
-	err := d.SetBanned("123", 1)
-	assert.Nil(t, err)
-	time.Sleep(time.Second)
+func TestGetBanned(t *testing.T) {
+	uid := "123"
+	unix := time.Now().Unix()
 
-	ex, ok, err := d.GetBanned("123")
+	mockGetBanned(uid, []byte(strconv.FormatInt(unix, 10)))
+	ex, ok, err := d.GetBanned(uid)
+
+	assert.Nil(t, err)
+	assert.True(t, ok)
+	assert.Equal(t, unix, ex.Unix())
+}
+
+func TestGetBannedEmpty(t *testing.T) {
+	uid := "123"
+
+	mockGetBanned(uid, nil)
+	ex, ok, err := d.GetBanned(uid)
+
 	assert.Nil(t, err)
 	assert.False(t, ok)
 	assert.True(t, ex.IsZero())
 }
 
 func TestDeleteBanned(t *testing.T) {
-	err := d.AddMapping("123", "", "", "", "", 2)
-	assert.Nil(t, err)
+	uid := "123"
 
-	err = d.SetBanned("123", 10)
-	assert.Nil(t, err)
-	time.Sleep(time.Second)
+	mockDelBanned(uid)
+	err := d.DelBanned(uid)
 
-	err = d.DelBanned("123")
 	assert.Nil(t, err)
+}
 
-	_, ok, err := d.GetBanned("123")
-	assert.Nil(t, err)
-	assert.False(t, ok)
+func mockSetBanned(uid string, expire int) {
+	sec := time.Duration(expire) * time.Second
+	mock.Command("SET", keyBannedInfo(uid), time.Now().Add(sec).Unix()).
+		Expect("")
+	mock.Command("HINCRBY", keyUidInfo(uid), hashStatusKey, -business.Message).
+		Expect("")
+	mock.Command("EXPIRE", keyBannedInfo(uid), expire).
+		Expect("")
+}
 
-	_, _, s, err := d.GetUser("123", "")
-	assert.Nil(t, err)
-	assert.Equal(t, 2, s)
+func mockGetBanned(uid string, expect interface{}) *redigomock.Cmd {
+	return mock.Command("GET", keyBannedInfo(uid)).
+		Expect(expect)
+}
+
+func mockDelBanned(uid string) {
+	mock.Command("DEL", keyBannedInfo(uid)).
+		Expect("")
+	mock.Command("HINCRBY", keyUidInfo(uid), hashStatusKey, business.Message).
+		Expect("")
 }

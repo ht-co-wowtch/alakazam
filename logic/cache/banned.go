@@ -16,12 +16,12 @@ func (d *Cache) SetBanned(uid string, expired int) (err error) {
 		log.Errorf("conn.Send(SET %s) error(%v)", uid, err)
 		return err
 	}
-	if err = conn.Send("HINCRBY", keyUidInfo(uid), hashStatusKey, -business.Message); err != nil {
-		log.Errorf("conn.Send(HSET %s) error(%v)", uid, err)
-		return
-	}
 	if err = conn.Send("EXPIRE", keyBannedInfo(uid), expired); err != nil {
 		log.Errorf("conn.Send(EXPIRE %s) error(%v)", uid, err)
+		return
+	}
+	if err = conn.Send("HINCRBY", keyUidInfo(uid), hashStatusKey, -business.Message); err != nil {
+		log.Errorf("conn.Send(HSET %s) error(%v)", uid, err)
 		return
 	}
 	if err = conn.Flush(); err != nil {

@@ -48,21 +48,25 @@ type Cache struct {
 }
 
 func NewRedis(c *conf.Redis) *Cache {
+	return NewRedisDial(c, func() (conn redis.Conn, e error) {
+		conn, err := redis.Dial(c.Network, c.Addr,
+			redis.DialConnectTimeout(c.DialTimeout),
+			redis.DialReadTimeout(c.ReadTimeout),
+			redis.DialWriteTimeout(c.WriteTimeout),
+		)
+		if err != nil {
+			return nil, err
+		}
+		return conn, nil
+	})
+}
+
+func NewRedisDial(c *conf.Redis, dial func() (redis.Conn, error)) *Cache {
 	p := &redis.Pool{
 		MaxIdle:     c.Idle,
 		MaxActive:   c.Active,
 		IdleTimeout: c.IdleTimeout,
-		Dial: func() (redis.Conn, error) {
-			conn, err := redis.Dial(c.Network, c.Addr,
-				redis.DialConnectTimeout(c.DialTimeout),
-				redis.DialReadTimeout(c.ReadTimeout),
-				redis.DialWriteTimeout(c.WriteTimeout),
-			)
-			if err != nil {
-				return nil, err
-			}
-			return conn, nil
-		},
+		Dial:        dial,
 	}
 	return &Cache{
 		Pool:   p,
