@@ -59,11 +59,11 @@ func (d *Cache) RefreshUserExpire(uid string) (has bool, err error) {
 
 // 移除user資訊
 // DEL : uid_{user id}
-func (d *Cache) DeleteUser(uid, key, server string) (has bool, err error) {
+func (d *Cache) DeleteUser(uid, key string) (has bool, err error) {
 	conn := d.Get()
 	defer conn.Close()
 	if err = conn.Send("HDEL", keyUidInfo(uid), key); err != nil {
-		log.Errorf("conn.Send(HDEL %s,%s) error(%v)", uid, server, err)
+		log.Errorf("conn.Send(HDEL %s) error(%v)", uid, err)
 		return
 	}
 	if err = conn.Flush(); err != nil {

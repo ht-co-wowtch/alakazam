@@ -85,8 +85,8 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 
 // redis清除某人連線資訊
 func (l *Logic) Disconnect(uid, key, server string) (has bool, err error) {
-	if has, err = l.cache.DeleteUser(uid, key, server); err != nil {
-		log.Errorf("l.dao.DeleteUser(%s,%s,%s) error(%v)", uid, key, server, err)
+	if has, err = l.cache.DeleteUser(uid, key); err != nil {
+		log.Errorf("l.dao.DeleteUser(%s,%s) error(%v)", uid, key, err)
 		return
 	}
 	log.Infof("conn disconnected server:%s uid:%s key:%s", server, uid, key)

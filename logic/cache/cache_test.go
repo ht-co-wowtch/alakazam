@@ -6,11 +6,13 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"os"
 	"testing"
+	"time"
 )
 
 var (
-	d    *Cache
-	mock *redigomock.Conn
+	d         *Cache
+	mock      *redigomock.Conn
+	expireSec = int32(10 / time.Second)
 )
 
 func TestMain(m *testing.M) {
@@ -18,5 +20,6 @@ func TestMain(m *testing.M) {
 	d = NewRedisDial(new(conf.Redis), func() (conn redis.Conn, e error) {
 		return mock, nil
 	})
+	d.expire = expireSec
 	os.Exit(m.Run())
 }
