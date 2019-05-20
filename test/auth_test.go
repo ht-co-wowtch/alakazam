@@ -1,12 +1,10 @@
 package test
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/request"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/run"
@@ -64,45 +62,45 @@ func TestNotHeartbeat(t *testing.T) {
 }
 
 // 封鎖
-func TestRoomBlockade(t *testing.T) {
-	a, err := request.DialAuth("1000")
-	assert.Nil(t, err)
-	assert.NotEmpty(t, a.Uid)
-
-	r := request.SetBlockade(a.Uid, "測試")
-	assert.Empty(t, r.Body)
-
-	a, err = request.DialAuth("1000")
-	assert.Nil(t, err)
-
-	e := new(errors.Error)
-	json.Unmarshal(a.Proto.Body, e)
-
-	assert.Equal(t, 10024011, e.Code)
-	assert.Equal(t, "您在封鎖状态，无法进入聊天室", e.Message)
-}
-
-func TestRoomDeleteBlockade(t *testing.T) {
-	a, err := request.DialAuth("1000")
-	assert.Nil(t, err)
-	assert.NotEmpty(t, a.Uid)
-
-	request.SetBlockade(a.Uid, "")
-
-	a, err = request.DialAuth("1000")
-	assert.Nil(t, err)
-
-	e := new(errors.Error)
-	json.Unmarshal(a.Proto.Body, e)
-	assert.Equal(t, 10024011, e.Code)
-
-	request.DeleteBanned(a.Uid)
-
-	a, err = request.DialAuth("1000")
-	assert.Nil(t, err)
-
-	assert.NotEmpty(t, a.Uid)
-}
+//func TestRoomBlockade(t *testing.T) {
+//	a, err := request.DialAuth("1000")
+//	assert.Nil(t, err)
+//	assert.NotEmpty(t, a.Uid)
+//
+//	r := request.SetBlockade(a.Uid, "測試")
+//	assert.Empty(t, r.Body)
+//
+//	a, err = request.DialAuth("1000")
+//	assert.Nil(t, err)
+//
+//	e := new(errors.Error)
+//	json.Unmarshal(a.Proto.Body, e)
+//
+//	assert.Equal(t, 10024011, e.Code)
+//	assert.Equal(t, "您在封鎖状态，无法进入聊天室", e.Message)
+//}
+//
+//func TestRoomDeleteBlockade(t *testing.T) {
+//	a, err := request.DialAuth("1000")
+//	assert.Nil(t, err)
+//	assert.NotEmpty(t, a.Uid)
+//
+//	request.SetBlockade(a.Uid, "")
+//
+//	a, err = request.DialAuth("1000")
+//	assert.Nil(t, err)
+//
+//	e := new(errors.Error)
+//	json.Unmarshal(a.Proto.Body, e)
+//	assert.Equal(t, 10024011, e.Code)
+//
+//	request.DeleteBanned(a.Uid)
+//
+//	a, err = request.DialAuth("1000")
+//	assert.Nil(t, err)
+//
+//	assert.NotEmpty(t, a.Uid)
+//}
 
 // 切換房間
 func TestChangeRoom(t *testing.T) {

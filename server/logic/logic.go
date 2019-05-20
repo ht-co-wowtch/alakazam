@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/store"
 	"os"
 	"time"
 
@@ -18,7 +19,7 @@ type Logic struct {
 	//
 	c *conf.Config
 
-	db *dao.Store
+	db *store.Store
 
 	cache *dao.Cache
 
@@ -32,7 +33,7 @@ type Logic struct {
 func New(c *conf.Config) (l *Logic) {
 	l = &Logic{
 		c:      c,
-		db:     dao.NewStore(c.DB),
+		db:     store.NewStore(c.DB),
 		cache:  dao.NewRedis(c.Redis),
 		stream: dao.NewKafkaPub(c.Kafka),
 	}

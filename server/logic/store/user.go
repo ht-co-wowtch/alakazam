@@ -1,4 +1,4 @@
-package dao
+package store
 
 type User struct {
 	Uid        string

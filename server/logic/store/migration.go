@@ -1,10 +1,9 @@
-package dao
+package store
 
 import (
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
 )
 

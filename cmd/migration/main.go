@@ -4,6 +4,7 @@ import (
 	"flag"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/store"
 )
 
 var (
@@ -21,6 +22,6 @@ func main() {
 	}
 
 	if run {
-		dao.RunMigration(".")
+		store.RunMigration(".")
 	}
 }
