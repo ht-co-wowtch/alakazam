@@ -7,14 +7,14 @@ import (
 )
 
 var (
-	d *Dao
+	d *Cache
 )
 
 func TestMain(m *testing.M) {
 	if err := conf.Read("../../../test/config/logic.yml"); err != nil {
 		panic(err)
 	}
-	d = New(conf.Conf)
+	d = NewRedis(conf.Conf.Redis)
 	if err := d.Ping(); err != nil {
 		os.Exit(-1)
 	}
@@ -24,6 +24,6 @@ func TestMain(m *testing.M) {
 	if err := d.Ping(); err == nil {
 		os.Exit(-1)
 	}
-	d = New(conf.Conf)
+	d = NewRedis(conf.Conf.Redis)
 	os.Exit(m.Run())
 }
