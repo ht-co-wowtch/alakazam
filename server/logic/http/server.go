@@ -52,7 +52,7 @@ func New(c *conf.HTTPServer, srv LogicHttpServer) *Server {
 // Close close the server.
 func (s *Server) Close() {
 	if err := s.server.Shutdown(s.ctx); err != nil {
-		log.Errorf("Server Shutdown:", err)
+		log.Errorf("Server Shutdown: error(%v)", err)
 	} else {
 		log.Infof("http server close: %s", s.server.Addr)
 	}
