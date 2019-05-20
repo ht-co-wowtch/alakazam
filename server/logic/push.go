@@ -3,7 +3,7 @@ package logic
 import (
 	"encoding/json"
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"time"
 )
 

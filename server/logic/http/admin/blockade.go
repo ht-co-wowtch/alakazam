@@ -2,7 +2,7 @@ package admin
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	response "gitlab.com/jetfueltw/cpw/alakazam/server/logic/http"
 	"net/http"
 )

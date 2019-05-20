@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"github.com/google/uuid"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/remote"

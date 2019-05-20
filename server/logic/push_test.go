@@ -2,7 +2,7 @@ package logic
 
 import (
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"testing"
 )
 

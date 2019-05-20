@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	Err "gitlab.com/jetfueltw/cpw/alakazam/server/errors"
+	Err "gitlab.com/jetfueltw/cpw/alakazam/errors"
 )
 
 const (
