@@ -12,7 +12,7 @@ import (
 
 // 房間推送，以下為條件
 // 1. room id
-func (d *Dao) BroadcastRoomMsg(room string, msg []byte) (err error) {
+func (d *Stream) BroadcastRoomMsg(room string, msg []byte) (err error) {
 	pushMsg := &grpc.PushMsg{
 		Type: grpc.PushMsg_ROOM,
 		Room: []string{room},
@@ -24,17 +24,17 @@ func (d *Dao) BroadcastRoomMsg(room string, msg []byte) (err error) {
 	}
 	m := &sarama.ProducerMessage{
 		Key:   sarama.StringEncoder(room),
-		Topic: d.c.Kafka.Topic,
+		Topic: d.c.Topic,
 		Value: sarama.ByteEncoder(b),
 	}
-	if _, _, err = d.kafkaPub.SendMessage(m); err != nil {
+	if _, _, err = d.SendMessage(m); err != nil {
 		log.Errorf("PushMsg.send(broadcast_room pushMsg:%v) error(%v)", pushMsg, err)
 	}
 	return
 }
 
 // 多房間推送，以下為條件
-func (d *Dao) BroadcastMsg(roomIds []string, msg []byte) (err error) {
+func (d *Stream) BroadcastMsg(roomIds []string, msg []byte) (err error) {
 	pushMsg := &grpc.PushMsg{
 		Type: grpc.PushMsg_ROOM,
 		Msg:  msg,
@@ -47,10 +47,10 @@ func (d *Dao) BroadcastMsg(roomIds []string, msg []byte) (err error) {
 	// TODO Key
 	m := &sarama.ProducerMessage{
 		Key:   sarama.StringEncoder(strconv.FormatInt(int64(protocol.OpRaw), 10)),
-		Topic: d.c.Kafka.Topic,
+		Topic: d.c.Topic,
 		Value: sarama.ByteEncoder(b),
 	}
-	if _, _, err = d.kafkaPub.SendMessage(m); err != nil {
+	if _, _, err = d.SendMessage(m); err != nil {
 		log.Errorf("PushMsg.send(broadcast pushMsg:%v) error(%v)", pushMsg, err)
 	}
 	return

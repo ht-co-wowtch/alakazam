@@ -25,6 +25,8 @@ type Logic struct {
 
 	cache *dao.Cache
 
+	stream *dao.Stream
+
 	// 房間在線人數，key是房間id
 	roomCount map[string]int32
 }
@@ -32,10 +34,11 @@ type Logic struct {
 // New init
 func New(c *conf.Config) (l *Logic) {
 	l = &Logic{
-		c:     c,
-		dao:   dao.New(c),
-		db:    dao.NewStore(c.DB),
-		cache: dao.NewRedis(c.Redis),
+		c:      c,
+		dao:    dao.New(c),
+		db:     dao.NewStore(c.DB),
+		cache:  dao.NewRedis(c.Redis),
+		stream: dao.NewKafkaPub(c.Kafka),
 	}
 	_ = l.loadOnline()
 	go l.onlineproc()

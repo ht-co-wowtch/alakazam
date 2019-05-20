@@ -51,7 +51,7 @@ func (l *Logic) PushRoom(p *PushRoomForm) error {
 		log.Errorf("pushRoom json.Marshal(uid: %s ) error(%v)", p.Uid, err)
 		return errors.FailureError
 	}
-	if err := l.dao.BroadcastRoomMsg(rId, msg); err != nil {
+	if err := l.stream.BroadcastRoomMsg(rId, msg); err != nil {
 		return errors.FailureError
 	}
 	return nil
@@ -77,7 +77,7 @@ func (l *Logic) PushAll(p *PushRoomAllForm) error {
 		log.Errorf("pushAll json.Marshal() error(%v)", err)
 		return errors.FailureError
 	}
-	if err := l.dao.BroadcastMsg(p.RoomId, msg); err != nil {
+	if err := l.stream.BroadcastMsg(p.RoomId, msg); err != nil {
 		return errors.FailureError
 	}
 	return nil

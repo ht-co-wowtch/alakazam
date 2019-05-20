@@ -12,23 +12,19 @@ import (
 )
 
 type Dao struct {
-	c        *conf.Config
-	kafkaPub kafka.SyncProducer
-	Cache    *Cache
-	DB       *Store
+	c     *conf.Config
+	Cache *Cache
 }
 
 func New(c *conf.Config) *Dao {
 	d := &Dao{
-		c:        c,
-		kafkaPub: newKafkaPub(c.Kafka),
-		Cache:    NewRedis(c.Redis),
-		DB:       NewStore(c.DB),
+		c:     c,
+		Cache: NewRedis(c.Redis),
 	}
 	return d
 }
 
-func newKafkaPub(c *conf.Kafka) kafka.SyncProducer {
+func NewKafkaPub(c *conf.Kafka) *Stream {
 	kc := kafka.NewConfig()
 	kc.Producer.RequiredAcks = kafka.WaitForAll
 	kc.Producer.Retry.Max = 10
@@ -37,7 +33,7 @@ func newKafkaPub(c *conf.Kafka) kafka.SyncProducer {
 	if err != nil {
 		panic(err)
 	}
-	return pub
+	return &Stream{c: c, SyncProducer: pub}
 }
 
 func NewRedis(c *conf.Redis) *Cache {
