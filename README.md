@@ -30,7 +30,7 @@
 
 [Kafka](https://kafka.apache.org/quickstart)
 
-    cd kafka
+    cd cmd/kafka
     docker-compose up -d
     
 ## Architecture
