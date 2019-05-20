@@ -11,19 +11,6 @@ import (
 	"time"
 )
 
-type Dao struct {
-	c     *conf.Config
-	Cache *Cache
-}
-
-func New(c *conf.Config) *Dao {
-	d := &Dao{
-		c:     c,
-		Cache: NewRedis(c.Redis),
-	}
-	return d
-}
-
 func NewKafkaPub(c *conf.Kafka) *Stream {
 	kc := kafka.NewConfig()
 	kc.Producer.RequiredAcks = kafka.WaitForAll
@@ -81,14 +68,4 @@ func NewDB(c *conf.Database) *sql.DB {
 
 func DatabaseDns(c *conf.Database) string {
 	return fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=%v&collation=%v&parseTime=true&timeout=2s&loc=Local", c.User, c.Password, c.Host, c.Port, c.Database, c.Charset, c.Collation)
-}
-
-// Close close the resource.
-func (d *Dao) Close() error {
-	return d.Cache.Close()
-}
-
-// ping redis是否活著
-func (d *Dao) Ping() error {
-	return d.Cache.Ping()
 }

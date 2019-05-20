@@ -18,9 +18,6 @@ type Logic struct {
 	//
 	c *conf.Config
 
-	// kafka and redis Dao
-	dao *dao.Dao
-
 	db *dao.Store
 
 	cache *dao.Cache
@@ -35,7 +32,6 @@ type Logic struct {
 func New(c *conf.Config) (l *Logic) {
 	l = &Logic{
 		c:      c,
-		dao:    dao.New(c),
 		db:     dao.NewStore(c.DB),
 		cache:  dao.NewRedis(c.Redis),
 		stream: dao.NewKafkaPub(c.Kafka),
@@ -47,7 +43,9 @@ func New(c *conf.Config) (l *Logic) {
 
 // Close close resources.
 func (l *Logic) Close() {
-	l.cache.Close()
+	if err := l.cache.Close(); err != nil {
+		log.Errorf("logic close error(%v)", err)
+	}
 	log.Infof("logic close")
 }
 
