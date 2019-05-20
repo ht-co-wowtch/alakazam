@@ -6,7 +6,7 @@ import (
 	"time"
 
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/job/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	comet "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 )

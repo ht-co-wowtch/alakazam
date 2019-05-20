@@ -8,7 +8,7 @@ import (
 
 	log "github.com/golang/glog"
 	comet "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/job/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 )
