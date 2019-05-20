@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/store"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/stream"
 	"os"
@@ -8,7 +9,6 @@ import (
 
 	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
 )
 
 const (
@@ -22,7 +22,7 @@ type Logic struct {
 
 	db *store.Store
 
-	cache *dao.Cache
+	cache *cache.Cache
 
 	stream *stream.Stream
 
@@ -35,7 +35,7 @@ func New(c *conf.Config) (l *Logic) {
 	l = &Logic{
 		c:      c,
 		db:     store.NewStore(c.DB),
-		cache:  dao.NewRedis(c.Redis),
+		cache:  cache.NewRedis(c.Redis),
 		stream: stream.NewKafkaPub(c.Kafka),
 	}
 	_ = l.loadOnline()
@@ -66,7 +66,7 @@ func (l *Logic) loadOnline() (err error) {
 		roomCount = make(map[string]int32)
 	)
 	host, _ := os.Hostname()
-	var online *dao.Online
+	var online *cache.Online
 	online, err = l.cache.ServerOnline(host)
 	if err != nil {
 		return

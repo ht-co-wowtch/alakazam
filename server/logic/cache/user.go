@@ -1,4 +1,4 @@
-package dao
+package cache
 
 import (
 	log "github.com/golang/glog"

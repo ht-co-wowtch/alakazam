@@ -1,4 +1,4 @@
-package dao
+package cache
 
 import (
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"

@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/remote"
 	"time"
 
@@ -124,7 +124,7 @@ func (l *Logic) Heartbeat(uid, key, roomId, name, server string) (err error) {
 
 // restart redis內存的每個房間總人數
 func (l *Logic) RenewOnline(server string, roomCount map[string]int32) (map[string]int32, error) {
-	online := &dao.Online{
+	online := &cache.Online{
 		Server:    server,
 		RoomCount: roomCount,
 		Updated:   time.Now().Unix(),

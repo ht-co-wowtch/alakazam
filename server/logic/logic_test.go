@@ -2,8 +2,9 @@ package logic
 
 import (
 	"github.com/DATA-DOG/go-sqlmock"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/store"
 	test "gitlab.com/jetfueltw/cpw/alakazam/test/dao"
 	"os"
 	"testing"
@@ -11,7 +12,7 @@ import (
 
 var (
 	l      Logic
-	d      *dao.Cache
+	d      *cache.Cache
 	mockDB sqlmock.Sqlmock
 )
 
@@ -20,9 +21,9 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func newTestDao() (Logic, *dao.Cache) {
+func newTestDao() (Logic, *cache.Cache) {
 	initTestConfig()
-	c := dao.NewRedis(conf.Conf.Redis)
+	c := cache.NewRedis(conf.Conf.Redis)
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		panic(err)
@@ -30,8 +31,8 @@ func newTestDao() (Logic, *dao.Cache) {
 	mockDB = mock
 	return Logic{
 		c:     conf.Conf,
-		cache: dao.NewRedis(conf.Conf.Redis),
-		db:    &dao.Store{db},
+		cache: cache.NewRedis(conf.Conf.Redis),
+		db:    &store.Store{db},
 	}, c
 }
 

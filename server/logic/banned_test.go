@@ -3,8 +3,8 @@ package logic
 import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/dao"
 	"testing"
 )
 
@@ -35,7 +35,7 @@ func TestBannedExpire(t *testing.T) {
 func TestBannedError(t *testing.T) {
 	initTestConfig()
 	conf.Conf.Redis.Addr = ":1111"
-	l := Logic{cache: dao.NewRedis(conf.Conf.Redis)}
+	l := Logic{cache: cache.NewRedis(conf.Conf.Redis)}
 
 	is := l.isBanned("", 1)
 	assert.False(t, is)
