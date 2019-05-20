@@ -37,7 +37,7 @@ func newTestDao() (Logic, *cache.Cache) {
 }
 
 func initTestConfig() {
-	if err := conf.Read("../../test/config/logic.yml"); err != nil {
+	if err := conf.Read("../test/config/logic.yml"); err != nil {
 		panic(err)
 	}
 }
