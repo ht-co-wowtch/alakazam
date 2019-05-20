@@ -4,7 +4,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/server/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 )
 

@@ -6,9 +6,9 @@ import (
 	"time"
 
 	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/comet"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/comet/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/comet/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/errors"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
