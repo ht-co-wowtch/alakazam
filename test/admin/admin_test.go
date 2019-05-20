@@ -1,7 +1,7 @@
 package admin
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/test/run"
+	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/run"
 	"os"
 	"testing"
 )

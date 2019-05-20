@@ -6,8 +6,8 @@ import (
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
-	"gitlab.com/jetfueltw/cpw/alakazam/test/protocol"
-	"gitlab.com/jetfueltw/cpw/alakazam/test/request"
+	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/protocol"
+	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/request"
 	"testing"
 	"time"
 )

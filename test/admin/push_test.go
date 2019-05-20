@@ -2,7 +2,7 @@ package admin
 
 import (
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/test/request"
+	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/request"
 	"net/http"
 	"testing"
 )
