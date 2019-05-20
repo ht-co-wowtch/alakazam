@@ -5,7 +5,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gomodule/redigo/redis"
 	_ "github.com/mattn/go-sqlite3"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"time"
 )
 

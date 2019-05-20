@@ -3,8 +3,8 @@ package admin
 import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
-	response "gitlab.com/jetfueltw/cpw/alakazam/server/logic/http"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic"
+	response "gitlab.com/jetfueltw/cpw/alakazam/logic/http"
 	"net/http"
 )
 

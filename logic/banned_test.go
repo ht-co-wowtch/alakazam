@@ -2,9 +2,9 @@ package logic
 
 import (
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/cache"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"testing"
 )
 

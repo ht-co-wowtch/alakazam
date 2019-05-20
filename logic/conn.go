@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/cache"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/remote"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/remote"
 	"time"
 
 	log "github.com/golang/glog"

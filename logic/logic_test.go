@@ -2,9 +2,9 @@ package logic
 
 import (
 	"github.com/DATA-DOG/go-sqlmock"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/cache"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/store"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 	test "gitlab.com/jetfueltw/cpw/alakazam/test/dao"
 	"os"
 	"testing"

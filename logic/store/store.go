@@ -3,7 +3,7 @@ package store
 import (
 	"database/sql"
 	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"time"
 )
 

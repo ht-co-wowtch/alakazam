@@ -1,7 +1,7 @@
 package stream
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	kafka "gopkg.in/Shopify/sarama.v1"
 )
 

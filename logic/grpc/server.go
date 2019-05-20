@@ -3,8 +3,8 @@ package grpc
 import (
 	"context"
 	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"net"
 
 	"google.golang.org/grpc"

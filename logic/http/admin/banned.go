@@ -3,27 +3,30 @@ package admin
 import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	response "gitlab.com/jetfueltw/cpw/alakazam/server/logic/http"
+	response "gitlab.com/jetfueltw/cpw/alakazam/logic/http"
 	"net/http"
 )
 
-func (s *Server) setBlockade(c *gin.Context) {
+// 設定禁言
+func (s *Server) setBanned(c *gin.Context) {
 	var params struct {
-		Uid    string `json:"uid" binding:"required"`
-		Remark string `json:"remark" binding:"required"`
+		Uid     string `json:"uid" binding:"required"`
+		Expired int    `json:"expired" binding:"required"`
+		Remark  string `json:"remark" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&params); err != nil {
 		response.ErrorE(c, errors.DataError)
 		return
 	}
-	if err := s.logic.SetBlockade(params.Uid, params.Remark); err != nil {
+	if err := s.logic.SetBanned(params.Uid, params.Remark, params.Expired); err != nil {
 		response.ErrorE(c, errors.FailureError)
 		return
 	}
 	c.Status(http.StatusNoContent)
 }
 
-func (s *Server) removeBlockade(c *gin.Context) {
+// 解除禁言
+func (s *Server) removeBanned(c *gin.Context) {
 	var params struct {
 		Uid string `form:"uid" binding:"required"`
 	}
@@ -31,7 +34,7 @@ func (s *Server) removeBlockade(c *gin.Context) {
 		response.ErrorE(c, errors.DataError)
 		return
 	}
-	if err := s.logic.RemoveBlockade(params.Uid); err != nil {
+	if err := s.logic.RemoveBanned(params.Uid); err != nil {
 		response.ErrorE(c, errors.FailureError)
 		return
 	}

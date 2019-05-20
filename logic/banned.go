@@ -2,7 +2,7 @@ package logic
 
 import (
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/business"
 )
 
 func (l *Logic) SetBanned(uid, remark string, expired int) error {

@@ -1,14 +1,14 @@
 package logic
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/cache"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/store"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/stream"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/stream"
 	"os"
 	"time"
 
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 )
 
 const (

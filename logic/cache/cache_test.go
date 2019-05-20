@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"os"
 	"testing"
 )

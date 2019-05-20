@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/business"
 	"testing"
 )
 

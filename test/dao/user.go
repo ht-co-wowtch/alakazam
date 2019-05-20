@@ -2,7 +2,7 @@ package dao
 
 import (
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/cache"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
 	"testing"
 )
 

@@ -2,7 +2,7 @@ package cache
 
 import (
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/business"
 )
 
 // 設定封鎖

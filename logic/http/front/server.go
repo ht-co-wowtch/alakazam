@@ -2,7 +2,7 @@ package front
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/server/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 )
 
 type Server struct {
