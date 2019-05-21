@@ -290,7 +290,7 @@ body是新房間id，有收到Operation = 8 就是成功
 ```
   {
       "token": "gM18QgsqI0zFFmdLyvHQxKa0N95BRZSh",
-      "room_id": 123
+      "room_id": "a7d20d4133c14a62b617ee38e793cf55"
   }
 ```
 name|說明|

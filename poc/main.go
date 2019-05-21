@@ -45,7 +45,7 @@ type user struct {
 func init() {
 	rooms = append(rooms, room{
 		Title:        "聊天測試區",
-		Id:           "1000",
+		Id:           "a7d20d4133c14a62b617ee38e793cf55",
 		Introduction: "聊天測試區",
 	})
 
