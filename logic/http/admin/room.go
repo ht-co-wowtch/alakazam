@@ -14,6 +14,23 @@ func (s *Server) SetRoom(c *gin.Context) {
 		response.ErrorE(c, errors.DataError)
 		return
 	}
+
+	if params.Limit.Day > 0 {
+		if params.Limit.Dml+params.Limit.Amount <= 0 {
+			response.ErrorE(c, errors.SetRoomError.Mes("储值或打码量不可都小于等于0"))
+			return
+		}
+		if params.Limit.Day > 30 {
+			response.ErrorE(c, errors.SetRoomError.Mes("储值跟打码量聊天限制天数不能大于30"))
+			return
+		}
+	} else if params.Limit.Day == 0 && params.Limit.Dml+params.Limit.Amount > 0 {
+		response.ErrorE(c, errors.SetRoomError.Mes("储值跟打码量都需是0"))
+		return
+	} else if params.Limit.Day < 0 || params.Limit.Amount < 0 || params.Limit.Dml < 0 {
+		response.ErrorE(c, errors.FailureError)
+		return
+	}
 	if !s.logic.SetRoom(params) {
 		response.ErrorE(c, errors.FailureError)
 		return
