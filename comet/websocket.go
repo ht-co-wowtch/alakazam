@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"io"
 	"net"
@@ -365,7 +365,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 		return
 	}
 
-	if c.Status == business.Blockade {
+	if c.Status == permission.Blockade {
 		if e := authReply(ws, p, errors.BlockadeMessage); e != nil {
 			err = e
 		}
@@ -375,9 +375,9 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 	// 需要回覆給client告知uid與key
 	// 因為後續發話需依靠這兩個欄位來做pk
 	var reply struct {
-		Uid        string               `json:"uid"`
-		Key        string               `json:"key"`
-		Permission *business.Permission `json:"permission"`
+		Uid        string                 `json:"uid"`
+		Key        string                 `json:"key"`
+		Permission *permission.Permission `json:"permission"`
 	}
 	uid = c.Uid
 	key = c.Key
@@ -387,7 +387,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 
 	reply.Uid = uid
 	reply.Key = key
-	reply.Permission = business.NewPermission(int(c.Status))
+	reply.Permission = permission.NewPermission(int(c.Status))
 	b, _ := json.Marshal(reply)
 	err = authReply(ws, p, b)
 	return

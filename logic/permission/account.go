@@ -1,4 +1,4 @@
-package business
+package permission
 
 const (
 	// 一般帳號

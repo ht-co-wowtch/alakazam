@@ -2,7 +2,7 @@ package cache
 
 import (
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"strconv"
 	"time"
 )
@@ -20,7 +20,7 @@ func (d *Cache) SetBanned(uid string, expired int) (err error) {
 		log.Errorf("conn.Send(EXPIRE %s) error(%v)", uid, err)
 		return
 	}
-	if err = conn.Send("HINCRBY", keyUidInfo(uid), hashStatusKey, -business.Message); err != nil {
+	if err = conn.Send("HINCRBY", keyUidInfo(uid), hashStatusKey, -permission.Message); err != nil {
 		log.Errorf("conn.Send(HSET %s) error(%v)", uid, err)
 		return
 	}
@@ -72,7 +72,7 @@ func (d *Cache) DelBanned(uid string) (err error) {
 		log.Errorf("conn.Send(DEL %s) error(%v)", uid, err)
 		return
 	}
-	if err = conn.Send("HINCRBY", keyUidInfo(uid), hashStatusKey, business.Message); err != nil {
+	if err = conn.Send("HINCRBY", keyUidInfo(uid), hashStatusKey, permission.Message); err != nil {
 		log.Errorf("conn.Send(HINCRBY %s) error(%v)", uid, err)
 		return
 	}

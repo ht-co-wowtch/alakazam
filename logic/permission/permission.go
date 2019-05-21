@@ -1,4 +1,4 @@
-package business
+package permission
 
 const (
 	// 封鎖

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/business"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/remote"
 	"time"
 
@@ -49,25 +49,25 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 
 	r := new(ConnectReply)
 	r.Uid, r.Name = remote.Renew(params.Token)
-	permission, isBlockade, err := l.db.FindUserPermission(r.Uid)
+	p, isBlockade, err := l.db.FindUserPermission(r.Uid)
 
 	if err != nil {
 		if err != sql.ErrNoRows {
 			log.Errorf("FindUserPermission(uid:%s) error(%v)", r.Uid, err)
 			return r, errors.ConnectError
 		}
-		if aff, err := l.db.CreateUser(r.Uid, business.PlayDefaultPermission); err != nil || aff <= 0 {
+		if aff, err := l.db.CreateUser(r.Uid, permission.PlayDefaultPermission); err != nil || aff <= 0 {
 			log.Errorf("CreateUser(uid:%s) affected %d error(%v)", r.Uid, aff, err)
 			return r, errors.ConnectError
 		}
-		permission = business.PlayDefaultPermission
+		p = permission.PlayDefaultPermission
 	} else if isBlockade {
-		r.Permission = business.Blockade
+		r.Permission = permission.Blockade
 		log.Infof("conn blockade uid:%s token:%s", r.Uid, token)
 		return r, nil
 	}
 
-	r.Permission = permission
+	r.Permission = p
 	r.RoomId = params.RoomID
 
 	// 告知comet連線多久沒心跳就直接close

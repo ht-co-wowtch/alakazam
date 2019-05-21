@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
@@ -20,9 +20,9 @@ type AuthToken struct {
 }
 
 type ConnectReply struct {
-	Uid        string              `json:"Uid"`
-	Key        string              `json:"Key"`
-	Permission business.Permission `json:"permission"`
+	Uid        string                `json:"Uid"`
+	Key        string                `json:"Key"`
+	Permission permission.Permission `json:"permission"`
 }
 
 type Auth struct {

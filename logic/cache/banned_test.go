@@ -3,7 +3,7 @@ package cache
 import (
 	"github.com/rafaeljusto/redigomock"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/business"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"strconv"
 	"testing"
 	"time"
@@ -55,7 +55,7 @@ func mockSetBanned(uid string, expire int) {
 	sec := time.Duration(expire) * time.Second
 	mock.Command("SET", keyBannedInfo(uid), time.Now().Add(sec).Unix()).
 		Expect("")
-	mock.Command("HINCRBY", keyUidInfo(uid), hashStatusKey, -business.Message).
+	mock.Command("HINCRBY", keyUidInfo(uid), hashStatusKey, -permission.Message).
 		Expect("")
 	mock.Command("EXPIRE", keyBannedInfo(uid), expire).
 		Expect("")
@@ -69,6 +69,6 @@ func mockGetBanned(uid string, expect interface{}) *redigomock.Cmd {
 func mockDelBanned(uid string) {
 	mock.Command("DEL", keyBannedInfo(uid)).
 		Expect("")
-	mock.Command("HINCRBY", keyUidInfo(uid), hashStatusKey, business.Message).
+	mock.Command("HINCRBY", keyUidInfo(uid), hashStatusKey, permission.Message).
 		Expect("")
 }
