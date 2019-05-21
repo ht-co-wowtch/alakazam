@@ -26,6 +26,7 @@ func (s *Server) InitRoute(e *gin.Engine) {
 
 	// 設定房間
 	e.POST("/room", s.SetRoom)
+	e.GET("/room/:id", s.GetRoom)
 
 	e.POST("/push/all", s.pushAll)
 }

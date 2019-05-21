@@ -36,3 +36,10 @@ func (d *Store) SetRoom(room Room) (int64, error) {
 	}
 	return r.RowsAffected()
 }
+
+func (d *Store) GetRoom(roomId int) (Room, error) {
+	room := Room{}
+	sql := "SELECT * FROM rooms WHERE room_id = ?"
+	return room, d.QueryRow(sql, roomId).
+		Scan(&room.RoomId, &room.IsMessage, &room.IsBonus, &room.IsFollow, &room.Limit.Day, &room.Limit.Amount, &room.Limit.Dml)
+}

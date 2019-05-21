@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
@@ -9,12 +10,32 @@ import (
 	"testing"
 )
 
+func TestGetRoomByEmpty(t *testing.T) {
+	r := request.GetRoom(1000)
+	e := request.ToError(t, r.Body)
+
+	assert.Nil(t, r.Error)
+	assert.Equal(t, errors.NoRowsError.Code, e.Code)
+	assert.Equal(t, errors.NoRowsError.Message, e.Message)
+}
+
 func TestSetRoom(t *testing.T) {
 	r := request.SetRoom(store.Room{
-		RoomId: 1000,
+		RoomId:    1000,
+		IsMessage: true,
 	})
 	assert.Nil(t, r.Error)
 	assert.Empty(t, string(r.Body))
+
+	r = request.GetRoom(1000)
+
+	room := new(store.Room)
+	json.Unmarshal(r.Body, room)
+
+	assert.Equal(t, &store.Room{
+		RoomId:    1000,
+		IsMessage: true,
+	}, room)
 }
 
 func TestSetRoomNotId(t *testing.T) {

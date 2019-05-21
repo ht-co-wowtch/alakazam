@@ -29,8 +29,8 @@ type Response struct {
 	Body       []byte
 }
 
-func Post(url string, data url.Values) Response {
-	return response(post(url, data))
+func Get(url string, data url.Values) Response {
+	return response(get(url, data))
 }
 
 func PostJson(url string, body []byte) Response {
@@ -90,6 +90,24 @@ func postJson(url string, body []byte) (*http.Response, error) {
 
 func deletes(url string, body url.Values) (*http.Response, error) {
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s?%s", url, body.Encode()), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func get(url string, body url.Values) (*http.Response, error) {
+	u := body.Encode()
+	if u != "" {
+		url = fmt.Sprintf("%s?%s", url, u)
+	}
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}

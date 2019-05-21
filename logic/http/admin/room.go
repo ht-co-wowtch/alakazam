@@ -6,6 +6,7 @@ import (
 	response "gitlab.com/jetfueltw/cpw/alakazam/logic/http"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 	"net/http"
+	"strconv"
 )
 
 func (s *Server) SetRoom(c *gin.Context) {
@@ -36,4 +37,22 @@ func (s *Server) SetRoom(c *gin.Context) {
 		return
 	}
 	c.Status(http.StatusNoContent)
+}
+
+func (s *Server) GetRoom(c *gin.Context) {
+	id := c.Param("id")
+
+	i, err := strconv.Atoi(id)
+	if err != nil {
+		response.ErrorE(c, errors.FailureError)
+		return
+	}
+
+	r, ok := s.logic.GetRoom(i)
+
+	if !ok {
+		response.ErrorE(c, errors.NoRowsError)
+		return
+	}
+	c.JSON(http.StatusOK, r)
 }

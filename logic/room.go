@@ -1,8 +1,9 @@
 package logic
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
+	"database/sql"
 	log "github.com/golang/glog"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 )
 
 func (l *Logic) SetRoom(r store.Room) bool {
@@ -11,4 +12,15 @@ func (l *Logic) SetRoom(r store.Room) bool {
 		return false
 	}
 	return true
+}
+
+func (l *Logic) GetRoom(roomId int) (store.Room, bool) {
+	r, err := l.db.GetRoom(roomId)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Errorf("l.db.GetRoom(roomId: %d) error(%v)", roomId, err)
+		}
+		return r, false
+	}
+	return r, true
 }

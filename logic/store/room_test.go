@@ -21,10 +21,25 @@ func TestSetRoom(t *testing.T) {
 		},
 	})
 
+	assert.Nil(t, err)
+	assert.Equal(t, int64(1), aff)
+
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
+}
 
-	assert.Nil(t, err)
-	assert.Equal(t, int64(1), aff)
+func TestGetRoom(t *testing.T) {
+	//mock.ExpectQuery("SELECT \\* FORM rooms WHERE room_id = \\?").
+	//	WithArgs(1000).
+	//	WillReturnRows(sql.ErrNoRows)
+	//
+	//r, err := store.GetRoom(1000)
+	//
+	//assert.Equal(t, sql.ErrNoRows, err)
+	//assert.Empty(t, r)
+	//
+	//if err := mock.ExpectationsWereMet(); err != nil {
+	//	t.Errorf("there were unfulfilled expectations: %s", err)
+	//}
 }
