@@ -2,8 +2,10 @@ package store
 
 import (
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 )
 
@@ -13,7 +15,10 @@ func RunMigration(path string) {
 
 func runMigration(path string) {
 	db := NewDB(conf.Conf.DB)
-	driver, _ := mysql.WithInstance(db, &mysql.Config{})
+	driver, err := mysql.WithInstance(db, &mysql.Config{})
+	if err != nil {
+		panic(err)
+	}
 	m, err := migrate.NewWithDatabaseInstance(
 		fmt.Sprintf("file://%s", path),
 		"mysql",
