@@ -28,27 +28,27 @@ type Limit struct {
 	Dml int `json:"dml"`
 }
 
-func (d *Store) CreateRoom(room Room) (int64, error) {
+func (s *Store) CreateRoom(room Room) (int64, error) {
 	sql := "INSERT INTO rooms (room_id, is_message, is_bonus, is_follow, day_limit, amount_limit, dml_limit) VALUES (?, ?, ?, ?, ?, ?, ?)"
-	r, err := d.Exec(sql, room.RoomId, room.IsMessage, room.IsBonus, room.IsFollow, room.Limit.Day, room.Limit.Amount, room.Limit.Dml)
+	r, err := s.Exec(sql, room.RoomId, room.IsMessage, room.IsBonus, room.IsFollow, room.Limit.Day, room.Limit.Amount, room.Limit.Dml)
 	if err != nil {
 		return 0, err
 	}
 	return r.RowsAffected()
 }
 
-func (d *Store) UpdateRoom(room Room) (int64, error) {
+func (s *Store) UpdateRoom(room Room) (int64, error) {
 	sql := "UPDATE rooms SET is_message = ?, is_bonus = ?, is_follow = ?, day_limit = ?, amount_limit = ?, dml_limit = ? WHERE room_id = ? "
-	r, err := d.Exec(sql, room.IsMessage, room.IsBonus, room.IsFollow, room.Limit.Day, room.Limit.Amount, room.Limit.Dml, room.RoomId)
+	r, err := s.Exec(sql, room.IsMessage, room.IsBonus, room.IsFollow, room.Limit.Day, room.Limit.Amount, room.Limit.Dml, room.RoomId)
 	if err != nil {
 		return 0, err
 	}
 	return r.RowsAffected()
 }
 
-func (d *Store) GetRoom(roomId string) (Room, error) {
+func (s *Store) GetRoom(roomId string) (Room, error) {
 	room := Room{}
 	sql := "SELECT * FROM rooms WHERE room_id = ?"
-	return room, d.QueryRow(sql, roomId).
+	return room, s.QueryRow(sql, roomId).
 		Scan(&room.RoomId, &room.IsMessage, &room.IsBonus, &room.IsFollow, &room.Limit.Day, &room.Limit.Amount, &room.Limit.Dml)
 }
