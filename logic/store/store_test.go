@@ -2,7 +2,7 @@ package store
 
 import (
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"os"
 	"testing"
