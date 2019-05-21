@@ -38,6 +38,26 @@ func TestSetRoom(t *testing.T) {
 	}, room)
 }
 
+func TestSetRoomExist(t *testing.T) {
+	request.SetRoom(store.Room{
+		RoomId:    1000,
+		IsMessage: true,
+	})
+
+	request.SetRoom(store.Room{
+		RoomId: 1000,
+	})
+
+	r := request.GetRoom(1000)
+
+	room := new(store.Room)
+	json.Unmarshal(r.Body, room)
+
+	assert.Equal(t, &store.Room{
+		RoomId: 1000,
+	}, room)
+}
+
 func TestSetRoomNotId(t *testing.T) {
 	r := request.SetRoom(store.Room{})
 

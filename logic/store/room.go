@@ -37,6 +37,15 @@ func (d *Store) SetRoom(room Room) (int64, error) {
 	return r.RowsAffected()
 }
 
+func (d *Store) UpdateRoom(room Room) (int64, error) {
+	sql := "UPDATE rooms SET is_message = ?, is_bonus = ?, is_follow = ?, day_limit = ?, amount_limit = ?, dml_limit = ? WHERE room_id = ? "
+	r, err := d.Exec(sql, room.IsMessage, room.IsBonus, room.IsFollow, room.Limit.Day, room.Limit.Amount, room.Limit.Dml, room.RoomId)
+	if err != nil {
+		return 0, err
+	}
+	return r.RowsAffected()
+}
+
 func (d *Store) GetRoom(roomId int) (Room, error) {
 	room := Room{}
 	sql := "SELECT * FROM rooms WHERE room_id = ?"
