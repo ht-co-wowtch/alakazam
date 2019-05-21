@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"strconv"
 	"time"
 )
 
@@ -62,9 +61,8 @@ func (l *Logic) PushRoom(p *PushRoomForm) error {
 }
 
 func (l *Logic) isBanned(rId string) bool {
-	id, _ := strconv.Atoi(rId)
-	room, _ := l.db.GetRoom(id)
-	if room.RoomId == 0 {
+	room, _ := l.db.GetRoom(rId)
+	if room.RoomId == "" {
 		return false
 	}
 	return !room.IsMessage

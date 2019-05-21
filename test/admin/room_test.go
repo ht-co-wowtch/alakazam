@@ -10,8 +10,12 @@ import (
 	"testing"
 )
 
+var room struct {
+	RoomId string `json:"room_id"`
+}
+
 func TestGetRoomByEmpty(t *testing.T) {
-	r := request.GetRoom(1000)
+	r := request.GetRoom("580d209be6b043f2a992518db5e7269d")
 	e := request.ToError(t, r.Body)
 
 	assert.Nil(t, r.Error)
@@ -19,58 +23,48 @@ func TestGetRoomByEmpty(t *testing.T) {
 	assert.Equal(t, errors.NoRowsError.Message, e.Message)
 }
 
-func TestSetRoom(t *testing.T) {
-	r := request.SetRoom(store.Room{
-		RoomId:    1000,
+func TestCreateRoom(t *testing.T) {
+	r := request.CreateRoom(store.Room{
 		IsMessage: true,
 	})
-	assert.Nil(t, r.Error)
-	assert.Empty(t, string(r.Body))
 
-	r = request.GetRoom(1000)
+	json.Unmarshal(r.Body, &room)
+
+	assert.Equal(t, http.StatusOK, r.StatusCode)
+	assert.NotEmpty(t, room.RoomId)
+	assert.Len(t, room.RoomId, 32)
+
+	r = request.GetRoom(room.RoomId)
 
 	room := new(store.Room)
 	json.Unmarshal(r.Body, room)
 
 	assert.Equal(t, &store.Room{
-		RoomId:    1000,
 		IsMessage: true,
 	}, room)
 }
 
-func TestSetRoomExist(t *testing.T) {
-	request.SetRoom(store.Room{
-		RoomId:    1000,
+func TestUpdateRoom(t *testing.T) {
+	r := request.CreateRoom(store.Room{
 		IsMessage: true,
 	})
 
-	request.SetRoom(store.Room{
-		RoomId: 1000,
-	})
+	json.Unmarshal(r.Body, &room)
 
-	r := request.GetRoom(1000)
+	r = request.UpdateRoom(room.RoomId, store.Room{})
+
+	assert.Equal(t, http.StatusNoContent, r.StatusCode)
+
+	r = request.GetRoom(room.RoomId)
 
 	room := new(store.Room)
 	json.Unmarshal(r.Body, room)
 
-	assert.Equal(t, &store.Room{
-		RoomId: 1000,
-	}, room)
-}
-
-func TestSetRoomNotId(t *testing.T) {
-	r := request.SetRoom(store.Room{})
-
-	e := request.ToError(t, r.Body)
-
-	assert.Equal(t, http.StatusUnprocessableEntity, r.StatusCode)
-	assert.Equal(t, errors.DataError.Code, e.Code)
-	assert.Equal(t, errors.DataError.Message, e.Message)
+	assert.Equal(t, &store.Room{}, room)
 }
 
 func TestSetRoomDayByDayNotEmpty(t *testing.T) {
-	r := request.SetRoom(store.Room{
-		RoomId: 1000,
+	r := request.CreateRoom(store.Room{
 		Limit: store.Limit{
 			Day: 1,
 		},
@@ -84,8 +78,7 @@ func TestSetRoomDayByDayNotEmpty(t *testing.T) {
 }
 
 func TestSetRoomDayByDayEmpty(t *testing.T) {
-	r := request.SetRoom(store.Room{
-		RoomId: 1000,
+	r := request.CreateRoom(store.Room{
 		Limit: store.Limit{
 			Dml: 1,
 		},
@@ -98,8 +91,7 @@ func TestSetRoomDayByDayEmpty(t *testing.T) {
 }
 
 func TestSetRoomDayByDayLimit(t *testing.T) {
-	r := request.SetRoom(store.Room{
-		RoomId: 1000,
+	r := request.CreateRoom(store.Room{
 		Limit: store.Limit{
 			Day:    31,
 			Amount: 1000,
@@ -113,8 +105,7 @@ func TestSetRoomDayByDayLimit(t *testing.T) {
 }
 
 func TestSetRoomDayByDayNegative(t *testing.T) {
-	r := request.SetRoom(store.Room{
-		RoomId: 1000,
+	r := request.CreateRoom(store.Room{
 		Limit: store.Limit{
 			Day: -1,
 		},

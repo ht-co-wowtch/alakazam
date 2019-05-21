@@ -25,7 +25,8 @@ func (s *Server) InitRoute(e *gin.Engine) {
 	e.DELETE("/banned", s.removeBanned)
 
 	// 設定房間
-	e.POST("/room", s.SetRoom)
+	e.POST("/room", s.CreateRoom)
+	e.PUT("/room/:id", s.UpdateRoom)
 	e.GET("/room/:id", s.GetRoom)
 
 	e.POST("/push/all", s.pushAll)

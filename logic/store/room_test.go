@@ -6,13 +6,12 @@ import (
 	"testing"
 )
 
-func TestSetRoom(t *testing.T) {
+func TestCreateRoom(t *testing.T) {
 	mock.ExpectExec("INSERT INTO rooms \\(room_id, is_message, is_bonus, is_follow, day_limit, amount_limit, dml_limit\\) VALUES (.+)").
-		WithArgs(1000, true, false, false, 5, 1000, 100).
+		WithArgs(sqlmock.AnyArg(), true, false, false, 5, 1000, 100).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	aff, err := store.SetRoom(Room{
-		RoomId:    1000,
+	aff, err := store.CreateRoom(Room{
 		IsMessage: true,
 		Limit: Limit{
 			Day:    5,

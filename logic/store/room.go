@@ -2,7 +2,7 @@ package store
 
 type Room struct {
 	// 要設定的房間id
-	RoomId int `json:"room_id" binding:"required"`
+	RoomId string `json:"-"`
 
 	// 是否禁言
 	IsMessage bool `json:"is_message"`
@@ -28,7 +28,7 @@ type Limit struct {
 	Dml int `json:"dml"`
 }
 
-func (d *Store) SetRoom(room Room) (int64, error) {
+func (d *Store) CreateRoom(room Room) (int64, error) {
 	sql := "INSERT INTO rooms (room_id, is_message, is_bonus, is_follow, day_limit, amount_limit, dml_limit) VALUES (?, ?, ?, ?, ?, ?, ?)"
 	r, err := d.Exec(sql, room.RoomId, room.IsMessage, room.IsBonus, room.IsFollow, room.Limit.Day, room.Limit.Amount, room.Limit.Dml)
 	if err != nil {
@@ -46,7 +46,7 @@ func (d *Store) UpdateRoom(room Room) (int64, error) {
 	return r.RowsAffected()
 }
 
-func (d *Store) GetRoom(roomId int) (Room, error) {
+func (d *Store) GetRoom(roomId string) (Room, error) {
 	room := Room{}
 	sql := "SELECT * FROM rooms WHERE room_id = ?"
 	return room, d.QueryRow(sql, roomId).

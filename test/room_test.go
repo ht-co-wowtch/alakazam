@@ -8,13 +8,12 @@ import (
 	"testing"
 )
 
-func TestSetRoomIsBanned(t *testing.T) {
+func TestRoomIsBanned(t *testing.T) {
 	room := store.Room{
-		RoomId:    1000,
 		IsMessage: false,
 	}
 
-	request.SetRoom(room)
+	request.CreateRoom(room)
 
 	a, _ := request.DialAuth("1000")
 

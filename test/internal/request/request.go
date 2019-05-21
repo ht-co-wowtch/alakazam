@@ -37,6 +37,10 @@ func PostJson(url string, body []byte) Response {
 	return response(postJson(url, body))
 }
 
+func PutJson(url string, body []byte) Response {
+	return response(putJson(url, body))
+}
+
 func Delete(url string, data url.Values) Response {
 	return response(deletes(url, data))
 }
@@ -75,6 +79,21 @@ func post(url string, body url.Values) (*http.Response, error) {
 
 func postJson(url string, body []byte) (*http.Response, error) {
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func putJson(url string, body []byte) (*http.Response, error) {
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}
