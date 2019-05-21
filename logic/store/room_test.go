@@ -29,16 +29,28 @@ func TestCreateRoom(t *testing.T) {
 }
 
 func TestGetRoom(t *testing.T) {
-	//mock.ExpectQuery("SELECT \\* FORM rooms WHERE room_id = \\?").
-	//	WithArgs(1000).
-	//	WillReturnRows(sql.ErrNoRows)
-	//
-	//r, err := store.GetRoom(1000)
-	//
-	//assert.Equal(t, sql.ErrNoRows, err)
-	//assert.Empty(t, r)
-	//
-	//if err := mock.ExpectationsWereMet(); err != nil {
-	//	t.Errorf("there were unfulfilled expectations: %s", err)
-	//}
+	roomId := "82ea16cd2d6a49d887440066ef739669"
+	room := Room{
+		IsMessage: true,
+		Limit: Limit{
+			Day:    1,
+			Amount: 1000,
+			Dml:    100,
+		},
+	}
+	mock.ExpectQuery("^SELECT \\* FROM rooms WHERE room_id = \\?").
+		WithArgs(roomId).
+		WillReturnRows(
+			sqlmock.NewRows([]string{"room_id", "is_message", "is_bonus", "is_follow", "day_limit", "amount_limit", "dml_limit"}).
+				AddRow(room.RoomId, room.IsMessage, false, false, room.Limit.Day, room.Limit.Amount, room.Limit.Dml),
+		)
+
+	r, err := store.GetRoom(roomId)
+
+	assert.Nil(t, err)
+	assert.Equal(t, room, r)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
 }
