@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"time"
 )
