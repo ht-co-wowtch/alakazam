@@ -79,7 +79,7 @@
 12. 如何得到禁言名單
 13. 如何得到封鎖名單
 14. 如何得到某聊天室名單
-15. 如何設定聊天設定(比如`充值`&`打碼量`多少才能聊天)
+15. 如何設定一個房間權限(比如`充值`&`打碼量`多少才能聊天) [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#6bdffede-2646-4663-8c13-54cb161a2125)
 
 ## Protocol Body格式
 
