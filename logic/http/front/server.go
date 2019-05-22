@@ -20,7 +20,7 @@ func New(l *logic.Logic) *Server {
 
 func (s *Server) InitRoute(e *gin.Engine) {
 	c := cors.Config{
-		AllowCredentials: false,
+		AllowCredentials: true,
 		AllowOrigins:     conf.Conf.HTTPServer.Cors.Origins,
 		AllowMethods:     []string{"GET", "POST"},
 		AllowHeaders:     conf.Conf.HTTPServer.Cors.Headers,

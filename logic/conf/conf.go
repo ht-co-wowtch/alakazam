@@ -191,15 +191,15 @@ func load() *Config {
 			Addr:         viper.GetString("httpServer.host"),
 			ReadTimeout:  time.Duration(viper.GetInt("httpServer.readTimeout")) * time.Second,
 			WriteTimeout: time.Duration(viper.GetInt("httpServer.writeTimeout")) * time.Second,
+			Cors: Cors{
+				Origins: viper.GetStringSlice("httpServer.cors.origins"),
+				Headers: viper.GetStringSlice("httpServer.cors.headers"),
+			},
 		},
 		HTTPAdminServer: &HTTPServer{
 			Addr:         viper.GetString("httpAdminServer.host"),
 			ReadTimeout:  time.Duration(viper.GetInt("httpAdminServer.readTimeout")) * time.Second,
 			WriteTimeout: time.Duration(viper.GetInt("httpAdminServer.writeTimeout")) * time.Second,
-			Cors: Cors{
-				Origins: viper.GetStringSlice("httpAdminServer.cors.origins"),
-				Headers: viper.GetStringSlice("httpAdminServer.cors.headers"),
-			},
 		},
 		Redis: &Redis{
 			Network:      "tcp",

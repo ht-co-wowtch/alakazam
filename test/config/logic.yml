@@ -9,9 +9,9 @@ httpServer:
   writeTimeout: 1
   cors:
     origins:
-      - *
+      - '*'
     headers:
-      - *
+      - '*'
 
 # httpAdminServer
 httpAdminServer:

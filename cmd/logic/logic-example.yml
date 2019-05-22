@@ -9,7 +9,7 @@ httpServer:
   writeTimeout: 1
   cors:
     origins:
-      - *
+      - '*'
     headers:
       - Origin
       - Content-Type
