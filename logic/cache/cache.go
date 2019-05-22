@@ -74,6 +74,12 @@ func NewRedisDial(c *conf.Redis, dial func() (redis.Conn, error)) *Cache {
 	}
 }
 
+func (c *Cache) FlushAll() error {
+	conn := c.Get()
+	defer conn.Close()
+	return conn.Send("FLUSHALL")
+}
+
 // ping redis是否活著
 func (d *Cache) Ping() error {
 	conn := d.Get()

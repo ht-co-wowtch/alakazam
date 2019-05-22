@@ -19,8 +19,9 @@ import (
 
 func TestMain(m *testing.M) {
 	r := run.Run("./config")
-	defer r()
-	os.Exit(m.Run())
+	i := m.Run()
+	r()
+	os.Exit(i)
 }
 
 // 進入房間成功

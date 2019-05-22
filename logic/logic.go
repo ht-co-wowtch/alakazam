@@ -32,15 +32,19 @@ type Logic struct {
 
 // New init
 func New(c *conf.Config) (l *Logic) {
-	l = &Logic{
-		c:      c,
-		db:     store.NewStore(c.DB),
-		cache:  cache.NewRedis(c.Redis),
-		stream: stream.NewKafkaPub(c.Kafka),
-	}
+	l = Create(c, store.NewStore(c.DB), cache.NewRedis(c.Redis), stream.NewKafkaPub(c.Kafka))
 	_ = l.loadOnline()
 	go l.onlineproc()
 	return l
+}
+
+func Create(c *conf.Config, db *store.Store, cache *cache.Cache, stream *stream.Stream) *Logic {
+	return &Logic{
+		c:      c,
+		db:     db,
+		cache:  cache,
+		stream: stream,
+	}
 }
 
 // Close close resources.
