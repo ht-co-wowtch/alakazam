@@ -17,7 +17,7 @@ func (d *Cache) SetUser(uid, key, roomId, name, server string, status int) (err 
 	conn := d.Get()
 	defer conn.Close()
 	if err = conn.Send("HSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, status, hashServerKey, server); err != nil {
-		log.Errorf("conn.Send(HSET %s,%s) error(%v)", uid, key, err)
+		log.Errorf("conn.Send(HSET %s,%s,%s,%s,%d,%s) error(%v)", uid, key, roomId, name, status, server, err)
 		return
 	}
 	if err = conn.Send("EXPIRE", keyUidInfo(uid), d.expire); err != nil {
