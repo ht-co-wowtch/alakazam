@@ -46,7 +46,7 @@ func TestNotAuth(t *testing.T) {
 
 // 房間心跳成功
 func TestHeartbeat(t *testing.T) {
-	a, err := request.DialAuth("1000")
+	a, err := request.DialAuth("1001")
 	if err != nil {
 		assert.Error(t, err)
 		return
@@ -56,7 +56,7 @@ func TestHeartbeat(t *testing.T) {
 
 // 房間不心跳
 func TestNotHeartbeat(t *testing.T) {
-	a, err := request.DialAuth("1000")
+	a, err := request.DialAuth("1002")
 	if err != nil {
 		assert.Error(t, err)
 		return
@@ -66,14 +66,14 @@ func TestNotHeartbeat(t *testing.T) {
 
 // 封鎖
 func TestRoomBlockade(t *testing.T) {
-	a, err := request.DialAuth("1000")
+	a, err := request.DialAuth("1003")
 	assert.Nil(t, err)
 	assert.NotEmpty(t, a.Uid)
 
 	r := request.SetBlockade(a.Uid, "測試")
 	assert.Empty(t, r.Body)
 
-	a, err = request.DialAuth("1000")
+	a, err = request.DialAuth("1003")
 	assert.Nil(t, err)
 
 	e := new(errors.Error)
@@ -85,14 +85,14 @@ func TestRoomBlockade(t *testing.T) {
 
 // 解封鎖
 func TestRoomDeleteBlockade(t *testing.T) {
-	a, err := request.DialAuth("1000")
+	a, err := request.DialAuth("1004")
 	uid := a.Uid
 	assert.Nil(t, err)
 	assert.NotEmpty(t, a.Uid)
 
 	request.SetBlockade(a.Uid, "測試")
 
-	a, err = request.DialAuth("1000")
+	a, err = request.DialAuth("1004")
 	assert.Nil(t, err)
 
 	e := new(errors.Error)
@@ -101,7 +101,7 @@ func TestRoomDeleteBlockade(t *testing.T) {
 
 	request.DeleteBlockade(uid)
 
-	a, err = request.DialAuth("1000")
+	a, err = request.DialAuth("1004")
 	assert.Nil(t, err)
 
 	assert.NotEmpty(t, a.Uid)
@@ -109,7 +109,7 @@ func TestRoomDeleteBlockade(t *testing.T) {
 
 // 切換房間
 func TestChangeRoom(t *testing.T) {
-	a, err := request.DialAuth("1000")
+	a, err := request.DialAuth("1005")
 	if err != nil {
 		assert.Fail(t, err.Error())
 		return
