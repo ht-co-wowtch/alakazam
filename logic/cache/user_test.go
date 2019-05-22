@@ -43,7 +43,7 @@ func mockDeleteUser(uid string, key string) *redigomock.Cmd {
 }
 
 func mockSetUser(uid string, key string, roomId string, name string) {
-	mock.Command("HSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, permission.PlayDefaultPermission, hashServerKey, "").
+	mock.Command("HMSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, permission.PlayDefaultPermission, hashServerKey, "").
 		Expect("")
 	mock.Command("EXPIRE", keyUidInfo(uid), expireSec).
 		Expect("")
