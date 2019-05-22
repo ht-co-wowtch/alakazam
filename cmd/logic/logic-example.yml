@@ -2,6 +2,9 @@
 # 一定要比redis.expire還小
 heartbeat: 240
 
+api:
+  host: http://127.0.0.1
+
 # httpServer
 httpServer:
   host: :3111
