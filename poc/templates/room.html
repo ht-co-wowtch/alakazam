@@ -103,8 +103,6 @@
         <dl class="dl-horizontal">
             <dt>房間id:</dt>
             <dd>{{ .id }}</dd>
-            <dt>你的名稱:</dt>
-            <dd>{{ .name }}</dd>
         </dl>
         <div class="col-md-7">
             <h2>聊天室狀態: <span id="status"></span></h2>
@@ -155,33 +153,18 @@
 
     var appendMsg = function (text) {
         obj = JSON.parse(text);
-        if (obj.name == "{{ .name }}") {
-            document.getElementById("chat").innerHTML += "<li class=\"right clearfix\"><span class=\"chat-img pull-right\">\n" +
-                "                            <img src=\"http://placehold.it/50/FA6F57/fff&text=ME\" alt=\"User Avatar\" class=\"img-circle\"/>\n" +
-                "                        </span>\n" +
-                "                                <div class=\"chat-body clearfix\">\n" +
-                "                                    <div class=\"header\">\n" + "                                    <small class=\" text-muted\"><span class=\"\"></span></small>\n" +
-                "                                        <strong class=\"pull-right primary-font\">" + obj.name + "</strong>\n" +
-                "                                    </div>\n" +
-                "                                    <p>\n" +
-                obj.message +
-                "                                    </p>\n" +
-                "                                </div>\n" +
-                "                            </li>"
-        } else {
-            document.getElementById("chat").innerHTML += "<li class=\"left clearfix\"><span class=\"chat-img pull-left\">\n" +
-                "                            <img src=\"http://placehold.it/50/55C1E7/fff&text=U\" alt=\"User Avatar\" class=\"img-circle\"/>\n" +
-                "                        </span>\n" +
-                "                                <div class=\"chat-body clearfix\">\n" +
-                "                                    <div class=\"header\">\n" + "                                    <small class=\" text-muted\"><span class=\"\"></span></small>\n" +
-                "                                        <strong class=\"primary-font\">" + obj.name + "</strong>\n" +
-                "                                    </div>\n" +
-                "                                    <p>\n" +
-                obj.message +
-                "                                    </p>\n" +
-                "                                </div>\n" +
-                "                            </li>";
-        }
+        document.getElementById("chat").innerHTML += "<li class=\"left clearfix\"><span class=\"chat-img pull-left\">\n" +
+            "                            <img src=\"http://placehold.it/50/55C1E7/fff&text=U\" alt=\"User Avatar\" class=\"img-circle\"/>\n" +
+            "                        </span>\n" +
+            "                                <div class=\"chat-body clearfix\">\n" +
+            "                                    <div class=\"header\">\n" + "                                    <small class=\" text-muted\"><span class=\"\"></span></small>\n" +
+            "                                        <strong class=\"primary-font\">" + obj.name + "</strong>\n" +
+            "                                    </div>\n" +
+            "                                    <p>\n" +
+            obj.message +
+            "                                    </p>\n" +
+            "                                </div>\n" +
+            "                            </li>";
     }
 
     Client.prototype.createConnect = function (max, delay) {
@@ -270,13 +253,6 @@
                 headerView.setInt32(opOffset, 3);
                 ws.send(headerBuf);
                 console.log("send: heartbeat");
-
-                {{/*$.get('http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/count/{{ .id }}', function (data) {*/}}
-                {{/*}).success(function (data) {*/}}
-                {{/*    document.getElementById("count").innerHTML = "<color style='color:red'>" + data.count + "<color>";*/}}
-                {{/*}).error(function () {*/}}
-                {{/*    document.getElementById("count").innerHTML = "<color style='color:red'>未知<color>";*/}}
-                {{/*});*/}}
             }
 
             function auth() {
@@ -319,12 +295,22 @@
     });
 
     function send() {
-        var text = document.getElementById("btn-input").value
-        $.post('http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/push/{{ .id }}', {text: text, uid:document.getElementById("uid").value, key:document.getElementById("key").value}, function (data) {
-        })
-            .error(function () {
-                alert("發送失敗")
-            });
+        $.ajax({
+            type: "post",
+            url: 'http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/push/room',
+            async: false,
+            data: JSON.stringify({
+                uid: document.getElementById("uid").value,
+                key: document.getElementById("key").value,
+                message: document.getElementById("btn-input").value
+            }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(data) {},
+            error: function (data) {
+               alert(data.message)
+            }
+        });
     }
 </script>
 <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
