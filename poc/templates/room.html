@@ -297,7 +297,7 @@
     function send() {
         $.ajax({
             type: "post",
-            url: 'http://' + "{{ .host }}" + ":" + "{{ .port }}" + '/push/room',
+            url: 'http://' + "{{ .host }}" + ":3111" + '/push/room',
             async: false,
             data: JSON.stringify({
                 uid: document.getElementById("uid").value,

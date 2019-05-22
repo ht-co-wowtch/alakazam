@@ -8,13 +8,10 @@ import (
 
 var (
 	host string
-
-	port string
 )
 
 func main() {
 	flag.StringVar(&host, "h", "127.0.0.1", "chat host")
-	flag.StringVar(&port, "p", "3111", "chat port")
 	flag.Parse()
 
 	g := gin.Default()
@@ -29,6 +26,5 @@ func roomForm(c *gin.Context) {
 	c.HTML(http.StatusOK, "room.html", gin.H{
 		"id":   c.Param("id"),
 		"host": host,
-		"port": port,
 	})
 }
