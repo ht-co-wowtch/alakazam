@@ -7,6 +7,14 @@ httpServer:
   host: :3111
   readTimeout: 1
   writeTimeout: 1
+  cors:
+    origins:
+      - *
+    headers:
+      - Origin
+      - Content-Type
+      - Keep-Alive
+      - User-Agent
 
 # httpAdminServer
 httpAdminServer:

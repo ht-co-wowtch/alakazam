@@ -122,6 +122,14 @@ type HTTPServer struct {
 
 	// 沒用到
 	WriteTimeout time.Duration
+
+	Cors Cors
+}
+
+type Cors struct {
+	Origins []string
+
+	Headers []string
 }
 
 func Read(path string) (err error) {
@@ -188,6 +196,10 @@ func load() *Config {
 			Addr:         viper.GetString("httpAdminServer.host"),
 			ReadTimeout:  time.Duration(viper.GetInt("httpAdminServer.readTimeout")) * time.Second,
 			WriteTimeout: time.Duration(viper.GetInt("httpAdminServer.writeTimeout")) * time.Second,
+			Cors: Cors{
+				Origins: viper.GetStringSlice("httpAdminServer.cors.origins"),
+				Headers: viper.GetStringSlice("httpAdminServer.cors.headers"),
+			},
 		},
 		Redis: &Redis{
 			Network:      "tcp",
