@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"time"
 )
 
@@ -61,11 +62,7 @@ func (l *Logic) PushRoom(p *PushRoomForm) error {
 }
 
 func (l *Logic) isBanned(rId string) bool {
-	room, _ := l.db.GetRoom(rId)
-	if room.RoomId == "" {
-		return false
-	}
-	return !room.IsMessage
+	return permission.IsBanned(l.GetRoomPermission(rId))
 }
 
 type PushRoomAllForm struct {

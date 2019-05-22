@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	log "github.com/golang/glog"
+	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 )
 
@@ -21,8 +23,12 @@ func (l *Logic) CreateRoom(r store.Room) (string, error) {
 
 func (l *Logic) UpdateRoom(id string, r store.Room) bool {
 	r.RoomId = id
-	if aff, err := l.db.UpdateRoom(r); err != nil || aff <= 0 {
+	if _, err := l.db.UpdateRoom(r); err != nil {
 		log.Errorf("l.db.CreateRoom(room: %v) error(%v)", r, err)
+		return false
+	}
+	if err := l.cache.SetRoom(id, permission.ToRoomInt(r)); err != nil {
+		log.Errorf("Logic UpdateRoom cache SetRoom(id:%s) error(%v)", id, err)
 		return false
 	}
 	return true
@@ -37,4 +43,29 @@ func (l *Logic) GetRoom(roomId string) (store.Room, bool) {
 		return r, false
 	}
 	return r, true
+}
+
+func (l *Logic) GetRoomPermission(rId string) int {
+	i, err := l.cache.GetRoom(rId)
+
+	if err != nil && err != redis.ErrNil {
+		log.Errorf("Logic isBanned cache GetRoom(id:%s) error(%v) ", rId, err)
+	}
+	if i == 0 {
+		room, err := l.db.GetRoom(rId)
+
+		if err == nil {
+			i = permission.ToRoomInt(room)
+		} else {
+			i = permission.RoomDefaultPermission
+
+			if err != sql.ErrNoRows {
+				log.Errorf("Logic isBanned db GetRoom(id:%s) error(%v) ", rId, err)
+			}
+		}
+		if err := l.cache.SetRoom(rId, i); err != nil {
+			log.Errorf("Logic isBanned cache SetRoom(id:%s) error(%v) ", rId, err)
+		}
+	}
+	return i
 }

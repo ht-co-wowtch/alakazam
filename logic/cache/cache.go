@@ -19,6 +19,9 @@ const (
 	// server name的前綴詞，用於存儲在redis當key
 	prefixServerOnline = "server_%s"
 
+	// 房間的前綴詞，用於存儲在redis當key
+	prefixRoom = "room_%s"
+
 	// user hash table name key
 	hashNameKey = "name"
 
@@ -39,6 +42,10 @@ func keyBannedInfo(uid string) string {
 
 func keyServerOnline(key string) string {
 	return fmt.Sprintf(prefixServerOnline, key)
+}
+
+func keyRoom(key string) string {
+	return fmt.Sprintf(prefixRoom, key)
 }
 
 type Cache struct {
