@@ -5,7 +5,7 @@ require (
 	github.com/DATA-DOG/go-txdb v0.1.2
 	github.com/Shopify/sarama v1.22.1 // indirect
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
-	github.com/gin-contrib/cors v1.3.0 // indirect
+	github.com/gin-contrib/cors v1.3.0
 	github.com/gin-gonic/gin v1.4.0
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gogo/protobuf v1.2.1
@@ -25,3 +25,5 @@ require (
 	google.golang.org/grpc v1.20.1
 	gopkg.in/Shopify/sarama.v1 v1.19.0
 )
+
+replace github.com/ugorji/go v1.1.4 => github.com/ugorji/go/codec v0.0.0-20190204201341-e444a5086c43
