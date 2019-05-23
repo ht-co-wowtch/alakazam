@@ -17,6 +17,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/stream"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 func RunLogic(path string) func() {
@@ -27,8 +28,9 @@ func RunLogic(path string) func() {
 	conf.Conf.DB.Driver = "mockMysql"
 
 	httpClient := client.Create(conf.Conf.Api, newMockClient(func(request *http.Request) (response *http.Response, e error) {
+		path := strings.Split(request.URL.Path,"/")
 		u := user.User{
-			Uid:  "82ea16cd2d6a49d887440066ef739669",
+			Uid:  path[3],
 			Name: "test",
 		}
 

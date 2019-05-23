@@ -78,6 +78,7 @@ func post(url string, body url.Values) (*http.Response, error) {
 }
 
 func postJson(url string, body []byte) (*http.Response, error) {
+	fmt.Printf("post: %s\n", string(body))
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
@@ -93,6 +94,7 @@ func postJson(url string, body []byte) (*http.Response, error) {
 }
 
 func putJson(url string, body []byte) (*http.Response, error) {
+	fmt.Printf("post: %s\n", string(body))
 	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err

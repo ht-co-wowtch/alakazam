@@ -48,6 +48,10 @@ func DialAuth(roomId string) (auth Auth, err error) {
 	return DialAuthToken("82ea16cd2d6a49d887440066ef739669", roomId, uuid.New().String())
 }
 
+func DialAuthUser(uid, roomId string) (auth Auth, err error) {
+	return DialAuthToken(uid, roomId, uuid.New().String())
+}
+
 func DialAuthToken(uid, roomId, token string) (auth Auth, err error) {
 	authToken := AuthToken{
 		RoomID: roomId,

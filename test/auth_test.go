@@ -85,14 +85,17 @@ func TestRoomBlockade(t *testing.T) {
 
 // 解封鎖
 func TestRoomDeleteBlockade(t *testing.T) {
-	a, err := request.DialAuth("1004")
-	uid := a.Uid
+	uid := "7f547901b02041ab8d7d3381d0703137"
+	roomId := "1004"
+
+	a, err := request.DialAuthUser(uid, roomId)
+
 	assert.Nil(t, err)
 	assert.NotEmpty(t, a.Uid)
 
 	request.SetBlockade(a.Uid, "測試")
 
-	a, err = request.DialAuth("1004")
+	a, err = request.DialAuthUser(uid, roomId)
 	assert.Nil(t, err)
 
 	e := new(errors.Error)
@@ -101,7 +104,7 @@ func TestRoomDeleteBlockade(t *testing.T) {
 
 	request.DeleteBlockade(uid)
 
-	a, err = request.DialAuth("1004")
+	a, err = request.DialAuthUser(uid, roomId)
 	assert.Nil(t, err)
 
 	assert.NotEmpty(t, a.Uid)
