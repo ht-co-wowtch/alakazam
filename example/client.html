@@ -157,6 +157,7 @@
 
         function connect() {
             var ws = new WebSocket('ws://192.168.0.138' + ':3102/sub');
+            // var ws = new WebSocket('ws://127.0.0.1' + ':3102/sub');
             ws.binaryType = 'arraybuffer';
             ws.onopen = function () {
                 auth();
@@ -168,7 +169,6 @@
                 var packetLen = dataView.getInt32(packetOffset);
                 var headerLen = dataView.getInt16(headerOffset);
                 var op = dataView.getInt32(opOffset);
-
                 console.log("receiveHeader: packetLen=" + packetLen, "headerLen=" + headerLen, "op=" + op);
 
                 switch (op) {
@@ -188,6 +188,7 @@
                         break;
                     case 4:
 
+                        document.getElementById("count").innerHTML = "<color style='color:green'>"+ dataView.getInt32(headerLen) +"<color>"
                         console.log("receive: heartbeat");
                         break;
                     case 5:
@@ -273,6 +274,7 @@
         $.ajax({
             type: "post",
             url: 'http://192.168.0.138:3111' + '/push/room',
+            // url: 'http://127.0.0.1:3111' + '/push/room',
             async: false,
             data: JSON.stringify({
                 uid: document.getElementById("uid").value,
