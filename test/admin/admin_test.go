@@ -14,7 +14,6 @@ var (
 
 func TestMain(m *testing.M) {
 	r := run.Run("../config")
-	defer r()
 
 	if err := conf.Read("../config/logic.yml"); err != nil {
 		panic(err)
@@ -30,6 +29,7 @@ func TestMain(m *testing.M) {
 		os.Exit(-1)
 	}
 	d = cache.NewRedis(conf.Conf.Redis)
-
-	os.Exit(m.Run())
+	code := m.Run()
+	r()
+	os.Exit(code)
 }

@@ -9,9 +9,10 @@ import (
 
 // 封鎖會員
 func TestSetBlockade(t *testing.T) {
-	request.DialAuth("1000")
+	a, err := request.DialAuth("4000")
+	assert.Nil(t, err)
 
-	r := request.SetBlockade("82ea16cd2d6a49d887440066ef739669", "測試")
+	r := request.SetBlockade(a.Uid, "測試")
 	assert.Nil(t, r.Error)
 	assert.Equal(t, http.StatusNoContent, r.StatusCode)
 	assert.Empty(t, string(r.Body))
@@ -19,10 +20,12 @@ func TestSetBlockade(t *testing.T) {
 
 // 解除某會員封鎖
 func TestDeleteBlockade(t *testing.T) {
-	request.DialAuth("1000")
-	request.SetBlockade("82ea16cd2d6a49d887440066ef739669", "測試")
+	a, err := request.DialAuth("4001")
+	assert.Nil(t, err)
 
-	r := request.DeleteBlockade("82ea16cd2d6a49d887440066ef739669")
+	request.SetBlockade(a.Uid, "測試")
+
+	r := request.DeleteBlockade(a.Uid)
 	assert.Nil(t, r.Error)
 	assert.Equal(t, http.StatusNoContent, r.StatusCode)
 	assert.Empty(t, string(r.Body))

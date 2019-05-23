@@ -10,7 +10,7 @@ import (
 
 // 設定某會員禁言5秒
 func TestSetBanned(t *testing.T) {
-	uid := "82ea16cd2d6a49d887440066ef739669"
+	uid := "00ea16cd2d6a49d887440066ef739669"
 	expectedUnix := time.Now().Add(time.Second * time.Duration(5)).Unix()
 	r := request.SetBanned(uid, "測試", 5)
 
@@ -25,7 +25,7 @@ func TestSetBanned(t *testing.T) {
 
 // 解除某會員禁言
 func TestDeleteBanned(t *testing.T) {
-	uid := "82ea16cd2d6a49d887440066ef739669"
+	uid := "11ea16cd2d6a49d887440066ef739669"
 	request.SetBanned(uid, "測試", 5)
 	r := request.DeleteBanned(uid)
 

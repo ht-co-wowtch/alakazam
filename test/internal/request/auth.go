@@ -45,7 +45,8 @@ func Dial() (conn *websocket.Conn, err error) {
 }
 
 func DialAuth(roomId string) (auth Auth, err error) {
-	return DialAuthToken("82ea16cd2d6a49d887440066ef739669", roomId, uuid.New().String())
+	b, _ := uuid.New().MarshalBinary()
+	return DialAuthToken(fmt.Sprintf("%x", b), roomId, uuid.New().String())
 }
 
 func DialAuthUser(uid, roomId string) (auth Auth, err error) {

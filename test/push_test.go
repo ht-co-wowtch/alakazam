@@ -12,7 +12,7 @@ import (
 
 // 房間訊息推送成功
 func TestPushRoom(t *testing.T) {
-	a, err := request.DialAuth("1000")
+	a, err := request.DialAuth("2000")
 	if err != nil {
 		assert.Fail(t, err.Error())
 		return
@@ -25,7 +25,7 @@ func TestPushRoom(t *testing.T) {
 
 // 禁言
 func TestPushRoomBanned(t *testing.T) {
-	a := givenBanned(t)
+	a := givenBanned(t, "2001")
 	time.Sleep(time.Second * 4)
 	r := request.PushRoom(a.Uid, a.Key, "測試")
 
@@ -34,15 +34,15 @@ func TestPushRoomBanned(t *testing.T) {
 
 // 解除禁言
 func TestPushRoomRemoveBanned(t *testing.T) {
-	a := givenBanned(t)
+	a := givenBanned(t, "2002")
 	request.DeleteBanned(a.Uid)
 	r := request.PushRoom(a.Uid, a.Key, "測試")
 
 	assert.Equal(t, http.StatusNoContent, r.StatusCode)
 }
 
-func givenBanned(t *testing.T) request.Auth {
-	a, err := request.DialAuth("1000")
+func givenBanned(t *testing.T, roomId string) request.Auth {
+	a, err := request.DialAuth(roomId)
 	if err != nil {
 		assert.Fail(t, err.Error())
 		return a
