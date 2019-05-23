@@ -272,13 +272,14 @@ permission.get_follow|是否可以跟注
 
 Operation = `4`=> 回覆心跳結果
 ```
-body是空的，有收到Operation = 4 就是成功
+body是內容是該房間在線人數，是一個int32
 ```
+![arch](./doc/heartbeatReply.png)
 
 Operation = `8`=> 回覆更換房間結果
 
 ```
-body是新房間id，有收到Operation = 8 就是成功
+body是新房間id
 ```
 
 ## Web Socket
@@ -314,6 +315,11 @@ headerView.setInt16(headerOffset, rawHeaderLen);
 headerView.setInt32(opOffset, 3);
 ```
 ![arch](./doc/heartbeat.png)
+
+結果|說明|
+----|-----|
+成功|[Response](#response)
+失敗|失敗就會close連線
 
 ### Change Room
 
