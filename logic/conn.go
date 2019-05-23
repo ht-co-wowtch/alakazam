@@ -7,7 +7,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/remote"
 	"time"
 
 	log "github.com/golang/glog"
@@ -48,7 +47,14 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	}
 
 	r := new(ConnectReply)
-	r.Uid, r.Name = remote.Renew(params.Token)
+	user, err := l.client.GetUser(params.Token)
+	if err != nil {
+		log.Errorf("Logic client GetUser token:%s error(%v)", token, err)
+		return nil, errors.UserError
+	}
+	r.Uid = user.Uid
+	r.Name = user.Name
+
 	p, isBlockade, err := l.db.FindUserPermission(r.Uid)
 
 	if err != nil {

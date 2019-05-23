@@ -2,6 +2,7 @@ package logic
 
 import (
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/stream"
 	"os"
@@ -26,24 +27,27 @@ type Logic struct {
 
 	stream *stream.Stream
 
+	client *client.Client
+
 	// 房間在線人數，key是房間id
 	roomCount map[string]int32
 }
 
 // New init
 func New(c *conf.Config) (l *Logic) {
-	l = Create(c, store.NewStore(c.DB), cache.NewRedis(c.Redis), stream.NewKafkaPub(c.Kafka))
+	l = Create(c, store.NewStore(c.DB), cache.NewRedis(c.Redis), stream.NewKafkaPub(c.Kafka), client.New(c.Api))
 	_ = l.loadOnline()
 	go l.onlineproc()
 	return l
 }
 
-func Create(c *conf.Config, db *store.Store, cache *cache.Cache, stream *stream.Stream) *Logic {
+func Create(c *conf.Config, db *store.Store, cache *cache.Cache, stream *stream.Stream, client *client.Client) *Logic {
 	return &Logic{
 		c:      c,
 		db:     db,
 		cache:  cache,
 		stream: stream,
+		client: client,
 	}
 }
 

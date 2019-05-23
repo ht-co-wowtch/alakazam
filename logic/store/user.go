@@ -1,5 +1,25 @@
 package store
 
+const (
+	// 女性
+	Female = "female"
+
+	// 男性
+	Male = "male"
+
+	// 其他
+	Other = "other"
+
+	// 訪客
+	Guest = "guest"
+
+	// 營銷
+	Marketing = "marketing"
+
+	// 玩家
+	Player = "player"
+)
+
 type User struct {
 	Uid        string
 	Permission int

@@ -10,6 +10,7 @@ var (
 	ConnectError                   = eNew(http.StatusBadRequest, 10024000, "进入聊天室失败")
 	FailureError                   = eNew(http.StatusBadRequest, 10024001, "操作失败")
 	RoomError                      = eNew(http.StatusBadRequest, 10024002, "没有在此房间")
+	UserError                      = eNew(http.StatusBadRequest, 10024003, "取得用户资料失败")
 	NoRowsError                    = eNew(http.StatusNotFound, 10024040, "没有资料")
 	BlockadeError, BlockadeMessage = eNewB(http.StatusUnauthorized, 10024011, "您在封鎖状态，无法进入聊天室")
 	LoginError                     = eNew(http.StatusUnauthorized, 10024012, "请先登入会员")

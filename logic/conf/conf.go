@@ -20,7 +20,7 @@ type Config struct {
 	DB              *Database
 	Kafka           *Kafka
 	Redis           *Redis
-
+	Api             *Api
 	// comet連線用戶心跳，server會清除在線紀錄
 	Heartbeat int64
 }
@@ -53,6 +53,7 @@ func load() *Config {
 		HTTPAdminServer: newAdminHttp(),
 		Redis:           newRedis(),
 		Kafka:           newKafka(),
+		Api:             newApi(),
 		Heartbeat:       (time.Duration(viper.GetInt("heartbeat")) * time.Second).Nanoseconds(),
 	}
 }
