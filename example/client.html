@@ -232,7 +232,7 @@
             }
 
             function auth() {
-                var token = '{"token":"ec2fa7acc9d443489531b156077c09a1", "room_id":"a1b4bbec3f624ecf84858632a730c688"}'
+                var token = '{"uid":"7f547901b02041ab8d7d3381d0703137", "token":"ec2fa7acc9d443489531b156077c09a1", "room_id":"a1b4bbec3f624ecf84858632a730c688"}'
                 var headerBuf = new ArrayBuffer(rawHeaderLen);
                 var headerView = new DataView(headerBuf, 0);
                 var bodyBuf = textEncoder.encode(token);

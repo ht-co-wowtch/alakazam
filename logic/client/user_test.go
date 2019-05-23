@@ -13,14 +13,14 @@ import (
 )
 
 func TestGetUser(t *testing.T) {
-	token := "ec2fa7acc9d443489531b156077c09a1"
-	expectedURL := "/game/user/" + token
 	user := User{
 		Uid:    "82ea16cd2d6a49d887440066ef739669",
 		Name:   "test",
 		Gender: store.Female,
 		Type:   store.Player,
 	}
+	token := "ec2fa7acc9d443489531b156077c09a1"
+	expectedURL := "/tripartite/user/" + user.Uid + "/token/" + token
 
 	c := newMockClient(func(req *http.Request) (response *http.Response, e error) {
 		if req.Method != "GET" {
@@ -45,7 +45,7 @@ func TestGetUser(t *testing.T) {
 		}, nil
 	})
 
-	a, err := c.GetUser(token)
+	a, err := c.GetUser(user.Uid, token)
 
 	assert.Nil(t, err)
 	assert.Equal(t, user, a)

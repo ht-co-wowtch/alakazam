@@ -13,8 +13,8 @@ type User struct {
 	Type   string `json:"type"`
 }
 
-func (c *Client) GetUser(token string) (auth User, err error) {
-	req, err := http.NewRequest("GET", "/game/user/"+token, nil)
+func (c *Client) GetUser(uid, token string) (auth User, err error) {
+	req, err := http.NewRequest("GET", "/tripartite/user/"+uid+"/token/"+token, nil)
 	if err != nil {
 		return auth, err
 	}

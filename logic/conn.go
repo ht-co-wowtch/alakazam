@@ -35,6 +35,9 @@ type ConnectReply struct {
 // redis紀錄某人連線資訊
 func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	var params struct {
+		// user uid
+		Uid string `json:"uid"`
+
 		// 認證中心token
 		Token string `json:"token"`
 
@@ -47,7 +50,7 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	}
 
 	r := new(ConnectReply)
-	user, err := l.client.GetUser(params.Token)
+	user, err := l.client.GetUser(params.Uid, params.Token)
 	if err != nil {
 		log.Errorf("Logic client GetUser token:%s error(%v)", token, err)
 		return nil, errors.UserError

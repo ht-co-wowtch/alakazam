@@ -290,12 +290,14 @@ body是新房間id
 
 ```
   {
+      "uid":"82ea16cd2d6a49d887440066ef739669",
       "token": "gM18QgsqI0zFFmdLyvHQxKa0N95BRZSh",
       "room_id": "a7d20d4133c14a62b617ee38e793cf55"
   }
 ```
 name|說明|
 ----|-----|
+uid|user uid
 token|認證中心發行的token，在paras的jwt claims內
 room_id|想要進入的房間id，透過paras取得
 

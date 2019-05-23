@@ -15,8 +15,9 @@ import (
 )
 
 type AuthToken struct {
-	RoomID string `json:"room_id"`
+	Uid    string `json:"uid"`
 	Token  string `json:"token"`
+	RoomID string `json:"room_id"`
 }
 
 type ConnectReply struct {
@@ -44,13 +45,14 @@ func Dial() (conn *websocket.Conn, err error) {
 }
 
 func DialAuth(roomId string) (auth Auth, err error) {
-	return DialAuthToken(roomId, uuid.New().String())
+	return DialAuthToken("82ea16cd2d6a49d887440066ef739669", roomId, uuid.New().String())
 }
 
-func DialAuthToken(roomId, token string) (auth Auth, err error) {
+func DialAuthToken(uid, roomId, token string) (auth Auth, err error) {
 	authToken := AuthToken{
 		RoomID: roomId,
 		Token:  token,
+		Uid:    uid,
 	}
 	var (
 		conn *websocket.Conn
