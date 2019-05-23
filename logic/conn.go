@@ -53,7 +53,7 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	user, err := l.client.GetUser(params.Uid, params.Token)
 	if err != nil {
 		log.Errorf("Logic client GetUser token:%s error(%v)", token, err)
-		return nil, errors.UserError
+		return nil, err
 	}
 	r.Uid = user.Uid
 	r.Name = user.Name

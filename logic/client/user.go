@@ -2,6 +2,7 @@ package client
 
 import (
 	"encoding/json"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"io/ioutil"
 	"net/http"
 )
@@ -14,7 +15,7 @@ type User struct {
 }
 
 func (c *Client) GetUser(uid, token string) (auth User, err error) {
-	req, err := http.NewRequest("GET", "/tripartite/user/"+uid+"/token/"+token, nil)
+	req, err := http.NewRequest("GET", c.host+"/tripartite/user/"+uid+"/token/"+token, nil)
 	if err != nil {
 		return auth, err
 	}
@@ -27,9 +28,12 @@ func (c *Client) GetUser(uid, token string) (auth User, err error) {
 
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return auth, errors.UserError
+	}
+
 	b, _ := ioutil.ReadAll(resp.Body)
+	err = json.Unmarshal(b, &auth)
 
-	json.Unmarshal(b, &auth)
-
-	return auth, nil
+	return auth, err
 }

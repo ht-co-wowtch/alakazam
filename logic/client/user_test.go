@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 	"io/ioutil"
 	"net/http"
@@ -49,4 +50,20 @@ func TestGetUser(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, user, a)
+}
+
+func TestGetUserNotFound(t *testing.T) {
+	c := newMockClient(func(req *http.Request) (response *http.Response, e error) {
+		header := http.Header{}
+		header.Set(contentType, jsonHeaderType)
+		return &http.Response{
+			StatusCode: http.StatusNotFound,
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(``))),
+			Header:     header,
+		}, nil
+	})
+
+	_, err := c.GetUser("82ea16cd2d6a49d887440066ef739669", "ec2fa7acc9d443489531b156077c09a1")
+
+	assert.Equal(t, errors.UserError, err)
 }
