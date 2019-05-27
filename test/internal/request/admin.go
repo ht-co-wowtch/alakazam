@@ -2,6 +2,8 @@ package request
 
 import (
 	"encoding/json"
+	"fmt"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"net/url"
 )
 
@@ -12,13 +14,13 @@ func SetBanned(uid, remark string, sec int) Response {
 		"remark":  remark,
 	}
 	b, _ := json.Marshal(j)
-	return PostJson(adminHost+"/banned", b)
+	return PostJson(getAdminHost()+"/banned", b)
 }
 
 func DeleteBanned(uid string) Response {
 	d := url.Values{}
 	d.Set("uid", uid)
-	return Delete(adminHost+"/banned", d)
+	return Delete(getAdminHost()+"/banned", d)
 }
 
 func SetBlockade(uid, remark string) Response {
@@ -27,11 +29,15 @@ func SetBlockade(uid, remark string) Response {
 		"remark": remark,
 	}
 	b, _ := json.Marshal(j)
-	return PostJson(adminHost+"/blockade", b)
+	return PostJson(getAdminHost()+"/blockade", b)
 }
 
 func DeleteBlockade(uid string) Response {
 	d := url.Values{}
 	d.Set("uid", uid)
-	return Delete(adminHost+"/blockade", d)
+	return Delete(getAdminHost()+"/blockade", d)
+}
+
+func getAdminHost() string {
+	return fmt.Sprintf("http://127.0.0.1%s", conf.Conf.HTTPAdminServer.Addr)
 }

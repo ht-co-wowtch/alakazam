@@ -10,11 +10,6 @@ import (
 	"time"
 )
 
-const (
-	host      = "http://127.0.0.1:3111"
-	adminHost = "http://127.0.0.1:3112"
-)
-
 var httpClient *http.Client
 
 func init() {

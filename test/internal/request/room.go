@@ -9,14 +9,14 @@ import (
 
 func CreateRoom(room store.Room) Response {
 	b, _ := json.Marshal(room)
-	return PostJson(adminHost+"/room", b)
+	return PostJson(getAdminHost()+"/room", b)
 }
 
 func UpdateRoom(roomId string, room store.Room) Response {
 	b, _ := json.Marshal(room)
-	return PutJson(fmt.Sprintf(adminHost+"/room/%s", roomId), b)
+	return PutJson(fmt.Sprintf(getAdminHost()+"/room/%s", roomId), b)
 }
 
 func GetRoom(roomId string) Response {
-	return Get(fmt.Sprintf(adminHost+"/room/%s", roomId), url.Values{})
+	return Get(fmt.Sprintf(getAdminHost()+"/room/%s", roomId), url.Values{})
 }
