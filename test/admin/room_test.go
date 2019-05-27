@@ -135,7 +135,9 @@ func TestSetRoomDayByAmount(t *testing.T) {
 		},
 	})
 
-	assert.Equal(t, http.StatusOK, r.StatusCode)
+	e := request.ToError(t, r.Body)
+
+	assert.Equal(t, errors.SetRoomError.Code, e.Code)
 }
 
 func TestSetRoomDayNotAmount(t *testing.T) {

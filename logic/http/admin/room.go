@@ -61,10 +61,12 @@ func bindRoom(c *gin.Context, params *store.Room) error {
 		if params.Limit.Dml <= 0 {
 			return errors.SetRoomError.Mes("打码量不可小于等于0")
 		}
-	} else if params.Limit.Day == 0 && params.Limit.Dml > 0 {
-		return errors.SetRoomError.Mes("需设定充值天数")
 	} else if params.Limit.Day < 0 || params.Limit.Amount < 0 || params.Limit.Dml < 0 {
 		return errors.FailureError
+	} else if params.Limit.Day == 0 && params.Limit.Dml > 0 {
+		return errors.SetRoomError.Mes("需设定充值天数")
+	} else if params.Limit.Day == 0 && params.Limit.Amount > 0 {
+		return errors.SetRoomError.Mes("需设定充值天数")
 	}
 	return nil
 }
