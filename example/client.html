@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>聊天室測試版</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style type="text/css">
+        .chat {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .chat li {
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px dotted #B3A9A9;
+        }
+
+        .chat li.left .chat-body {
+            margin-left: 60px;
+        }
+
+        .chat li.right .chat-body {
+            margin-right: 60px;
+        }
+
+
+        .chat li .chat-body p {
+            margin: 0;
+            color: #777777;
+        }
+
+        .panel .slidedown .glyphicon, .chat .glyphicon {
+            margin-right: 5px;
+        }
+
+        .panel-body {
+            overflow-y: scroll;
+            height: 500px;
+        }
+
+        ::-webkit-scrollbar-track {
+            -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+            background-color: #F5F5F5;
+        }
+
+        ::-webkit-scrollbar {
+            width: 12px;
+            background-color: #F5F5F5;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+            background-color: #555;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                        aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">聊天室測試版</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-7">
+            <h2>聊天室狀態: <span id="status"></span></h2>
+            <h2>線上人數: <span id="count"></span></h2>
+            <div class="panel panel-primary">
+                <div class="panel-collapse" id="collapseOne">
+                    <div class="panel-body">
+                        <ul class="chat" id="chat">
+
+                        </ul>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="input-group">
+                            <input id="btn-input" type="text" class="form-control input-sm"
+                                   placeholder="Type your message here..."/>
+                            <span class="input-group-btn">
+                            <button class="btn btn-warning btn-sm" id="btn-chat" onclick="send()">
+                                Send</button>
+                        </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="uid" name="uid" value="">
+    <input type="hidden" id="key" name="key" value="">
+</div>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script>
+    const rawHeaderLen = 10;
+    const packetOffset = 0;
+    const headerOffset = 4;
+    const opOffset = 6;
+
+    var Client = function (options) {
+        var MAX_CONNECT_TIMES = 10;
+        var DELAY = 15000;
+        this.options = options || {};
+        this.createConnect(MAX_CONNECT_TIMES, DELAY);
+    }
+
+    var appendMsg = function (text) {
+        obj = JSON.parse(text);
+        document.getElementById("chat").innerHTML += "<li class=\"left clearfix\"><span class=\"chat-img pull-left\">\n" +
+            "                            <img src=\"http://placehold.it/50/55C1E7/fff&text=U\" alt=\"User Avatar\" class=\"img-circle\"/>\n" +
+            "                        </span>\n" +
+            "                                <div class=\"chat-body clearfix\">\n" +
+            "                                    <div class=\"header\">\n" + "                                    <small class=\" text-muted\"><span class=\"\"></span></small>\n" +
+            "                                        <strong class=\"primary-font\">" + obj.name + "</strong>\n" +
+            "                                    </div>\n" +
+            "                                    <p>\n" +
+            obj.message +
+            "                                    </p>\n" +
+            "                                </div>\n" +
+            "                            </li>";
+    }
+
+    Client.prototype.createConnect = function (max, delay) {
+        var self = this;
+        if (max === 0) {
+            return;
+        }
+        connect();
+
+        var textDecoder = new TextDecoder();
+        var textEncoder = new TextEncoder();
+        var heartbeatInterval;
+
+        function connect() {
+            var ws = new WebSocket('ws://192.168.0.138' + ':3102/sub');
+            // var ws = new WebSocket('ws://127.0.0.1' + ':3102/sub');
+            ws.binaryType = 'arraybuffer';
+            ws.onopen = function () {
+                auth();
+            }
+
+            ws.onmessage = function (evt) {
+                var data = evt.data;
+                var dataView = new DataView(data, 0);
+                var packetLen = dataView.getInt32(packetOffset);
+                var headerLen = dataView.getInt16(headerOffset);
+                var op = dataView.getInt32(opOffset);
+                console.log("receiveHeader: packetLen=" + packetLen, "headerLen=" + headerLen, "op=" + op);
+
+                switch (op) {
+                    case 2:
+                        var json = textDecoder.decode(data.slice(headerLen, packetLen));
+                        var msgBody = JSON.parse(json)
+
+                        document.getElementById("uid").value = msgBody.uid
+                        document.getElementById("key").value = msgBody.key
+
+                        document.getElementById("status").innerHTML = "<color style='color:green'>ok<color>";
+                        console.log("receive: auth reply");
+                        console.log(msgBody);
+
+                        heartbeat();
+                        heartbeatInterval = setInterval(heartbeat, 30 * 1000);
+                        break;
+                    case 4:
+
+                        document.getElementById("count").innerHTML = "<color style='color:green'>"+ dataView.getInt32(headerLen) +"<color>"
+                        console.log("receive: heartbeat");
+                        break;
+                    case 5:
+
+                        for (var offset = rawHeaderLen; offset < data.byteLength; offset += packetLen) {
+                            var packetLen = dataView.getInt32(offset);
+                            var headerLen = dataView.getInt16(offset + headerOffset);
+                            var op = dataView.getInt32(offset + opOffset);
+
+                            if (op == 6) {
+                                var msgBody = textDecoder.decode(data.slice(offset + headerLen, offset + packetLen));
+
+                                messageReceived(msgBody);
+                                appendMsg(msgBody);
+                            }
+                        }
+                        break;
+                    default:
+                        var msgBody = textDecoder.decode(data.slice(headerLen, packetLen));
+                        messageReceived(msgBody);
+                        appendMsg(msgBody);
+                        break
+                }
+            }
+
+            ws.onclose = function () {
+                if (heartbeatInterval) clearInterval(heartbeatInterval);
+                setTimeout(reConnect, delay);
+
+                document.getElementById("status").innerHTML = "<color style='color:red'>failed<color>";
+            }
+
+            function heartbeat() {
+                var headerBuf = new ArrayBuffer(rawHeaderLen);
+                var headerView = new DataView(headerBuf, 0);
+                headerView.setInt32(packetOffset, rawHeaderLen);
+                headerView.setInt16(headerOffset, rawHeaderLen);
+                headerView.setInt32(opOffset, 3);
+                ws.send(headerBuf);
+                console.log("send: heartbeat");
+            }
+
+            function auth() {
+                var token = '{"uid":"7f547901b02041ab8d7d3381d0703137", "token":"ec2fa7acc9d443489531b156077c09a1", "room_id":"a1b4bbec3f624ecf84858632a730c688"}'
+                var headerBuf = new ArrayBuffer(rawHeaderLen);
+                var headerView = new DataView(headerBuf, 0);
+                var bodyBuf = textEncoder.encode(token);
+                headerView.setInt32(packetOffset, rawHeaderLen + bodyBuf.byteLength);
+                headerView.setInt16(headerOffset, rawHeaderLen);
+                headerView.setInt32(opOffset, 1);
+                console.log(token)
+                ws.send(mergeArrayBuffer(headerBuf, bodyBuf));
+            }
+
+            function messageReceived(body) {
+                var notify = self.options.notify;
+                if (notify) notify(body);
+                console.log("messageReceived:", "body=" + body);
+            }
+
+            function mergeArrayBuffer(ab1, ab2) {
+                var u81 = new Uint8Array(ab1),
+                    u82 = new Uint8Array(ab2),
+                    res = new Uint8Array(ab1.byteLength + ab2.byteLength);
+                res.set(u81, 0);
+                res.set(u82, ab1.byteLength);
+                return res.buffer;
+            }
+        }
+
+        function reConnect() {
+            self.createConnect(--max, delay * 2);
+        }
+    }
+
+    var client = new Client({
+        notify: function (data) {
+            console.log(data);
+        }
+    });
+
+    function send() {
+        $.ajax({
+            type: "post",
+            url: 'http://192.168.0.138:3111' + '/push/room',
+            // url: 'http://127.0.0.1:3111' + '/push/room',
+            async: false,
+            data: JSON.stringify({
+                uid: document.getElementById("uid").value,
+                key: document.getElementById("key").value,
+                message: document.getElementById("btn-input").value
+            }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+            },
+            error: function (data) {
+                alert(data.message)
+            }
+        });
+    }
+</script>
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</body>
+</html>

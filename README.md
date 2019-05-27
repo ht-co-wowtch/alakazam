@@ -30,7 +30,7 @@
 
 [Kafka](https://kafka.apache.org/quickstart)
 
-    cd kafka
+    cd cmd/kafka
     docker-compose up -d
     
 ## Architecture
@@ -65,21 +65,21 @@
 16. 如何產生一個跟websocket溝通的Protocol [答案](#buffer)
 
 後台：
-1. 如何以管理員身份廣播多個聊天室
+1. 如何以管理員身份廣播多個聊天室 [請看後台訊息推送API範例](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#c14d247c-4210-446e-aa0d-97989e4fd03c)
 2. 如何以系統公告身份廣播多個聊天室
 3. 如何得到線上所有聊天室清單與在線人數
 4. 如何得到某聊天室歷史紀錄
-5. 如何禁言某會員
-6. 如何封鎖某會員
-7. 如何解禁言某會員
-8. 如何解封鎖某會員
+5. 如何禁言某會員 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#1f05bf12-bceb-431c-b50a-cda72b61804e)
+6. 如何封鎖某會員 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#c84c8a03-1e15-412d-889d-642c537d0d45)
+7. 如何解禁言某會員 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#b39e8934-9ca3-4dae-8d23-d1931e1bf5ee)
+8. 如何解封鎖某會員 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#db157cff-a26b-4d07-a109-ff7d676f9ecb)
 9. 如何在聊天室發紅包
 10. 如何在聊天室發跟注
 11. 如何將訊息置頂
 12. 如何得到禁言名單
 13. 如何得到封鎖名單
 14. 如何得到某聊天室名單
-15. 如何設定聊天設定(比如`充值`&`打碼量`多少才能聊天)
+15. 如何設定一個房間權限(比如`充值`&`打碼量`多少才能聊天) [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#6bdffede-2646-4663-8c13-54cb161a2125)
 
 ## Protocol Body格式
 
@@ -106,14 +106,14 @@ Body |不固定|傳送的資料16bytes之後就是Body|json格式
 
 value | 說明 |
 -----|-----|
-1|要求連線到某一個房間
-2|連線到某一個房間結果回覆
-3|發送心跳
-4|回覆心跳結果
-5|聊天室批次訊息
-6|聊天室訊息
-7|更換房間
-8|回覆更換房間結果
+1|[要求連線到某一個房間](#room) 
+2|[連線到某一個房間結果回覆](#room)
+3|[發送心跳](#heartbeat)
+4|[回覆心跳結果](#heartbeat)
+5|[聊天室批次訊息](#message)
+6|[聊天室訊息](#message-raw)
+7|[更換房間](#change-room)
+8|[回覆更換房間結果](#change-room)
 
 ### Body
 聊天室的訊息內容
@@ -236,6 +236,7 @@ ws.onmessage = function (evt) {
 
 ### Response
 
+#### Room 
 Operation = `2`=> 連線到某一個房間結果回覆Body
 
 ```
@@ -270,15 +271,41 @@ permission.get_follow|是否可以跟注
 }
 ```
 
+#### heartbeat 
 Operation = `4`=> 回覆心跳結果
 ```
-body是空的，有收到Operation = 4 就是成功
+body是內容是該房間在線人數，是一個int32
+```
+![arch](./doc/heartbeatReply.png)
+
+#### Message Raw
+Operation = `6`=> 單筆訊息
+
+![arch](./doc/message_raw.png)
+
+```
+{
+    "uid":"7f547901b02041ab8d7d3381d0703137",
+    "name": "sam78",
+    "avatar": "",
+    "message": "測試",
+    "time": "17:00:51"
+}
 ```
 
+name|說明|格式
+----|-----|-----|
+uid|訊息人uid|string
+name|訊息人名稱|string
+avatar|頭像path info| string
+message|訊息|string
+time|發送時間|string
+
+#### Change Room 
 Operation = `8`=> 回覆更換房間結果
 
 ```
-body是新房間id，有收到Operation = 8 就是成功
+body是新房間id
 ```
 
 ## Web Socket
@@ -289,12 +316,14 @@ body是新房間id，有收到Operation = 8 就是成功
 
 ```
   {
+      "uid":"82ea16cd2d6a49d887440066ef739669",
       "token": "gM18QgsqI0zFFmdLyvHQxKa0N95BRZSh",
-      "room_id": 123
+      "room_id": "a7d20d4133c14a62b617ee38e793cf55"
   }
 ```
 name|說明|
 ----|-----|
+uid|user uid
 token|認證中心發行的token，在paras的jwt claims內
 room_id|想要進入的房間id，透過paras取得
 
@@ -314,6 +343,11 @@ headerView.setInt16(headerOffset, rawHeaderLen);
 headerView.setInt32(opOffset, 3);
 ```
 ![arch](./doc/heartbeat.png)
+
+結果|說明|
+----|-----|
+成功|[Response](#response)
+失敗|失敗就會close連線
 
 ### Change Room
 
@@ -417,3 +451,5 @@ v0.5.0|移除room type推送限制
 v0.6.0|refactor log or name
 v0.7.0|移除單人訊息推送 
 v0.7.1|訊息推送內容改json格式且包含user name, avatar,time，推送認證改用uid & key當pk
+v0.7.2|封鎖 and 禁言 api
+v0.7.3|前台房間限制,房間設定api, user三方接口認證
