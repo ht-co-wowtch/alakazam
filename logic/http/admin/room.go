@@ -58,8 +58,8 @@ func bindRoom(c *gin.Context, params *store.Room) error {
 		if params.Limit.Dml+params.Limit.Amount <= 0 {
 			return errors.SetRoomError.Mes("储值或打码量不可都小于等于0")
 		}
-		if params.Limit.Day > 30 {
-			return errors.SetRoomError.Mes("储值跟打码量聊天限制天数不能大于30")
+		if params.Limit.Day > 31 {
+			return errors.SetRoomError.Mes("储值跟打码量聊天限制天数不能大于31")
 		}
 	} else if params.Limit.Day == 0 && params.Limit.Dml+params.Limit.Amount > 0 {
 		return errors.SetRoomError.Mes("储值跟打码量都需是0")

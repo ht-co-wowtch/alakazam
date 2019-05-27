@@ -93,7 +93,7 @@ func TestSetRoomDayByDayEmpty(t *testing.T) {
 func TestSetRoomDayByDayLimit(t *testing.T) {
 	r := request.CreateRoom(store.Room{
 		Limit: store.Limit{
-			Day:    31,
+			Day:    32,
 			Amount: 1000,
 		},
 	})
@@ -101,7 +101,7 @@ func TestSetRoomDayByDayLimit(t *testing.T) {
 	e := request.ToError(t, r.Body)
 
 	assert.Equal(t, errors.SetRoomError.Code, e.Code)
-	assert.Equal(t, "储值跟打码量聊天限制天数不能大于30", e.Message)
+	assert.Equal(t, "储值跟打码量聊天限制天数不能大于31", e.Message)
 }
 
 func TestSetRoomDayByDayNegative(t *testing.T) {
