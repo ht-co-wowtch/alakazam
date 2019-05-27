@@ -9,6 +9,7 @@ import (
 )
 
 type Message struct {
+	Uid     string `json:"uid"`
 	Name    string `json:"name"`
 	Avatar  string `json:"avatar"`
 	Message string `json:"message"`
@@ -56,6 +57,7 @@ func (l *Logic) PushRoom(p *PushRoomForm) error {
 	}
 
 	msg, err := json.Marshal(Message{
+		Uid:     p.Uid,
 		Name:    name,
 		Avatar:  "",
 		Message: p.Message,

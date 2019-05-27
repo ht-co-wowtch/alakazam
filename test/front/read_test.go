@@ -3,9 +3,9 @@ package front
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/request"
 	"testing"
@@ -38,12 +38,14 @@ func TestReadRoomMessagePayload(t *testing.T) {
 	pushTest(t, "3001", "3001", func(a request.Auth) request.Response {
 		return request.PushRoom(a.Uid, a.Key, "測試")
 	}, func(r resp) {
+
 		l := new(logic.Message)
 		json.Unmarshal(r.p[0].Body, l)
 		tz, _ := time.Parse("15:04:05", l.Time)
 		assert.Equal(t, "test", l.Name)
 		assert.Equal(t, "", l.Avatar)
 		assert.Equal(t, "測試", l.Message)
+		assert.Equal(t, r.a.Uid, l.Uid)
 		assert.False(t, tz.IsZero())
 	})
 }
