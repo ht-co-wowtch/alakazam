@@ -106,14 +106,14 @@ Body |不固定|傳送的資料16bytes之後就是Body|json格式
 
 value | 說明 |
 -----|-----|
-1|要求連線到某一個房間
-2|連線到某一個房間結果回覆
-3|發送心跳
-4|回覆心跳結果
-5|聊天室批次訊息
-6|聊天室訊息
-7|更換房間
-8|回覆更換房間結果
+1|[要求連線到某一個房間](#room) 
+2|[連線到某一個房間結果回覆](#room)
+3|[發送心跳](#heartbeat)
+4|[回覆心跳結果](#heartbeat)
+5|[聊天室批次訊息](#message)
+6|[聊天室訊息](#message-raw)
+7|[更換房間](#change-room)
+8|[回覆更換房間結果](#change-room)
 
 ### Body
 聊天室的訊息內容
@@ -236,7 +236,8 @@ ws.onmessage = function (evt) {
 
 ### Response
 
-#### Room Operation = `2`=> 連線到某一個房間結果回覆Body
+#### Room 
+Operation = `2`=> 連線到某一個房間結果回覆Body
 
 ```
 {
@@ -270,13 +271,38 @@ permission.get_follow|是否可以跟注
 }
 ```
 
-#### heartbeat Operation = `4`=> 回覆心跳結果
+#### heartbeat 
+Operation = `4`=> 回覆心跳結果
 ```
 body是內容是該房間在線人數，是一個int32
 ```
 ![arch](./doc/heartbeatReply.png)
 
-#### Change Room Operation = `8`=> 回覆更換房間結果
+#### Message Raw
+Operation = `6`=> 單筆訊息
+
+![arch](./doc/message_raw.png)
+
+```
+{
+    "uid":"7f547901b02041ab8d7d3381d0703137",
+    "name": "sam78",
+    "avatar": "",
+    "message": "測試",
+    "time": "17:00:51"
+}
+```
+
+name|說明|格式
+----|-----|-----|
+uid|訊息人uid|string
+name|訊息人名稱|string
+avatar|頭像path info| string
+message|訊息|string
+time|發送時間|string
+
+#### Change Room 
+Operation = `8`=> 回覆更換房間結果
 
 ```
 body是新房間id
