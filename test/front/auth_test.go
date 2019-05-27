@@ -1,4 +1,4 @@
-package test
+package front
 
 import (
 	"encoding/json"
@@ -18,7 +18,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	r := run.Run("./config")
+	r := run.Run("../config")
 	i := m.Run()
 	r()
 	os.Exit(i)
