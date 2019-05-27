@@ -16,7 +16,7 @@ var (
 	LoginError                     = eNew(http.StatusUnauthorized, 10024012, "请先登入会员")
 	BannedError                    = eNew(http.StatusUnauthorized, 10024013, "您在禁言状态，无法发言")
 	RoomBannedError                = eNew(http.StatusUnauthorized, 10024014, "聊天室目前禁言状态，无法发言")
-	MoneyError                     = eNew(http.StatusUnauthorized, 10024015, "您无法发言，当前发言条件：前%s天充值不少于%d元；打码量不少于%d元")
+	MoneyError                     = eNew(http.StatusUnauthorized, 10024015, "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元")
 	DataError                      = eNew(http.StatusUnprocessableEntity, 10024220, "资料验证错误")
 	SetRoomError                   = eNew(http.StatusUnprocessableEntity, 10024221, "")
 	TypeError                      = eNew(http.StatusInternalServerError, 10025000, "应用程序错误")

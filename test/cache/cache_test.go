@@ -26,5 +26,6 @@ func TestMain(m *testing.M) {
 		os.Exit(-1)
 	}
 	d = cache.NewRedis(conf.Conf.Redis)
-	os.Exit(m.Run())
+	code := m.Run()
+	os.Exit(code)
 }

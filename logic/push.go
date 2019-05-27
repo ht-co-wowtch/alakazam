@@ -32,9 +32,11 @@ func (l *Logic) PushRoom(p *PushRoomForm) error {
 	if err != nil {
 		return errors.FailureError
 	}
+
 	if name == "" {
 		return errors.LoginError
 	}
+
 	if rId == "" {
 		return errors.RoomError
 	}
@@ -44,10 +46,12 @@ func (l *Logic) PushRoom(p *PushRoomForm) error {
 	if permission.IsBanned(roomStatus) {
 		return errors.RoomBannedError
 	}
+
 	if l.isUserBanned(p.Uid, w) {
 		return errors.BannedError
 	}
-	if err := l.isMessage(p.Uid, roomStatus); err != nil {
+
+	if err := l.isMessage(p.Uid, rId, roomStatus); err != nil {
 		return err
 	}
 
@@ -57,10 +61,12 @@ func (l *Logic) PushRoom(p *PushRoomForm) error {
 		Message: p.Message,
 		Time:    time.Now().Format("15:04:05"),
 	})
+
 	if err != nil {
 		log.Errorf("pushRoom json.Marshal(uid: %s ) error(%v)", p.Uid, err)
 		return errors.FailureError
 	}
+
 	if err := l.stream.BroadcastRoomMsg(rId, msg); err != nil {
 		return errors.FailureError
 	}

@@ -11,7 +11,7 @@ import (
 )
 
 var room struct {
-	RoomId string `json:"room_id"`
+	Id string `json:"room_id"`
 }
 
 func TestRoomIsBanned(t *testing.T) {
@@ -21,7 +21,7 @@ func TestRoomIsBanned(t *testing.T) {
 
 	json.Unmarshal(r.Body, &room)
 
-	a, _ := request.DialAuth(room.RoomId)
+	a, _ := request.DialAuth(room.Id)
 
 	r = request.PushRoom(a.Uid, a.Key, "測試")
 	e := request.ToError(t, r.Body)
@@ -37,10 +37,10 @@ func TestRoomRemoveBanned(t *testing.T) {
 
 	json.Unmarshal(r.Body, &room)
 
-	a, _ := request.DialAuth(room.RoomId)
+	a, _ := request.DialAuth(room.Id)
 	request.PushRoom(a.Uid, a.Key, "測試")
 
-	request.UpdateRoom(room.RoomId, store.Room{
+	request.UpdateRoom(room.Id, store.Room{
 		IsMessage: true,
 	})
 	r = request.PushRoom(a.Uid, a.Key, "測試")
@@ -55,10 +55,10 @@ func TestRoomSetBanned(t *testing.T) {
 
 	json.Unmarshal(r.Body, &room)
 
-	a, _ := request.DialAuth(room.RoomId)
+	a, _ := request.DialAuth(room.Id)
 	request.PushRoom(a.Uid, a.Key, "測試")
 
-	request.UpdateRoom(room.RoomId, store.Room{
+	request.UpdateRoom(room.Id, store.Room{
 		IsMessage: false,
 	})
 	r = request.PushRoom(a.Uid, a.Key, "測試")

@@ -118,7 +118,10 @@ func authApi(request *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
+	return ToResponse(b)
+}
 
+func ToResponse(b []byte) (*http.Response, error) {
 	header := http.Header{}
 	header.Set("Content-Type", "application/json")
 

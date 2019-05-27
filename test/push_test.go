@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/client"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/request"
+	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/run"
 	"net/http"
 	"testing"
 	"time"
@@ -41,12 +44,52 @@ func TestPushRoomRemoveBanned(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, r.StatusCode)
 }
 
+func TestIsMoney(t *testing.T) {
+	r := request.CreateRoom(store.Room{
+		IsMessage: true,
+		Limit: store.Limit{
+			Day:    1,
+			Dml:    100,
+			Amount: 1000,
+		},
+	})
+
+	assert.Equal(t, http.StatusOK, r.StatusCode)
+
+	json.Unmarshal(r.Body, &room)
+
+	a, err := request.DialAuthUser("009422e667c146379b3aa69f336ad4e5", room.Id)
+	assert.Nil(t, err)
+
+	giveUserMoneyMockApi(0, 0)
+
+	r = request.PushRoom(a.Uid, a.Key, "測試")
+
+	e := new(errors.Error)
+	json.Unmarshal(r.Body, e)
+
+	assert.Equal(t, errors.MoneyError.Status, r.StatusCode)
+	assert.Equal(t, errors.MoneyError.Code, e.Code)
+	assert.Equal(t, errors.MoneyError.Format(1, 1000, 100).Message, e.Message)
+}
+
+func giveUserMoneyMockApi(dml, amount int) {
+	run.AddClient("/user/money", func(res *http.Request) (response *http.Response, e error) {
+		m := client.Money{
+			Dml:    dml,
+			Amount: amount,
+		}
+		b, err := json.Marshal(m)
+		if err != nil {
+			return nil, err
+		}
+		return request.ToResponse(b)
+	})
+}
+
 func givenBanned(t *testing.T, roomId string) request.Auth {
 	a, err := request.DialAuth(roomId)
-	if err != nil {
-		assert.Fail(t, err.Error())
-		return a
-	}
+	assert.Nil(t, err)
 
 	request.SetBanned(a.Uid, "測試", 3)
 	r := request.PushRoom(a.Uid, a.Key, "測試")

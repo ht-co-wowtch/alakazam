@@ -34,19 +34,19 @@ func TestSetRoom(t *testing.T) {
 
 	mockSetRoom(roomId)
 
-	err := d.SetRoom(roomId, 1)
+	err := d.SetRoom(roomId, 1, 1, 1000, 100)
 
 	assert.Nil(t, err)
 }
 
 func mockSetRoom(roomId string) {
-	mock.Command("SET", keyRoom(roomId), 1).
+	mock.Command("HMSET", keyRoom(roomId), hashPermissionKey, 1, hashLimitDayKey, 1, hashLimitDmlKey, 1000, hashLimitAmountKey, 100).
 		Expect("")
 	mock.Command("EXPIRE", keyRoom(roomId), 60*60).
 		Expect("")
 }
 
 func mockGetRoom(roomId string, expect interface{}) *redigomock.Cmd {
-	return mock.Command("GET", keyRoom(roomId)).
+	return mock.Command("HGET", keyRoom(roomId), hashPermissionKey).
 		Expect(expect)
 }

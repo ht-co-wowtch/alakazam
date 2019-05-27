@@ -28,7 +28,7 @@ func (l *Logic) UpdateRoom(id string, r store.Room) bool {
 		log.Errorf("l.db.CreateRoom(room: %v) error(%v)", r, err)
 		return false
 	}
-	if err := l.cache.SetRoom(id, permission.ToRoomInt(r)); err != nil {
+	if err := l.cache.SetRoom(id, permission.ToRoomInt(r), r.Limit.Day, r.Limit.Dml, r.Limit.Amount); err != nil {
 		log.Errorf("Logic UpdateRoom cache SetRoom(id:%s) error(%v)", id, err)
 		return false
 	}
@@ -53,27 +53,47 @@ func (l *Logic) GetRoomPermission(rId string) int {
 		log.Errorf("Logic isBanned cache GetRoom(id:%s) error(%v) ", rId, err)
 	}
 	if i == 0 {
+		var day, dml, amount int
 		room, err := l.db.GetRoom(rId)
 
 		if err == nil {
 			i = permission.ToRoomInt(room)
+			day = room.Limit.Day
+			dml = room.Limit.Dml
+			amount = room.Limit.Amount
 		} else {
 			i = permission.RoomDefaultPermission
-
 			if err != sql.ErrNoRows {
 				log.Errorf("Logic isBanned db GetRoom(id:%s) error(%v) ", rId, err)
 			}
 		}
-		if err := l.cache.SetRoom(rId, i); err != nil {
+
+		if err := l.cache.SetRoom(rId, i, day, dml, amount); err != nil {
 			log.Errorf("Logic isBanned cache SetRoom(id:%s) error(%v) ", rId, err)
 		}
 	}
 	return i
 }
 
-func (l *Logic) isMessage(s string, status int) error {
+func (l *Logic) isMessage(uid, rid string, status int) error {
 	if !permission.IsMoney(status) {
 		return nil
 	}
-	return errors.MoneyError.Format("兩", 1000, 100)
+
+	day, dml, amount, err := l.cache.GetRoomByMoney(rid)
+	if err != nil {
+		log.Errorf("Logic isMessage cache GetRoomByMoney(id:%s) error(%v)", rid, err)
+		return errors.FailureError
+	}
+
+	money, err := l.client.GetMoney(uid, day)
+	if err != nil {
+		log.Errorf("Logic isMessage client GetMoney(id:%s day:%d) error(%v)", uid, day, err)
+		return errors.FailureError
+	}
+
+	if dml > money.Dml || amount > money.Amount {
+		return errors.MoneyError.Format(day, amount, dml)
+	}
+	return nil
 }

@@ -21,6 +21,7 @@ func RunLogic(path string) func() {
 	if err := conf.Read(path + "/logic.yml"); err != nil {
 		panic(err)
 	}
+
 	txdb.Register("mockMysql", conf.Conf.DB.Driver, store.DatabaseDns(conf.Conf.DB))
 	conf.Conf.DB.Driver = "mockMysql"
 
