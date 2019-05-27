@@ -1,16 +1,22 @@
 package request
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	user "gitlab.com/jetfueltw/cpw/alakazam/logic/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/protocol"
+	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/run"
 	"golang.org/x/net/websocket"
+	"io/ioutil"
 	"math/rand"
+	"net/http"
+	"strings"
 	"time"
 )
 
@@ -63,6 +69,8 @@ func DialAuthToken(uid, roomId, token string) (auth Auth, err error) {
 		conn *websocket.Conn
 	)
 
+	run.AddClient("/tripartite/user/"+uid+"/token/"+token, authApi)
+
 	conn, err = Dial()
 	if err != nil {
 		return
@@ -97,4 +105,26 @@ func DialAuthToken(uid, roomId, token string) (auth Auth, err error) {
 	auth.Key = reply.Key
 	auth.Reply = reply
 	return
+}
+
+func authApi(request *http.Request) (*http.Response, error) {
+	path := strings.Split(request.URL.Path, "/")
+	u := user.User{
+		Uid:  path[3],
+		Name: "test",
+	}
+
+	b, err := json.Marshal(u)
+	if err != nil {
+		return nil, err
+	}
+
+	header := http.Header{}
+	header.Set("Content-Type", "application/json")
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Body:       ioutil.NopCloser(bytes.NewReader(b)),
+		Header:     header,
+	}, nil
 }

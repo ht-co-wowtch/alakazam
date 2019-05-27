@@ -1,13 +1,10 @@
 package run
 
 import (
-	"bytes"
-	"encoding/json"
 	"github.com/DATA-DOG/go-txdb"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/client"
-	user "gitlab.com/jetfueltw/cpw/alakazam/logic/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/grpc"
 	httpServer "gitlab.com/jetfueltw/cpw/alakazam/logic/http"
@@ -15,10 +12,10 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/front"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/stream"
-	"io/ioutil"
 	"net/http"
-	"strings"
 )
+
+var Api = make(map[string]TransportFunc)
 
 func RunLogic(path string) func() {
 	if err := conf.Read(path + "/logic.yml"); err != nil {
@@ -28,25 +25,8 @@ func RunLogic(path string) func() {
 	conf.Conf.DB.Driver = "mockMysql"
 
 	httpClient := client.Create(conf.Conf.Api, newMockClient(func(request *http.Request) (response *http.Response, e error) {
-		path := strings.Split(request.URL.Path,"/")
-		u := user.User{
-			Uid:  path[3],
-			Name: "test",
-		}
-
-		b, err := json.Marshal(u)
-		if err != nil {
-			return nil, err
-		}
-
-		header := http.Header{}
-		header.Set("Content-Type", "application/json")
-
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewReader(b)),
-			Header:     header,
-		}, nil
+		f := Api[request.URL.Path]
+		return f(request)
 	}))
 
 	c := cache.NewRedis(conf.Conf.Redis)
@@ -63,14 +43,18 @@ func RunLogic(path string) func() {
 	}
 }
 
-type transportFunc func(*http.Request) (*http.Response, error)
+func AddClient(path string, fun TransportFunc) {
+	Api[path] = fun
+}
 
-func (tf transportFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+type TransportFunc func(*http.Request) (*http.Response, error)
+
+func (tf TransportFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return tf(req)
 }
 
 func newMockClient(doer func(*http.Request) (*http.Response, error)) *http.Client {
 	return &http.Client{
-		Transport: transportFunc(doer),
+		Transport: TransportFunc(doer),
 	}
 }
