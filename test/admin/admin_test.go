@@ -18,6 +18,8 @@ func TestMain(m *testing.M) {
 	if err := conf.Read("../config/logic.yml"); err != nil {
 		panic(err)
 	}
+	conf.Conf.HTTPServer.Addr = ":31111"
+	conf.Conf.HTTPAdminServer.Addr = ":31122"
 	d = cache.NewRedis(conf.Conf.Redis)
 	if err := d.Ping(); err != nil {
 		os.Exit(-1)
