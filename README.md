@@ -236,7 +236,7 @@ ws.onmessage = function (evt) {
 
 ### Response
 
-Operation = `2`=> 連線到某一個房間結果回覆Body
+#### Room Operation = `2`=> 連線到某一個房間結果回覆Body
 
 ```
 {
@@ -270,13 +270,13 @@ permission.get_follow|是否可以跟注
 }
 ```
 
-Operation = `4`=> 回覆心跳結果
+#### heartbeat Operation = `4`=> 回覆心跳結果
 ```
 body是內容是該房間在線人數，是一個int32
 ```
 ![arch](./doc/heartbeatReply.png)
 
-Operation = `8`=> 回覆更換房間結果
+#### Change Room Operation = `8`=> 回覆更換房間結果
 
 ```
 body是新房間id
