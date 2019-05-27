@@ -63,6 +63,18 @@ func TestUpdateRoom(t *testing.T) {
 	assert.Equal(t, &store.Room{}, room)
 }
 
+func TestSetRoomDay(t *testing.T) {
+	r := request.CreateRoom(store.Room{
+		Limit: store.Limit{
+			Day:    1,
+			Dml:    100,
+			Amount: 100,
+		},
+	})
+
+	assert.Equal(t, http.StatusOK, r.StatusCode)
+}
+
 func TestSetRoomDayByDayNotEmpty(t *testing.T) {
 	r := request.CreateRoom(store.Room{
 		Limit: store.Limit{
@@ -74,7 +86,7 @@ func TestSetRoomDayByDayNotEmpty(t *testing.T) {
 
 	assert.Equal(t, http.StatusUnprocessableEntity, r.StatusCode)
 	assert.Equal(t, errors.SetRoomError.Code, e.Code)
-	assert.Equal(t, "储值或打码量不可都小于等于0", e.Message)
+	assert.Equal(t, "打码量不可小于等于0", e.Message)
 }
 
 func TestSetRoomDayByDayEmpty(t *testing.T) {
@@ -87,21 +99,20 @@ func TestSetRoomDayByDayEmpty(t *testing.T) {
 	e := request.ToError(t, r.Body)
 
 	assert.Equal(t, errors.SetRoomError.Code, e.Code)
-	assert.Equal(t, "储值跟打码量都需是0", e.Message)
+	assert.Equal(t, "需设定充值天数", e.Message)
 }
 
 func TestSetRoomDayByDayLimit(t *testing.T) {
 	r := request.CreateRoom(store.Room{
 		Limit: store.Limit{
-			Day:    32,
-			Amount: 1000,
+			Day: 32,
 		},
 	})
 
 	e := request.ToError(t, r.Body)
 
 	assert.Equal(t, errors.SetRoomError.Code, e.Code)
-	assert.Equal(t, "储值跟打码量聊天限制天数不能大于31", e.Message)
+	assert.Equal(t, "限制充值聊天天数不能大于31", e.Message)
 }
 
 func TestSetRoomDayByDayNegative(t *testing.T) {
@@ -115,4 +126,25 @@ func TestSetRoomDayByDayNegative(t *testing.T) {
 
 	assert.Equal(t, errors.FailureError.Code, e.Code)
 	assert.Equal(t, errors.FailureError.Message, e.Message)
+}
+
+func TestSetRoomDayByAmount(t *testing.T) {
+	r := request.CreateRoom(store.Room{
+		Limit: store.Limit{
+			Amount: 1000,
+		},
+	})
+
+	assert.Equal(t, http.StatusOK, r.StatusCode)
+}
+
+func TestSetRoomDayNotAmount(t *testing.T) {
+	r := request.CreateRoom(store.Room{
+		Limit: store.Limit{
+			Day: 1,
+			Dml: 100,
+		},
+	})
+
+	assert.Equal(t, http.StatusOK, r.StatusCode)
 }
