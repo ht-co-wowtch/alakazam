@@ -27,6 +27,7 @@ type AuthToken struct {
 }
 
 type ConnectReply struct {
+	RoomId     string                `json:"room_id"`
 	Uid        string                `json:"Uid"`
 	Key        string                `json:"Key"`
 	Permission permission.Permission `json:"permission"`

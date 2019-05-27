@@ -26,12 +26,13 @@ func TestMain(m *testing.M) {
 
 // 進入房間成功
 func TestAuth(t *testing.T) {
-	a, err := request.DialAuth("1000")
+	roomId := "1000"
+	a, err := request.DialAuth(roomId)
 	if err != nil {
 		assert.Error(t, err)
 		return
 	}
-	shouldBeAuthReply(t, a)
+	shouldBeAuthReply(t, a, roomId)
 }
 
 // 進入房間失敗
@@ -153,8 +154,11 @@ func givenHeartbeat() *grpc.Proto {
 	return hbProto
 }
 
-func shouldBeAuthReply(t *testing.T, a request.Auth) {
+func shouldBeAuthReply(t *testing.T, a request.Auth, roomId string) {
 	assert.Equal(t, pd.OpAuthReply, a.Proto.Op)
+	assert.NotEmpty(t, a.Reply.Uid)
+	assert.NotEmpty(t, a.Reply.Key)
+	assert.Equal(t, roomId, a.Reply.RoomId)
 	assert.True(t, a.Reply.Permission.Message)
 	assert.True(t, a.Reply.Permission.SendBonus)
 	assert.True(t, a.Reply.Permission.GetBonus)
