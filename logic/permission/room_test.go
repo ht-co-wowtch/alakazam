@@ -17,7 +17,7 @@ func TestRoomInt(t *testing.T) {
 		},
 	})
 
-	expected := RoomDefaultPermission - sendBonus - getBonus + dml + recharge
+	expected := RoomDefaultPermission - sendBonus - getBonus + money
 
 	assert.Equal(t, expected, actual)
 }

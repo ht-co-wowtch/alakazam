@@ -22,17 +22,14 @@ const (
 	// 跟注
 	getFollow = 32
 
-	// 充值
-	recharge = 64
-
-	// 打碼量
-	dml = 128
+	// 充值&打碼量
+	money = 64
 
 	// 訊息頂置
 	messageTop = 256
 
 	// 一般權限
-	PlayDefaultPermission = look + Message + sendBonus + getBonus + sendFollow + getFollow + recharge + dml
+	PlayDefaultPermission = look + Message + sendBonus + getBonus + sendFollow + getFollow
 
 	// 試玩權限
 	GuestDefaultPermission = look
@@ -72,6 +69,11 @@ func IsSendFollow(weight int) bool {
 // 是否可以跟注
 func IsGetFollow(weight int) bool {
 	return (getFollow & weight) == getFollow
+}
+
+// 是否有充值&打碼量限制
+func IsMoney(weight int) bool {
+	return (money & weight) == money
 }
 
 // 用戶權限

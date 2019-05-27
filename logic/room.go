@@ -6,6 +6,7 @@ import (
 	log "github.com/golang/glog"
 	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 )
@@ -68,4 +69,11 @@ func (l *Logic) GetRoomPermission(rId string) int {
 		}
 	}
 	return i
+}
+
+func (l *Logic) isMessage(s string, status int) error {
+	if !permission.IsMoney(status) {
+		return nil
+	}
+	return errors.MoneyError.Format("兩", 1000, 100)
 }

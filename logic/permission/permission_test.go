@@ -54,6 +54,14 @@ func TestNotGetFollow(t *testing.T) {
 	assert.False(t, IsGetFollow(3))
 }
 
+func TestIsMoney(t *testing.T) {
+	assert.True(t, IsMoney(money+look))
+}
+
+func TestIsNotMoney(t *testing.T) {
+	assert.False(t, IsMoney(look))
+}
+
 func TestNewPermission(t *testing.T) {
 	p := NewPermission(253)
 	assert.Equal(t, &Permission{

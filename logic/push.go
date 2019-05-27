@@ -38,11 +38,17 @@ func (l *Logic) PushRoom(p *PushRoomForm) error {
 	if rId == "" {
 		return errors.RoomError
 	}
-	if l.isBanned(rId) {
+
+	roomStatus := l.GetRoomPermission(rId)
+
+	if permission.IsBanned(roomStatus) {
 		return errors.RoomBannedError
 	}
 	if l.isUserBanned(p.Uid, w) {
 		return errors.BannedError
+	}
+	if err := l.isMessage(p.Uid, roomStatus); err != nil {
+		return err
 	}
 
 	msg, err := json.Marshal(Message{
@@ -59,10 +65,6 @@ func (l *Logic) PushRoom(p *PushRoomForm) error {
 		return errors.FailureError
 	}
 	return nil
-}
-
-func (l *Logic) isBanned(rId string) bool {
-	return permission.IsBanned(l.GetRoomPermission(rId))
 }
 
 type PushRoomAllForm struct {

@@ -18,7 +18,7 @@ func ToRoomInt(room store.Room) int {
 		i += sendBonus + getBonus
 	}
 	if room.Limit.Day > 0 && room.Limit.Dml+room.Limit.Amount > 0 {
-		i += recharge + dml
+		i += money
 	}
 	return i
 }
