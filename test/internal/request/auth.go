@@ -60,6 +60,11 @@ func DialAuthUser(uid, roomId string) (auth Auth, err error) {
 }
 
 func DialAuthToken(uid, roomId, ticket string) (auth Auth, err error) {
+	u := authApi{uid}
+	return DialAuthUserByAuthApi(roomId, ticket, u.authApi())
+}
+
+func DialAuthUserByAuthApi(roomId, ticket string, authApi run.TransportFunc) (auth Auth, err error) {
 	authToken := AuthToken{
 		RoomID: roomId,
 		Ticket: ticket,
@@ -68,9 +73,7 @@ func DialAuthToken(uid, roomId, ticket string) (auth Auth, err error) {
 		conn *websocket.Conn
 	)
 
-	u := authApi{uid}
-
-	run.AddClient("/authentication", u.authApi())
+	run.AddClient("/authentication", authApi)
 
 	conn, err = Dial()
 	if err != nil {

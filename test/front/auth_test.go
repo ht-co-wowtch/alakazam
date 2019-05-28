@@ -1,6 +1,7 @@
 package front
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,8 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/run"
 	"golang.org/x/net/websocket"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"testing"
 	"time"
@@ -35,7 +38,7 @@ func TestAuth(t *testing.T) {
 	shouldBeAuthReply(t, a, roomId)
 }
 
-// 進入房間失敗
+// 只連線不進房間
 func TestNotAuth(t *testing.T) {
 	ws, err := request.Dial()
 	if err != nil {
@@ -43,6 +46,17 @@ func TestNotAuth(t *testing.T) {
 		return
 	}
 	shouldBeCloseConnection(err, ws, t)
+}
+
+// 進入房間失敗
+func TestAuthError(t *testing.T) {
+	_, err := request.DialAuthUserByAuthApi("1111", "", func(i *http.Request) (response *http.Response, e error) {
+		return &http.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(``))),
+		}, nil
+	})
+	assert.Equal(t, io.EOF, err)
 }
 
 // 房間心跳成功
