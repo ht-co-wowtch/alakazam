@@ -114,22 +114,19 @@ func (l *Logic) ChangeRoom(uid, key, roomId string) (err error) {
 }
 
 // 更新某人redis資訊的過期時間
-func (l *Logic) Heartbeat(uid, key, roomId, name, server string) (err error) {
+func (l *Logic) Heartbeat(uid, key, roomId, name, server string) error {
 	has, err := l.cache.RefreshUserExpire(uid)
 	if err != nil {
 		log.Errorf("l.dao.RefreshUserExpire(%s,%s,%s) error(%v)", uid, key, server, err)
-		return
+		return err
 	}
 	// 沒更新成功就直接做覆蓋
 	if !has {
-		// TODO 要重抓user 權限值帶到status欄位
-		if err = l.cache.SetUser(uid, key, roomId, name, server, 0); err != nil {
-			log.Errorf("l.dao.SetUser(%s,%s,%s) error(%v)", uid, key, server, err)
-			return
-		}
+		e := fmt.Errorf("Heartbeat(uid:%s key:%s server:%s) error(%v)", uid, key, server, err)
+		log.Error(e)
+		return e
 	}
-	log.Infof("conn heartbeat key:%s server:%s uid:%s", key, server, uid)
-	return
+	return nil
 }
 
 // restart redis內存的每個房間總人數

@@ -240,8 +240,8 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 			p.Op = protocol.OpHeartbeatReply
 			p.Body = nil
 			if now := time.Now(); now.Sub(lastHB) > serverHeartbeat {
-				if err1 := s.Heartbeat(ctx, ch); err1 != nil {
-					log.Errorf("uid: %s logic heartbeat failed error(%v)", ch.Uid, err)
+				if err = s.Heartbeat(ctx, ch); err != nil {
+					break
 				}
 				lastHB = now
 			}
@@ -265,7 +265,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 	// 4. 關閉連線
 	// 5. 通知logic某人下線了
 	if err != nil && err != io.EOF && err != websocket.ErrMessageClose && !strings.Contains(err.Error(), "closed") {
-		log.Errorf("key: %s server ws failed error(%v)", ch.Key, err)
+		log.Errorf("uid: %s key: %s server ws failed error(%v)", ch.Uid, ch.Key, err)
 	}
 	b.Del(ch)
 	tr.Del(trd)
@@ -273,7 +273,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 	ch.Close()
 	rp.Put(rb)
 	if err = s.Disconnect(ctx, ch.Uid, ch.Key); err != nil {
-		log.Errorf("key: %s operator do disconnect error(%v)", ch.Key, err)
+		log.Errorf("uid: %s key: %s operator do disconnect error(%v)", ch.Uid, ch.Key, err)
 	}
 }
 
