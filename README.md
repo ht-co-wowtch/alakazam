@@ -51,9 +51,9 @@
 2. 如何進入聊天室有失敗會怎樣 `答案:失敗會直接close連線`
 3. 如何在聊天室發訊息 [請看前台訊息推送API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649)
 4. 如何接收聊天室訊息 [答案](#message)
-5. 封鎖狀態下進入聊天室會怎樣 [請看Operation = 2](#response)
+5. 封鎖狀態下進入聊天室會怎樣 [答案](#response)
 6. 禁言狀態下聊天會怎樣 [請看前台訊息推送API範例](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649)
-7. 如何知道用戶在聊天室相關權限，如聊天，發紅包等等動作 [請看Operation = 2](#response)
+7. 如何知道用戶在聊天室相關權限，如聊天，發紅包等等動作 [答案](#response)
 8. 如何在聊天室發紅包
 9. 如何搶紅包
 10. 如何在聊天室發跟注
@@ -63,6 +63,7 @@
 14. 如何跟聊天室做心跳 [答案](#heartbeat)
 15. 聊天室心跳週期是多少 `答案:每分鐘心跳一次`
 16. 如何產生一個跟websocket溝通的Protocol [答案](#buffer)
+17. 如何拿到房間在線人數 [答案](#heartbeat-reply)
 
 後台：
 1. 如何以管理員身份廣播多個聊天室 [請看後台訊息推送API範例](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#c14d247c-4210-446e-aa0d-97989e4fd03c)
@@ -302,8 +303,10 @@ avatar|頭像path info| string
 message|訊息|string
 time|發送時間|string
 
-#### Change Room 
+#### Change Room Reply
 Operation = `8`=> 回覆更換房間結果
+
+![arch](./doc/changeRoomReply.png)
 
 ```
 body是新房間id
@@ -356,7 +359,7 @@ Boyd內容帶想要切換的房間Id即可
 
 結果|說明|
 ----|-----|
-成功|[Response](#response)
+成功|[Response](#change-room)
 失敗|失敗就會close連線
 
 ## Member Permissions
