@@ -19,7 +19,7 @@ type ticket struct {
 	Ticket string `json:"ticket"`
 }
 
-func (c *Client) GetUser(token string) (auth User, err error) {
+func (c *Client) Auth(token string) (auth User, err error) {
 	b, err := c.post("/authentication", nil, ticket{Ticket: token}, nil)
 
 	if err != nil {

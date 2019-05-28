@@ -63,7 +63,7 @@ func TestGetUser(t *testing.T) {
 		}, nil
 	})
 
-	a, err := c.GetUser(token)
+	a, err := c.Auth(token)
 
 	assert.Nil(t, err)
 	assert.Equal(t, user, a)
@@ -88,7 +88,7 @@ func TestGetUserNotFound(t *testing.T) {
 		}, nil
 	})
 
-	_, err := c.GetUser("")
+	_, err := c.Auth("")
 
 	assert.Equal(t, expected, err)
 }
