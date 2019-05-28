@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"fmt"
 	log "github.com/golang/glog"
 	"github.com/gomodule/redigo/redis"
 	"strconv"
@@ -81,27 +82,27 @@ func (d *Cache) DeleteUser(uid, key string) (has bool, err error) {
 func (d *Cache) GetUser(uid string, key string) (roomId, name string, status int, err error) {
 	conn := d.Get()
 	defer conn.Close()
-	if err = conn.Send("HGETALL", keyUidInfo(uid)); err != nil {
-		log.Errorf("conn.Do(HGETALL %s) error(%v)", uid, err)
-		return
+	if err = conn.Send("HMGET", keyUidInfo(uid), key, hashNameKey, hashStatusKey); err != nil {
+		log.Errorf("conn.Do(HMGET %s) error(%v)", uid, err)
+		return "", "", 0, err
 	}
 	if err = conn.Flush(); err != nil {
 		log.Errorf("conn.Flush() error(%v)", err)
-		return
+		return "", "", 0, err
 	}
-	var res map[string]string
-	res, err = redis.StringMap(conn.Receive())
+	res, err := redis.Strings(conn.Receive())
 	if err != nil {
 		log.Errorf("conn.Receive() error(%v)", err)
-		return
+		return "", "", 0, err
 	}
 
-	if i, ok := res[hashStatusKey]; ok {
-		// TODO 自行實作redis.StringMap
-		status, err = strconv.Atoi(i)
+	if len(res) != 3 {
+		return "", "", 0, fmt.Errorf("conn.Receive() len is %d insufficient 3", len(res))
 	}
 
-	return res[key], res[hashNameKey], status, err
+	status, err = strconv.Atoi(res[2])
+
+	return res[0], res[1], status, err
 }
 
 // 更換房間
