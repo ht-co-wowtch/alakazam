@@ -92,7 +92,7 @@ func (l *Logic) isMessage(uid, rid string, status int) error {
 		return errors.FailureError
 	}
 
-	if dml > money.Dml || amount > money.Amount {
+	if dml > money.Dml || amount > money.Deposit {
 		return errors.MoneyError.Format(day, amount, dml)
 	}
 	return nil
