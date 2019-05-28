@@ -3,6 +3,7 @@ package logic
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
@@ -30,9 +31,6 @@ type ConnectReply struct {
 
 	// 操作權限
 	Permission int
-
-	// 三方應用接口jwt token
-	Token string
 }
 
 // redis紀錄某人連線資訊
@@ -57,7 +55,6 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	}
 	r.Uid = user.Uid
 	r.Name = user.Nickname
-	r.Token = user.Token
 
 	p, isBlockade, err := l.db.FindUserPermission(r.Uid)
 
@@ -86,7 +83,7 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	r.Key = uuid.New().String()
 
 	// 儲存user資料至redis
-	if err := l.cache.SetUser(r.Uid, r.Key, r.RoomId, r.Name, server, r.Permission); err != nil {
+	if err := l.cache.SetUser(r.Uid, r.Key, r.RoomId, r.Name, user.Token, server, r.Permission); err != nil {
 		log.Errorf("l.dao.SetUser(%s,%s,%s,%s) error(%v)", r.Uid, r.Key, r.Name, server, err)
 	}
 	log.Infof("conn connected key:%s server:%s uid:%s token:%s", r.Key, server, r.Uid, token)

@@ -12,11 +12,12 @@ import (
 // user key => user roomId
 // name => user name
 // status => user status
+// token => 三方應用接口token
 // server => comet server name
-func (d *Cache) SetUser(uid, key, roomId, name, server string, status int) (err error) {
+func (d *Cache) SetUser(uid, key, roomId, name, token, server string, status int) (err error) {
 	conn := d.Get()
 	defer conn.Close()
-	if err = conn.Send("HMSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, status, hashServerKey, server); err != nil {
+	if err = conn.Send("HMSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, status, hashTokenKey, token, hashServerKey, server); err != nil {
 		log.Errorf("conn.Send(HMSET %s,%s,%s,%s,%d,%s) error(%v)", uid, key, roomId, name, status, server, err)
 		return
 	}

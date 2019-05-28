@@ -60,7 +60,6 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 		RoomID:    r.RoomId,
 		Heartbeat: r.Hb,
 		Status:    int32(r.Permission),
-		Token:     r.Token,
 	}, nil
 }
 
