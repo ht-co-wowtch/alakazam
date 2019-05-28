@@ -35,11 +35,8 @@ type ConnectReply struct {
 // redis紀錄某人連線資訊
 func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	var params struct {
-		// user uid
-		Uid string `json:"uid"`
-
-		// 認證中心token
-		Token string `json:"token"`
+		// 認證中心Ticket
+		Ticket string `json:"ticket"`
 
 		// client要進入的room
 		RoomID string `json:"room_id"`
@@ -50,13 +47,13 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	}
 
 	r := new(ConnectReply)
-	user, err := l.client.GetUser(params.Uid, params.Token)
+	user, err := l.client.GetUser(params.Ticket)
 	if err != nil {
 		log.Errorf("Logic client GetUser token:%s error(%v)", token, err)
 		return nil, err
 	}
 	r.Uid = user.Uid
-	r.Name = user.Name
+	r.Name = user.Data.UserName
 
 	p, isBlockade, err := l.db.FindUserPermission(r.Uid)
 

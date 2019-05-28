@@ -317,15 +317,13 @@ body是新房間id
 
 ```
   {
-      "uid":"82ea16cd2d6a49d887440066ef739669",
-      "token": "gM18QgsqI0zFFmdLyvHQxKa0N95BRZSh",
+      "ticket": "gM18QgsqI0zFFmdLyvHQxKa0N95BRZSh",
       "room_id": "a7d20d4133c14a62b617ee38e793cf55"
   }
 ```
 name|說明|
 ----|-----|
-uid|user uid
-token|認證中心發行的token，在paras的jwt claims內
+ticket|請自行透過[paras服務](https://jetfueltw.postman.co/collections/2999246-70e3e838-def8-4d53-ba12-e1b2797eec57?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#d3ec74f8-b09e-420e-846b-8b3977e5637e)請求一個ticket
 room_id|想要進入的房間id，透過paras取得
 
 結果|說明|
