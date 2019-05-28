@@ -5,6 +5,7 @@
   - [運行](#run)
 - [依賴工具](#dependencies)
 - [架構圖](#architecture)
+- [功能](#features)
 - [聊天室Web Socket協定](#protocol-body)
 - [Web Socket](#web-socket)
 - [會員身份權限](#member-permissions)
@@ -43,6 +44,37 @@
 `logic` : 負責接收各種商業邏輯訊息推送
 
 `job` : 負責告知comet要推送什麼訊息以及房間訊息聚合
+
+## Features
+
+- [x] 用戶禁言
+- [x] 用戶封鎖
+- [ ] 用戶搶紅包
+- [ ] 用戶發紅包
+- [ ] 用戶發跟注
+- [ ] 用戶跟注
+- [x] 用戶切換房間
+- [ ] 管理員訊息
+- [x] 單房間推送訊息
+- [x] 多房間推送訊息
+- [ ] 密語
+- [x] 房間禁言
+- [x] 房間聊天限制(打碼量&充值)
+- [x] 房間在線人數
+- [ ] 歷史紀錄
+- [ ] 訊息置頂
+- [ ] 房間在線名單
+- [x] 設定房間權限(禁言,紅包,跟注,聊天限制)
+- [ ] 反垃圾訊息
+
+TODO
+- [ ] json改用msgp
+- [ ] 評估kafka or nats
+- [ ] 分析要放的log(非存DB)
+- [ ] Metrics監控
+- [ ] 註冊中心(etcd)
+- [ ] docker file
+- [ ] 整合測試 bash shell
 
 ## Quick Reference
 
