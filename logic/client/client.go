@@ -66,6 +66,14 @@ func hTTPClient() *http.Client {
 	}
 }
 
+type Option struct {
+	// user uid
+	Uid string
+
+	// 三方應用接口jwt
+	Token string
+}
+
 func (cli *Client) get(path string, query url.Values, headers map[string][]string) ([]byte, error) {
 	return cli.sendRequest("GET", path, query, nil, headers)
 }
@@ -115,6 +123,12 @@ func (cli *Client) checkResponseErr(response *http.Response) ([]byte, error) {
 
 func (cli *Client) getAPIPath(p string, query url.Values) string {
 	return (&url.URL{Path: p, RawQuery: query.Encode()}).String()
+}
+
+func (cli *Client) bearer(option *Option) map[string][]string {
+	return map[string][]string{
+		"Authorization": []string{"Bearer " + option.Token},
+	}
 }
 
 func (cli *Client) buildRequest(method, path string, body io.Reader, headers headers) (*http.Request, error) {

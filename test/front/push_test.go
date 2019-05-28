@@ -10,6 +10,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/request"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/run"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 )
@@ -76,6 +77,17 @@ func TestIsMoney(t *testing.T) {
 
 func giveUserMoneyMockApi(uid string, dml, amount int) {
 	run.AddClient(fmt.Sprintf("/members/%s/deposit-dml", uid), func(res *http.Request) (response *http.Response, e error) {
+		authorization := res.Header.Get("Authorization")
+		token := strings.Split(authorization, " ")
+
+		if token[0] != "Bearer" {
+			return nil, fmt.Errorf("Authorization not Bearer")
+		}
+
+		if token[1] == "" {
+			return nil, fmt.Errorf("Authorization not token")
+		}
+
 		m := client.Money{
 			Dml:     dml,
 			Deposit: amount,

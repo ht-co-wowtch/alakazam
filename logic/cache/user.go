@@ -105,6 +105,29 @@ func (d *Cache) GetUser(uid string, key string) (roomId, name string, status int
 	return res[0], res[1], status, err
 }
 
+func (d *Cache) GetToken(uid string) (string, error) {
+	conn := d.Get()
+	defer conn.Close()
+
+	if err := conn.Send("HGET", keyUidInfo(uid), hashTokenKey); err != nil {
+		log.Errorf("conn.Do(HGET %s) error(%v)", uid, err)
+		return "", err
+	}
+
+	if err := conn.Flush(); err != nil {
+		log.Errorf("conn.Flush() error(%v)", err)
+		return "", err
+	}
+
+	token, err := redis.String(conn.Receive())
+	if err != nil {
+		log.Errorf("conn.Receive() error(%v)", err)
+		return "", err
+	}
+
+	return token, nil
+}
+
 // 更換房間
 func (d *Cache) ChangeRoom(uid, key, roomId string) (err error) {
 	conn := d.Get()

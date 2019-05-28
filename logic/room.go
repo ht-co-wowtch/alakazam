@@ -7,6 +7,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 )
@@ -82,11 +83,22 @@ func (l *Logic) isMessage(uid, rid string, status int) error {
 
 	day, dml, amount, err := l.cache.GetRoomByMoney(rid)
 	if err != nil {
-		log.Errorf("Logic isMessage cache GetRoomByMoney(id:%s) error(%v)", rid, err)
+		log.Errorf("Logic isMessage cache GetRoomByMoney(room id:%s) error(%v)", rid, err)
 		return errors.FailureError
 	}
 
-	money, err := l.client.GetMoney(uid, day)
+	token, err := l.cache.GetToken(uid)
+	if err != nil {
+		log.Errorf("Logic isMessage cache GetToken(uid:%s) error(%v)", uid, err)
+		return errors.FailureError
+	}
+
+	if token == "" {
+		log.Errorf("Logic isMessage cache token empty GetToken(uid:%s)", uid)
+		return errors.UserError
+	}
+
+	money, err := l.client.GetMoney(day, &client.Option{Uid: uid, Token: token})
 	if err != nil {
 		log.Errorf("Logic isMessage client GetMoney(id:%s day:%d) error(%v)", uid, day, err)
 		return errors.FailureError
