@@ -30,6 +30,9 @@ type ConnectReply struct {
 
 	// 操作權限
 	Permission int
+
+	// 三方應用接口jwt token
+	Token string
 }
 
 // redis紀錄某人連線資訊
@@ -53,7 +56,8 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 		return nil, errors.UserError
 	}
 	r.Uid = user.Uid
-	r.Name = user.Data.UserName
+	r.Name = user.Nickname
+	r.Token = user.Token
 
 	p, isBlockade, err := l.db.FindUserPermission(r.Uid)
 

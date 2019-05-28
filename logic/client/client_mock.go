@@ -48,7 +48,7 @@ func mockGet(request *http.Request) (response *http.Response, err error) {
 func mockPost(request *http.Request) (response *http.Response, err error) {
 	switch request.URL.Path {
 	case "/authentication":
-		response, err = mockGetUser(request)
+		response, err = mockAuth(request)
 	default:
 		response = &http.Response{
 			StatusCode: http.StatusBadRequest,
@@ -57,7 +57,7 @@ func mockPost(request *http.Request) (response *http.Response, err error) {
 	return response, err
 }
 
-func mockGetUser(request *http.Request) (*http.Response, error) {
+func mockAuth(request *http.Request) (*http.Response, error) {
 	b, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		return nil, err
@@ -78,12 +78,11 @@ func mockGetUser(request *http.Request) (*http.Response, error) {
 	uuid, _ := uuid.New().MarshalBinary()
 
 	u := User{
-		Uid: fmt.Sprintf("%x", uuid),
-		Data: Claims{
-			UserName: fmt.Sprintf("test%d", time.Now().Unix()),
-			Type:     store.Player,
-			Avatar:   "https://via.placeholder.com/30x30",
-		},
+		Uid:      fmt.Sprintf("%x", uuid),
+		Nickname: fmt.Sprintf("test%d", time.Now().Unix()),
+		Type:     store.Player,
+		Avatar:   "https://via.placeholder.com/30x30",
+		Token:    "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTg2ODgwMTcsImlzcyI6ImNwdyIsImF1ZCI6ImNoYXQiLCJzZXNzaW9uX3Rva2VuIjoiY2MwZGEwNjMwMzg2NGFjNWJlZGJhMzViNWQ1NWNkZTEiLCJ1aWQiOiI5ODQxNjQyNmU0OTQ0ZWUyODhkOTQ3NWNkODBiYzUwMSJ9.sfIKY2nZ6b4pWGrAmNUV8ndkQRmnv2fKdg80cW3FS9Y",
 	}
 
 	b, err = json.Marshal(u)

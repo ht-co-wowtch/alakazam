@@ -2,13 +2,13 @@ package store
 
 const (
 	// 訪客
-	Guest = 0
+	Guest = "guest"
 
 	// 營銷
-	Marketing = 1
+	Marketing = "marketing"
 
 	// 玩家
-	Player = 2
+	Player = "player"
 )
 
 type User struct {

@@ -5,14 +5,11 @@ import (
 )
 
 type User struct {
-	Uid  string `json:"uid"`
-	Data Claims `json:"Claims"`
-}
-
-type Claims struct {
-	UserName string `json:"username"`
-	Type     int    `json:"type"`
+	Uid      string `json:"uid"`
+	Nickname string `json:"nickname"`
 	Avatar   string `json:"avatar"`
+	Type     string `json:"type"`
+	Token    string `json:"token"`
 }
 
 type ticket struct {

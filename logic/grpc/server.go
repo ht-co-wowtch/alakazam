@@ -2,9 +2,9 @@ package grpc
 
 import (
 	"context"
-	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
+	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"net"
 
 	"google.golang.org/grpc"
@@ -60,6 +60,7 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 		RoomID:    r.RoomId,
 		Heartbeat: r.Hb,
 		Status:    int32(r.Permission),
+		Token:     r.Token,
 	}, nil
 }
 

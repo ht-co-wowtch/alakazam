@@ -15,12 +15,11 @@ import (
 
 func TestGetUser(t *testing.T) {
 	user := User{
-		Uid: "82ea16cd2d6a49d887440066ef739669",
-		Data: Claims{
-			UserName: "test",
-			Type:     store.Player,
-			Avatar:   "/",
-		},
+		Uid:      "82ea16cd2d6a49d887440066ef739669",
+		Nickname: "test",
+		Type:     store.Player,
+		Avatar:   "/",
+		Token:    "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTg2ODgwMTcsImlzcyI6ImNwdyIsImF1ZCI6ImNoYXQiLCJzZXNzaW9uX3Rva2VuIjoiY2MwZGEwNjMwMzg2NGFjNWJlZGJhMzViNWQ1NWNkZTEiLCJ1aWQiOiI5ODQxNjQyNmU0OTQ0ZWUyODhkOTQ3NWNkODBiYzUwMSJ9.sfIKY2nZ6b4pWGrAmNUV8ndkQRmnv2fKdg80cW3FS9Y",
 	}
 	token := "ec2fa7acc9d443489531b156077c09a1"
 	expectedURL := "/authentication"

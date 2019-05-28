@@ -30,6 +30,7 @@ type ConnectReply struct {
 	Uid        string                `json:"Uid"`
 	Key        string                `json:"Key"`
 	Permission permission.Permission `json:"permission"`
+	Token      string                `json:"token"`
 }
 
 type Auth struct {
@@ -118,12 +119,11 @@ type authApi struct {
 func (a authApi) authApi() run.TransportFunc {
 	return func(request *http.Request) (i *http.Response, e error) {
 		u := user.User{
-			Uid: a.uuid,
-			Data: user.Claims{
-				UserName: "test",
-				Type:     store.Player,
-				Avatar:   "/",
-			},
+			Uid:      a.uuid,
+			Nickname: "test",
+			Type:     store.Player,
+			Avatar:   "/",
+			Token:    "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTg2ODgwMTcsImlzcyI6ImNwdyIsImF1ZCI6ImNoYXQiLCJzZXNzaW9uX3Rva2VuIjoiY2MwZGEwNjMwMzg2NGFjNWJlZGJhMzViNWQ1NWNkZTEiLCJ1aWQiOiI5ODQxNjQyNmU0OTQ0ZWUyODhkOTQ3NWNkODBiYzUwMSJ9.sfIKY2nZ6b4pWGrAmNUV8ndkQRmnv2fKdg80cW3FS9Y",
 		}
 
 		b, err := json.Marshal(u)
