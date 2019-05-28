@@ -70,22 +70,19 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestGetUserNotFound(t *testing.T) {
+	expected := errors.FailureError
+
 	c := newMockClient(func(req *http.Request) (response *http.Response, e error) {
 		header := http.Header{}
 		header.Set(contentType, jsonHeaderType)
 
-		Err := errors.Error{
-			Code:    15024010,
-			Message: "Invalid ticket",
-		}
-
-		b, err := json.Marshal(Err)
+		b, err := json.Marshal(expected)
 		if err != nil {
 			return nil, err
 		}
 
 		return &http.Response{
-			StatusCode: http.StatusNotFound,
+			StatusCode: expected.Status,
 			Body:       ioutil.NopCloser(bytes.NewReader(b)),
 			Header:     header,
 		}, nil
@@ -93,5 +90,5 @@ func TestGetUserNotFound(t *testing.T) {
 
 	_, err := c.GetUser("")
 
-	assert.Equal(t, fmt.Errorf(`response is error({"code":15024010,"message":"Invalid ticket"})`), err)
+	assert.Equal(t, expected, err)
 }
