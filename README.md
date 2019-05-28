@@ -109,7 +109,7 @@ value | 說明 |
 1|[要求連線到某一個房間](#room) 
 2|[連線到某一個房間結果回覆](#room)
 3|[發送心跳](#heartbeat)
-4|[回覆心跳結果](#heartbeat)
+4|[回覆心跳結果](#heartbeat-reply)
 5|[聊天室批次訊息](#message)
 6|[聊天室訊息](#message-raw)
 7|[更換房間](#change-room)
@@ -236,7 +236,7 @@ ws.onmessage = function (evt) {
 
 ### Response
 
-#### Room 
+#### Room  Reply
 Operation = `2`=> 連線到某一個房間結果回覆Body
 
 ```
@@ -272,7 +272,7 @@ permission.get_follow|是否可以跟注
 }
 ```
 
-#### heartbeat 
+#### Heartbeat Reply
 Operation = `4`=> 回覆心跳結果
 ```
 body是內容是該房間在線人數，是一個int32
@@ -311,7 +311,7 @@ body是新房間id
 
 ## Web Socket
 
-### room
+### Room
 
 跟websocket建立完連線後將以下json包裝成[Protocol](#protocol-body)發送至websocket，Protocol Operation[參考](#operation)
 
@@ -333,7 +333,7 @@ room_id|想要進入的房間id，透過paras取得
 成功|[Response](#response)
 失敗(非封鎖造成)|server會把websocket close
 
-### heartbeat
+### Heartbeat
 進入房間成功後websocket需要每分鐘做一次心跳，讓server確保websocket健康狀況，請利用送一個body為空的[Protocol](#protocol-body)，以下是一個簡單的js範例，至於為什麼這樣寫[請看](#buffer)
 
 ```
