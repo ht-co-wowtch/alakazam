@@ -3,7 +3,7 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -46,12 +46,15 @@ func (c *Client) GetUser(token string) (auth User, err error) {
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return auth, errors.UserError
+	b, err = ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return auth, err
 	}
 
-	b, _ = ioutil.ReadAll(resp.Body)
-	err = json.Unmarshal(b, &auth)
+	if resp.StatusCode != http.StatusOK {
+		return auth, fmt.Errorf("response is error(%s)", string(b))
+	}
 
-	return auth, err
+	return auth, json.Unmarshal(b, &auth)
 }

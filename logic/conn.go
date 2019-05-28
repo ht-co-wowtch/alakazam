@@ -50,7 +50,7 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	user, err := l.client.GetUser(params.Ticket)
 	if err != nil {
 		log.Errorf("Logic client GetUser token:%s error(%v)", token, err)
-		return nil, err
+		return nil, errors.UserError
 	}
 	r.Uid = user.Uid
 	r.Name = user.Data.UserName

@@ -93,5 +93,5 @@ func TestGetUserNotFound(t *testing.T) {
 
 	_, err := c.GetUser("")
 
-	assert.Equal(t, errors.UserError, err)
+	assert.Equal(t, fmt.Errorf(`response is error({"code":15024010,"message":"Invalid ticket"})`), err)
 }
