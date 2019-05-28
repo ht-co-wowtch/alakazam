@@ -88,6 +88,15 @@
         <div class="col-md-7">
             <h2>聊天室狀態: <span id="status"></span></h2>
             <h2>線上人數: <span id="count"></span></h2>
+            <h4>房間id: <span id="room_id"></span></h4>
+            <div class="input-group">
+                <input id="btn-room-id" type="text" class="form-control input-sm"
+                       placeholder="新的房間id"/>
+                <span class="input-group-btn">
+                            <button class="btn btn-warning btn-sm" id="btn-chat" onclick="room()">
+                                切換房間</button>
+                        </span>
+            </div>
             <div class="panel panel-primary">
                 <div class="panel-collapse" id="collapseOne">
                     <div class="panel-body">
@@ -119,9 +128,12 @@
     const packetOffset = 0;
     const headerOffset = 4;
     const opOffset = 6;
-    const host = "192.168.0.138"
-    // const host = "127.0.0.1"
+    // const host = "192.168.0.138"
+    const host = "127.0.0.1"
 
+    var ws
+    var textDecoder = new TextDecoder();
+    var textEncoder = new TextEncoder();
     var Client = function (options) {
         var MAX_CONNECT_TIMES = 10;
         var DELAY = 15000;
@@ -152,12 +164,10 @@
         }
         connect();
 
-        var textDecoder = new TextDecoder();
-        var textEncoder = new TextEncoder();
         var heartbeatInterval;
 
         function connect() {
-            var ws = new WebSocket('ws://' + host + ':3102/sub');
+            ws = new WebSocket('ws://' + host + ':3102/sub');
             ws.binaryType = 'arraybuffer';
             ws.onopen = function () {
                 auth();
@@ -180,19 +190,17 @@
                         document.getElementById("key").value = msgBody.key
 
                         document.getElementById("status").innerHTML = "<color style='color:green'>ok<color>";
+                        document.getElementById("room_id").innerHTML = msgBody.room_id;
                         console.log("receive: auth reply");
-                        console.log(msgBody);
 
                         heartbeat();
                         heartbeatInterval = setInterval(heartbeat, 30 * 1000);
                         break;
                     case 4:
-
                         document.getElementById("count").innerHTML = "<color style='color:green'>" + dataView.getInt32(headerLen) + "<color>"
                         console.log("receive: heartbeat");
                         break;
                     case 5:
-
                         for (var offset = rawHeaderLen; offset < data.byteLength; offset += packetLen) {
                             var packetLen = dataView.getInt32(offset);
                             var headerLen = dataView.getInt16(offset + headerOffset);
@@ -206,10 +214,10 @@
                             }
                         }
                         break;
+                    case 8:
+                        var roomId = textDecoder.decode(data.slice(headerLen, packetLen));
+                        document.getElementById("room_id").innerHTML = roomId
                     default:
-                        var msgBody = textDecoder.decode(data.slice(headerLen, packetLen));
-                        messageReceived(msgBody);
-                        appendMsg(msgBody);
                         break
                 }
             }
@@ -249,15 +257,6 @@
                 if (notify) notify(body);
                 console.log("messageReceived:", "body=" + body);
             }
-
-            function mergeArrayBuffer(ab1, ab2) {
-                var u81 = new Uint8Array(ab1),
-                    u82 = new Uint8Array(ab2),
-                    res = new Uint8Array(ab1.byteLength + ab2.byteLength);
-                res.set(u81, 0);
-                res.set(u82, ab1.byteLength);
-                return res.buffer;
-            }
         }
 
         function reConnect() {
@@ -289,6 +288,25 @@
                 alert(data.message)
             }
         });
+    }
+
+    function room() {
+        var headerBuf = new ArrayBuffer(rawHeaderLen);
+        var headerView = new DataView(headerBuf, 0);
+        var bodyBuf = textEncoder.encode(document.getElementById("btn-room-id").value);
+        headerView.setInt32(packetOffset, rawHeaderLen + bodyBuf.byteLength);
+        headerView.setInt16(headerOffset, rawHeaderLen);
+        headerView.setInt32(opOffset, 7);
+        ws.send(mergeArrayBuffer(headerBuf, bodyBuf));
+    }
+
+    function mergeArrayBuffer(ab1, ab2) {
+        var u81 = new Uint8Array(ab1),
+            u82 = new Uint8Array(ab2),
+            res = new Uint8Array(ab1.byteLength + ab2.byteLength);
+        res.set(u81, 0);
+        res.set(u82, ab1.byteLength);
+        return res.buffer;
     }
 </script>
 <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
