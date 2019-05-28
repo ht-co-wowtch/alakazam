@@ -119,6 +119,8 @@
     const packetOffset = 0;
     const headerOffset = 4;
     const opOffset = 6;
+    const host = "192.168.0.138"
+    // const host = "127.0.0.1"
 
     var Client = function (options) {
         var MAX_CONNECT_TIMES = 10;
@@ -155,8 +157,7 @@
         var heartbeatInterval;
 
         function connect() {
-            var ws = new WebSocket('ws://192.168.0.138' + ':3102/sub');
-            // var ws = new WebSocket('ws://127.0.0.1' + ':3102/sub');
+            var ws = new WebSocket('ws://' + host + ':3102/sub');
             ws.binaryType = 'arraybuffer';
             ws.onopen = function () {
                 auth();
@@ -187,7 +188,7 @@
                         break;
                     case 4:
 
-                        document.getElementById("count").innerHTML = "<color style='color:green'>"+ dataView.getInt32(headerLen) +"<color>"
+                        document.getElementById("count").innerHTML = "<color style='color:green'>" + dataView.getInt32(headerLen) + "<color>"
                         console.log("receive: heartbeat");
                         break;
                     case 5:
@@ -232,7 +233,7 @@
 
             function auth() {
                 // 請先拿到ticket 文件:https://gitlab.com/jetfueltw/cpw/alakazam/tree/develop#room
-                var token = '{"ticket":"ec2fa7acc9d443489531b156077c09a1", "room_id":"a1b4bbec3f624ecf84858632a730c688"}'
+                var token = '{"ticket":"ec2fa7acc9d443489531b156077c09a1", "room_id":"6318a4f786e64c6487a30687e9df3a13"}'
                 var headerBuf = new ArrayBuffer(rawHeaderLen);
                 var headerView = new DataView(headerBuf, 0);
                 var bodyBuf = textEncoder.encode(token);
@@ -273,8 +274,7 @@
     function send() {
         $.ajax({
             type: "post",
-            url: 'http://192.168.0.138:3111' + '/push/room',
-            // url: 'http://127.0.0.1:3111' + '/push/room',
+            url: 'http://' + host + ':3111' + '/push/room',
             async: false,
             data: JSON.stringify({
                 uid: document.getElementById("uid").value,
