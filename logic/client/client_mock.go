@@ -35,6 +35,8 @@ func (tf transportFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 
 func mockGet(request *http.Request) (response *http.Response, err error) {
 	switch request.URL.Path {
+	case "/user/money":
+		response, err = mockGetMoney(request)
 	default:
 		response = &http.Response{
 			StatusCode: http.StatusBadRequest,
@@ -90,6 +92,18 @@ func mockGetUser(request *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Body:       ioutil.NopCloser(bytes.NewReader(b)),
+		Header:     header,
+	}, nil
+}
+
+func mockGetMoney(request *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Set(contentType, jsonHeaderType)
+	m := Money{0, 0}
+	b, _ := json.Marshal(m)
 	return &http.Response{
 		StatusCode: http.StatusOK,
 		Body:       ioutil.NopCloser(bytes.NewReader(b)),

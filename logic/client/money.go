@@ -11,15 +11,8 @@ type Money struct {
 	Amount int `json:"amount"`
 }
 
-// TODO 未完成
+// TODO 先行實作等待三方接口文件
 func (c *Client) GetMoney(uid string, day int) (money Money, err error) {
-	if uid == "009422e667c146379b3aa69f336ad4e5" {
-		return c.getMoney(uid, day)
-	}
-	return Money{0, 0}, nil
-}
-
-func (c *Client) getMoney(uid string, day int) (money Money, err error) {
 	req, err := http.NewRequest("GET", "/user/money", nil)
 	if err != nil {
 		return money, err
