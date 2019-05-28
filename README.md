@@ -258,6 +258,7 @@ name|說明|
 ----|-----|
 uid|user uid，發送訊息會用到
 key|這次web socket連線id，發送訊息會用到
+room_id|房間id|
 permission.message|是否可以聊天
 permission.send_bonus|是否可以發紅包
 permission.get_bonus|是否可以搶紅包
