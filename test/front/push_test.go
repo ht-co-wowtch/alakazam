@@ -2,6 +2,7 @@ package front
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/client"
@@ -61,7 +62,7 @@ func TestIsMoney(t *testing.T) {
 	a, err := request.DialAuthUser("009422e667c146379b3aa69f336ad4e5", room.Id)
 	assert.Nil(t, err)
 
-	giveUserMoneyMockApi(0, 0)
+	giveUserMoneyMockApi(a.Uid, 0, 0)
 
 	r = request.PushRoom(a.Uid, a.Key, "測試")
 
@@ -73,11 +74,11 @@ func TestIsMoney(t *testing.T) {
 	assert.Equal(t, errors.MoneyError.Format(1, 1000, 100).Message, e.Message)
 }
 
-func giveUserMoneyMockApi(dml, amount int) {
-	run.AddClient("/user/money", func(res *http.Request) (response *http.Response, e error) {
+func giveUserMoneyMockApi(uid string, dml, amount int) {
+	run.AddClient(fmt.Sprintf("/members/%s/deposit-dml", uid), func(res *http.Request) (response *http.Response, e error) {
 		m := client.Money{
-			Dml:    dml,
-			Amount: amount,
+			Dml:     dml,
+			Deposit: amount,
 		}
 		b, err := json.Marshal(m)
 		if err != nil {

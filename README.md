@@ -51,9 +51,9 @@
 2. 如何進入聊天室有失敗會怎樣 `答案:失敗會直接close連線`
 3. 如何在聊天室發訊息 [請看前台訊息推送API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649)
 4. 如何接收聊天室訊息 [答案](#message)
-5. 封鎖狀態下進入聊天室會怎樣 [請看Operation = 2](#response)
+5. 封鎖狀態下進入聊天室會怎樣 [答案](#response)
 6. 禁言狀態下聊天會怎樣 [請看前台訊息推送API範例](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649)
-7. 如何知道用戶在聊天室相關權限，如聊天，發紅包等等動作 [請看Operation = 2](#response)
+7. 如何知道用戶在聊天室相關權限，如聊天，發紅包等等動作 [答案](#response)
 8. 如何在聊天室發紅包
 9. 如何搶紅包
 10. 如何在聊天室發跟注
@@ -63,6 +63,7 @@
 14. 如何跟聊天室做心跳 [答案](#heartbeat)
 15. 聊天室心跳週期是多少 `答案:每分鐘心跳一次`
 16. 如何產生一個跟websocket溝通的Protocol [答案](#buffer)
+17. 如何拿到房間在線人數 [答案](#heartbeat-reply)
 
 後台：
 1. 如何以管理員身份廣播多個聊天室 [請看後台訊息推送API範例](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#c14d247c-4210-446e-aa0d-97989e4fd03c)
@@ -109,7 +110,7 @@ value | 說明 |
 1|[要求連線到某一個房間](#room) 
 2|[連線到某一個房間結果回覆](#room)
 3|[發送心跳](#heartbeat)
-4|[回覆心跳結果](#heartbeat)
+4|[回覆心跳結果](#heartbeat-reply)
 5|[聊天室批次訊息](#message)
 6|[聊天室訊息](#message-raw)
 7|[更換房間](#change-room)
@@ -236,11 +237,12 @@ ws.onmessage = function (evt) {
 
 ### Response
 
-#### Room 
+#### Room  Reply
 Operation = `2`=> 連線到某一個房間結果回覆Body
 
 ```
 {
+    "room_id":"a1b4bbec3f624ecf84858632a730c688",
     "uid": "82ea16cd2d6a49d887440066ef739669",
     "key": "defb108d-3d51-475a-b266-4a7f459e7a59",
     "permission": {
@@ -256,6 +258,7 @@ name|說明|
 ----|-----|
 uid|user uid，發送訊息會用到
 key|這次web socket連線id，發送訊息會用到
+room_id|房間id|
 permission.message|是否可以聊天
 permission.send_bonus|是否可以發紅包
 permission.get_bonus|是否可以搶紅包
@@ -271,7 +274,7 @@ permission.get_follow|是否可以跟注
 }
 ```
 
-#### heartbeat 
+#### Heartbeat Reply
 Operation = `4`=> 回覆心跳結果
 ```
 body是內容是該房間在線人數，是一個int32
@@ -301,8 +304,10 @@ avatar|頭像path info| string
 message|訊息|string
 time|發送時間|string
 
-#### Change Room 
+#### Change Room Reply
 Operation = `8`=> 回覆更換房間結果
+
+![arch](./doc/changeRoomReply.png)
 
 ```
 body是新房間id
@@ -310,21 +315,19 @@ body是新房間id
 
 ## Web Socket
 
-### room
+### Room
 
 跟websocket建立完連線後將以下json包裝成[Protocol](#protocol-body)發送至websocket，Protocol Operation[參考](#operation)
 
 ```
   {
-      "uid":"82ea16cd2d6a49d887440066ef739669",
-      "token": "gM18QgsqI0zFFmdLyvHQxKa0N95BRZSh",
+      "ticket": "gM18QgsqI0zFFmdLyvHQxKa0N95BRZSh",
       "room_id": "a7d20d4133c14a62b617ee38e793cf55"
   }
 ```
 name|說明|
 ----|-----|
-uid|user uid
-token|認證中心發行的token，在paras的jwt claims內
+ticket|請自行透過[paras服務](https://jetfueltw.postman.co/collections/2999246-70e3e838-def8-4d53-ba12-e1b2797eec57?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#d3ec74f8-b09e-420e-846b-8b3977e5637e)請求一個ticket
 room_id|想要進入的房間id，透過paras取得
 
 結果|說明|
@@ -332,7 +335,7 @@ room_id|想要進入的房間id，透過paras取得
 成功|[Response](#response)
 失敗(非封鎖造成)|server會把websocket close
 
-### heartbeat
+### Heartbeat
 進入房間成功後websocket需要每分鐘做一次心跳，讓server確保websocket健康狀況，請利用送一個body為空的[Protocol](#protocol-body)，以下是一個簡單的js範例，至於為什麼這樣寫[請看](#buffer)
 
 ```
@@ -357,7 +360,7 @@ Boyd內容帶想要切換的房間Id即可
 
 結果|說明|
 ----|-----|
-成功|[Response](#response)
+成功|[Response](#change-room)
 失敗|失敗就會close連線
 
 ## Member Permissions

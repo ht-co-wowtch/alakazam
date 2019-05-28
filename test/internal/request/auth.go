@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	user "gitlab.com/jetfueltw/cpw/alakazam/logic/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
@@ -16,17 +17,16 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
-	"strings"
 	"time"
 )
 
 type AuthToken struct {
-	Uid    string `json:"uid"`
-	Token  string `json:"token"`
+	Ticket string `json:"ticket"`
 	RoomID string `json:"room_id"`
 }
 
 type ConnectReply struct {
+	RoomId     string                `json:"room_id"`
 	Uid        string                `json:"Uid"`
 	Key        string                `json:"Key"`
 	Permission permission.Permission `json:"permission"`
@@ -59,17 +59,21 @@ func DialAuthUser(uid, roomId string) (auth Auth, err error) {
 	return DialAuthToken(uid, roomId, uuid.New().String())
 }
 
-func DialAuthToken(uid, roomId, token string) (auth Auth, err error) {
+func DialAuthToken(uid, roomId, ticket string) (auth Auth, err error) {
+	u := authApi{uid}
+	return DialAuthUserByAuthApi(roomId, ticket, u.authApi())
+}
+
+func DialAuthUserByAuthApi(roomId, ticket string, authApi run.TransportFunc) (auth Auth, err error) {
 	authToken := AuthToken{
 		RoomID: roomId,
-		Token:  token,
-		Uid:    uid,
+		Ticket: ticket,
 	}
 	var (
 		conn *websocket.Conn
 	)
 
-	run.AddClient("/tripartite/user/"+uid+"/token/"+token, authApi)
+	run.AddClient("/authentication", authApi)
 
 	conn, err = Dial()
 	if err != nil {
@@ -107,18 +111,27 @@ func DialAuthToken(uid, roomId, token string) (auth Auth, err error) {
 	return
 }
 
-func authApi(request *http.Request) (*http.Response, error) {
-	path := strings.Split(request.URL.Path, "/")
-	u := user.User{
-		Uid:  path[3],
-		Name: "test",
-	}
+type authApi struct {
+	uuid string
+}
 
-	b, err := json.Marshal(u)
-	if err != nil {
-		return nil, err
+func (a authApi) authApi() run.TransportFunc {
+	return func(request *http.Request) (i *http.Response, e error) {
+		u := user.User{
+			Uid: a.uuid,
+			Data: user.Claims{
+				UserName: "test",
+				Type:     store.Player,
+				Avatar:   "/",
+			},
+		}
+
+		b, err := json.Marshal(u)
+		if err != nil {
+			return nil, err
+		}
+		return ToResponse(b)
 	}
-	return ToResponse(b)
 }
 
 func ToResponse(b []byte) (*http.Response, error) {

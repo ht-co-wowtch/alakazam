@@ -3,9 +3,9 @@ package comet
 import (
 	"context"
 	"encoding/json"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"io"
 	"net"
 	"strings"
@@ -377,6 +377,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 	var reply struct {
 		Uid        string                 `json:"uid"`
 		Key        string                 `json:"key"`
+		RoomId     string                 `json:"room_id"`
 		Permission *permission.Permission `json:"permission"`
 	}
 	uid = c.Uid
@@ -387,6 +388,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 
 	reply.Uid = uid
 	reply.Key = key
+	reply.RoomId = rid
 	reply.Permission = permission.NewPermission(int(c.Status))
 	b, _ := json.Marshal(reply)
 	err = authReply(ws, p, b)

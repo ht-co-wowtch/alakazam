@@ -1,23 +1,14 @@
 package store
 
 const (
-	// 女性
-	Female = "female"
-
-	// 男性
-	Male = "male"
-
-	// 其他
-	Other = "other"
-
 	// 訪客
-	Guest = "guest"
+	Guest = 0
 
 	// 營銷
-	Marketing = "marketing"
+	Marketing = 1
 
 	// 玩家
-	Player = "player"
+	Player = 2
 )
 
 type User struct {

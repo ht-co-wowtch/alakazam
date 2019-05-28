@@ -20,7 +20,8 @@ type Client struct {
 }
 
 func New(c *conf.Api) *Client {
-	return Create(c, hTTPClient())
+	// TODO 先使用mock
+	return Create(c, mockHTTPClient())
 }
 
 func Create(c *conf.Api, client *http.Client) *Client {

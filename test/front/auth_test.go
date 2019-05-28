@@ -1,6 +1,7 @@
 package front
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,8 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/run"
 	"golang.org/x/net/websocket"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"testing"
 	"time"
@@ -26,15 +29,16 @@ func TestMain(m *testing.M) {
 
 // 進入房間成功
 func TestAuth(t *testing.T) {
-	a, err := request.DialAuth("1000")
+	roomId := "1000"
+	a, err := request.DialAuth(roomId)
 	if err != nil {
 		assert.Error(t, err)
 		return
 	}
-	shouldBeAuthReply(t, a)
+	shouldBeAuthReply(t, a, roomId)
 }
 
-// 進入房間失敗
+// 只連線不進房間
 func TestNotAuth(t *testing.T) {
 	ws, err := request.Dial()
 	if err != nil {
@@ -42,6 +46,17 @@ func TestNotAuth(t *testing.T) {
 		return
 	}
 	shouldBeCloseConnection(err, ws, t)
+}
+
+// 進入房間失敗
+func TestAuthError(t *testing.T) {
+	_, err := request.DialAuthUserByAuthApi("1111", "", func(i *http.Request) (response *http.Response, e error) {
+		return &http.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(``))),
+		}, nil
+	})
+	assert.Equal(t, io.EOF, err)
 }
 
 // 房間心跳成功
@@ -153,8 +168,11 @@ func givenHeartbeat() *grpc.Proto {
 	return hbProto
 }
 
-func shouldBeAuthReply(t *testing.T, a request.Auth) {
+func shouldBeAuthReply(t *testing.T, a request.Auth, roomId string) {
 	assert.Equal(t, pd.OpAuthReply, a.Proto.Op)
+	assert.NotEmpty(t, a.Reply.Uid)
+	assert.NotEmpty(t, a.Reply.Key)
+	assert.Equal(t, roomId, a.Reply.RoomId)
 	assert.True(t, a.Reply.Permission.Message)
 	assert.True(t, a.Reply.Permission.SendBonus)
 	assert.True(t, a.Reply.Permission.GetBonus)
