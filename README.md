@@ -241,7 +241,7 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 
 ```
 {
-    "roomId":"a1b4bbec3f624ecf84858632a730c688",
+    "room_id":"a1b4bbec3f624ecf84858632a730c688",
     "uid": "82ea16cd2d6a49d887440066ef739669",
     "key": "defb108d-3d51-475a-b266-4a7f459e7a59",
     "permission": {
