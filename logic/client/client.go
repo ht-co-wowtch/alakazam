@@ -125,7 +125,7 @@ func (cli *Client) getAPIPath(p string, query url.Values) string {
 	return (&url.URL{Path: p, RawQuery: query.Encode()}).String()
 }
 
-func (cli *Client) bearer(option *Option) map[string][]string {
+func bearer(option *Option) map[string][]string {
 	return map[string][]string{
 		"Authorization": []string{"Bearer " + option.Token},
 	}

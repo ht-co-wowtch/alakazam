@@ -9,7 +9,6 @@ type User struct {
 	Nickname string `json:"nickname"`
 	Avatar   string `json:"avatar"`
 	Type     string `json:"type"`
-	Token    string `json:"token"`
 }
 
 type ticket struct {
@@ -17,7 +16,7 @@ type ticket struct {
 }
 
 func (c *Client) Auth(token string) (auth User, err error) {
-	b, err := c.post("/authentication", nil, ticket{Ticket: token}, nil)
+	b, err := c.get("/profile", nil, bearer(&Option{Token: token}))
 
 	if err != nil {
 		return auth, err

@@ -34,8 +34,8 @@ type ConnectReply struct {
 // redis紀錄某人連線資訊
 func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	var params struct {
-		// 認證中心Ticket
-		Ticket string `json:"ticket"`
+		// 帳務中心+版的認證token
+		Token string `json:"token"`
 
 		// client要進入的room
 		RoomID string `json:"room_id"`
@@ -47,7 +47,7 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 
 	r := new(ConnectReply)
 
-	user, err := l.auth(params.Ticket)
+	user, err := l.auth(params.Token)
 	if err != nil {
 		return r, err
 	}

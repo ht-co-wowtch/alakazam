@@ -17,7 +17,7 @@ func (c *Client) GetMoney(day int, option *Option) (money Money, err error) {
 	query.Set("start_at", now.AddDate(0, 0, -day).Format("2006-01-02T00:00:00Z07:00"))
 	query.Set("end_at", now.Format(time.RFC3339))
 
-	b, err := c.get("/members/"+option.Uid+"/deposit-dml", query, c.bearer(option))
+	b, err := c.get("/members/"+option.Uid+"/deposit-dml", query, bearer(option))
 	if err != nil {
 		return money, err
 	}

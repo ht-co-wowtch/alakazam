@@ -73,7 +73,7 @@ func DialAuthUserByAuthApi(roomId, ticket string, authApi run.TransportFunc) (au
 		conn *websocket.Conn
 	)
 
-	run.AddClient("/authentication", authApi)
+	run.AddClient("/profile", authApi)
 
 	conn, err = Dial()
 	if err != nil {
@@ -122,7 +122,6 @@ func (a authApi) authApi() run.TransportFunc {
 			Nickname: "test",
 			Type:     store.Player,
 			Avatar:   "/",
-			Token:    "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTg2ODgwMTcsImlzcyI6ImNwdyIsImF1ZCI6ImNoYXQiLCJzZXNzaW9uX3Rva2VuIjoiY2MwZGEwNjMwMzg2NGFjNWJlZGJhMzViNWQ1NWNkZTEiLCJ1aWQiOiI5ODQxNjQyNmU0OTQ0ZWUyODhkOTQ3NWNkODBiYzUwMSJ9.sfIKY2nZ6b4pWGrAmNUV8ndkQRmnv2fKdg80cW3FS9Y",
 		}
 
 		b, err := json.Marshal(u)
