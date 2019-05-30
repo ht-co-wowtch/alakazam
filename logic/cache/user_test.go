@@ -11,12 +11,11 @@ import (
 func TestSetUser(t *testing.T) {
 	uid := "82ea16cd2d6a49d887440066ef739669"
 	key := "0b7f8111-8781-4574-8cb8-2eda0adb7598"
-	token := "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTg2ODgwMTcsImlzcyI6ImNwdyIsImF1ZCI6ImNoYXQiLCJzZXNzaW9uX3Rva2VuIjoiY2MwZGEwNjMwMzg2NGFjNWJlZGJhMzViNWQ1NWNkZTEiLCJ1aWQiOiI5ODQxNjQyNmU0OTQ0ZWUyODhkOTQ3NWNkODBiYzUwMSJ9.sfIKY2nZ6b4pWGrAmNUV8ndkQRmnv2fKdg80cW3FS9Y"
 	roomId := "1000"
 	name := "test"
-	mockSetUser(uid, key, roomId, name, token)
+	mockSetUser(uid, key, roomId, name)
 
-	err := d.SetUser(uid, key, roomId, name, token, "", permission.PlayDefaultPermission)
+	err := d.SetUser(uid, key, roomId, name, "", permission.PlayDefaultPermission)
 	assert.Nil(t, err)
 }
 
@@ -43,8 +42,8 @@ func mockDeleteUser(uid string, key string) *redigomock.Cmd {
 		Expect([]byte(`true`))
 }
 
-func mockSetUser(uid, key, roomId, name, token string) {
-	mock.Command("HMSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, permission.PlayDefaultPermission, hashTokenKey, token, hashServerKey, "").
+func mockSetUser(uid, key, roomId, name string) {
+	mock.Command("HMSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, permission.PlayDefaultPermission, hashServerKey, "").
 		Expect("")
 	mock.Command("EXPIRE", keyUidInfo(uid), expireSec).
 		Expect("")

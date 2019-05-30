@@ -15,10 +15,10 @@ import (
 // status => user status
 // token => 三方應用接口token
 // server => comet server name
-func (d *Cache) SetUser(uid, key, roomId, name, token, server string, status int) (err error) {
+func (d *Cache) SetUser(uid, key, roomId, name, server string, status int) (err error) {
 	conn := d.Get()
 	defer conn.Close()
-	if err = conn.Send("HMSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, status, hashTokenKey, token, hashServerKey, server); err != nil {
+	if err = conn.Send("HMSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, status, hashServerKey, server); err != nil {
 		log.Errorf("conn.Send(HMSET %s,%s,%s,%s,%d,%s) error(%v)", uid, key, roomId, name, status, server, err)
 		return
 	}
@@ -103,29 +103,6 @@ func (d *Cache) GetUser(uid string, key string) (roomId, name string, status int
 	status, err = strconv.Atoi(res[2])
 
 	return res[0], res[1], status, err
-}
-
-func (d *Cache) GetToken(uid string) (string, error) {
-	conn := d.Get()
-	defer conn.Close()
-
-	if err := conn.Send("HGET", keyUidInfo(uid), hashTokenKey); err != nil {
-		log.Errorf("conn.Do(HGET %s) error(%v)", uid, err)
-		return "", err
-	}
-
-	if err := conn.Flush(); err != nil {
-		log.Errorf("conn.Flush() error(%v)", err)
-		return "", err
-	}
-
-	token, err := redis.String(conn.Receive())
-	if err != nil {
-		log.Errorf("conn.Receive() error(%v)", err)
-		return "", err
-	}
-
-	return token, nil
 }
 
 // 更換房間

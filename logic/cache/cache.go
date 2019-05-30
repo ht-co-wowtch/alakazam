@@ -28,9 +28,6 @@ const (
 	// user hash table status key
 	hashStatusKey = "status"
 
-	// 三方應用接口token
-	hashTokenKey = "token"
-
 	// user hash table server key
 	hashServerKey = "server"
 )

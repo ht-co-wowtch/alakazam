@@ -87,18 +87,7 @@ func (l *Logic) isMessage(uid, rid string, status int) error {
 		return errors.FailureError
 	}
 
-	token, err := l.cache.GetToken(uid)
-	if err != nil {
-		log.Errorf("Logic isMessage cache GetToken(uid:%s) error(%v)", uid, err)
-		return errors.FailureError
-	}
-
-	if token == "" {
-		log.Errorf("Logic isMessage cache token empty GetToken(uid:%s)", uid)
-		return errors.UserError
-	}
-
-	money, err := l.client.GetMoney(day, &client.Option{Uid: uid, Token: token})
+	money, err := l.client.GetMoney(day, &client.Option{Uid: uid, Token: ""})
 	if err != nil {
 		log.Errorf("Logic isMessage client GetMoney(id:%s day:%d) error(%v)", uid, day, err)
 		return errors.FailureError

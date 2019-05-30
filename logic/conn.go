@@ -69,7 +69,7 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	r.Key = uuid.New().String()
 
 	// 儲存user資料至redis
-	if err := l.cache.SetUser(r.Uid, r.Key, r.RoomId, r.Name, "test", server, r.Permission); err != nil {
+	if err := l.cache.SetUser(r.Uid, r.Key, r.RoomId, r.Name, server, r.Permission); err != nil {
 		log.Errorf("l.dao.SetUser(%s,%s,%s,%s) error(%v)", r.Uid, r.Key, r.Name, server, err)
 	}
 	log.Infof("conn connected key:%s server:%s uid:%s token:%s", r.Key, server, r.Uid, token)
