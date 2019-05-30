@@ -31,20 +31,16 @@ func TestMain(m *testing.M) {
 func TestAuth(t *testing.T) {
 	roomId := "1000"
 	a, err := request.DialAuth(roomId)
-	if err != nil {
-		assert.Error(t, err)
-		return
-	}
+	assert.Nil(t, err)
+
 	shouldBeAuthReply(t, a, roomId)
 }
 
 // 只連線不進房間
 func TestNotAuth(t *testing.T) {
 	ws, err := request.Dial()
-	if err != nil {
-		assert.Error(t, err)
-		return
-	}
+	assert.Nil(t, err)
+
 	shouldBeCloseConnection(err, ws, t)
 }
 
@@ -62,20 +58,16 @@ func TestAuthError(t *testing.T) {
 // 房間心跳成功
 func TestHeartbeat(t *testing.T) {
 	a, err := request.DialAuth("1001")
-	if err != nil {
-		assert.Error(t, err)
-		return
-	}
+	assert.Nil(t, err)
+
 	shouldBeHeartbeatReply(t, a, givenHeartbeat())
 }
 
 // 房間不心跳
 func TestNotHeartbeat(t *testing.T) {
 	a, err := request.DialAuth("1002")
-	if err != nil {
-		assert.Error(t, err)
-		return
-	}
+	assert.Nil(t, err)
+
 	shouldBeTimeoutConnection(err, a, t)
 }
 
@@ -183,14 +175,12 @@ func shouldBeAuthReply(t *testing.T, a request.Auth, roomId string) {
 
 func shouldBeHeartbeatReply(t *testing.T, a request.Auth, hbProto *grpc.Proto) {
 	fmt.Println("send heartbeat")
-	if err := protocol.Write(a.Wr, hbProto); err != nil {
-		assert.Error(t, err)
-		return
-	}
-	if err := protocol.Read(a.Rd, a.Proto); err != nil {
-		assert.Error(t, err)
-		return
-	}
+	err := protocol.Write(a.Wr, hbProto)
+	assert.Nil(t, err)
+
+	err = protocol.Read(a.Rd, a.Proto)
+	assert.Nil(t, err)
+
 	fmt.Println("heartbeat Reply")
 	assert.Equal(t, pd.OpHeartbeatReply, a.Proto.Op)
 }
