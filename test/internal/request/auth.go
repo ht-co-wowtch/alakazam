@@ -30,7 +30,6 @@ type ConnectReply struct {
 	Uid        string                `json:"Uid"`
 	Key        string                `json:"Key"`
 	Permission permission.Permission `json:"permission"`
-	Token      string                `json:"token"`
 }
 
 type Auth struct {

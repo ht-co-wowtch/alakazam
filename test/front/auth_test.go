@@ -164,7 +164,6 @@ func shouldBeAuthReply(t *testing.T, a request.Auth, roomId string) {
 	assert.Equal(t, pd.OpAuthReply, a.Proto.Op)
 	assert.NotEmpty(t, a.Reply.Uid)
 	assert.NotEmpty(t, a.Reply.Key)
-	assert.NotEmpty(t, a.Reply.Token)
 	assert.Equal(t, roomId, a.Reply.RoomId)
 	assert.True(t, a.Reply.Permission.Message)
 	assert.True(t, a.Reply.Permission.SendBonus)
