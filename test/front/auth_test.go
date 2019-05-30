@@ -80,8 +80,7 @@ func TestRoomBlockade(t *testing.T) {
 	r := request.SetBlockade(a.Uid, "測試")
 	assert.Empty(t, r.Body)
 
-	a, err = request.DialAuthUser(a.Uid, "1003")
-	assert.Nil(t, err)
+	a, _ = request.DialAuthUser(a.Uid, "1003")
 
 	e := new(errors.Error)
 	json.Unmarshal(a.Proto.Body, e)
