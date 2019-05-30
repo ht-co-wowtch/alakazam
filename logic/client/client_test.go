@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strings"
 	"testing"
 )
 
@@ -49,10 +48,10 @@ func TestGet(t *testing.T) {
 	query.Set("id", "1")
 
 	c := givenClient(t, "http://127.0.0.1:8080", func(request *http.Request) (response *http.Response, e error) {
-		if !strings.HasPrefix(request.URL.Path, expectedURL) {
+		if request.URL.Path != expectedURL {
 			return nil, fmt.Errorf("Expected URL '%s', got '%s'", expectedURL, request.URL.Path)
 		}
-		if !strings.HasPrefix(request.URL.RawQuery, query.Encode()) {
+		if request.URL.RawQuery != query.Encode() {
 			return nil, fmt.Errorf("Expected Raw Query '%s', got '%s'", query.Encode(), request.URL.RawQuery)
 		}
 		return &http.Response{
@@ -78,7 +77,7 @@ func TestPost(t *testing.T) {
 	expectedAuthorization := "token"
 
 	c := givenClient(t, "http://127.0.0.1:8080", func(request *http.Request) (response *http.Response, e error) {
-		if !strings.HasPrefix(request.URL.Path, expectedURL) {
+		if request.URL.Path != expectedURL {
 			return nil, fmt.Errorf("Expected URL '%s', got '%s'", expectedURL, request.URL.Path)
 		}
 
