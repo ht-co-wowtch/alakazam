@@ -2,8 +2,10 @@ package logic
 
 import (
 	"encoding/json"
+	"github.com/gin-gonic/gin"
 	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"time"
 )
@@ -28,7 +30,7 @@ type PushRoomForm struct {
 }
 
 // 單一房間推送
-func (l *Logic) PushRoom(p *PushRoomForm) error {
+func (l *Logic) PushRoom(c *gin.Context, p *PushRoomForm) error {
 	rId, name, w, err := l.cache.GetUser(p.Uid, p.Key)
 	if err != nil {
 		return errors.FailureError
@@ -52,7 +54,12 @@ func (l *Logic) PushRoom(p *PushRoomForm) error {
 		return errors.BannedError
 	}
 
-	if err := l.isMessage(p.Uid, rId, roomStatus); err != nil {
+	option := &client.Params{
+		Uid:   p.Uid,
+		Token: c.GetString("token"),
+	}
+
+	if err := l.isMessage(rId, roomStatus, option); err != nil {
 		return err
 	}
 

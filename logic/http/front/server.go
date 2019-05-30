@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
 	"time"
 )
 
@@ -26,7 +27,8 @@ func (s *Server) InitRoute(e *gin.Engine) {
 		AllowHeaders:     conf.Conf.HTTPServer.Cors.Headers,
 		MaxAge:           time.Minute * 5,
 	}
-	e.Use(cors.New(c))
+
+	e.Use(cors.New(c), http.AuthenticationHandler)
 
 	e.POST("/push/room", s.pushRoom)
 }

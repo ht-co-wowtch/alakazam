@@ -70,7 +70,7 @@ func TestGetMoney(t *testing.T) {
 		}, nil
 	})
 
-	actual, err := c.GetMoney(day, &Option{Uid: uid, Token: expectedToken})
+	actual, err := c.GetMoney(day, &Params{Uid: uid, Token: expectedToken})
 
 	assert.Nil(t, err)
 	assert.Equal(t, expected, actual)

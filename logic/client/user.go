@@ -11,12 +11,8 @@ type User struct {
 	Type     string `json:"type"`
 }
 
-type ticket struct {
-	Ticket string `json:"ticket"`
-}
-
 func (c *Client) Auth(token string) (auth User, err error) {
-	b, err := c.get("/profile", nil, bearer(&Option{Token: token}))
+	b, err := c.get("/profile", nil, bearer(&Params{Token: token}))
 
 	if err != nil {
 		return auth, err

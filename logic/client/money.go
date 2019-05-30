@@ -11,7 +11,7 @@ type Money struct {
 	Deposit int `json:"deposit"`
 }
 
-func (c *Client) GetMoney(day int, option *Option) (money Money, err error) {
+func (c *Client) GetMoney(day int, option *Params) (money Money, err error) {
 	now := time.Now()
 	query := url.Values{}
 	query.Set("start_at", now.AddDate(0, 0, -day).Format("2006-01-02T00:00:00Z07:00"))

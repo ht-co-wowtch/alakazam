@@ -66,7 +66,7 @@ func hTTPClient() *http.Client {
 	}
 }
 
-type Option struct {
+type Params struct {
 	// user uid
 	Uid string
 
@@ -125,7 +125,7 @@ func (cli *Client) getAPIPath(p string, query url.Values) string {
 	return (&url.URL{Path: p, RawQuery: query.Encode()}).String()
 }
 
-func bearer(option *Option) map[string][]string {
+func bearer(option *Params) map[string][]string {
 	return map[string][]string{
 		"Authorization": []string{"Bearer " + option.Token},
 	}

@@ -76,7 +76,7 @@ func (l *Logic) GetRoomPermission(rId string) int {
 	return i
 }
 
-func (l *Logic) isMessage(uid, rid string, status int) error {
+func (l *Logic) isMessage(rid string, status int, option *client.Params) error {
 	if !permission.IsMoney(status) {
 		return nil
 	}
@@ -87,9 +87,9 @@ func (l *Logic) isMessage(uid, rid string, status int) error {
 		return errors.FailureError
 	}
 
-	money, err := l.client.GetMoney(day, &client.Option{Uid: uid, Token: ""})
+	money, err := l.client.GetMoney(day, option)
 	if err != nil {
-		log.Errorf("Logic isMessage client GetMoney(id:%s day:%d) error(%v)", uid, day, err)
+		log.Errorf("Logic isMessage client GetMoney(id:%s day:%d) error(%v)", option.Uid, day, err)
 		return errors.FailureError
 	}
 

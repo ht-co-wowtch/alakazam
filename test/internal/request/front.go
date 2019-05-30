@@ -16,6 +16,16 @@ func PushRoom(uid, key, message string) Response {
 	return PostJson(getHost()+"/push/room", b)
 }
 
+func PushRoomNotToken(uid, key, message string) Response {
+	j := map[string]interface{}{
+		"uid":     uid,
+		"key":     key,
+		"message": message,
+	}
+	b, _ := json.Marshal(j)
+	return PostJsonNotToken(getHost()+"/push/room", b)
+}
+
 func PushBroadcast(roomId []string, message string) Response {
 	j := map[string]interface{}{
 		"room_id": roomId,
