@@ -4,7 +4,7 @@ import (
 	"github.com/DATA-DOG/go-txdb"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/client"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/grpc"
 	httpServer "gitlab.com/jetfueltw/cpw/alakazam/logic/http"
