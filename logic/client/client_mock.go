@@ -35,8 +35,10 @@ func (tf transportFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func mockGet(request *http.Request) (response *http.Response, err error) {
+	p := strings.Split(request.URL.Path, "/")
+
 	switch request.URL.Path {
-	case "/user/money":
+	case "/members/" + p[1] + "/deposit-dml":
 		response, err = mockGetMoney(request)
 	case "/profile":
 		response, err = mockAuth(request)
@@ -59,17 +61,6 @@ func mockPost(request *http.Request) (response *http.Response, err error) {
 }
 
 func mockAuth(request *http.Request) (*http.Response, error) {
-	authorization := request.Header.Get("Authorization")
-	token := strings.Split(authorization, " ")
-
-	if token[0] != "Bearer" {
-		return nil, fmt.Errorf("Authorization not Bearer")
-	}
-
-	if token[1] == "" {
-		return nil, fmt.Errorf("Authorization not token")
-	}
-
 	header := http.Header{}
 	header.Set(contentType, jsonHeaderType)
 
