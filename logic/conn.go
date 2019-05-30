@@ -1,17 +1,14 @@
 package logic
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
+	log "github.com/golang/glog"
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 	"time"
-
-	log "github.com/golang/glog"
 )
 
 type ConnectReply struct {
@@ -49,48 +46,21 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	}
 
 	r := new(ConnectReply)
-	user, err := l.client.Auth(params.Ticket)
+
+	user, err := l.auth(params.Ticket)
 	if err != nil {
-		log.Errorf("Logic client GetUser token:%s error(%v)", token, err)
-		return nil, errors.UserError
+		return r, err
 	}
 
-	u, err := l.db.Find(user.Uid)
-
-	if err != nil {
-		if err != sql.ErrNoRows {
-			log.Errorf("FindUserPermission(uid:%s) error(%v)", user.Uid, err)
-			return r, errors.ConnectError
-		}
-
-		u = &store.User{
-			Uid:        user.Uid,
-			Name:       user.Nickname,
-			Avatar:     user.Avatar,
-			Permission: permission.PlayDefaultPermission,
-		}
-
-		if aff, err := l.db.CreateUser(u); err != nil || aff <= 0 {
-			log.Errorf("CreateUser(uid:%s) affected %d error(%v)", user.Uid, aff, err)
-			return r, errors.ConnectError
-		}
-	} else if u.IsBlockade {
+	// 封鎖會員
+	if user.IsBlockade {
 		r.Permission = permission.Blockade
-		log.Infof("conn blockade uid:%s token:%s", user.Uid, token)
 		return r, nil
 	}
 
-	if u.Name != user.Nickname || u.Avatar != user.Avatar {
-		u.Name = user.Nickname
-		u.Avatar = user.Avatar
-		if aff, err := l.db.UpdateUser(u); err != nil || aff <= 0 {
-			log.Errorf("UpdateUser(uid:%s) affected %d error(%v)", user.Uid, aff, err)
-		}
-	}
-
 	r.Uid = user.Uid
-	r.Name = user.Nickname
-	r.Permission = u.Permission
+	r.Name = user.Name
+	r.Permission = user.Permission
 	r.RoomId = params.RoomID
 
 	// 告知comet連線多久沒心跳就直接close
@@ -99,7 +69,7 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	r.Key = uuid.New().String()
 
 	// 儲存user資料至redis
-	if err := l.cache.SetUser(r.Uid, r.Key, r.RoomId, r.Name, user.Token, server, r.Permission); err != nil {
+	if err := l.cache.SetUser(r.Uid, r.Key, r.RoomId, r.Name, "test", server, r.Permission); err != nil {
 		log.Errorf("l.dao.SetUser(%s,%s,%s,%s) error(%v)", r.Uid, r.Key, r.Name, server, err)
 	}
 	log.Infof("conn connected key:%s server:%s uid:%s token:%s", r.Key, server, r.Uid, token)
