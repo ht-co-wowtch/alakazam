@@ -18,6 +18,7 @@ httpServer:
       - Content-Type
       - Keep-Alive
       - User-Agent
+      - Authorization
 
 # httpAdminServer
 httpAdminServer:
