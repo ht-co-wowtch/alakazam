@@ -12,7 +12,6 @@ func TestGetUser(t *testing.T) {
 	expectedRoomId := "6318a4f786e64c6487a30687e9df3a13"
 	expectedName := "test"
 	expectedStatus := permission.PlayDefaultPermission
-	token := "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTg2ODgwMTcsImlzcyI6ImNwdyIsImF1ZCI6ImNoYXQiLCJzZXNzaW9uX3Rva2VuIjoiY2MwZGEwNjMwMzg2NGFjNWJlZGJhMzViNWQ1NWNkZTEiLCJ1aWQiOiI5ODQxNjQyNmU0OTQ0ZWUyODhkOTQ3NWNkODBiYzUwMSJ9.sfIKY2nZ6b4pWGrAmNUV8ndkQRmnv2fKdg80cW3FS9Y"
 
 	err := d.SetUser(uid, key, expectedRoomId, expectedName, "", expectedStatus)
 	assert.Nil(t, err)
