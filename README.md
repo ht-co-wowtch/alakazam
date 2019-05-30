@@ -75,6 +75,7 @@ TODO
 - [ ] 註冊中心(etcd)
 - [ ] docker file
 - [ ] 整合測試 bash shell
+- [ ] database,redis connection pool  maxConn 優化
 
 ## Quick Reference
 
@@ -353,14 +354,14 @@ body是新房間id
 
 ```
   {
-      "ticket": "gM18QgsqI0zFFmdLyvHQxKa0N95BRZSh",
+      "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTcyMTE2NTAsIm5iZiI6MTU1NzIxMTY1MCwiaXNzIjoibG9naW4iLCJzZXNzaW9uX3Rva2VuIjoiZjc2OTYyM2Y0YTNlNDE4MWE4NzAwYWNkYTE3NzE1MmIiLCJkYXRhIjp7InVpZCI6IjEyNTdlN2Q5ZTFjOTQ0ZWY5YTZmMTI5Y2I5NDk1ZDAyIiwidXNlcm5hbWUiOiJyb290In19.7VJxH3tQpnJqWTlPbId7f0Rt7eQoaVvaJmbWxtHTqRU,
       "room_id": "a7d20d4133c14a62b617ee38e793cf55"
   }
 ```
 name|說明|
 ----|-----|
-ticket|請自行透過[paras服務](https://jetfueltw.postman.co/collections/2999246-70e3e838-def8-4d53-ba12-e1b2797eec57?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#d3ec74f8-b09e-420e-846b-8b3977e5637e)請求一個ticket
-room_id|想要進入的房間id，透過paras取得
+token|請自行透過[paras服務](https://jetfueltw.postman.co/collections/2999246-70e3e838-def8-4d53-ba12-e1b2797eec57?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#13ab4886-ab04-4e38-90b1-a0e73c4c8e0f)登入後拿到token
+room_id|想要進入的房間id，透過`paras服務`取得
 
 結果|說明|
 ----|-----|
@@ -401,6 +402,7 @@ Boyd內容帶想要切換的房間Id即可
 狀態 |進入聊天室 |查看聊天 | 聊天 |發紅包|搶紅包|跟注|發跟注|
 -----|-----|-----|-----|-----|-----|-----|-----|
 禁言|yes|yes|no|yes|yes|yes|no|
+不足打碼&充值量|yes|yes|no|yes|no|yes|no|
 封鎖|no|no|no|no|no|no|no|
 
 身份 |進入聊天室 |查看聊天 | 聊天 |發紅包|搶紅包|跟注|發跟注|訊息置頂|充值限制聊天|打碼量聊天|
