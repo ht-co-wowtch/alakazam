@@ -35,7 +35,7 @@ func TestGetMoney(t *testing.T) {
 			return nil, fmt.Errorf("expected GET method, got %s", request.Method)
 		}
 
-		if !strings.HasPrefix(request.URL.Path, expectedURL) {
+		if request.URL.Path != expectedURL {
 			return nil, fmt.Errorf("Expected URL '%s', got '%s'", expectedURL, request.URL.Path)
 		}
 
