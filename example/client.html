@@ -130,6 +130,8 @@
     const opOffset = 6;
     // const host = "192.168.0.138"
     const host = "127.0.0.1"
+    const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTcyMTE2NTAsIm5iZiI6MTU1NzIxMTY1MCwiaXNzIjoibG9naW4iLCJzZXNzaW9uX3Rva2VuIjoiZjc2OTYyM2Y0YTNlNDE4MWE4NzAwYWNkYTE3NzE1MmIiLCJkYXRhIjp7InVpZCI6IjEyNTdlN2Q5ZTFjOTQ0ZWY5YTZmMTI5Y2I5NDk1ZDAyIiwidXNlcm5hbWUiOiJyb290In19.7VJxH3tQpnJqWTlPbId7f0Rt7eQoaVvaJmbWxtHTqRU"
+
 
     var ws
     var textDecoder = new TextDecoder();
@@ -191,6 +193,7 @@
 
                         document.getElementById("status").innerHTML = "<color style='color:green'>ok<color>";
                         document.getElementById("room_id").innerHTML = msgBody.room_id;
+                        console.log(msgBody)
                         console.log("receive: auth reply");
 
                         heartbeat();
@@ -240,15 +243,13 @@
             }
 
             function auth() {
-                // 請先拿到ticket 文件:https://gitlab.com/jetfueltw/cpw/alakazam/tree/develop#room
-                var token = '{"ticket":"ec2fa7acc9d443489531b156077c09a1", "room_id":"6318a4f786e64c6487a30687e9df3a13"}'
+                var token = '{"token":"' + token + '", "room_id":"6318a4f786e64c6487a30687e9df3a13"}'
                 var headerBuf = new ArrayBuffer(rawHeaderLen);
                 var headerView = new DataView(headerBuf, 0);
                 var bodyBuf = textEncoder.encode(token);
                 headerView.setInt32(packetOffset, rawHeaderLen + bodyBuf.byteLength);
                 headerView.setInt16(headerOffset, rawHeaderLen);
                 headerView.setInt32(opOffset, 1);
-                console.log(token)
                 ws.send(mergeArrayBuffer(headerBuf, bodyBuf));
             }
 
@@ -280,8 +281,8 @@
                 key: document.getElementById("key").value,
                 message: document.getElementById("btn-input").value
             }),
-            headers:{
-                "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTcyMTE2NTAsIm5iZiI6MTU1NzIxMTY1MCwiaXNzIjoibG9naW4iLCJzZXNzaW9uX3Rva2VuIjoiZjc2OTYyM2Y0YTNlNDE4MWE4NzAwYWNkYTE3NzE1MmIiLCJkYXRhIjp7InVpZCI6IjEyNTdlN2Q5ZTFjOTQ0ZWY5YTZmMTI5Y2I5NDk1ZDAyIiwidXNlcm5hbWUiOiJyb290In19.7VJxH3tQpnJqWTlPbId7f0Rt7eQoaVvaJmbWxtHTqRU",
+            headers: {
+                "Authorization": "Bearer " + token,
             },
             contentType: "application/json; charset=utf-8",
             dataType: "json",
