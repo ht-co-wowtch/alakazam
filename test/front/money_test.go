@@ -52,10 +52,12 @@ func giveLuckyMoney(amount float32, count int, message string, model int) reques
 			Uid: "82ea16cd2d6a49d887440066ef739669",
 			Key: "f0962f33-b444-4ac0-8be9-2a8423178212",
 		},
-		Amount:  amount,
-		Count:   count,
-		Message: message,
-		Type:    model,
+		GiveMoney: activity.GiveMoney{
+			Amount:  amount,
+			Count:   count,
+			Message: message,
+			Type:    model,
+		},
 	})
 }
 

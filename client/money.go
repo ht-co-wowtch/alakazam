@@ -26,3 +26,7 @@ func (c *Client) GetDepositAndDml(day int, option *Params) (money Money, err err
 
 	return money, err
 }
+
+func (c *Client) NewOlder(id string, total float32, token string) error {
+	return nil
+}

@@ -87,9 +87,9 @@ func (l *Logic) isMessage(rid string, status int, option *client.Params) error {
 		return errors.FailureError
 	}
 
-	money, err := l.client.GetMoney(day, option)
+	money, err := l.client.GetDepositAndDml(day, option)
 	if err != nil {
-		log.Errorf("Logic isMessage client GetMoney(id:%s day:%d) error(%v)", option.Uid, day, err)
+		log.Errorf("Logic isMessage client GetDepositAndDml(id:%s day:%d) error(%v)", option.Uid, day, err)
 		return errors.FailureError
 	}
 
