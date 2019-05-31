@@ -26,7 +26,7 @@ type user struct {
 	Key string `json:"key" binding:"required"`
 }
 
-type PushRoomForm struct {
+type PushRoomJson struct {
 	user
 
 	// user push message
@@ -34,7 +34,7 @@ type PushRoomForm struct {
 }
 
 // 單一房間推送
-func (l *Logic) PushRoom(c *gin.Context, p *PushRoomForm) error {
+func (l *Logic) PushRoom(c *gin.Context, p *PushRoomJson) error {
 	rId, name, w, err := l.cache.GetUser(p.Uid, p.Key)
 	if err != nil {
 		return errors.FailureError

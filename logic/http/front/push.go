@@ -10,7 +10,7 @@ import (
 
 // 單一房間推送訊息
 func (s *Server) pushRoom(c *gin.Context) {
-	arg := new(logic.PushRoomForm)
+	arg := new(logic.PushRoomJson)
 	if err := c.ShouldBindJSON(arg); err != nil {
 		response.ErrorE(c, errors.DataError)
 		return
