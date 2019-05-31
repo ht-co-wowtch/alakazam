@@ -10,7 +10,7 @@ import (
 )
 
 // 一個聊天室會員的基本資料
-type user struct {
+type User struct {
 	// user uid
 	Uid string `json:"uid" binding:"required"`
 
@@ -31,7 +31,7 @@ type user struct {
 }
 
 // 會員在線認證
-func (l *Logic) auth(u *user) (err error) {
+func (l *Logic) auth(u *User) (err error) {
 	u.roomId, u.name, u.status, err = l.cache.GetUser(u.Uid, u.Key)
 
 	if err != nil {
@@ -50,7 +50,7 @@ func (l *Logic) auth(u *user) (err error) {
 }
 
 // 房間權限認證
-func (l *Logic) authRoom(u *user) error {
+func (l *Logic) authRoom(u *User) error {
 	u.roomStatus = l.GetRoomPermission(u.roomId)
 
 	if permission.IsBanned(u.roomStatus) {

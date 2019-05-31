@@ -3,6 +3,7 @@ package front
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"gitlab.com/jetfueltw/cpw/alakazam/activity"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
@@ -11,11 +12,14 @@ import (
 
 type Server struct {
 	logic *logic.Logic
+
+	money *activity.LuckyMoney
 }
 
 func New(l *logic.Logic) *Server {
 	return &Server{
 		logic: l,
+		money: activity.NewLuckyMoney(),
 	}
 }
 
@@ -31,4 +35,5 @@ func (s *Server) InitRoute(e *gin.Engine) {
 	e.Use(cors.New(c), http.AuthenticationHandler)
 
 	e.POST("/push/room", s.pushRoom)
+	e.POST("/give-lucky-money", s.giveLuckyMoney)
 }

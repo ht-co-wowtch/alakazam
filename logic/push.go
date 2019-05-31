@@ -18,7 +18,7 @@ type Message struct {
 }
 
 type PushRoomJson struct {
-	user
+	User
 
 	// user push message
 	Message string `json:"message" binding:"required"`
@@ -26,10 +26,10 @@ type PushRoomJson struct {
 
 // 單一房間推送
 func (l *Logic) PushRoom(c *gin.Context, p *PushRoomJson) error {
-	if err := l.auth(&p.user); err != nil {
+	if err := l.auth(&p.User); err != nil {
 		return err
 	}
-	if err := l.authRoom(&p.user); err != nil {
+	if err := l.authRoom(&p.User); err != nil {
 		return err
 	}
 
