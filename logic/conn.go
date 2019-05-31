@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/golang/glog"
-	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
@@ -47,32 +46,27 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 
 	r := new(ConnectReply)
 
-	user, err := l.auth(params.Token)
-	if err != nil {
-		return r, err
-	}
+	user, key, err := l.login(params.Token, params.RoomID, server)
 
+	switch err {
+	case nil:
 	// 封鎖會員
-	if user.IsBlockade {
+	case errors.BlockadeError:
 		r.Permission = permission.Blockade
 		return r, nil
+	default:
+		return r, err
 	}
 
 	r.Uid = user.Uid
 	r.Name = user.Name
 	r.Permission = user.Permission
 	r.RoomId = params.RoomID
+	r.Key = key
 
 	// 告知comet連線多久沒心跳就直接close
 	r.Hb = l.c.Heartbeat
 
-	r.Key = uuid.New().String()
-
-	// 儲存user資料至redis
-	if err := l.cache.SetUser(r.Uid, r.Key, r.RoomId, r.Name, server, r.Permission); err != nil {
-		log.Errorf("l.dao.SetUser(%s,%s,%s,%s) error(%v)", r.Uid, r.Key, r.Name, server, err)
-	}
-	log.Infof("conn connected key:%s server:%s uid:%s token:%s", r.Key, server, r.Uid, token)
 	return r, nil
 }
 

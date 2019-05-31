@@ -6,7 +6,6 @@ import (
 	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"time"
 )
 
@@ -18,14 +17,6 @@ type Message struct {
 	Time    string `json:"time"`
 }
 
-type user struct {
-	// user uid
-	Uid string `json:"uid" binding:"required"`
-
-	// user connection key
-	Key string `json:"key" binding:"required"`
-}
-
 type PushRoomJson struct {
 	user
 
@@ -35,27 +26,11 @@ type PushRoomJson struct {
 
 // 單一房間推送
 func (l *Logic) PushRoom(c *gin.Context, p *PushRoomJson) error {
-	rId, name, w, err := l.cache.GetUser(p.Uid, p.Key)
-	if err != nil {
-		return errors.FailureError
+	if err := l.auth(&p.user); err != nil {
+		return err
 	}
-
-	if name == "" {
-		return errors.LoginError
-	}
-
-	if rId == "" {
-		return errors.RoomError
-	}
-
-	roomStatus := l.GetRoomPermission(rId)
-
-	if permission.IsBanned(roomStatus) {
-		return errors.RoomBannedError
-	}
-
-	if l.isUserBanned(p.Uid, w) {
-		return errors.BannedError
+	if err := l.authRoom(&p.user); err != nil {
+		return err
 	}
 
 	option := &client.Params{
@@ -63,13 +38,13 @@ func (l *Logic) PushRoom(c *gin.Context, p *PushRoomJson) error {
 		Token: c.GetString("token"),
 	}
 
-	if err := l.isMessage(rId, roomStatus, option); err != nil {
+	if err := l.isMessage(p.roomId, p.roomStatus, option); err != nil {
 		return err
 	}
 
 	msg, err := json.Marshal(Message{
 		Uid:     p.Uid,
-		Name:    name,
+		Name:    p.name,
 		Avatar:  "",
 		Message: p.Message,
 		Time:    time.Now().Format("15:04:05"),
@@ -80,7 +55,7 @@ func (l *Logic) PushRoom(c *gin.Context, p *PushRoomJson) error {
 		return errors.FailureError
 	}
 
-	if err := l.stream.BroadcastRoomMsg(rId, msg); err != nil {
+	if err := l.stream.BroadcastRoomMsg(p.roomId, msg); err != nil {
 		return errors.FailureError
 	}
 	return nil
