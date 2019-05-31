@@ -24,6 +24,7 @@ require (
 	golang.org/x/net v0.0.0-20190503192946-f4e77d36d62c
 	google.golang.org/grpc v1.20.1
 	gopkg.in/Shopify/sarama.v1 v1.19.0
+	gopkg.in/go-playground/validator.v8 v8.18.2
 )
 
 replace github.com/ugorji/go v1.1.4 => github.com/ugorji/go/codec v0.0.0-20190204201341-e444a5086c43

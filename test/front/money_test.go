@@ -20,13 +20,13 @@ func TestGiveLuckyMoney(t *testing.T) {
 func TestGiveLuckyMoneyMinAmountBy0_01(t *testing.T) {
 	r := giveLuckyMoney(0.001, 1, "test", activity.Money)
 
-	shouldBeGiveLuckyMoneyError(t, r)
+	shouldBeGiveLuckyMoneyError(t, r, "红包金额最低0.01")
 }
 
 func TestGiveLuckyMoneyMaxCountBy500(t *testing.T) {
 	r := giveLuckyMoney(1, 501, "test", activity.Money)
 
-	shouldBeGiveLuckyMoneyError(t, r)
+	shouldBeGiveLuckyMoneyError(t, r, "红包最大数量是500")
 }
 
 func TestGiveLuckyMoneyMaxMessageChatBy20(t *testing.T) {
@@ -37,13 +37,13 @@ func TestGiveLuckyMoneyMaxMessageChatBy20(t *testing.T) {
 
 	r := giveLuckyMoney(1, 1, s, activity.Money)
 
-	shouldBeGiveLuckyMoneyError(t, r)
+	shouldBeGiveLuckyMoneyError(t, r, "限制文字长度为1到20个字")
 }
 
 func TestGiveLuckyMoneyTypeError(t *testing.T) {
 	r := giveLuckyMoney(1, 1, "test", 3)
 
-	shouldBeGiveLuckyMoneyError(t, r)
+	shouldBeGiveLuckyMoneyError(t, r, errors.DataError.Message)
 }
 
 func giveLuckyMoney(amount float32, count int, message string, model int) request.Response {
@@ -59,8 +59,8 @@ func giveLuckyMoney(amount float32, count int, message string, model int) reques
 	})
 }
 
-func shouldBeGiveLuckyMoneyError(t *testing.T, r request.Response) {
+func shouldBeGiveLuckyMoneyError(t *testing.T, r request.Response, message string) {
 	e := request.ToError(t, r.Body)
 	e.Status = r.StatusCode
-	assert.Equal(t, errors.DataError, e)
+	assert.Equal(t, errors.DataError.Mes(message), e)
 }

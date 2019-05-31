@@ -20,6 +20,7 @@ var (
 	MoneyError                     = eNew(http.StatusUnauthorized, 10024015, "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元")
 	DataError                      = eNew(http.StatusUnprocessableEntity, 10024220, "资料验证错误")
 	SetRoomError                   = eNew(http.StatusUnprocessableEntity, 10024221, "")
+	AmountError                    = eNew(http.StatusUnprocessableEntity, 10024222, "")
 	TypeError                      = eNew(http.StatusInternalServerError, 10025000, "应用程序错误")
 )
 
@@ -63,3 +64,4 @@ func (e Error) Mes(msg string) Error {
 	e.Message = msg
 	return e
 }
+
