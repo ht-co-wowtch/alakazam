@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"time"
 )
@@ -18,12 +18,16 @@ type Message struct {
 	Time    string `json:"time"`
 }
 
-type PushRoomForm struct {
+type user struct {
 	// user uid
 	Uid string `json:"uid" binding:"required"`
 
 	// user connection key
 	Key string `json:"key" binding:"required"`
+}
+
+type PushRoomForm struct {
+	user
 
 	// user push message
 	Message string `json:"message" binding:"required"`
