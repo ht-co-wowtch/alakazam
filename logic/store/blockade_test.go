@@ -2,36 +2,51 @@ package store
 
 import (
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/stretchr/testify/assert"
+	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
 
 func TestSetBlockade(t *testing.T) {
-	uid := "82ea16cd2d6a49d887440066ef739669"
-	mockSetBlockade(uid)
+	Convey("設定封鎖", t, func() {
+		uid := "82ea16cd2d6a49d887440066ef739669"
 
-	aff, err := store.SetBlockade(uid, "")
+		Convey("封鎖某會員成功", func() {
+			mockBanned(uid, true)
 
-	assert.Nil(t, err)
-	assert.Equal(t, int64(1), aff)
+			aff, err := store.SetBlockade(uid, "")
+
+			Convey("sql執行成功", func() {
+				So(err, ShouldBeNil)
+				So(mock.ExpectationsWereMet(), ShouldBeNil)
+			})
+
+			Convey("回傳update affected == 1", func() {
+				So(aff, ShouldEqual, 1)
+			})
+		})
+	})
 }
 
 func TestStore_DeleteBanned(t *testing.T) {
-	uid := "82ea16cd2d6a49d887440066ef739669"
-	mockDeleteBanned(uid)
+	Convey("解除封鎖", t, func() {
+		uid := "82ea16cd2d6a49d887440066ef739669"
 
-	aff, err := store.DeleteBanned(uid)
+		Convey("解除某會員成功", func() {
+			mockBanned(uid, false)
 
-	assert.Nil(t, err)
-	assert.Equal(t, int64(1), aff)
-}
+			aff, err := store.DeleteBanned(uid)
 
-func mockSetBlockade(uid string) *sqlmock.ExpectedExec {
-	return mockBanned(uid, true)
-}
+			Convey("sql執行成功", func() {
+				So(err, ShouldBeNil)
+				So(mock.ExpectationsWereMet(), ShouldBeNil)
+			})
 
-func mockDeleteBanned(uid string) *sqlmock.ExpectedExec {
-	return mockBanned(uid, false)
+			Convey("回傳update affected == 1", func() {
+				So(err, ShouldBeNil)
+				So(aff, ShouldEqual, 1)
+			})
+		})
+	})
 }
 
 func mockBanned(uid string, isBlockade bool) *sqlmock.ExpectedExec {

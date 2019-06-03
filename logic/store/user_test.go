@@ -2,48 +2,81 @@ package store
 
 import (
 	"github.com/DATA-DOG/go-sqlmock"
+	. "github.com/smartystreets/goconvey/convey"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateUser(t *testing.T) {
-	user := &User{Uid: "1", Name: "test", Avatar: "/", Permission: 100}
+	Convey("建立會員", t, func() {
+		user := &User{Uid: "1", Name: "test", Avatar: "/", Permission: 100}
 
-	mock.ExpectExec("^INSERT INTO members \\(uid, name, avatar, permission, create_at\\) VALUES \\(\\?, \\?, \\?, \\?, CURRENT_TIMESTAMP\\)").
-		WithArgs(user.Uid, user.Name, user.Avatar, user.Permission).
-		WillReturnResult(sqlmock.NewResult(1, 1))
+		c := mock.ExpectExec("^INSERT INTO members \\(uid, name, avatar, permission, create_at\\) VALUES \\(\\?, \\?, \\?, \\?, CURRENT_TIMESTAMP\\)").
+			WithArgs(user.Uid, user.Name, user.Avatar, user.Permission)
 
-	aff, err := store.CreateUser(user)
+		Convey("建立成功", func() {
+			c.WillReturnResult(sqlmock.NewResult(1, 1))
 
-	assert.Nil(t, err)
-	assert.Equal(t, aff, int64(1))
+			aff, err := store.CreateUser(user)
+
+			Convey("sql執行成功", func() {
+				So(err, ShouldBeNil)
+				So(mock.ExpectationsWereMet(), ShouldBeNil)
+			})
+
+			Convey("回傳update affected == 1", func() {
+				So(aff, ShouldEqual, 1)
+			})
+		})
+	})
 }
 
 func TestFind(t *testing.T) {
-	expectedUser := &User{Uid: "1", Name: "test", Avatar: "/", Permission: 100}
+	Convey("取會員資料", t, func() {
+		expectedUser := &User{Uid: "1", Name: "test", Avatar: "/", Permission: 100}
 
-	mock.ExpectQuery("^SELECT name, avatar, permission, is_blockade FROM members WHERE uid = \\?").
-		WithArgs(expectedUser.Uid).
-		WillReturnRows(
-			sqlmock.NewRows([]string{"name", "avatar", "permission", "is_blockade"}).
-				AddRow(expectedUser.Name, expectedUser.Avatar, expectedUser.Permission, expectedUser.IsBlockade),
-		)
-	user, err := store.Find(expectedUser.Uid)
+		c := mock.ExpectQuery("^SELECT name, avatar, permission, is_blockade FROM members WHERE uid = \\?").
+			WithArgs(expectedUser.Uid)
 
-	assert.Nil(t, err)
-	assert.Equal(t, expectedUser, user)
+		Convey("有資料", func() {
+			c.WillReturnRows(
+				sqlmock.NewRows([]string{"name", "avatar", "permission", "is_blockade"}).
+					AddRow(expectedUser.Name, expectedUser.Avatar, expectedUser.Permission, expectedUser.IsBlockade),
+			)
+
+			user, err := store.Find(expectedUser.Uid)
+
+			Convey("sql執行成功", func() {
+				So(err, ShouldBeNil)
+				So(mock.ExpectationsWereMet(), ShouldBeNil)
+			})
+
+			Convey("回傳資料正確", func() {
+				So(user, ShouldResemble, expectedUser)
+			})
+		})
+	})
 }
 
 func TestUpdateUser(t *testing.T) {
-	user := &User{Uid: "1", Name: "test", Avatar: "/"}
+	Convey("更新會員資料", t, func() {
+		user := &User{Uid: "1", Name: "test", Avatar: "/"}
 
-	mock.ExpectExec("UPDATE members SET name = \\?, avatar = \\? WHERE uid = \\?").
-		WithArgs(user.Name, user.Avatar, user.Uid).
-		WillReturnResult(sqlmock.NewResult(1, 1))
+		c := mock.ExpectExec("UPDATE members SET name = \\?, avatar = \\? WHERE uid = \\?").
+			WithArgs(user.Name, user.Avatar, user.Uid)
 
-	aff, err := store.UpdateUser(user)
+		Convey("更新成功", func() {
+			c.WillReturnResult(sqlmock.NewResult(1, 1))
 
-	assert.Nil(t, err)
-	assert.Equal(t, int64(1), aff)
+			aff, err := store.UpdateUser(user)
+
+			Convey("sql執行成功", func() {
+				So(err, ShouldBeNil)
+				So(mock.ExpectationsWereMet(), ShouldBeNil)
+			})
+
+			Convey("回傳update affected == 1", func() {
+				So(aff, ShouldEqual, 1)
+			})
+		})
+	})
 }

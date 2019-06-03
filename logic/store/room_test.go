@@ -2,55 +2,72 @@ package store
 
 import (
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/stretchr/testify/assert"
+	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
 
 func TestCreateRoom(t *testing.T) {
-	mock.ExpectExec("INSERT INTO rooms \\(room_id, is_message, is_bonus, is_follow, day_limit, amount_limit, dml_limit\\) VALUES (.+)").
-		WithArgs(sqlmock.AnyArg(), true, false, false, 5, 1000, 100).
-		WillReturnResult(sqlmock.NewResult(1, 1))
+	Convey("設定一個房間", t, func() {
+		c := mock.ExpectExec("INSERT INTO rooms \\(room_id, is_message, is_bonus, is_follow, day_limit, amount_limit, dml_limit\\) VALUES (.+)").
+			WithArgs(sqlmock.AnyArg(), true, false, false, 5, 1000, 100)
 
-	aff, err := store.CreateRoom(Room{
-		IsMessage: true,
-		Limit: Limit{
-			Day:    5,
-			Amount: 1000,
-			Dml:    100,
-		},
+		Convey("設定成功", func() {
+			c.WillReturnResult(sqlmock.NewResult(1, 1))
+
+			aff, err := store.CreateRoom(Room{
+				IsMessage: true,
+				Limit: Limit{
+					Day:    5,
+					Amount: 1000,
+					Dml:    100,
+				},
+			})
+
+			Convey("sql執行成功", func() {
+				So(err, ShouldBeNil)
+				So(mock.ExpectationsWereMet(), ShouldBeNil)
+			})
+
+			Convey("回傳create affected == 1", func() {
+				So(err, ShouldBeNil)
+				So(aff, ShouldEqual, 1)
+			})
+		})
 	})
-
-	assert.Nil(t, err)
-	assert.Equal(t, int64(1), aff)
-
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("there were unfulfilled expectations: %s", err)
-	}
 }
 
 func TestGetRoom(t *testing.T) {
-	roomId := "82ea16cd2d6a49d887440066ef739669"
-	room := Room{
-		IsMessage: true,
-		Limit: Limit{
-			Day:    1,
-			Amount: 1000,
-			Dml:    100,
-		},
-	}
-	mock.ExpectQuery("^SELECT \\* FROM rooms WHERE room_id = \\?").
-		WithArgs(roomId).
-		WillReturnRows(
-			sqlmock.NewRows([]string{"room_id", "is_message", "is_bonus", "is_follow", "day_limit", "amount_limit", "dml_limit"}).
-				AddRow(room.RoomId, room.IsMessage, false, false, room.Limit.Day, room.Limit.Amount, room.Limit.Dml),
-		)
+	Convey("取房間設定", t, func() {
+		roomId := "82ea16cd2d6a49d887440066ef739669"
+		room := Room{
+			IsMessage: true,
+			Limit: Limit{
+				Day:    1,
+				Amount: 1000,
+				Dml:    100,
+			},
+		}
 
-	r, err := store.GetRoom(roomId)
+		c := mock.ExpectQuery("^SELECT \\* FROM rooms WHERE room_id = \\?").
+			WithArgs(roomId)
 
-	assert.Nil(t, err)
-	assert.Equal(t, room, r)
+		Convey("取成功", func() {
+			c.WillReturnRows(
+				sqlmock.NewRows([]string{"room_id", "is_message", "is_bonus", "is_follow", "day_limit", "amount_limit", "dml_limit"}).
+					AddRow(room.RoomId, room.IsMessage, false, false, room.Limit.Day, room.Limit.Amount, room.Limit.Dml),
+			)
 
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("there were unfulfilled expectations: %s", err)
-	}
+			r, err := store.GetRoom(roomId)
+
+			Convey("sql執行成功", func() {
+				So(err, ShouldBeNil)
+				So(mock.ExpectationsWereMet(), ShouldBeNil)
+			})
+
+			Convey("回傳的資料正確", func() {
+				So(err, ShouldBeNil)
+				So(r, ShouldResemble, room)
+			})
+		})
+	})
 }
