@@ -28,13 +28,7 @@ func (d *Cache) SetBanned(uid string, expired int) (err error) {
 		log.Errorf("conn.Flush() error(%v)", err)
 		return
 	}
-	for i := 0; i < 2; i++ {
-		if _, err = conn.Receive(); err != nil {
-			log.Errorf("conn.Receive() error(%v)", err)
-			return err
-		}
-	}
-	return nil
+	return receive(conn, 3)
 }
 
 // 取得禁言時效

@@ -94,3 +94,12 @@ func (d *Cache) Ping() error {
 	conn.Close()
 	return err
 }
+
+func receive(conn redis.Conn, count int) error {
+	for i := 0; i < count; i++ {
+		if _, err := conn.Receive(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
