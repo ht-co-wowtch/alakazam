@@ -10,22 +10,13 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/request"
-	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/run"
 	"golang.org/x/net/websocket"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"testing"
 	"time"
 )
-
-func TestMain(m *testing.M) {
-	r := run.Run("../config")
-	i := m.Run()
-	r()
-	os.Exit(i)
-}
 
 // 進入房間成功
 func TestAuth(t *testing.T) {
