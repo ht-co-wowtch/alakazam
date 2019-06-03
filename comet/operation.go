@@ -2,6 +2,7 @@ package comet
 
 import (
 	"context"
+	"encoding/json"
 	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
@@ -51,21 +52,31 @@ func (s *Server) RenewOnline(ctx context.Context, serverID string, rommCount map
 	return reply.AllRoomCount, nil
 }
 
+type changeRoom struct {
+	RoomId string `json:"room_id"`
+}
+
 // 處理Proto相關邏輯
 func (s *Server) Operate(ctx context.Context, p *pd.Proto, ch *Channel, b *Bucket) error {
 	switch p.Op {
 	// 更換房間
 	case protocol.OpChangeRoom:
-		roomId := string(p.Body)
-		if err := b.ChangeRoom(roomId, ch); err != nil {
+		var r changeRoom
+
+		if err := json.Unmarshal(p.Body, &r); err != nil {
+			return err
+		}
+
+		if err := b.ChangeRoom(r.RoomId, ch); err != nil {
 			log.Errorf("Change Room (%s) error(%v)", p.Body, err)
 		} else if _, err := s.rpcClient.ChangeRoom(ctx, &pd.ChangeRoomReq{
 			Uid:    ch.Uid,
 			Key:    ch.Key,
-			RoomID: roomId,
+			RoomID: r.RoomId,
 		}); err != nil {
 			return err
 		}
+
 		p.Op = protocol.OpChangeRoomReply
 	default:
 		// TODO error

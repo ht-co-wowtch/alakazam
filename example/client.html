@@ -218,8 +218,10 @@
                         }
                         break;
                     case 8:
-                        var roomId = textDecoder.decode(data.slice(headerLen, packetLen));
-                        document.getElementById("room_id").innerHTML = roomId
+                        var json = textDecoder.decode(data.slice(headerLen, packetLen));
+                        var msgBody = JSON.parse(json)
+
+                        document.getElementById("room_id").innerHTML = msgBody.room_id
                     default:
                         break
                 }
@@ -297,7 +299,8 @@
     function room() {
         var headerBuf = new ArrayBuffer(rawHeaderLen);
         var headerView = new DataView(headerBuf, 0);
-        var bodyBuf = textEncoder.encode(document.getElementById("btn-room-id").value);
+        var room = '{"room_id":"' + document.getElementById("btn-room-id").value + '"}'
+        var bodyBuf = textEncoder.encode(room);
         headerView.setInt32(packetOffset, rawHeaderLen + bodyBuf.byteLength);
         headerView.setInt16(headerOffset, rawHeaderLen);
         headerView.setInt32(opOffset, 7);

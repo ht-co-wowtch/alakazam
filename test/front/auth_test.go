@@ -124,7 +124,7 @@ func TestChangeRoom(t *testing.T) {
 
 	proto := new(grpc.Proto)
 	proto.Op = pd.OpChangeRoom
-	proto.Body = []byte(`1001`)
+	proto.Body = []byte(`{"room_id":"ABC"}`)
 
 	if err = protocol.Write(a.Wr, proto); err != nil {
 		assert.Fail(t, err.Error())
@@ -136,7 +136,7 @@ func TestChangeRoom(t *testing.T) {
 	}
 
 	assert.Equal(t, pd.OpChangeRoomReply, a.Proto.Op)
-	assert.Equal(t, "1001", string(a.Proto.Body))
+	assert.Equal(t, `{"room_id":"ABC"}`, string(a.Proto.Body))
 }
 
 func shouldBeTimeoutConnection(err error, a request.Auth, t *testing.T) {

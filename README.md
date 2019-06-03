@@ -76,6 +76,8 @@ TODO
 - [ ] docker file
 - [ ] 整合測試 bash shell
 - [ ] database,redis connection pool  maxConn 優化
+- [ ] 限制訊息長度
+- [ ] Test Case 用BDD改寫
 
 ## Quick Reference
 
@@ -138,16 +140,16 @@ Body |不固定|傳送的資料16bytes之後就是Body|json格式
 ### Operation
 不同的Operation說明本次Protocol資料是什麼，如心跳回覆,訊息等等
 
-value | 說明 |
------|-----|
-1|[要求連線到某一個房間](#room) 
-2|[連線到某一個房間結果回覆](#room)
-3|[發送心跳](#heartbeat)
-4|[回覆心跳結果](#heartbeat-reply)
-5|[聊天室批次訊息](#message)
-6|[聊天室訊息](#message-raw)
-7|[更換房間](#change-room)
-8|[回覆更換房間結果](#change-room)
+value | 說明 | body type |
+-----|-----|-------|
+1|[要求連線到某一個房間](#room)  | json |
+2|[連線到某一個房間結果回覆](#room) | json |
+3|[發送心跳](#heartbeat) | 無Body |
+4|[回覆心跳結果](#heartbeat-reply) | int32 |
+5|[聊天室批次訊息](#message) | json |
+6|[聊天室訊息](#message-raw) | json |
+7|[更換房間](#change-room) | json |
+8|[回覆更換房間結果](#change-room) | json |
 
 ### Body
 聊天室的訊息內容
@@ -342,6 +344,10 @@ Operation = `8`=> 回覆更換房間結果
 
 ![arch](./doc/changeRoomReply.png)
 
+name|說明|格式
+----|-----|-----|
+room_id|新房間id|string
+
 ```
 body是新房間id
 ```
@@ -388,6 +394,10 @@ headerView.setInt32(opOffset, 3);
 ### Change Room
 
 Boyd內容帶想要切換的房間Id即可
+
+name|說明|格式
+----|-----|-----|
+room_id|新房間id|string
 
 ![arch](./doc/changeRoom.png)
 
