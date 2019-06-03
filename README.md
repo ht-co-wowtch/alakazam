@@ -143,13 +143,13 @@ Body |不固定|傳送的資料16bytes之後就是Body|json格式
 value | 說明 | body type |
 -----|-----|-------|
 1|[要求連線到某一個房間](#room)  | json |
-2|[連線到某一個房間結果回覆](#room) | json |
+2|[連線到某一個房間結果回覆](#room-reply) | json |
 3|[發送心跳](#heartbeat) | 無Body |
 4|[回覆心跳結果](#heartbeat-reply) | int32 |
 5|[聊天室批次訊息](#message) | json |
 6|[聊天室訊息](#message-raw) | json |
 7|[更換房間](#change-room) | json |
-8|[回覆更換房間結果](#change-room) | json |
+8|[回覆更換房間結果](#change-room-reply) | json |
 
 ### Body
 聊天室的訊息內容
