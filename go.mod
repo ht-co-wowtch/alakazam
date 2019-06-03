@@ -18,6 +18,7 @@ require (
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/rafaeljusto/redigomock v0.0.0-20190202135759-257e089e14a1
+	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.3.0
 	github.com/zhenjl/cityhash v0.0.0-20131128155616-cdd6a94144ab

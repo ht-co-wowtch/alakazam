@@ -3,47 +3,90 @@ package cache
 import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/rafaeljusto/redigomock"
-	"github.com/stretchr/testify/assert"
+	. "github.com/smartystreets/goconvey/convey"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
+	"strconv"
 	"testing"
 )
 
 func TestGetRoom(t *testing.T) {
-	roomId := "a1b4bbec3f624ecf84858632a730c688"
+	Convey("假設A房間有發話權限", t, func() {
+		Reset(mockRestart)
 
-	mockGetRoom(roomId, []byte(`1`))
+		roomId := "a1b4bbec3f624ecf84858632a730c688"
 
-	i, err := d.GetRoom(roomId)
+		Convey("cache取A房間資料成功", func() {
+			c := mockGetRoom(roomId, []byte(strconv.Itoa(permission.Message)))
+			i, err := d.GetRoom(roomId)
 
-	assert.Nil(t, err)
-	assert.Equal(t, 1, i)
-}
+			Convey("error == nil", func() {
+				So(err, ShouldBeNil)
+				So(mock.ExpectationsWereMet(), ShouldBeNil)
+				So(1, ShouldEqual, mock.Stats(c))
+			})
 
-func TestGetRoomEmpty(t *testing.T) {
-	roomId := "a1b4bbec3f624ecf84858632a730c688"
+			Convey("有發話權限", func() {
+				So(permission.Message, ShouldEqual, i)
+			})
+		})
 
-	mockGetRoom(roomId, nil)
+		Convey("cache沒有A房間資料", func() {
+			c := mockGetRoom(roomId, nil)
+			i, err := d.GetRoom(roomId)
 
-	i, err := d.GetRoom(roomId)
+			Convey("error == nil", func() {
+				So(mock.ExpectationsWereMet(), ShouldBeNil)
+				So(1, ShouldEqual, mock.Stats(c))
+			})
 
-	assert.Equal(t, redis.ErrNil, err)
-	assert.Equal(t, 0, i)
+			Convey("沒有資料", func() {
+				So(redis.ErrNil, ShouldEqual, err)
+			})
+
+			Convey("沒有發話權限", func() {
+				So(0, ShouldEqual, i)
+			})
+		})
+	})
 }
 
 func TestSetRoom(t *testing.T) {
-	roomId := "a1b4bbec3f624ecf84858632a730c688"
+	var p, day, dml, amount int
 
-	mockSetRoom(roomId)
+	Convey("假設有一個房間", t, func() {
+		Reset(mockRestart)
 
-	err := d.SetRoom(roomId, 1, 1, 1000, 100)
+		roomId := "a1b4bbec3f624ecf84858632a730c688"
+		p = permission.Message
+		day = 1
+		dml = 1000
+		amount = 100
 
-	assert.Nil(t, err)
+		c1, c2 := mockSetRoom(roomId, p, day, dml, amount, 60*60)
+
+		Convey("設定房間cache資料成功", func() {
+			c1.Expect("")
+			c2.Expect("")
+
+			err := d.SetRoom(roomId, p, day, dml, amount)
+
+			Convey("error == nil", func() {
+				So(err, ShouldBeNil)
+				So(mock.ExpectationsWereMet(), ShouldBeNil)
+			})
+
+			Convey("有發話權限,打碼量金額&天數限制,充值發話限制,過期時間", func() {
+				So(1, ShouldEqual, mock.Stats(c1))
+				So(1, ShouldEqual, mock.Stats(c2))
+			})
+		})
+	})
 }
 
-func mockSetRoom(roomId string) {
-	mock.Command("HMSET", keyRoom(roomId), hashPermissionKey, 1, hashLimitDayKey, 1, hashLimitDmlKey, 1000, hashLimitAmountKey, 100).
-		Expect("")
-	mock.Command("EXPIRE", keyRoom(roomId), 60*60).
-		Expect("")
+func mockSetRoom(roomId string, p, day, dml, amount, expire int) (c1 *redigomock.Cmd, c2 *redigomock.Cmd) {
+	c1 = mock.Command("HMSET", keyRoom(roomId), hashPermissionKey, p, hashLimitDayKey, day, hashLimitDmlKey, dml, hashLimitAmountKey, amount)
+	c2 = mock.Command("EXPIRE", keyRoom(roomId), expire)
+	return
 }
 
 func mockGetRoom(roomId string, expect interface{}) *redigomock.Cmd {

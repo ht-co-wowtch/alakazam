@@ -1,58 +1,89 @@
 package cache
 
 import (
-	"github.com/rafaeljusto/redigomock"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
+	. "github.com/smartystreets/goconvey/convey"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
+	"testing"
 )
 
 func TestSetUser(t *testing.T) {
-	uid := "82ea16cd2d6a49d887440066ef739669"
-	key := "0b7f8111-8781-4574-8cb8-2eda0adb7598"
-	roomId := "1000"
-	name := "test"
-	mockSetUser(uid, key, roomId, name)
+	Convey("假設有一個會員", t, func() {
+		Reset(mockRestart)
 
-	err := d.SetUser(uid, key, roomId, name, "", permission.PlayDefaultPermission)
-	assert.Nil(t, err)
+		uid := "82ea16cd2d6a49d887440066ef739669"
+		key := "0b7f8111-8781-4574-8cb8-2eda0adb7598"
+		roomId := "1000"
+		name := "test"
+		p := permission.PlayDefaultPermission
+
+		c1 := mock.Command("HMSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, p, hashServerKey, "")
+		c2 := mock.Command("EXPIRE", keyUidInfo(uid), expireSec)
+
+		Convey("設定會員cache資料成功", func() {
+			c1.Expect("")
+			c2.Expect("")
+
+			err := d.SetUser(uid, key, roomId, name, "", p)
+
+			Convey("error == nil", func() {
+				So(err, ShouldBeNil)
+				So(mock.ExpectationsWereMet(), ShouldBeNil)
+			})
+
+			Convey("有uid,key,房間id,name,權限", func() {
+				So(1, ShouldEqual, mock.Stats(c1))
+				So(1, ShouldEqual, mock.Stats(c2))
+			})
+		})
+	})
 }
 
 func TestRefreshUserExpire(t *testing.T) {
-	ok, err := mockRefreshUserExpire("82ea16cd2d6a49d887440066ef739669")
+	Convey("刷新會員資料expire", t, func() {
+		Reset(mockRestart)
 
-	assert.Nil(t, err)
-	assert.True(t, ok)
+		uid := "82ea16cd2d6a49d887440066ef739669"
+
+		Convey("刷新cache expire成功", func() {
+			c1 := mock.Command("EXPIRE", keyUidInfo(uid), expireSec).
+				Expect([]byte(`true`))
+			ok, err := d.RefreshUserExpire(uid)
+
+			Convey("error == nil", func() {
+				So(err, ShouldBeNil)
+				So(mock.ExpectationsWereMet(), ShouldBeNil)
+			})
+
+			Convey("已延長expire", func() {
+				So(1, ShouldEqual, mock.Stats(c1))
+				So(ok, ShouldBeTrue)
+			})
+		})
+	})
 }
 
 func TestDeleteUser(t *testing.T) {
-	uid := "82ea16cd2d6a49d887440066ef739669"
-	key := "0b7f8111-8781-4574-8cb8-2eda0adb7598"
+	Convey("刪除某會員資料", t, func() {
+		Reset(mockRestart)
 
-	mockDeleteUser(uid, key)
-	ok, err := d.DeleteUser(uid, key)
+		uid := "82ea16cd2d6a49d887440066ef739669"
+		key := "0b7f8111-8781-4574-8cb8-2eda0adb7598"
 
-	assert.Nil(t, err)
-	assert.True(t, ok)
-}
+		c := mock.Command("HDEL", keyUidInfo(uid), key)
 
-func mockDeleteUser(uid string, key string) *redigomock.Cmd {
-	return mock.Command("HDEL", keyUidInfo(uid), key).
-		Expect([]byte(`true`))
-}
+		Convey("刪除cache成功", func() {
+			c.Expect([]byte(`true`))
+			ok, err := d.DeleteUser(uid, key)
 
-func mockSetUser(uid, key, roomId, name string) {
-	mock.Command("HMSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, permission.PlayDefaultPermission, hashServerKey, "").
-		Expect("")
-	mock.Command("EXPIRE", keyUidInfo(uid), expireSec).
-		Expect("")
-}
+			Convey("error == nil", func() {
+				So(err, ShouldBeNil)
+				So(mock.ExpectationsWereMet(), ShouldBeNil)
+			})
 
-func mockRefreshUserExpire(uid string) (bool, error) {
-	mock.Command("EXPIRE", keyUidInfo(uid), expireSec).
-		Expect([]byte(`true`))
-	ok, err := d.RefreshUserExpire(uid)
-	return ok, err
-
+			Convey("已刪除", func() {
+				So(1, ShouldEqual, mock.Stats(c))
+				So(ok, ShouldBeTrue)
+			})
+		})
+	})
 }

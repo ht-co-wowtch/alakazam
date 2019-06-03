@@ -23,3 +23,7 @@ func TestMain(m *testing.M) {
 	d.expire = expireSec
 	os.Exit(m.Run())
 }
+
+func mockRestart() {
+	mock.Clear()
+}
