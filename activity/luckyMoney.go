@@ -1,8 +1,11 @@
 package activity
 
 import (
+	"fmt"
 	"github.com/google/uuid"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"strconv"
 )
 
 const (
@@ -14,7 +17,7 @@ const (
 )
 
 type moneyApi interface {
-	NewOlder(id string, total float32, token string) error
+	NewOlder(older client.Older, option *client.Params) (float64, error)
 }
 
 type storeApi struct {
@@ -31,14 +34,16 @@ type LuckyMoney struct {
 	queue queueApi
 }
 
-func NewLuckyMoney() *LuckyMoney {
-	return new(LuckyMoney)
+func NewLuckyMoney(money moneyApi) *LuckyMoney {
+	return &LuckyMoney{
+		money: money,
+	}
 }
 
 type GiveMoney struct {
 	// 單包金額 or 總金額 看Type種類決定
 	// 最少0.01元
-	Amount float32 `json:"amount" binding:"required,min=0.01"`
+	Amount float64 `json:"amount" binding:"required,min=0.01"`
 
 	// 紅包數量,範圍1 ~ 500包
 	Count int `json:"count" binding:"required,min=1,max=500"`
@@ -54,22 +59,41 @@ type GiveMoney struct {
 
 // 發紅包
 // TODO 未完
-func (l *LuckyMoney) Give(money *GiveMoney) (err error) {
-	var total float32
-	id := uuid.New().String()
+func (l *LuckyMoney) Give(money *GiveMoney) error {
+	var total float64
+
+	amount, err := strconv.ParseFloat(fmt.Sprintf("%.2f", money.Amount), 64)
+
+	if err != nil || money.Amount != amount {
+		return errors.AmountError
+	}
 
 	switch money.Type {
 	case Money:
-		total = float32(money.Count) * money.Amount
+		total = float64(money.Count) * money.Amount
 	case LuckMoney:
-		err = nil
+		total = money.Amount
 	default:
 		return errors.DataError
 	}
 
-	if err := l.money.NewOlder(id, total, money.Token); err != nil {
-		return err
+	c := client.Older{
+		OrderId: uuid.New().String(),
+		Amount:  total,
 	}
 
-	return err
+	p := &client.Params{
+		Token: money.Token,
+	}
+
+	if _, err := l.money.NewOlder(c, p); err != nil {
+		switch err {
+		case client.InsufficientBalanceError:
+			return errors.BalanceError
+		default:
+			return errors.FailureError
+		}
+	}
+
+	return nil
 }

@@ -2,9 +2,10 @@ package run
 
 import (
 	"github.com/DATA-DOG/go-txdb"
+	"gitlab.com/jetfueltw/cpw/alakazam/activity"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
-	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/grpc"
 	httpServer "gitlab.com/jetfueltw/cpw/alakazam/logic/http"
@@ -32,7 +33,10 @@ func RunLogic(path string) func() {
 
 	c := cache.NewRedis(conf.Conf.Redis)
 	srv := logic.Create(conf.Conf, store.NewStore(conf.Conf.DB), c, stream.NewKafkaPub(conf.Conf.Kafka), httpClient)
-	httpSrv := httpServer.New(conf.Conf.HTTPServer, front.New(srv))
+
+	money := activity.NewLuckyMoney(httpClient)
+
+	httpSrv := httpServer.New(conf.Conf.HTTPServer, front.New(srv, money))
 	httpAdminSrv := httpServer.New(conf.Conf.HTTPAdminServer, admin.New(srv))
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
 	return func() {

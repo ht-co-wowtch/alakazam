@@ -1,66 +1,22 @@
 package activity
 
 import (
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
+	. "github.com/smartystreets/goconvey/convey"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"testing"
 )
 
 func TestGiveMoney(t *testing.T) {
-	mockMoneyApi := new(mockMoneyApi)
+	Convey("發紅包", t, func() {
+		money := NewLuckyMoney(&client.Client{})
 
-	amount := float32(2)
-	count := 2
+		Convey("輸入紅包金額", func() {
+			err := money.Give(&GiveMoney{Amount: 100.001})
 
-	uuid := mock.MatchedBy(func(id string) bool {
-		_, err := uuid.Parse(id)
-		return err == nil
+			Convey("不能小數點第三位", func() {
+				So(err, ShouldResemble, errors.AmountError)
+			})
+		})
 	})
-
-	mockMoneyApi.On("NewOlder", uuid, float32(4), "1").
-		Return(nil)
-
-	err := getMock(mockMoneyApi).Give(&GiveMoney{
-		Amount:  amount,
-		Count:   count,
-		Message: "test",
-		Type:    Money,
-		Token:   "1",
-	})
-
-	mockMoneyApi.AssertExpectations(t)
-
-	assert.Nil(t, err)
-}
-
-func TestGiveMoneyByBalanceError(t *testing.T) {
-	mockMoneyApi := new(mockMoneyApi)
-
-	mockMoneyApi.On("NewOlder", mock.Anything, mock.Anything, mock.Anything).
-		Return(errors.BalanceError)
-
-	err := getMock(mockMoneyApi).Give(&GiveMoney{
-		Type: Money,
-	})
-
-	mockMoneyApi.AssertExpectations(t)
-
-	assert.Equal(t, errors.BalanceError, err)
-}
-
-type mockMoneyApi struct {
-	mock.Mock
-}
-
-func getMock(m moneyApi) *LuckyMoney {
-	return &LuckyMoney{
-		money: m,
-	}
-}
-
-func (m *mockMoneyApi) NewOlder(id string, total float32, token string) error {
-	args := m.Called(id, total, token)
-	return args.Error(0)
 }

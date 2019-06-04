@@ -96,7 +96,7 @@ func giveUserMoneyMockApi(uid string, dml, amount int) {
 		if err != nil {
 			return nil, err
 		}
-		return request.ToResponse(b)
+		return request.ToResponse(b, http.StatusOK)
 	})
 }
 

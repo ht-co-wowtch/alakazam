@@ -89,7 +89,7 @@ TODO
 5. 封鎖狀態下進入聊天室會怎樣 [答案](#response)
 6. 禁言狀態下聊天會怎樣 [請看前台訊息推送API範例](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649)
 7. 如何知道用戶在聊天室相關權限，如聊天，發紅包等等動作 [答案](#response)
-8. 如何在聊天室發紅包
+8. 如何在聊天室發紅包 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af)
 9. 如何搶紅包
 10. 如何在聊天室發跟注
 11. 如何跟注

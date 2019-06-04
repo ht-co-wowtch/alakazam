@@ -52,6 +52,8 @@ func mockGet(request *http.Request) (response *http.Response, err error) {
 
 func mockPost(request *http.Request) (response *http.Response, err error) {
 	switch request.URL.Path {
+	case "/give-lucky-money":
+		response, err = mockGiveLuckyMoney(request)
 	default:
 		response = &http.Response{
 			StatusCode: http.StatusBadRequest,
@@ -88,6 +90,12 @@ func mockGetMoney(request *http.Request) (*http.Response, error) {
 	m := Money{0, 0}
 	b, _ := json.Marshal(m)
 	return toResponse(http.StatusOK, b), nil
+}
+
+func mockGiveLuckyMoney(request *http.Request) (*http.Response, error) {
+	o := olderReply{Balance: 1000,}
+	b, err := json.Marshal(o)
+	return toResponse(http.StatusOK, b), err
 }
 
 func toResponse(statusCode int, body []byte) *http.Response {

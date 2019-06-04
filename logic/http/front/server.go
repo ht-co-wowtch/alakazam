@@ -16,10 +16,10 @@ type Server struct {
 	money *activity.LuckyMoney
 }
 
-func New(l *logic.Logic) *Server {
+func New(l *logic.Logic, money *activity.LuckyMoney) *Server {
 	return &Server{
 		logic: l,
-		money: activity.NewLuckyMoney(),
+		money: money,
 	}
 }
 

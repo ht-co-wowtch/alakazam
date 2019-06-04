@@ -21,6 +21,7 @@ func (s *Server) giveLuckyMoney(c *gin.Context) {
 	arg := new(LuckyMoney)
 	if err := validatorLuckyMoney(c, arg); err != nil {
 		response.Errors(c, err)
+		return
 	}
 
 	arg.Token = c.GetString("token")

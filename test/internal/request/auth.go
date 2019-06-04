@@ -128,16 +128,16 @@ func (a authApi) authApi() run.TransportFunc {
 		if err != nil {
 			return nil, err
 		}
-		return ToResponse(b)
+		return ToResponse(b, http.StatusOK)
 	}
 }
 
-func ToResponse(b []byte) (*http.Response, error) {
+func ToResponse(b []byte, statusCode int) (*http.Response, error) {
 	header := http.Header{}
 	header.Set("Content-Type", "application/json")
 
 	return &http.Response{
-		StatusCode: http.StatusOK,
+		StatusCode: statusCode,
 		Body:       ioutil.NopCloser(bytes.NewReader(b)),
 		Header:     header,
 	}, nil

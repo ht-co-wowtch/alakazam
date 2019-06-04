@@ -27,6 +27,26 @@ func (c *Client) GetDepositAndDml(day int, option *Params) (money Money, err err
 	return money, err
 }
 
-func (c *Client) NewOlder(id string, total float32, token string) error {
-	return nil
+type Older struct {
+	// 訂單編號 char(32)
+	OrderId string `json:"order_id"`
+
+	// 金額
+	Amount float64 `json:"amount"`
+}
+
+type olderReply struct {
+	Balance float64 `json:"balance"`
+}
+
+func (c *Client) NewOlder(older Older, option *Params) (float64, error) {
+	b, err := c.post("/give-lucky-money", nil, older, bearer(option))
+	if err != nil {
+		return 0, err
+	}
+
+	var r olderReply
+	err = json.Unmarshal(b, &r)
+
+	return r.Balance, err
 }

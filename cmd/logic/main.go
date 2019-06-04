@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"gitlab.com/jetfueltw/cpw/alakazam/activity"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/admin"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/front"
 	"os"
@@ -30,7 +32,9 @@ func main() {
 
 	// new srever
 	srv := logic.New(conf.Conf)
-	httpSrv := http.New(conf.Conf.HTTPServer, front.New(srv))
+	// TODO 待重構
+	money := activity.NewLuckyMoney(client.New(conf.Conf.Api))
+	httpSrv := http.New(conf.Conf.HTTPServer, front.New(srv, money))
 	httpAdminSrv := http.New(conf.Conf.HTTPAdminServer, admin.New(srv))
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
 

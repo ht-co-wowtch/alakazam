@@ -18,7 +18,8 @@ var (
 	BannedError                    = eNew(http.StatusUnauthorized, 10024013, "您在禁言状态，无法发言")
 	RoomBannedError                = eNew(http.StatusUnauthorized, 10024014, "聊天室目前禁言状态，无法发言")
 	MoneyError                     = eNew(http.StatusUnauthorized, 10024015, "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元")
-	BalanceError                   = eNew(http.StatusUnauthorized, 10024016, "金额余额不足发红包")
+	BalanceError                   = eNew(http.StatusPaymentRequired, 10024020, "您的余额不足发红包")
+	AmountError                    = eNew(http.StatusPaymentRequired, 10024021, "金额错误")
 	DataError                      = eNew(http.StatusUnprocessableEntity, 10024220, "资料验证错误")
 	SetRoomError                   = eNew(http.StatusUnprocessableEntity, 10024221, "")
 	TypeError                      = eNew(http.StatusInternalServerError, 10025000, "应用程序错误")
@@ -28,6 +29,10 @@ type Error struct {
 	Status  int    `json:"-"`
 	Code    int    `json:"code"`
 	Message string `json:"message"`
+}
+
+func New(status int, code int, message string) Error {
+	return eNew(status, code, message)
 }
 
 func eNew(status int, code int, message string) Error {
