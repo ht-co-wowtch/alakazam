@@ -90,15 +90,16 @@ TODO
 6. 禁言狀態下聊天會怎樣 [請看前台訊息推送API範例](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649)
 7. 如何知道用戶在聊天室相關權限，如聊天，發紅包等等動作 [答案](#response)
 8. 如何在聊天室發紅包 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af)
-9. 如何搶紅包
-10. 如何在聊天室發跟注
-11. 如何跟注
-12. 如何切換聊天室房間[答案](#change-room)
-13. 如何拿到歷史紀錄
-14. 如何跟聊天室做心跳 [答案](#heartbeat)
-15. 聊天室心跳週期是多少 `答案:每分鐘心跳一次`
-16. 如何產生一個跟websocket溝通的Protocol [答案](#buffer)
-17. 如何拿到房間在線人數 [答案](#heartbeat-reply)
+9. 聊天室發紅包訊息結構 [答案](#lucky-money)
+10. 如何搶紅包
+11. 如何在聊天室發跟注
+12. 如何跟注
+13. 如何切換聊天室房間[答案](#change-room)
+14. 如何拿到歷史紀錄
+15. 如何跟聊天室做心跳 [答案](#heartbeat)
+16. 聊天室心跳週期是多少 `答案:每分鐘心跳一次`
+17. 如何產生一個跟websocket溝通的Protocol [答案](#buffer)
+18. 如何拿到房間在線人數 [答案](#heartbeat-reply)
 
 後台：
 1. 如何以管理員身份廣播多個聊天室 [請看後台訊息推送API範例](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#c14d247c-4210-446e-aa0d-97989e4fd03c)
@@ -150,6 +151,7 @@ value | 說明 | body type |
 6|[聊天室訊息](#message-raw) | json |
 7|[更換房間](#change-room) | json |
 8|[回覆更換房間結果](#change-room-reply) | json |
+9|[紅包](#change-room-reply) | json |
 
 ### Body
 聊天室的訊息內容
@@ -344,13 +346,43 @@ Operation = `8`=> 回覆更換房間結果
 
 ![arch](./doc/changeRoomReply.png)
 
+```
+{
+    "room_id":"7f547901b02041ab8d7d3381d0703137"
+}
+```
+
 name|說明|格式
 ----|-----|-----|
 room_id|新房間id|string
 
+####  Lucky Money
+
+Operation = `9`=> 回覆更換房間結果
+
+![arch](./doc/luckyMoney.png)
+
 ```
-body是新房間id
+{
+    "uid": "c991a5dc24734d8cb976a4d50132fca0",
+    "name": "test1559641930",
+    "avatar": "",
+    "message": "紅包",
+    "time": "17:52:31",
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTcyMTE2NTAsIm5iZiI6MTU1NzIxMTY1MCwiaXNzIjoibG9naW4iLCJzZXNzaW9uX3Rva2VuIjoiZjc2OTYyM2Y0YTNlNDE4MWE4NzAwYWNkYTE3NzE1MmIiLCJkYXRhIjp7InVpZCI6IjEyNTdlN2Q5ZTFjOTQ0ZWY5YTZmMTI5Y2I5NDk1ZDAyIiwidXNlcm5hbWUiOiJyb290In19.7VJxH3tQpnJqWTlPbId7f0Rt7eQoaVvaJmbWxtHTqRU",
+    "expired": 1559645551
+}
 ```
+
+name|說明|格式
+----|-----|-----|
+uid|發紅包人的uid|string
+name|發紅包人名稱|string
+avatar|發紅包人頭像path info| string
+message|紅包說明|string
+time|發送時間|string
+token|搶紅包的token|string
+expired|紅包過期時間|時間戳記 
 
 ## Web Socket
 

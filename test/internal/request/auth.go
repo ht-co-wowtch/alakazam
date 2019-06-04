@@ -21,7 +21,7 @@ import (
 )
 
 type AuthToken struct {
-	Ticket string `json:"ticket"`
+	Token  string `json:"token"`
 	RoomID string `json:"room_id"`
 }
 
@@ -67,7 +67,7 @@ func DialAuthToken(uid, roomId, ticket string) (auth Auth, err error) {
 func DialAuthUserByAuthApi(roomId, ticket string, authApi run.TransportFunc) (auth Auth, err error) {
 	authToken := AuthToken{
 		RoomID: roomId,
-		Ticket: ticket,
+		Token:  ticket,
 	}
 	var (
 		conn *websocket.Conn

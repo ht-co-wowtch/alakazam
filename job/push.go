@@ -15,18 +15,25 @@ func (j *Job) push(ctx context.Context, pushMsg *grpc.PushMsg) (err error) {
 	// 單一/多房間推送
 	case grpc.PushMsg_ROOM:
 		for _, r := range pushMsg.Room {
-			if err = j.getRoom(r).Push(pushMsg.Msg); err != nil {
-				return
+			if err = j.getRoom(r).Push(pushMsg.Msg, protocol.OpRaw); err != nil {
+				break
 			}
 		}
 	// 所有房間推送
 	case grpc.PushMsg_BROADCAST:
 		j.broadcast(pushMsg.Msg, pushMsg.Speed)
+	case grpc.PushMsg_MONEY:
+		if len(pushMsg.Room) == 1 && pushMsg.Room[0] != "" {
+			err = j.getRoom(pushMsg.Room[0]).Push(pushMsg.Msg, protocol.OpMoney)
+		} else {
+			err = fmt.Errorf("money Can only be pushed to a single room: %s", pushMsg.Msg)
+		}
 	// 異常資料
 	default:
 		err = fmt.Errorf("no match push type: %s", pushMsg.Type)
 	}
-	return
+
+	return err
 }
 
 // 多房間訊息推送給comet

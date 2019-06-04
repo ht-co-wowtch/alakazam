@@ -24,9 +24,21 @@ func (s *Server) giveLuckyMoney(c *gin.Context) {
 		return
 	}
 
+	if err := s.logic.Auth(&arg.User); err != nil {
+		response.Errors(c, err)
+		return
+	}
+
 	arg.Token = c.GetString("token")
 
-	if err := s.money.Give(&arg.GiveMoney); err != nil {
+	id, err := s.money.Give(&arg.GiveMoney)
+
+	if err != nil {
+		response.Errors(c, err)
+		return
+	}
+
+	if err := s.logic.PushMoney(id, arg.Message, &arg.User); err != nil {
 		response.Errors(c, err)
 		return
 	}

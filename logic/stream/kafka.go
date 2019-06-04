@@ -11,9 +11,9 @@ import (
 
 // 房間推送，以下為條件
 // 1. room id
-func (d *Stream) BroadcastRoomMsg(room string, msg []byte) (err error) {
+func (d *Stream) BroadcastRoomMsg(room string, msg []byte, model grpc.PushMsg_Type) (err error) {
 	pushMsg := &grpc.PushMsg{
-		Type: grpc.PushMsg_ROOM,
+		Type: model,
 		Room: []string{room},
 		Msg:  msg,
 	}

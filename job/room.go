@@ -2,7 +2,6 @@ package job
 
 import (
 	"errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"time"
 
 	log "github.com/golang/glog"
@@ -45,9 +44,9 @@ func NewRoom(job *Job, id string, c *conf.Room) (r *Room) {
 }
 
 // 訊息放到房間訊息聚合決定何時推送給comet
-func (r *Room) Push(msg []byte) (err error) {
+func (r *Room) Push(msg []byte, op int32) (err error) {
 	var p = &comet.Proto{
-		Op:   protocol.OpRaw,
+		Op:   op,
 		Body: msg,
 	}
 	select {

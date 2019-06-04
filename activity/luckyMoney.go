@@ -59,13 +59,13 @@ type GiveMoney struct {
 
 // 發紅包
 // TODO 未完
-func (l *LuckyMoney) Give(money *GiveMoney) error {
+func (l *LuckyMoney) Give(money *GiveMoney) (string, error) {
 	var total float64
 
 	amount, err := strconv.ParseFloat(fmt.Sprintf("%.2f", money.Amount), 64)
 
 	if err != nil || money.Amount != amount {
-		return errors.AmountError
+		return "", errors.AmountError
 	}
 
 	switch money.Type {
@@ -74,7 +74,7 @@ func (l *LuckyMoney) Give(money *GiveMoney) error {
 	case LuckMoney:
 		total = money.Amount
 	default:
-		return errors.DataError
+		return "", errors.DataError
 	}
 
 	c := client.Older{
@@ -89,11 +89,11 @@ func (l *LuckyMoney) Give(money *GiveMoney) error {
 	if _, err := l.money.NewOlder(c, p); err != nil {
 		switch err {
 		case client.InsufficientBalanceError:
-			return errors.BalanceError
+			return "", errors.BalanceError
 		default:
-			return errors.FailureError
+			return "", errors.FailureError
 		}
 	}
 
-	return nil
+	return c.OrderId, nil
 }
