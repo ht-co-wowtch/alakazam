@@ -54,9 +54,9 @@ func TestRoomRemoveBanned(t *testing.T) {
 func TestRoomSetBanned(t *testing.T) {
 	Convey("設定某房間相關權限", t, func() {
 		id, _ := uuid.New().MarshalBinary()
-		room := store.Room{RoomId: fmt.Sprintf("%x", id)}
+		room := store.Room{Id: fmt.Sprintf("%x", id)}
 
-		a, err := request.DialAuth(room.RoomId)
+		a, err := request.DialAuth(room.Id)
 
 		if err != nil {
 			t.Fatalf("request.DialAuth error(%v)", err)

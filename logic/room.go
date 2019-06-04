@@ -13,12 +13,12 @@ import (
 )
 
 func (l *Logic) CreateRoom(r store.Room) (string, error) {
-	if r.RoomId == "" {
+	if r.Id == "" {
 		id, _ := uuid.New().MarshalBinary()
-		r.RoomId = fmt.Sprintf("%x", id)
+		r.Id = fmt.Sprintf("%x", id)
 	}
 
-	if len(r.RoomId) != 32 {
+	if len(r.Id) != 32 {
 		return "", errors.DataError
 	}
 
@@ -26,11 +26,11 @@ func (l *Logic) CreateRoom(r store.Room) (string, error) {
 		log.Errorf("l.db.CreateRoom(room: %v) error(%v)", r, err)
 		return "", err
 	}
-	return r.RoomId, nil
+	return r.Id, nil
 }
 
 func (l *Logic) UpdateRoom(id string, r store.Room) bool {
-	r.RoomId = id
+	r.Id = id
 	if _, err := l.db.UpdateRoom(r); err != nil {
 		log.Errorf("l.db.CreateRoom(room: %v) error(%v)", r, err)
 		return false
