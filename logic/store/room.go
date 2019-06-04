@@ -2,7 +2,7 @@ package store
 
 type Room struct {
 	// 要設定的房間id
-	RoomId string `json:"-"`
+	RoomId string `json:"id"`
 
 	// 是否禁言
 	IsMessage bool `json:"is_message"`
@@ -15,6 +15,9 @@ type Room struct {
 
 	// 儲值&打碼量發話限制
 	Limit Limit `json:"limit"`
+
+	// 紅包多久過期
+	LuckyMoneyExpire int `json:"lucky_money_expire"`
 }
 
 type Limit struct {

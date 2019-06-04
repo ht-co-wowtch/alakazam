@@ -6,15 +6,21 @@ import (
 	log "github.com/golang/glog"
 	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 )
 
 func (l *Logic) CreateRoom(r store.Room) (string, error) {
-	id, _ := uuid.New().MarshalBinary()
-	r.RoomId = fmt.Sprintf("%x", id)
+	if r.RoomId == "" {
+		id, _ := uuid.New().MarshalBinary()
+		r.RoomId = fmt.Sprintf("%x", id)
+	}
+
+	if len(r.RoomId) != 32 {
+		return "", errors.DataError
+	}
 
 	if aff, err := l.db.CreateRoom(r); err != nil || aff <= 0 {
 		log.Errorf("l.db.CreateRoom(room: %v) error(%v)", r, err)
