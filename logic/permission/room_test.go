@@ -31,18 +31,6 @@ func TestRoomInt(t *testing.T) {
 			})
 		})
 
-		Convey("當房間只有發紅包權限", func() {
-			actual := ToRoomInt(store.Room{
-				IsBonus: true,
-			})
-
-			expected := getBonus + sendBonus
-
-			Convey(fmt.Sprintf("權限只有%d", expected), func() {
-				So(actual, ShouldEqual, expected)
-			})
-		})
-
 		Convey("當房間只有金額發話限制", func() {
 			actual := ToRoomInt(store.Room{
 				Limit: store.Limit{

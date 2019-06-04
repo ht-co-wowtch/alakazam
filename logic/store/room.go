@@ -7,9 +7,6 @@ type Room struct {
 	// 是否禁言
 	IsMessage bool `json:"is_message"`
 
-	// 是否可發/搶紅包
-	IsBonus bool `json:"is_bonus"`
-
 	// 是否可發/跟注
 	IsFollow bool `json:"is_follow"`
 
@@ -32,8 +29,8 @@ type Limit struct {
 }
 
 func (s *Store) CreateRoom(room Room) (int64, error) {
-	sql := "INSERT INTO rooms (room_id, is_message, is_bonus, is_follow, day_limit, amount_limit, dml_limit) VALUES (?, ?, ?, ?, ?, ?, ?)"
-	r, err := s.Exec(sql, room.Id, room.IsMessage, room.IsBonus, room.IsFollow, room.Limit.Day, room.Limit.Amount, room.Limit.Dml)
+	sql := "INSERT INTO rooms (room_id, is_message, is_follow, day_limit, amount_limit, dml_limit) VALUES (?, ?, ?, ?, ?, ?)"
+	r, err := s.Exec(sql, room.Id, room.IsMessage, room.IsFollow, room.Limit.Day, room.Limit.Amount, room.Limit.Dml)
 	if err != nil {
 		return 0, err
 	}
@@ -41,8 +38,8 @@ func (s *Store) CreateRoom(room Room) (int64, error) {
 }
 
 func (s *Store) UpdateRoom(room Room) (int64, error) {
-	sql := "UPDATE rooms SET is_message = ?, is_bonus = ?, is_follow = ?, day_limit = ?, amount_limit = ?, dml_limit = ? WHERE room_id = ? "
-	r, err := s.Exec(sql, room.IsMessage, room.IsBonus, room.IsFollow, room.Limit.Day, room.Limit.Amount, room.Limit.Dml, room.Id)
+	sql := "UPDATE rooms SET is_message = ?, is_follow = ?, day_limit = ?, amount_limit = ?, dml_limit = ? WHERE room_id = ? "
+	r, err := s.Exec(sql, room.IsMessage, room.IsFollow, room.Limit.Day, room.Limit.Amount, room.Limit.Dml, room.Id)
 	if err != nil {
 		return 0, err
 	}
@@ -53,5 +50,5 @@ func (s *Store) GetRoom(roomId string) (Room, error) {
 	room := Room{}
 	sql := "SELECT * FROM rooms WHERE room_id = ?"
 	return room, s.QueryRow(sql, roomId).
-		Scan(&room.Id, &room.IsMessage, &room.IsBonus, &room.IsFollow, &room.Limit.Day, &room.Limit.Amount, &room.Limit.Dml)
+		Scan(&room.Id, &room.IsMessage, &room.IsFollow, &room.Limit.Day, &room.Limit.Amount, &room.Limit.Dml)
 }

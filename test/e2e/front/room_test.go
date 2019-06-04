@@ -120,13 +120,13 @@ func TestRoomSetBanned(t *testing.T) {
 
 		Convey("設定可以跟投", func() {
 			Convey("跟投成功", func() {
-
+				// TODO e2e test
 			})
 		})
 
 		Convey("設定不可以跟投", func() {
 			Convey("不能跟投", func() {
-
+				// TODO e2e test
 			})
 		})
 	})

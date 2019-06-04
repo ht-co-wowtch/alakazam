@@ -17,17 +17,6 @@ func TestBanned(t *testing.T) {
 	})
 }
 
-func TestSendBonus(t *testing.T) {
-	Convey("發紅包", t, func() {
-		Convey("有權限", func() {
-			So(IsSendBonus(sendBonus+Message), ShouldBeTrue)
-		})
-		Convey("沒有權限", func() {
-			So(IsSendBonus(Message), ShouldBeFalse)
-		})
-	})
-}
-
 func TestGetBonus(t *testing.T) {
 	Convey("搶紅包", t, func() {
 		Convey("有權限", func() {

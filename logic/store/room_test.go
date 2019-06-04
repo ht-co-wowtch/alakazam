@@ -8,8 +8,8 @@ import (
 
 func TestCreateRoom(t *testing.T) {
 	Convey("設定一個房間", t, func() {
-		c := mock.ExpectExec("INSERT INTO rooms \\(room_id, is_message, is_bonus, is_follow, day_limit, amount_limit, dml_limit\\) VALUES (.+)").
-			WithArgs(sqlmock.AnyArg(), true, false, false, 5, 1000, 100)
+		c := mock.ExpectExec("INSERT INTO rooms \\(room_id, is_message, is_follow, day_limit, amount_limit, dml_limit\\) VALUES (.+)").
+			WithArgs(sqlmock.AnyArg(), true, false, 5, 1000, 100)
 
 		Convey("設定成功", func() {
 			c.WillReturnResult(sqlmock.NewResult(1, 1))
@@ -53,8 +53,8 @@ func TestGetRoom(t *testing.T) {
 
 		Convey("取成功", func() {
 			c.WillReturnRows(
-				sqlmock.NewRows([]string{"room_id", "is_message", "is_bonus", "is_follow", "day_limit", "amount_limit", "dml_limit"}).
-					AddRow(room.Id, room.IsMessage, false, false, room.Limit.Day, room.Limit.Amount, room.Limit.Dml),
+				sqlmock.NewRows([]string{"room_id", "is_message", "is_follow", "day_limit", "amount_limit", "dml_limit"}).
+					AddRow(room.Id, room.IsMessage, false, room.Limit.Day, room.Limit.Amount, room.Limit.Dml),
 			)
 
 			r, err := store.GetRoom(roomId)
