@@ -1,11 +1,9 @@
 package front
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	. "github.com/smartystreets/goconvey/convey"
-	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/request"
@@ -17,41 +15,7 @@ var room struct {
 	Id string `json:"room_id"`
 }
 
-func TestRoomIsBanned(t *testing.T) {
-	r := request.CreateRoom(store.Room{
-		IsMessage: false,
-	})
-
-	json.Unmarshal(r.Body, &room)
-
-	a, _ := request.DialAuth(room.Id)
-
-	r = request.PushRoom(a.Uid, a.Key, "測試")
-	e := request.ToError(t, r.Body)
-
-	assert.Equal(t, errors.RoomBannedError.Code, e.Code)
-	assert.Equal(t, errors.RoomBannedError.Message, e.Message)
-}
-
-func TestRoomRemoveBanned(t *testing.T) {
-	r := request.CreateRoom(store.Room{
-		IsMessage: false,
-	})
-
-	json.Unmarshal(r.Body, &room)
-
-	a, _ := request.DialAuth(room.Id)
-	request.PushRoom(a.Uid, a.Key, "測試")
-
-	request.UpdateRoom(room.Id, store.Room{
-		IsMessage: true,
-	})
-	r = request.PushRoom(a.Uid, a.Key, "測試")
-
-	assert.Equal(t, http.StatusNoContent, r.StatusCode)
-}
-
-func TestRoomSetBanned(t *testing.T) {
+func TestRoomBanned(t *testing.T) {
 	Convey("設定某房間相關權限", t, func() {
 		id, _ := uuid.New().MarshalBinary()
 		room := store.Room{Id: fmt.Sprintf("%x", id)}
@@ -82,6 +46,21 @@ func TestRoomSetBanned(t *testing.T) {
 				e.Status = r.StatusCode
 
 				So(e, ShouldResemble, errors.RoomBannedError)
+			})
+		})
+
+		Convey("設定又可以發話", func() {
+			room.IsMessage = true
+
+			r := request.UpdateRoom(room.Id, room)
+			if r.StatusCode != http.StatusNoContent {
+				t.Fatal("request.UpdateRoom Fatal")
+			}
+
+			request.PushRoom(a.Uid, a.Key, "測試")
+
+			Convey("發話正常", func() {
+				So(r.StatusCode, ShouldEqual, http.StatusNoContent)
 			})
 		})
 
