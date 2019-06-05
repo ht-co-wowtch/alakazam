@@ -17,6 +17,7 @@ type LuckyMoney struct {
 }
 
 // 發紅包
+// TODO 未完
 func (s *Server) giveLuckyMoney(c *gin.Context) {
 	arg := new(LuckyMoney)
 	if err := validatorLuckyMoney(c, arg); err != nil {
@@ -44,6 +45,37 @@ func (s *Server) giveLuckyMoney(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+type TakeLuckyMoney struct {
+	Token string `json:"token"`
+}
+
+// TODO 未完
+func (s *Server) takeLuckyMoney(c *gin.Context) {
+	arg := new(TakeLuckyMoney)
+	if err := c.ShouldBindJSON(arg); err != nil {
+		response.ErrorE(c, errors.DataError)
+		return
+	}
+
+	var p struct {
+		Id         string `json:"id"`
+		Name       string `json:"name"`
+		Avatar     string `json:"avatar"`
+		LuckyMoney struct {
+			Message string  `json:"message"`
+			Amount  float64 `json:"amount"`
+		}
+	}
+
+	p.Id = "f0962f33-b444-4ac0-8be9-2a8423178212"
+	p.Name = "test"
+	p.Avatar = "https://via.placeholder.com/30x30"
+	p.LuckyMoney.Message = "測試"
+	p.LuckyMoney.Amount = 1
+
+	c.JSON(http.StatusOK, p)
 }
 
 func validatorLuckyMoney(c *gin.Context, arg *LuckyMoney) error {

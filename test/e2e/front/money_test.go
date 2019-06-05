@@ -99,7 +99,7 @@ func TestGiveLuckyMoney(t *testing.T) {
 	})
 }
 
-func TestTestGiveLuckyMoneyMessage(t *testing.T) {
+func TestGiveLuckyMoneyMessage(t *testing.T) {
 	var auth request.Auth
 
 	Convey("假設要發送紅包", t, func() {
@@ -139,6 +139,79 @@ func TestTestGiveLuckyMoneyMessage(t *testing.T) {
 			So(message.Name, ShouldNotBeEmpty)
 			So(message.Token, ShouldNotBeEmpty)
 			So(time.Unix(message.Expired, 0).IsZero(), ShouldBeFalse)
+		})
+	})
+}
+
+func TestTakeLuckyMoney(t *testing.T) {
+	var auth request.Auth
+	var message = new(logic.Money)
+
+	mockGiveLuckyMoneyApi(t)
+
+	Convey("假設要搶紅包", t, func() {
+		var err error
+
+		roomId := "10000"
+		msg := "測試"
+
+		Convey("先進入聊天室", func() {
+			auth, err = request.DialAuth(roomId)
+
+			So(err, ShouldBeNil)
+		})
+
+		Convey("看到紅包訊息", func() {
+
+			r := giveLuckyMoney(auth, 1, 3, msg, activity.Money)
+
+			if r.StatusCode != http.StatusNoContent {
+				t.Fatalf("giveLuckyMoney error(%s)", string(r.Body))
+			}
+
+			time.Sleep(time.Second)
+
+			p, err := protocol.ReadMessage(auth.Rd, auth.Proto)
+
+			if err != nil || p == nil {
+				t.Fatalf("Read Message error(%v) body(%v)", err, p)
+			}
+
+			err = json.Unmarshal(p[0].Body, &message)
+
+			if err != nil {
+				t.Fatalf("json.Unmarshal error(%v)", err)
+			}
+		})
+
+		Convey("點擊紅包", func() {
+			r := request.TakeLuckyMoney(message.Token)
+
+			Convey("搶到一元紅包", func() {
+
+				var p struct {
+					Id         string `json:"id"`
+					Name       string `json:"name"`
+					Avatar     string `json:"avatar"`
+					LuckyMoney struct {
+						Message string  `json:"message"`
+						Amount  float64 `json:"amount"`
+					}
+				}
+
+				err := json.Unmarshal(r.Body, &p)
+
+				if err != nil {
+					t.Fatalf("json.Unmarshal error(%v)", err)
+				}
+
+				So(http.StatusOK, ShouldEqual, r.StatusCode)
+				So(p.Id, ShouldNotBeEmpty)
+				So(p.Name, ShouldNotBeEmpty)
+				So(p.Avatar, ShouldNotBeEmpty)
+				So(msg, ShouldEqual, p.LuckyMoney.Message)
+				So(1, ShouldEqual, p.LuckyMoney.Amount)
+			})
 		})
 	})
 }

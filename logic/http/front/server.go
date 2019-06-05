@@ -36,4 +36,5 @@ func (s *Server) InitRoute(e *gin.Engine) {
 
 	e.POST("/push/room", s.pushRoom)
 	e.POST("/give-lucky-money", s.giveLuckyMoney)
+	e.POST("/take-lucky-money", s.takeLuckyMoney)
 }

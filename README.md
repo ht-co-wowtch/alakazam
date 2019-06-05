@@ -91,7 +91,7 @@ TODO
 7. 如何知道用戶在聊天室相關權限，如聊天，發紅包等等動作 [答案](#response)
 8. 如何在聊天室發紅包 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af)
 9. 聊天室發紅包訊息結構 [答案](#lucky-money)
-10. 如何搶紅包
+10. 如何搶紅包 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#68e59552-6c95-45ab-9f9e-3eaad7c1989d)
 11. 如何在聊天室發跟注
 12. 如何跟注
 13. 如何切換聊天室房間[答案](#change-room)
@@ -327,7 +327,7 @@ Operation = `6`=> 單筆訊息
 {
     "uid":"7f547901b02041ab8d7d3381d0703137",
     "name": "sam78",
-    "avatar": "",
+    "avatar": "https://via.placeholder.com/30x30",
     "message": "測試",
     "time": "17:00:51"
 }
@@ -337,7 +337,7 @@ name|說明|格式
 ----|-----|-----|
 uid|訊息人uid|string
 name|訊息人名稱|string
-avatar|頭像path info| string
+avatar|頭像url| string
 message|訊息|string
 time|發送時間|string
 
@@ -366,7 +366,7 @@ Operation = `9`=> 回覆更換房間結果
 {
     "uid": "c991a5dc24734d8cb976a4d50132fca0",
     "name": "test1559641930",
-    "avatar": "",
+    "avatar": "https://via.placeholder.com/30x30",
     "message": "紅包",
     "time": "17:52:31",
     "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTcyMTE2NTAsIm5iZiI6MTU1NzIxMTY1MCwiaXNzIjoibG9naW4iLCJzZXNzaW9uX3Rva2VuIjoiZjc2OTYyM2Y0YTNlNDE4MWE4NzAwYWNkYTE3NzE1MmIiLCJkYXRhIjp7InVpZCI6IjEyNTdlN2Q5ZTFjOTQ0ZWY5YTZmMTI5Y2I5NDk1ZDAyIiwidXNlcm5hbWUiOiJyb290In19.7VJxH3tQpnJqWTlPbId7f0Rt7eQoaVvaJmbWxtHTqRU",
@@ -378,7 +378,7 @@ name|說明|格式
 ----|-----|-----|
 uid|發紅包人的uid|string
 name|發紅包人名稱|string
-avatar|發紅包人頭像path info| string
+avatar|發紅包人頭像url| string
 message|紅包說明|string
 time|發送時間|string
 token|搶紅包的token|string
