@@ -3,173 +3,156 @@ package front
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	"github.com/stretchr/testify/assert"
+	. "github.com/smartystreets/goconvey/convey"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/request"
-	"golang.org/x/net/websocket"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"testing"
-	"time"
 )
 
 // 進入房間成功
 func TestAuth(t *testing.T) {
-	roomId := "1000"
-	a, err := request.DialAuth(roomId)
-	assert.Nil(t, err)
+	roomId := "1"
 
-	shouldBeAuthReply(t, a, roomId)
-}
+	Convey("房間列表", t, func() {
+		a, err := request.DialAuth(roomId)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-// 只連線不進房間
-func TestNotAuth(t *testing.T) {
-	ws, err := request.Dial()
-	assert.Nil(t, err)
+		Reset(func() {
+			roomId += "1"
+		})
 
-	shouldBeCloseConnection(err, ws, t)
-}
+		Convey("當進入房間成功", func() {
+			Convey("應回傳房間資訊", func() {
+				So(pd.OpAuthReply, ShouldEqual, a.Proto.Op)
+				So(a.Reply.Uid, ShouldNotBeEmpty)
+				So(a.Reply.Key, ShouldNotBeEmpty)
+				So(roomId, ShouldEqual, a.Reply.RoomId)
+				So(a.Reply.Permission.Message, ShouldBeTrue)
+				So(a.Reply.Permission.SendBonus, ShouldBeTrue)
+				So(a.Reply.Permission.GetBonus, ShouldBeTrue)
+				So(a.Reply.Permission.SendFollow, ShouldBeTrue)
+				So(a.Reply.Permission.GetFollow, ShouldBeTrue)
+			})
+		})
 
-// 進入房間失敗
-func TestAuthError(t *testing.T) {
-	_, err := request.DialAuthUserByAuthApi("1111", "", func(i *http.Request) (response *http.Response, e error) {
-		return &http.Response{
-			StatusCode: http.StatusBadRequest,
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte(``))),
-		}, nil
+		Convey("當切換房間", func() {
+			proto := new(grpc.Proto)
+			proto.Op = pd.OpChangeRoom
+			proto.Body = []byte(`{"room_id":"ABC"}`)
+
+			if err = protocol.Write(a.Wr, proto); err != nil {
+				t.Fatal(err)
+			}
+			if err := protocol.Read(a.Rd, a.Proto); err != nil {
+				t.Fatal(err)
+			}
+
+			So(pd.OpChangeRoomReply, ShouldEqual, a.Proto.Op)
+			So(`{"room_id":"ABC"}`, ShouldEqual, string(a.Proto.Body))
+		})
+
+		Convey("當進行心跳", func() {
+			hbProto := new(grpc.Proto)
+			hbProto.Op = pd.OpHeartbeat
+			hbProto.Body = nil
+
+			err = protocol.Write(a.Wr, hbProto)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = protocol.Read(a.Rd, a.Proto)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			Convey("應回傳房間在線人數", func() {
+				online := binary.BigEndian.Int32(a.Proto.Body)
+				So(pd.OpHeartbeatReply, ShouldEqual, a.Proto.Op)
+				So(int32(1), ShouldEqual, online)
+			})
+		})
+
+		Convey("當不進行心跳", func() {
+			Convey("應踢出房間", func() {
+				err = protocol.Read(a.Rd, a.Proto)
+				So(io.EOF, ShouldEqual, err)
+			})
+		})
 	})
-	assert.Equal(t, io.EOF, err)
+
+	Convey("當只給房間做webSocket連線但不選擇房間", t, func() {
+		ws, err := request.Dial()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		Convey("應踢出房間", func() {
+			b := make([]byte, 100)
+			_, err = ws.Read(b)
+			So(io.EOF, ShouldEqual, err)
+		})
+	})
+
+	Convey("當進入房間失敗", t, func() {
+		_, err := request.DialAuthUserByAuthApi("1111", "", func(i *http.Request) (response *http.Response, e error) {
+			return &http.Response{
+				StatusCode: http.StatusBadRequest,
+				Body:       ioutil.NopCloser(bytes.NewReader([]byte(``))),
+			}, nil
+		})
+
+		Convey("應踢出房間", func() {
+			So(io.EOF, ShouldEqual, err)
+		})
+	})
 }
 
-// 房間心跳成功
-func TestHeartbeat(t *testing.T) {
-	a, err := request.DialAuth("1001")
-	assert.Nil(t, err)
+func TestBlockade(t *testing.T) {
+	roomId := "2"
 
-	shouldBeHeartbeatReply(t, a, givenHeartbeat())
-}
+	Convey("會員封鎖", t, func() {
+		a, err := request.DialAuth(roomId)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-// 房間不心跳
-func TestNotHeartbeat(t *testing.T) {
-	a, err := request.DialAuth("1002")
-	assert.Nil(t, err)
+		Reset(func() {
+			roomId += "1"
+		})
 
-	shouldBeTimeoutConnection(err, a, t)
-}
+		Convey("當A會員被封鎖", func() {
+			request.SetBlockade(a.Uid, "測試")
+			a, _ = request.DialAuthUser(a.Uid, roomId)
 
-// 封鎖
-func TestRoomBlockade(t *testing.T) {
-	a, err := request.DialAuth("1003")
-	assert.Nil(t, err)
-	assert.NotEmpty(t, a.Uid)
+			Convey("無法進入房間", func() {
+				e := new(errors.Error)
+				if err := json.Unmarshal(a.Proto.Body, e); err != nil {
+					t.Fatal(err)
+				}
 
-	r := request.SetBlockade(a.Uid, "測試")
-	assert.Empty(t, r.Body)
+				So(10024011, ShouldEqual, e.Code)
+				So("您在封鎖状态，无法进入聊天室", ShouldEqual, e.Message)
+			})
 
-	a, _ = request.DialAuthUser(a.Uid, "1003")
+			Convey("當A會員被解封鎖", func() {
+				request.DeleteBlockade(a.Uid)
+				b, err := request.DialAuthUser(a.Uid, roomId)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-	e := new(errors.Error)
-	json.Unmarshal(a.Proto.Body, e)
-
-	assert.Equal(t, 10024011, e.Code)
-	assert.Equal(t, "您在封鎖状态，无法进入聊天室", e.Message)
-}
-
-// 解封鎖
-func TestRoomDeleteBlockade(t *testing.T) {
-	roomId := "1004"
-	a, err := request.DialAuth(roomId)
-	uid := a.Uid
-	assert.Nil(t, err)
-	assert.NotEmpty(t, a.Uid)
-
-	request.SetBlockade(a.Uid, "測試")
-
-	a, err = request.DialAuthUser(a.Uid, roomId)
-	assert.Nil(t, err)
-
-	e := new(errors.Error)
-	json.Unmarshal(a.Proto.Body, e)
-	assert.Equal(t, 10024011, e.Code)
-
-	request.DeleteBlockade(uid)
-
-	a, err = request.DialAuthUser(uid, roomId)
-	assert.Nil(t, err)
-
-	assert.NotEmpty(t, a.Uid)
-}
-
-// 切換房間
-func TestChangeRoom(t *testing.T) {
-	a, err := request.DialAuth("1005")
-	if err != nil {
-		assert.Fail(t, err.Error())
-		return
-	}
-
-	proto := new(grpc.Proto)
-	proto.Op = pd.OpChangeRoom
-	proto.Body = []byte(`{"room_id":"ABC"}`)
-
-	if err = protocol.Write(a.Wr, proto); err != nil {
-		assert.Fail(t, err.Error())
-		return
-	}
-	if err := protocol.Read(a.Rd, a.Proto); err != nil {
-		assert.Fail(t, err.Error())
-		return
-	}
-
-	assert.Equal(t, pd.OpChangeRoomReply, a.Proto.Op)
-	assert.Equal(t, `{"room_id":"ABC"}`, string(a.Proto.Body))
-}
-
-func shouldBeTimeoutConnection(err error, a request.Auth, t *testing.T) {
-	fmt.Println(time.Now())
-	err = protocol.Read(a.Rd, a.Proto)
-	fmt.Println(time.Now())
-	assert.Equal(t, io.EOF, err)
-}
-
-func shouldBeCloseConnection(err error, ws *websocket.Conn, t *testing.T) {
-	b := make([]byte, 100)
-	_, err = ws.Read(b)
-	assert.Equal(t, io.EOF, err)
-}
-
-func givenHeartbeat() *grpc.Proto {
-	hbProto := new(grpc.Proto)
-	hbProto.Op = pd.OpHeartbeat
-	hbProto.Body = nil
-	return hbProto
-}
-
-func shouldBeAuthReply(t *testing.T, a request.Auth, roomId string) {
-	assert.Equal(t, pd.OpAuthReply, a.Proto.Op)
-	assert.NotEmpty(t, a.Reply.Uid)
-	assert.NotEmpty(t, a.Reply.Key)
-	assert.Equal(t, roomId, a.Reply.RoomId)
-	assert.True(t, a.Reply.Permission.Message)
-	assert.True(t, a.Reply.Permission.SendBonus)
-	assert.True(t, a.Reply.Permission.GetBonus)
-	assert.True(t, a.Reply.Permission.SendFollow)
-	assert.True(t, a.Reply.Permission.GetFollow)
-}
-
-func shouldBeHeartbeatReply(t *testing.T, a request.Auth, hbProto *grpc.Proto) {
-	fmt.Println("send heartbeat")
-	err := protocol.Write(a.Wr, hbProto)
-	assert.Nil(t, err)
-
-	err = protocol.Read(a.Rd, a.Proto)
-	assert.Nil(t, err)
-
-	fmt.Println("heartbeat Reply")
-	assert.Equal(t, pd.OpHeartbeatReply, a.Proto.Op)
+				So(a.Uid, ShouldEqual, b.Uid)
+			})
+		})
+	})
 }
