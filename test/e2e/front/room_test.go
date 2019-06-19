@@ -11,10 +11,6 @@ import (
 	"testing"
 )
 
-var room struct {
-	Id string `json:"room_id"`
-}
-
 func TestRoomBanned(t *testing.T) {
 	Convey("設定某房間相關權限", t, func() {
 		id, _ := uuid.New().MarshalBinary()
@@ -94,18 +90,6 @@ func TestRoomBanned(t *testing.T) {
 
 					So(e, ShouldResemble, errors.MoneyError.Format(1, room.Limit.Amount, room.Limit.Dml))
 				})
-			})
-		})
-
-		Convey("設定可以跟投", func() {
-			Convey("跟投成功", func() {
-				// TODO e2e test
-			})
-		})
-
-		Convey("設定不可以跟投", func() {
-			Convey("不能跟投", func() {
-				// TODO e2e test
 			})
 		})
 	})
