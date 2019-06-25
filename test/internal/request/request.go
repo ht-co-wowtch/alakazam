@@ -57,7 +57,6 @@ func response(r *http.Response, err error) (re Response) {
 	re.Error = r.Body.Close()
 	re.StatusCode = r.StatusCode
 	re.Body = body
-	fmt.Printf("response %s\n", string(body))
 	return
 }
 

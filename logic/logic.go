@@ -1,8 +1,8 @@
 package logic
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/stream"
 	"os"
@@ -35,20 +35,16 @@ type Logic struct {
 
 // New init
 func New(c *conf.Config) (l *Logic) {
-	l = Create(c, store.NewStore(c.DB), cache.NewRedis(c.Redis), stream.NewKafkaPub(c.Kafka), client.New(c.Api))
+	l = &Logic{
+		c:      c,
+		db:     store.NewStore(c.DB),
+		cache:  cache.NewRedis(c.Redis),
+		stream: stream.NewKafkaPub(c.Kafka),
+		client: client.New(c.Api),
+	}
 	_ = l.loadOnline()
 	go l.onlineproc()
 	return l
-}
-
-func Create(c *conf.Config, db *store.Store, cache *cache.Cache, stream *stream.Stream, client *client.Client) *Logic {
-	return &Logic{
-		c:      c,
-		db:     db,
-		cache:  cache,
-		stream: stream,
-		client: client,
-	}
 }
 
 // Close close resources.

@@ -69,10 +69,10 @@ func mockAuth(request *http.Request) (*http.Response, error) {
 	uuid, _ := uuid.New().MarshalBinary()
 
 	u := User{
-		Uid:      fmt.Sprintf("%x", uuid),
-		Nickname: fmt.Sprintf("test%d", time.Now().Unix()),
-		Type:     store.Player,
-		Avatar:   "https://via.placeholder.com/30x30",
+		Uid:    fmt.Sprintf("%x", uuid),
+		Name:   fmt.Sprintf("test%d", time.Now().Unix()),
+		Type:   store.Player,
+		Avatar: "https://via.placeholder.com/30x30",
 	}
 
 	b, err := json.Marshal(u)

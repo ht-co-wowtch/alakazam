@@ -8,7 +8,7 @@ const (
 	Marketing = "marketing"
 
 	// 玩家
-	Player = "player"
+	Player = 2
 )
 
 type User struct {

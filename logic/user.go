@@ -82,7 +82,7 @@ func (l *Logic) login(token, roomId, server string) (*store.User, string, error)
 
 		u = &store.User{
 			Uid:        user.Uid,
-			Name:       user.Nickname,
+			Name:       user.Name,
 			Avatar:     user.Avatar,
 			Permission: permission.PlayDefaultPermission,
 		}
@@ -95,8 +95,8 @@ func (l *Logic) login(token, roomId, server string) (*store.User, string, error)
 		return u, "", errors.BlockadeError
 	}
 
-	if u.Name != user.Nickname || u.Avatar != user.Avatar {
-		u.Name = user.Nickname
+	if u.Name != user.Name || u.Avatar != user.Avatar {
+		u.Name = user.Name
 		u.Avatar = user.Avatar
 		if aff, err := l.db.UpdateUser(u); err != nil || aff <= 0 {
 			log.Errorf("UpdateUser(uid:%s) affected %d error(%v)", user.Uid, aff, err)

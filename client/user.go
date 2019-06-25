@@ -5,10 +5,10 @@ import (
 )
 
 type User struct {
-	Uid      string `json:"uid"`
-	Nickname string `json:"nickname"`
-	Avatar   string `json:"avatar"`
-	Type     string `json:"type"`
+	Uid    string `json:"uid"`
+	Name   string `json:"name"`
+	Avatar string `json:"avatar"`
+	Type   int    `json:"type"`
 }
 
 func (c *Client) Auth(token string) (auth User, err error) {

@@ -13,10 +13,10 @@ import (
 
 func TestAuth(t *testing.T) {
 	user := User{
-		Uid:      "82ea16cd2d6a49d887440066ef739669",
-		Nickname: "test",
-		Type:     store.Player,
-		Avatar:   "/",
+		Uid:    "82ea16cd2d6a49d887440066ef739669",
+		Name:   "test",
+		Type:   store.Player,
+		Avatar: "/",
 	}
 	expectedPath := "/profile"
 

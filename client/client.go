@@ -28,13 +28,13 @@ type Client struct {
 }
 
 func New(c *conf.Api) *Client {
-	// TODO 先使用mock
-	return Create(c, mockHTTPClient())
+	return Create(c, hTTPClient())
 }
 
 func Create(c *conf.Api, client *http.Client) *Client {
 	return &Client{
-		host:   c.Host,
+		scheme: "http",
+		host:   "127.0.0.1:3005",
 		client: client,
 	}
 }
