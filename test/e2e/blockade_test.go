@@ -3,10 +3,10 @@ package e2e
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/errdefs"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/id"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/request"
+	"gitlab.com/jetfueltw/micro/errdefs"
+	"gitlab.com/jetfueltw/micro/id"
 	"testing"
 )
 
