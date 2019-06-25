@@ -1,29 +1,45 @@
 package cache
 
 import (
-	"github.com/gomodule/redigo/redis"
-	"github.com/rafaeljusto/redigomock"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
+	"fmt"
+	"github.com/alicebob/miniredis"
+	goRedis "github.com/go-redis/redis"
+	"github.com/stretchr/testify/assert"
+	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"os"
 	"testing"
 	"time"
 )
 
 var (
-	d         *Cache
-	mock      *redigomock.Conn
-	expireSec = int32(10 / time.Second)
+	r *goRedis.Client
+	c *Cache
 )
 
 func TestMain(m *testing.M) {
-	mock = redigomock.NewConn()
-	d = NewRedisDial(new(conf.Redis), func() (conn redis.Conn, e error) {
-		return mock, nil
+	s, err := miniredis.Run()
+	if err != nil {
+		fatalTestError("Error creating redis test : %v\n", err)
+	}
+	r = redis.New(&redis.Conf{
+		Addr: s.Addr(),
 	})
-	d.expire = expireSec
-	os.Exit(m.Run())
+	c = &Cache{
+		c:      r,
+		expire: time.Second * 10,
+	}
+	exitStatus := m.Run()
+	s.Close()
+	os.Exit(exitStatus)
 }
 
-func mockRestart() {
-	mock.Clear()
+func TestNewRedis(t *testing.T) {
+	c := NewRedis(&redis.Conf{})
+
+	assert.Equal(t, time.Minute*30, c.expire)
+}
+
+func fatalTestError(fmtStr string, args ...interface{}) {
+	fmt.Fprintf(os.Stderr, fmtStr, args...)
+	os.Exit(1)
 }

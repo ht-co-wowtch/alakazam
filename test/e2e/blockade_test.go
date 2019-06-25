@@ -5,8 +5,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/request"
-	"gitlab.com/jetfueltw/micro/errdefs"
-	"gitlab.com/jetfueltw/micro/id"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
+	"gitlab.com/jetfueltw/cpw/micro/id"
 	"testing"
 )
 

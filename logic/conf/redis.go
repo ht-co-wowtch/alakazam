@@ -2,6 +2,7 @@ package conf
 
 import (
 	"github.com/spf13/viper"
+	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"time"
 )
 
@@ -35,16 +36,10 @@ type Redis struct {
 	Expire time.Duration
 }
 
-func newRedis() *Redis {
-	return &Redis{
-		Network:      "tcp",
-		Addr:         viper.GetString("redis.host"),
-		Active:       viper.GetInt("redis.active"),
-		Idle:         viper.GetInt("redis.idle"),
-		DialTimeout:  time.Duration(viper.GetInt("redis.dialTimeout")) * time.Second,
-		ReadTimeout:  time.Duration(viper.GetInt("redis.readTimeout")) * time.Second,
-		WriteTimeout: time.Duration(viper.GetInt("redis.writeTimeout")) * time.Second,
-		IdleTimeout:  time.Duration(viper.GetInt("redis.idleTimeout")) * time.Second,
-		Expire:       time.Duration(viper.GetInt("redis.expire")) * time.Second,
-	}
+func newRedis() *redis.Conf {
+	v := viper.Sub("redis")
+
+	// TODO error 處理
+	c, _ := redis.ReadViper(v)
+	return c
 }

@@ -1,8 +1,8 @@
 package cache
 
 import (
-	log "github.com/golang/glog"
-	"github.com/gomodule/redigo/redis"
+	"strconv"
+	"time"
 )
 
 const (
@@ -16,63 +16,36 @@ const (
 )
 
 var (
-	roomExpired = 60 * 60
+	roomExpired = time.Hour
 )
 
-func (c *Cache) GetRoom(id string) (i int, err error) {
-	conn := c.Get()
-	defer conn.Close()
-	if err = conn.Send("HGET", keyRoom(id), hashPermissionKey); err != nil {
-		log.Errorf("GetRoom conn.Send(HGET %s) error(%v)", id, err)
-		return 0, err
-	}
-	if err = conn.Flush(); err != nil {
-		log.Errorf("GetRoom conn.Flush() error(%v)", err)
-		return 0, err
-	}
-	return redis.Int(conn.Receive())
+func (c *Cache) GetRoom(id string) (int, error) {
+	return c.c.HGet(keyRoom(id), hashPermissionKey).Int()
 }
 
 func (c *Cache) GetRoomByMoney(id string) (day, dml, amount int, err error) {
-	conn := c.Get()
-	defer conn.Close()
-	if err = conn.Send("HMGET", keyRoom(id), hashLimitDayKey, hashLimitDmlKey, hashLimitAmountKey); err != nil {
-		log.Errorf("GetRoomByMoney conn.Send(HMGET %s) error(%v)", id, err)
-		return 0, 0, 0, err
-	}
-	if err = conn.Flush(); err != nil {
-		log.Errorf("GetRoomByMoney conn.Flush() error(%v)", err)
-		return 0, 0, 0, err
-	}
-
-	i, err := redis.Ints(conn.Receive())
-
+	r, err := c.c.HMGet(keyRoom(id), hashLimitDayKey, hashLimitDmlKey, hashLimitAmountKey).Result()
 	if err != nil {
 		return 0, 0, 0, err
+	}
+	i := make([]int, 3)
+	for k, _ := range i {
+		i[k], _ = strconv.Atoi(r[k].(string))
 	}
 	return i[0], i[1], i[2], err
 }
 
 func (c *Cache) SetRoom(id string, permission, day, dml, amount int) error {
-	conn := c.Get()
-	defer conn.Close()
-	if err := conn.Send("HMSET", keyRoom(id), hashPermissionKey, permission, hashLimitDayKey, day, hashLimitDmlKey, dml, hashLimitAmountKey, amount); err != nil {
-		log.Errorf("SetRoom conn.Send(HMSET key:%s permission:%d day:%d amount:%d dml:%d) error(%v)", id, permission, day, amount, dml, err)
-		return err
+	f := map[string]interface{}{
+		hashPermissionKey:  permission,
+		hashLimitDayKey:    day,
+		hashLimitDmlKey:    dml,
+		hashLimitAmountKey: amount,
 	}
-	if err := conn.Send("EXPIRE", keyRoom(id), roomExpired); err != nil {
-		log.Errorf("SetRoom conn.Send(EXPIRE %s) error(%v)", id, err)
-		return err
-	}
-	if err := conn.Flush(); err != nil {
-		log.Errorf("SetRoom conn.Flush() error(%v)", err)
-		return err
-	}
-	for i := 0; i < 2; i++ {
-		if _, err := conn.Receive(); err != nil {
-			log.Errorf("SetRoom conn.Receive() error(%v)", err)
-			return err
-		}
-	}
-	return nil
+	key := keyRoom(id)
+	tx := c.c.Pipeline()
+	tx.HMSet(key, f)
+	tx.Expire(key, roomExpired)
+	_, err := tx.Exec()
+	return err
 }

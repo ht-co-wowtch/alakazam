@@ -1,89 +1,91 @@
 package cache
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
+	"gitlab.com/jetfueltw/cpw/micro/id"
+	"strconv"
 	"testing"
+	"time"
 )
 
 func TestSetUser(t *testing.T) {
-	Convey("假設有一個會員", t, func() {
-		Reset(mockRestart)
+	uid := id.UUid32()
+	key := id.UUid32()
+	roomId := id.UUid32()
+	name := "test"
+	server := "server"
+	err := c.SetUser(uid, key, roomId, name, server, permission.PlayDefaultPermission)
 
-		uid := "82ea16cd2d6a49d887440066ef739669"
-		key := "0b7f8111-8781-4574-8cb8-2eda0adb7598"
-		roomId := "1000"
-		name := "test"
-		p := permission.PlayDefaultPermission
+	u := r.HGetAll(keyUidInfo(uid)).Val()
 
-		c1 := mock.Command("HMSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, p, hashServerKey, "")
-		c2 := mock.Command("EXPIRE", keyUidInfo(uid), expireSec)
+	assert.Nil(t, err)
+	assert.Equal(t, map[string]string{
+		key:           roomId,
+		hashNameKey:   name,
+		hashStatusKey: strconv.Itoa(permission.PlayDefaultPermission),
+		hashServerKey: server,
+	}, u)
 
-		Convey("設定會員cache資料成功", func() {
-			c1.Expect("")
-			c2.Expect("")
+	expire := r.TTL(keyUidInfo(uid)).Val()
 
-			err := d.SetUser(uid, key, roomId, name, "", p)
-
-			Convey("error == nil", func() {
-				So(err, ShouldBeNil)
-				So(mock.ExpectationsWereMet(), ShouldBeNil)
-			})
-
-			Convey("有uid,key,房間id,name,權限", func() {
-				So(1, ShouldEqual, mock.Stats(c1))
-				So(1, ShouldEqual, mock.Stats(c2))
-			})
-		})
-	})
+	assert.Equal(t, c.expire, expire)
 }
 
 func TestRefreshUserExpire(t *testing.T) {
-	Convey("刷新會員資料expire", t, func() {
-		Reset(mockRestart)
+	uid := id.UUid32()
+	r.Set(keyUidInfo(uid), 1, time.Hour)
 
-		uid := "82ea16cd2d6a49d887440066ef739669"
+	ok, err := c.RefreshUserExpire(uid)
 
-		Convey("刷新cache expire成功", func() {
-			c1 := mock.Command("EXPIRE", keyUidInfo(uid), expireSec).
-				Expect([]byte(`true`))
-			ok, err := d.RefreshUserExpire(uid)
+	assert.True(t, ok)
+	assert.Nil(t, err)
 
-			Convey("error == nil", func() {
-				So(err, ShouldBeNil)
-				So(mock.ExpectationsWereMet(), ShouldBeNil)
-			})
+	m := r.TTL(keyUidInfo(uid)).Val()
 
-			Convey("已延長expire", func() {
-				So(1, ShouldEqual, mock.Stats(c1))
-				So(ok, ShouldBeTrue)
-			})
-		})
-	})
+	assert.Equal(t, c.expire, m)
 }
 
 func TestDeleteUser(t *testing.T) {
-	Convey("刪除某會員資料", t, func() {
-		Reset(mockRestart)
+	uid := id.UUid32()
+	r.HSet(keyUidInfo(uid), "key", "test")
 
-		uid := "82ea16cd2d6a49d887440066ef739669"
-		key := "0b7f8111-8781-4574-8cb8-2eda0adb7598"
+	ok, err := c.DeleteUser(uid, "key")
 
-		c := mock.Command("HDEL", keyUidInfo(uid), key)
+	assert.Nil(t, err)
+	assert.True(t, ok)
+}
 
-		Convey("刪除cache成功", func() {
-			c.Expect([]byte(`true`))
-			ok, err := d.DeleteUser(uid, key)
+func TestGetUser(t *testing.T) {
+	uid := id.UUid32()
+	key := id.UUid32()
+	roomId := id.UUid32()
+	name := "test"
 
-			Convey("error == nil", func() {
-				So(err, ShouldBeNil)
-				So(mock.ExpectationsWereMet(), ShouldBeNil)
-			})
+	_ = c.SetUser(uid, key, roomId, name, "test", permission.PlayDefaultPermission)
 
-			Convey("已刪除", func() {
-				So(1, ShouldEqual, mock.Stats(c))
-				So(ok, ShouldBeTrue)
-			})
-		})
-	})
+	r, n, s, err := c.GetUser(uid, key)
+
+	assert.Nil(t, err)
+	assert.Equal(t, roomId, r)
+	assert.Equal(t, name, n)
+	assert.Equal(t, permission.PlayDefaultPermission, s)
+}
+
+func TestChangeRoom(t *testing.T) {
+	uid := id.UUid32()
+	key := id.UUid32()
+	roomId := id.UUid32()
+
+	err := c.ChangeRoom(uid, key, roomId)
+
+	assert.Nil(t, err)
+
+	i := r.HGet(keyUidInfo(uid), key).Val()
+
+	assert.Equal(t, roomId, i)
+
+	m := r.TTL(keyUidInfo(uid)).Val()
+
+	assert.Equal(t, c.expire, m)
 }

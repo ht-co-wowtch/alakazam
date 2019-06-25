@@ -1,129 +1,60 @@
 package cache
 
 import (
-	"github.com/rafaeljusto/redigomock"
-	. "github.com/smartystreets/goconvey/convey"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
-	"strconv"
+	"github.com/stretchr/testify/assert"
+	"gitlab.com/jetfueltw/cpw/micro/id"
 	"testing"
 	"time"
 )
 
 func TestSetBanned(t *testing.T) {
-	Convey("禁言某會員5分鐘", t, func() {
-		Reset(mockRestart)
+	uid := id.UUid32()
+	r.HSet(keyUidInfo(uid), hashStatusKey, 0)
 
-		uid := "123"
-		sec := time.Duration(5) * time.Second
+	err := c.SetBanned(uid, 10)
+	assert.Nil(t, err)
 
-		Convey("禁言成功時", func() {
-			c1 := mock.Command("SET", keyBannedInfo(uid), time.Now().Add(sec).Unix()).
-				Expect("")
-			c2 := mock.Command("EXPIRE", keyBannedInfo(uid), 5).
-				Expect("")
-			c3 := mock.Command("HINCRBY", keyUidInfo(uid), hashStatusKey, -permission.Message).
-				Expect("")
+	unix, err := r.Get(keyBannedInfo(uid)).Int64()
+	ex := time.Unix(unix, 0)
+	assert.Nil(t, err)
+	assert.False(t, ex.IsZero())
 
-			err := d.SetBanned(uid, 5)
-
-			Convey("cache設定禁言資料完成", func() {
-				So(err, ShouldBeNil)
-				So(mock.ExpectationsWereMet(), ShouldBeNil)
-			})
-
-			Convey("cache已有會員禁言資料", func() {
-				So(1, ShouldEqual, mock.Stats(c1))
-			})
-
-			Convey("禁言資料五分鐘後過期", func() {
-				So(1, ShouldEqual, mock.Stats(c2))
-			})
-
-			Convey("會員沒有發話權限", func() {
-				So(1, ShouldEqual, mock.Stats(c3))
-			})
-		})
-	})
+	status, err := r.HGet(keyUidInfo(uid), hashStatusKey).Int()
+	assert.Equal(t, -2, status)
+	assert.Nil(t, err)
 }
 
 func TestGetBanned(t *testing.T) {
-	Convey("取得會員禁言資料", t, func() {
-		Reset(mockRestart)
+	uid := id.UUid32()
+	unix := time.Now().Unix()
+	r.Set(keyBannedInfo(uid), unix, 10*time.Second)
 
-		uid := "123"
-		unix := time.Now().Unix()
+	ex, ok, err := c.GetBanned(uid)
 
-		Convey("cache有禁言資料", func() {
-			c := mockGetBanned(uid, []byte(strconv.FormatInt(unix, 10)))
-			ex, ok, err := d.GetBanned(uid)
-
-			Convey("error == nil", func() {
-				So(err, ShouldBeNil)
-				So(mock.ExpectationsWereMet(), ShouldBeNil)
-				So(1, ShouldEqual, mock.Stats(c))
-			})
-
-			Convey("資料存在", func() {
-				So(ok, ShouldBeTrue)
-			})
-
-			Convey("有過期時間", func() {
-				So(unix, ShouldEqual, ex.Unix())
-			})
-		})
-
-		Convey("cache沒有禁言資料", func() {
-			c := mockGetBanned(uid, nil)
-			ex, ok, err := d.GetBanned(uid)
-
-			Convey("error == nil", func() {
-				So(err, ShouldBeNil)
-				So(mock.ExpectationsWereMet(), ShouldBeNil)
-				So(1, ShouldEqual, mock.Stats(c))
-			})
-
-			Convey("資料不存在", func() {
-				So(ok, ShouldBeFalse)
-			})
-
-			Convey("沒有過期時間", func() {
-				So(ex.IsZero(), ShouldBeTrue)
-			})
-		})
-	})
+	assert.Nil(t, err)
+	assert.True(t, ok)
+	assert.Equal(t, unix, ex.Unix())
 }
 
-func TestDeleteBanned(t *testing.T) {
-	Convey("刪除會員禁言資料", t, func() {
-		Reset(mockRestart)
+func TestGetBannedEmpty(t *testing.T) {
+	ex, ok, err := c.GetBanned(id.UUid32())
 
-		uid := "123"
-
-		Convey("cache有禁言資料", func() {
-			c1 := mock.Command("DEL", keyBannedInfo(uid)).
-				Expect("")
-			c2 := mock.Command("HINCRBY", keyUidInfo(uid), hashStatusKey, permission.Message).
-				Expect("")
-
-			err := d.DelBanned(uid)
-
-			Convey("error == nil", func() {
-				So(err, ShouldBeNil)
-				So(mock.ExpectationsWereMet(), ShouldBeNil)
-			})
-
-			Convey("會員增加發話權限", func() {
-				So(1, ShouldEqual, mock.Stats(c1))
-			})
-
-			Convey("刪除資料成功", func() {
-				So(1, ShouldEqual, mock.Stats(c2))
-			})
-		})
-	})
+	assert.Nil(t, err)
+	assert.False(t, ok)
+	assert.True(t, ex.IsZero())
 }
 
-func mockGetBanned(uid string, expect interface{}) *redigomock.Cmd {
-	return mock.Command("GET", keyBannedInfo(uid)).
-		Expect(expect)
+func TestDelBanned(t *testing.T) {
+	uid := id.UUid32()
+	r.HSet(keyUidInfo(uid), hashStatusKey, 2)
+	c.SetBanned(uid, 10)
+	err := c.DelBanned(uid)
+
+	assert.Nil(t, err)
+
+	bi := r.Exists(keyBannedInfo(uid)).Val()
+	status, _ := r.HGet(keyUidInfo(uid), hashStatusKey).Int()
+
+	assert.Equal(t, int64(0), bi)
+	assert.Equal(t, 2, status)
 }

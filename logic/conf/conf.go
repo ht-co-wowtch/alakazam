@@ -3,6 +3,7 @@ package conf
 import (
 	"bytes"
 	"fmt"
+	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"io/ioutil"
 	"time"
 
@@ -19,7 +20,7 @@ type Config struct {
 	HTTPAdminServer *HTTPServer
 	DB              *Database
 	Kafka           *Kafka
-	Redis           *Redis
+	Redis           *redis.Conf
 	Api             *Api
 	// comet連線用戶心跳，server會清除在線紀錄
 	Heartbeat int64
@@ -38,9 +39,6 @@ func Read(path string) (err error) {
 		fmt.Println("Using config file:", path)
 	}
 	Conf = load()
-	if Conf.Heartbeat >= Conf.Redis.Expire.Nanoseconds() {
-		return fmt.Errorf("comet心跳不能比redis expire還大")
-	}
 	return
 }
 

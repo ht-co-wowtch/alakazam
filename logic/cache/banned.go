@@ -1,84 +1,39 @@
 package cache
 
 import (
-	log "github.com/golang/glog"
+	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
-	"strconv"
 	"time"
 )
 
+// TODO expired 參數要改成time.Duration
 // 設定禁言
-func (d *Cache) SetBanned(uid string, expired int) (err error) {
+func (c *Cache) SetBanned(uid string, expired int) error {
 	sec := time.Duration(expired) * time.Second
-	conn := d.Get()
-	defer conn.Close()
-	if err := conn.Send("SET", keyBannedInfo(uid), time.Now().Add(sec).Unix()); err != nil {
-		log.Errorf("conn.Send(SET %s) error(%v)", uid, err)
-		return err
-	}
-	if err = conn.Send("EXPIRE", keyBannedInfo(uid), expired); err != nil {
-		log.Errorf("conn.Send(EXPIRE %s) error(%v)", uid, err)
-		return
-	}
-	if err = conn.Send("HINCRBY", keyUidInfo(uid), hashStatusKey, -permission.Message); err != nil {
-		log.Errorf("conn.Send(HSET %s) error(%v)", uid, err)
-		return
-	}
-	if err = conn.Flush(); err != nil {
-		log.Errorf("conn.Flush() error(%v)", err)
-		return
-	}
-	return receive(conn, 3)
+	tx := c.c.Pipeline()
+	tx.Set(keyBannedInfo(uid), time.Now().Add(sec).Unix(), sec)
+	tx.HIncrBy(keyUidInfo(uid), hashStatusKey, -permission.Message)
+	_, err := tx.Exec()
+	return err
 }
 
 // 取得禁言時效
-func (d *Cache) GetBanned(uid string) (t time.Time, is bool, err error) {
-	conn := d.Get()
-	defer conn.Close()
-	var r interface{}
-	if r, err = conn.Do("GET", keyBannedInfo(uid)); err != nil {
-		log.Errorf("conn.Send(GET %s) error(%v)", uid, err)
-		return
+func (c *Cache) GetBanned(uid string) (time.Time, bool, error) {
+	sec, err := c.c.Get(keyBannedInfo(uid)).Int64()
+	if err != nil {
+		if err == redis.Nil {
+			err = nil
+		}
+		return time.Time{}, false, err
 	}
-
-	switch reply := r.(type) {
-	case int64:
-		t = time.Unix(int64(reply), 0)
-		is = true
-		return
-	case nil:
-		return
-	case []byte:
-		n, e := strconv.ParseInt(string(reply), 10, 64)
-		t = time.Unix(n, 0)
-		is = true
-		err = e
-		return
-	}
-	return
+	return time.Unix(sec, 0), true, nil
 }
 
 // 解除禁言
-func (d *Cache) DelBanned(uid string) (err error) {
-	conn := d.Get()
-	defer conn.Close()
-	if err = conn.Send("DEL", keyBannedInfo(uid)); err != nil {
-		log.Errorf("conn.Send(DEL %s) error(%v)", uid, err)
-		return
-	}
-	if err = conn.Send("HINCRBY", keyUidInfo(uid), hashStatusKey, permission.Message); err != nil {
-		log.Errorf("conn.Send(HINCRBY %s) error(%v)", uid, err)
-		return
-	}
-	if err = conn.Flush(); err != nil {
-		log.Errorf("conn.Flush() error(%v)", err)
-		return
-	}
-	for i := 0; i < 2; i++ {
-		if _, err = conn.Receive(); err != nil {
-			log.Errorf("conn.Receive() error(%v)", err)
-			return
-		}
-	}
-	return
+func (c *Cache) DelBanned(uid string) error {
+	tx := c.c.Pipeline()
+	tx.Del(keyBannedInfo(uid))
+	tx.HIncrBy(keyUidInfo(uid), hashStatusKey, permission.Message)
+	_, err := tx.Exec()
+	return err
 }
