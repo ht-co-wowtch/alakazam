@@ -1,0 +1,10 @@
+host: http://127.0.0.1:8080
+
+# 最大連接數量
+maxConns: 30
+
+# 最大空閒連接數
+maxIdleConns: 10
+
+# 單一連線最多閒置多久(秒)
+idleConnTimeout: 120
