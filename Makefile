@@ -1,9 +1,9 @@
-# Go parameters
+.PHONY: all test clean
+
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOTEST=$(GOCMD) test
 
-all: test build
 build:
 	rm -rf bin/
 	mkdir bin/
@@ -13,9 +13,6 @@ build:
 	$(GOBUILD) -o bin/comet cmd/comet/main.go
 	$(GOBUILD) -o bin/logic cmd/logic/main.go
 	$(GOBUILD) -o bin/job cmd/job/main.go
-
-test:
-	$(GOTEST) -v ./...
 
 clean:
 	rm -rf bin/
@@ -41,4 +38,13 @@ proto-build:
 	--gofast_out=plugins=grpc:../grpc *.proto \
 	*.proto
 
+test:
+	sh test/unit
+
+test-cover: test cover
+
+cover:
+	if [ -f coverage.out ]; then \
+		go tool cover -html coverage.out -o coverage.html; \
+	fi
 

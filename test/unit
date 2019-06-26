@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+#
+# Run unit tests
+#
+set -eu -o pipefail
+
+pkg_list=$(go list ./... | grep -vE "test|protocol|pkg|example|errors|doc")
+
+if test -f coverage.out; then
+    rm coverage.out
+fi
+
+echo "mode: set" > coverage.out
+
+for pkg in $pkg_list; do
+    go test -cover \
+        -coverprofile=profile.out \
+        "${pkg}"
+
+    if test -f profile.out; then
+        cat profile.out >> tmp.out
+        rm profile.out
+    fi
+done
+
+if test -f tmp.out; then
+    cat tmp.out | grep -v "mode:" >> coverage.out
+    rm tmp.out
+fi
