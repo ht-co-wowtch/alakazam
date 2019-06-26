@@ -1,14 +1,12 @@
 package conf
 
 import (
-	"bytes"
-	"fmt"
 	"gitlab.com/jetfueltw/cpw/micro/client"
+	"gitlab.com/jetfueltw/cpw/micro/config"
 	"gitlab.com/jetfueltw/cpw/micro/database"
 	"gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/http"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
-	"io/ioutil"
 	"time"
 
 	"github.com/spf13/viper"
@@ -30,32 +28,50 @@ type Config struct {
 	Heartbeat int64
 }
 
-func Read(path string) (err error) {
-	viper.SetConfigType("yaml")
-	var b []byte
-	b, err = ioutil.ReadFile(path)
-	if err != nil {
-		return
-	}
-	if err = viper.ReadConfig(bytes.NewBuffer(b)); err != nil {
-		return
-	} else {
-		fmt.Println("Using config file:", path)
-	}
-	Conf = load()
-	return
+// Kafka
+type Kafka struct {
+	// Kafka 推送與接收Topic
+	Topic string
+
+	// 節點ip
+	Brokers []string
 }
 
-// 載入config
-func load() *Config {
-	return &Config{
-		DB:              newDatabase(),
-		RPCServer:       newRpc(),
-		HTTPServer:      newHttp(),
-		HTTPAdminServer: newAdminHttp(),
-		Redis:           newRedis(),
-		Kafka:           newKafka(),
-		Api:             newApi(),
-		Heartbeat:       (time.Duration(viper.GetInt("heartbeat")) * time.Second).Nanoseconds(),
+func Read(path string) error {
+	v, err := config.Read(path)
+	if err != nil {
+		return err
 	}
+
+	Conf = new(Config)
+	Conf.HTTPServer, err = http.ReadViper(v.Sub("http"))
+	if err != nil {
+		return err
+	}
+	Conf.HTTPAdminServer, err = http.ReadViper(v.Sub("admin"))
+	if err != nil {
+		return err
+	}
+	Conf.RPCServer, err = grpc.ReadViper(v.Sub("grpcServer"))
+	if err != nil {
+		return err
+	}
+	Conf.Api, err = client.ReadViper(v.Sub("api"))
+	if err != nil {
+		return err
+	}
+	Conf.Redis, err = redis.ReadViper(v.Sub("redis"))
+	if err != nil {
+		return err
+	}
+	Conf.DB, err = database.ReadViper(v.Sub("database"))
+	if err != nil {
+		return err
+	}
+	Conf.Kafka = &Kafka{
+		Topic:   v.GetString("kafka.topic"),
+		Brokers: v.GetStringSlice("kafka.brokers"),
+	}
+	Conf.Heartbeat = (time.Duration(viper.GetInt("heartbeat")) * time.Second).Nanoseconds()
+	return nil
 }
