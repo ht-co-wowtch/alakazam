@@ -6,15 +6,26 @@ import (
 	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
 	"google.golang.org/grpc"
+	"net"
+
 	// use gzip decoder
 	_ "google.golang.org/grpc/encoding/gzip"
 )
 
 // New logic grpc server
 func New(c *rpc.Conf, l *logic.Logic) *grpc.Server {
-	return rpc.New(c, func(s *grpc.Server) {
-		pb.RegisterLogicServer(s, &server{l})
-	})
+	srv := rpc.New(c)
+	pb.RegisterLogicServer(srv, &server{l})
+	lis, err := net.Listen(c.Network, c.Addr)
+	if err != nil {
+		panic(err)
+	}
+	go func() {
+		if err := srv.Serve(lis); err != nil {
+			panic(err)
+		}
+	}()
+	return srv
 }
 
 type server struct {
