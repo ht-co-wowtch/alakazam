@@ -7,7 +7,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/admin"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/front"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/models"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"os"
 	"os/signal"
 	"syscall"

@@ -1,6 +1,6 @@
 package permission
 
-import "gitlab.com/jetfueltw/cpw/alakazam/logic/models"
+import "gitlab.com/jetfueltw/cpw/alakazam/models"
 
 const (
 	RoomDefaultPermission = Message + sendFollow + getFollow + getBonus

@@ -5,7 +5,7 @@ import (
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/models"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 )
 
 // 一個聊天室會員的基本資料

@@ -2,7 +2,7 @@ package permission
 
 import (
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/models"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"strconv"
 	"testing"
 )

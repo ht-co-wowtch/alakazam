@@ -5,7 +5,7 @@ import (
 	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/models"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/id"
 )
 
