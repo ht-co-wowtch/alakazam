@@ -3,13 +3,13 @@ package admin
 import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	response "gitlab.com/jetfueltw/cpw/alakazam/logic/http"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 	"net/http"
 )
 
 func (s *Server) CreateRoom(c *gin.Context) {
-	var params store.Room
+	var params logic.Room
 	if err := bindRoom(c, &params); err != nil {
 		response.Errors(c, err)
 		return
@@ -27,7 +27,7 @@ func (s *Server) CreateRoom(c *gin.Context) {
 }
 
 func (s *Server) UpdateRoom(c *gin.Context) {
-	var params store.Room
+	var params logic.Room
 	if err := bindRoom(c, &params); err != nil {
 		response.Errors(c, err)
 		return
@@ -50,7 +50,7 @@ func (s *Server) GetRoom(c *gin.Context) {
 	c.JSON(http.StatusOK, r)
 }
 
-func bindRoom(c *gin.Context, params *store.Room) error {
+func bindRoom(c *gin.Context, params *logic.Room) error {
 	if err := c.ShouldBindJSON(params); err != nil {
 		return errors.DataError
 	}

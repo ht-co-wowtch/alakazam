@@ -3,16 +3,16 @@ package request
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"net/url"
 )
 
-func CreateRoom(room store.Room) Response {
+func CreateRoom(room logic.Room) Response {
 	b, _ := json.Marshal(room)
 	return PostJson(getAdminHost()+"/room", b)
 }
 
-func UpdateRoom(roomId string, room store.Room) Response {
+func UpdateRoom(roomId string, room logic.Room) Response {
 	b, _ := json.Marshal(room)
 	return PutJson(fmt.Sprintf(getAdminHost()+"/room/%s", roomId), b)
 }

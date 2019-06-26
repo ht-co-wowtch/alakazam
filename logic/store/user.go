@@ -1,5 +1,7 @@
 package store
 
+import "time"
+
 const (
 	// 訪客
 	Guest = "guest"
@@ -11,43 +13,44 @@ const (
 	Player = 2
 )
 
-type User struct {
-	Uid        string
-	Name       string
-	Avatar     string
-	IsBlockade bool
+type Member struct {
+	Id int `xorm:"pk autoincr"`
 
-	// user權限權重
-	Permission int
+	Uid string `xorm:"char(32) not null unique index"`
+
+	Name string `xorm:"varchar(30) not null"`
+
+	Avatar string `xorm:"varchar(255) not null"`
+
+	Permission int `xorm:"not null"`
+
+	// 是否被封鎖
+	IsBlockade bool `xorm:"default(0) not null"`
+
+	// 建立時間
+	CreateAt time.Time `xorm:"not null"`
+}
+
+func (r *Member) TableName() string {
+	return "members"
 }
 
 // 新增會員
-func (s *Store) CreateUser(user *User) (int64, error) {
-	sql := "INSERT INTO members (uid, name, avatar, permission, create_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)"
-	r, err := s.Exec(sql, user.Uid, user.Name, user.Avatar, user.Permission)
-
-	if err != nil {
-		return 0, err
-	}
-
-	return r.RowsAffected()
+func (s *Store) CreateUser(member *Member) (int64, error) {
+	member.CreateAt = time.Now()
+	return s.d.InsertOne(member)
 }
 
-func (s *Store) UpdateUser(user *User) (int64, error) {
-	sql := "UPDATE members SET name = ?, avatar = ? WHERE uid = ?"
-	r, err := s.Exec(sql, user.Name, user.Avatar, user.Uid)
-	if err != nil {
-		return 0, err
-	}
-	return r.RowsAffected()
+func (s *Store) UpdateUser(member *Member) (int64, error) {
+	return s.d.Cols("name", "avatar").
+		Where("uid = ?", member.Uid).
+		Update(member)
 }
 
 // 找會員
-func (s *Store) Find(uid string) (*User, error) {
-	user := &User{Uid: uid}
-
-	sql := "SELECT name, avatar, permission, is_blockade FROM members WHERE uid = ?"
-	err := s.QueryRow(sql, uid).Scan(&user.Name, &user.Avatar, &user.Permission, &user.IsBlockade)
-
-	return user, err
+func (s *Store) Find(uid string) (*Member, bool, error) {
+	m := new(Member)
+	ok, err := s.d.Where("uid = ?", uid).
+		Get(m)
+	return m, ok, err
 }

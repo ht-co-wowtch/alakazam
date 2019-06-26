@@ -9,10 +9,9 @@ func (s *Store) DeleteBanned(uid string) (int64, error) {
 }
 
 func (s *Store) updateBlockade(uid, remark string, is bool) (int64, error) {
-	sql := "UPDATE members SET is_blockade = ? WHERE uid = ?"
-	r, err := s.Exec(sql, is, uid)
-	if err != nil {
-		return 0, err
-	}
-	return r.RowsAffected()
+	return s.d.Cols("is_blockade").
+		Where("uid = ?", uid).
+		Update(&Member{
+			IsBlockade: is,
+		})
 }

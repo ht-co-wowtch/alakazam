@@ -2,7 +2,9 @@ package request
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -49,13 +51,23 @@ func response(r *http.Response, err error) (re Response) {
 		return
 	}
 
+	defer r.Body.Close()
+
+	re.StatusCode = r.StatusCode
+
+	if r.StatusCode != http.StatusOK && r.StatusCode != http.StatusNoContent {
+		e := new(errdefs.Error)
+		if err := json.NewDecoder(r.Body).Decode(e); err != nil {
+			re.Error = err
+		} else {
+			re.Error = e
+		}
+		return
+	}
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return
 	}
-
-	re.Error = r.Body.Close()
-	re.StatusCode = r.StatusCode
 	re.Body = body
 	return
 }

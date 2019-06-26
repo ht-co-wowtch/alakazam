@@ -33,10 +33,8 @@ func TestRoomInt(t *testing.T) {
 
 		Convey("當房間只有金額發話限制", func() {
 			actual := ToRoomInt(store.Room{
-				Limit: store.Limit{
-					Day: 1,
-					Dml: 1000,
-				},
+				DayLimit: 1,
+				DmlLimit: 1000,
 			})
 
 			expected := money
@@ -49,10 +47,8 @@ func TestRoomInt(t *testing.T) {
 		Convey("當房間有金額發話限制與跟注權限", func() {
 			actual := ToRoomInt(store.Room{
 				IsFollow: true,
-				Limit: store.Limit{
-					Day: 1,
-					Dml: 1000,
-				},
+				DayLimit: 1,
+				DmlLimit: 1000,
 			})
 
 			expected := money + getFollow + sendFollow
@@ -64,9 +60,7 @@ func TestRoomInt(t *testing.T) {
 
 		Convey("當房間有金額發話限制沒有設定打碼量天數", func() {
 			actual := ToRoomInt(store.Room{
-				Limit: store.Limit{
-					Dml: 1000,
-				},
+				DmlLimit: 1000,
 			})
 
 			Convey("權限只有0", func() {
@@ -76,9 +70,7 @@ func TestRoomInt(t *testing.T) {
 
 		Convey("當房間有金額發話限制沒有設定金額", func() {
 			actual := ToRoomInt(store.Room{
-				Limit: store.Limit{
-					Day: 1,
-				},
+				DayLimit: 1,
 			})
 
 			Convey("權限只有0", func() {

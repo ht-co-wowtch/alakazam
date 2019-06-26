@@ -1,7 +1,6 @@
 package logic
 
 import (
-	"database/sql"
 	log "github.com/golang/glog"
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
@@ -65,28 +64,22 @@ func (l *Logic) authRoom(u *User) error {
 }
 
 // 登入到聊天室
-func (l *Logic) login(token, roomId, server string) (*store.User, string, error) {
+func (l *Logic) login(token, roomId, server string) (*store.Member, string, error) {
 	user, err := l.client.Auth(token)
 	if err != nil {
 		log.Errorf("Logic client GetUser token:%s error(%v)", token, err)
 		return nil, "", errors.UserError
 	}
 
-	u, err := l.db.Find(user.Uid)
-
-	if err != nil {
-		if err != sql.ErrNoRows {
-			log.Errorf("FindUserPermission(uid:%s) error(%v)", user.Uid, err)
-			return nil, "", errors.ConnectError
-		}
-
-		u = &store.User{
+	// TODO 處理error
+	u, ok, _ := l.db.Find(user.Uid)
+	if !ok {
+		u = &store.Member{
 			Uid:        user.Uid,
 			Name:       user.Name,
 			Avatar:     user.Avatar,
 			Permission: permission.PlayDefaultPermission,
 		}
-
 		if aff, err := l.db.CreateUser(u); err != nil || aff <= 0 {
 			log.Errorf("CreateUser(uid:%s) affected %d error(%v)", user.Uid, aff, err)
 			return nil, "", errors.ConnectError

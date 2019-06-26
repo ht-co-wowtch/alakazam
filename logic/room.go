@@ -1,41 +1,79 @@
 package logic
 
 import (
-	"database/sql"
-	"fmt"
+	"github.com/go-redis/redis"
 	log "github.com/golang/glog"
-	"github.com/gomodule/redigo/redis"
-	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
+	"gitlab.com/jetfueltw/cpw/micro/id"
 )
 
-func (l *Logic) CreateRoom(r store.Room) (string, error) {
-	if r.Id == "" {
-		id, _ := uuid.New().MarshalBinary()
-		r.Id = fmt.Sprintf("%x", id)
-	}
+type Room struct {
+	// 要設定的房間id
+	Id string `json:"id"`
 
-	if len(r.Id) != 32 {
+	// 是否禁言
+	IsMessage bool `json:"is_message"`
+
+	// 是否可發/跟注
+	IsFollow bool `json:"is_follow"`
+
+	// 儲值&打碼量發話限制
+	Limit Limit `json:"limit"`
+
+	// 紅包多久過期
+	RedEnvelopeExpire int `json:"red_envelope_expire"`
+}
+
+type Limit struct {
+	// 限制範圍
+	Day int `json:"day"`
+
+	// 儲值金額
+	Amount int `json:"amount"`
+
+	// 打碼量
+	Dml int `json:"dml"`
+}
+
+func (l *Logic) CreateRoom(r Room) (string, error) {
+	room := store.Room{
+		Id:                r.Id,
+		IsMessage:         r.IsMessage,
+		IsFollow:          r.IsFollow,
+		DayLimit:          r.Limit.Day,
+		DepositLimit:      r.Limit.Amount,
+		DmlLimit:          r.Limit.Dml,
+		RedEnvelopeExpire: r.RedEnvelopeExpire,
+	}
+	if r.Id == "" {
+		room.Id = id.UUid32()
+	}
+	if len(room.Id) != 32 {
 		return "", errors.DataError
 	}
-
-	if aff, err := l.db.CreateRoom(r); err != nil || aff <= 0 {
-		log.Errorf("l.db.CreateRoom(room: %v) error(%v)", r, err)
+	if aff, err := l.db.CreateRoom(room); err != nil || aff <= 0 {
 		return "", err
 	}
 	return r.Id, nil
 }
 
-func (l *Logic) UpdateRoom(id string, r store.Room) bool {
-	r.Id = id
-	if _, err := l.db.UpdateRoom(r); err != nil {
+func (l *Logic) UpdateRoom(id string, r Room) bool {
+	room := store.Room{
+		Id:           id,
+		IsMessage:    r.IsMessage,
+		IsFollow:     r.IsFollow,
+		DayLimit:     r.Limit.Day,
+		DepositLimit: r.Limit.Amount,
+		DmlLimit:     r.Limit.Dml,
+	}
+	if _, err := l.db.UpdateRoom(room); err != nil {
 		log.Errorf("l.db.CreateRoom(room: %v) error(%v)", r, err)
 		return false
 	}
-	if err := l.cache.SetRoom(id, permission.ToRoomInt(r), r.Limit.Day, r.Limit.Dml, r.Limit.Amount); err != nil {
+	if err := l.cache.SetRoom(id, permission.ToRoomInt(room), room.DayLimit, room.DmlLimit, room.DepositLimit); err != nil {
 		log.Errorf("Logic UpdateRoom cache SetRoom(id:%s) error(%v)", id, err)
 		return false
 	}
@@ -43,38 +81,34 @@ func (l *Logic) UpdateRoom(id string, r store.Room) bool {
 }
 
 func (l *Logic) GetRoom(roomId string) (store.Room, bool) {
-	r, err := l.db.GetRoom(roomId)
+	r, ok, err := l.db.GetRoom(roomId)
 	if err != nil {
-		if err != sql.ErrNoRows {
-			log.Errorf("l.db.GetRoom(roomId: %s) error(%v)", roomId, err)
-		}
 		return r, false
 	}
-	return r, true
+	return r, ok
 }
 
 func (l *Logic) GetRoomPermission(rId string) int {
 	i, err := l.cache.GetRoom(rId)
 
-	if err != nil && err != redis.ErrNil {
+	if err != nil && err != redis.Nil {
 		log.Errorf("Logic isBanned cache GetRoom(id:%s) error(%v) ", rId, err)
 	}
 	if i == 0 {
 		var day, dml, amount int
-		room, err := l.db.GetRoom(rId)
-
-		if err == nil {
+		room, ok, err := l.db.GetRoom(rId)
+		// TODO 需要error判斷回傳值
+		if err != nil {
+			return 0
+		}
+		if ok {
 			i = permission.ToRoomInt(room)
-			day = room.Limit.Day
-			dml = room.Limit.Dml
-			amount = room.Limit.Amount
+			day = room.DayLimit
+			dml = room.DmlLimit
+			amount = room.DepositLimit
 		} else {
 			i = permission.RoomDefaultPermission
-			if err != sql.ErrNoRows {
-				log.Errorf("Logic isBanned db GetRoom(id:%s) error(%v) ", rId, err)
-			}
 		}
-
 		if err := l.cache.SetRoom(rId, i, day, dml, amount); err != nil {
 			log.Errorf("Logic isBanned cache SetRoom(id:%s) error(%v) ", rId, err)
 		}

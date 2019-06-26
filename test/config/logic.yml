@@ -46,7 +46,7 @@ kafka:
   brokers:
     - 127.0.0.1:9092
 
-db:
+database:
   host: 127.0.0.1
   port: 3306
   database: alakazam
@@ -55,8 +55,13 @@ db:
   charset: utf8mb4
   collation: utf8mb4_unicode_ci
   # 最大連線總數
-  active: 1000
+  active: 100
   # 最大保留的閒置連線數
-  idle: 500
+  idle: 10
   # 空閒連線多久(秒)沒做事就close
-  idleTimeout: 120
+  idleTimeout: 2m
+  slave:
+    - slave1
+
+  slave1:
+    port: 3306

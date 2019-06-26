@@ -1,7 +1,6 @@
 package e2e
 
 import (
-	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/request"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
@@ -18,10 +17,7 @@ func TestBanned(t *testing.T) {
 
 	defer userA.DeleteBanned()
 
-	e := new(errdefs.Error)
-	if err := json.Unmarshal(r.Body, e); err != nil {
-		t.Fatal(err)
-	}
+	e := r.Error.(*errdefs.Error)
 
 	assert.Equal(t, http.StatusUnauthorized, r.StatusCode)
 	assert.Equal(t, 10024013, e.Code)

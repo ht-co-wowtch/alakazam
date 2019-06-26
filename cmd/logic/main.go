@@ -7,6 +7,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/admin"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/front"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 	"os"
 	"os/signal"
 	"syscall"
@@ -19,15 +20,23 @@ import (
 )
 
 var (
-	// config path
 	confPath string
+	migrate  bool
 )
 
 func main() {
 	flag.StringVar(&confPath, "c", "logic.yml", "default config path")
+	flag.BoolVar(&migrate, "migrate", false, "run migrate")
 	flag.Parse()
 	if err := conf.Read(confPath); err != nil {
 		panic(err)
+	}
+
+	if migrate {
+		if err := store.Migrate(conf.Conf.DB); err != nil {
+			panic(err)
+		}
+		return
 	}
 
 	// new srever

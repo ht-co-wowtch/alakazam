@@ -1,54 +1,54 @@
 package store
 
+import "time"
+
 type Room struct {
 	// 要設定的房間id
-	Id string `json:"id"`
+	Id string `xorm:"pk"`
 
 	// 是否禁言
-	IsMessage bool `json:"is_message"`
+	IsMessage bool `xorm:"default(0) not null"`
 
 	// 是否可發/跟注
-	IsFollow bool `json:"is_follow"`
+	IsFollow bool `xorm:"default(0) not null"`
 
-	// 儲值&打碼量發話限制
-	Limit Limit `json:"limit"`
+	// 聊天打碼與充值量天數限制
+	DayLimit int `xorm:"tinyint(4) default(0)"`
 
-	// 紅包多久過期
-	LuckyMoneyExpire int `json:"lucky_money_expire"`
+	// 充值量限制
+	DepositLimit int `xorm:"default(0)"`
+
+	// 打碼量限制
+	DmlLimit int `xorm:"default(0)"`
+
+	// 紅包多久過期(分鐘)
+	RedEnvelopeExpire int `xorm:"default(0)"`
+
+	// 更新時間
+	UpdateAt time.Time `xorm:"not null"`
+
+	// 建立時間
+	CreateAt time.Time `xorm:"not null"`
 }
 
-type Limit struct {
-	// 限制範圍
-	Day int `json:"day"`
-
-	// 儲值金額
-	Amount int `json:"amount"`
-
-	// 打碼量
-	Dml int `json:"dml"`
+func (r *Room) TableName() string {
+	return "rooms"
 }
 
 func (s *Store) CreateRoom(room Room) (int64, error) {
-	sql := "INSERT INTO rooms (room_id, is_message, is_follow, day_limit, amount_limit, dml_limit) VALUES (?, ?, ?, ?, ?, ?)"
-	r, err := s.Exec(sql, room.Id, room.IsMessage, room.IsFollow, room.Limit.Day, room.Limit.Amount, room.Limit.Dml)
-	if err != nil {
-		return 0, err
-	}
-	return r.RowsAffected()
+	room.UpdateAt = time.Now()
+	room.CreateAt = time.Now()
+	return s.d.InsertOne(&room)
 }
 
 func (s *Store) UpdateRoom(room Room) (int64, error) {
-	sql := "UPDATE rooms SET is_message = ?, is_follow = ?, day_limit = ?, amount_limit = ?, dml_limit = ? WHERE room_id = ? "
-	r, err := s.Exec(sql, room.IsMessage, room.IsFollow, room.Limit.Day, room.Limit.Amount, room.Limit.Dml, room.Id)
-	if err != nil {
-		return 0, err
-	}
-	return r.RowsAffected()
+	return s.d.Cols("is_message", "is_follow", "day_limit", "deposit_limit", "dml_limit").
+		Where("id = ?", room.Id).
+		Update(&room)
 }
 
-func (s *Store) GetRoom(roomId string) (Room, error) {
-	room := Room{}
-	sql := "SELECT * FROM rooms WHERE room_id = ?"
-	return room, s.QueryRow(sql, roomId).
-		Scan(&room.Id, &room.IsMessage, &room.IsFollow, &room.Limit.Day, &room.Limit.Amount, &room.Limit.Dml)
+func (s *Store) GetRoom(roomId string) (Room, bool, error) {
+	r := Room{}
+	ok, err := s.d.Where("id = ?", roomId).Get(&r)
+	return r, ok, err
 }

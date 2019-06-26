@@ -3,8 +3,6 @@ package cache
 import (
 	"fmt"
 	"github.com/go-redis/redis"
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/mattn/go-sqlite3"
 	redism "gitlab.com/jetfueltw/cpw/micro/redis"
 	"time"
 )

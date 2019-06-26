@@ -3,6 +3,7 @@ package e2e
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
@@ -164,7 +165,7 @@ func TestBroadcast(t *testing.T) {
 
 func TestCreateRoom(t *testing.T) {
 	roomId := id.UUid32()
-	request.CreateRoom(store.Room{
+	request.CreateRoom(logic.Room{
 		Id:        roomId,
 		IsMessage: true,
 	})
@@ -178,18 +179,14 @@ func TestCreateRoom(t *testing.T) {
 
 func TestCreateRoomBanned(t *testing.T) {
 	roomId := id.UUid32()
-	request.CreateRoom(store.Room{
+	request.CreateRoom(logic.Room{
 		Id:        roomId,
 		IsMessage: false,
 	})
 
 	userA := request.DialAuth(t, roomId, uidA)
 	r := userA.PushRoom("test")
-
-	e := new(errdefs.Error)
-	if err := json.Unmarshal(r.Body, e); err != nil {
-		t.Fatal(err)
-	}
+	e := r.Error.(*errdefs.Error)
 
 	assert.Equal(t, http.StatusUnauthorized, r.StatusCode)
 	assert.Equal(t, 10024014, e.Code)
@@ -198,11 +195,11 @@ func TestCreateRoomBanned(t *testing.T) {
 
 func TestUpdateRoom(t *testing.T) {
 	roomId := id.UUid32()
-	request.CreateRoom(store.Room{
+	request.CreateRoom(logic.Room{
 		Id:        roomId,
 		IsMessage: false,
 	})
-	request.UpdateRoom(roomId, store.Room{
+	request.UpdateRoom(roomId, logic.Room{
 		IsMessage: true,
 	})
 
@@ -214,8 +211,5 @@ func TestUpdateRoom(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, store.Room{
-		Id:        roomId,
-		IsMessage: true,
-	}, p)
+	assert.True(t, p.IsMessage)
 }

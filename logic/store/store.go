@@ -1,37 +1,32 @@
 package store
 
 import (
-	"database/sql"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
-	"time"
+	"github.com/go-xorm/xorm"
+	"gitlab.com/jetfueltw/cpw/micro/database"
 )
 
+var tables []interface{}
+
+func init() {
+	tables = append(tables,
+		new(Member),
+		new(Room),
+	)
+}
+
 type Store struct {
-	*sql.DB
+	d *xorm.EngineGroup
 }
 
-func NewStore(c *conf.Database) *Store {
-	return &Store{NewDB(c)}
+func Table() []interface{} {
+	return tables
 }
 
-func NewDB(c *conf.Database) *sql.DB {
-	db, err := sql.Open(c.Driver, DatabaseDns(c))
-	if err != nil {
-		panic(err)
+func NewStore(c *database.Conf) *Store {
+	// TODO 處理error
+	d, _ := database.NewORM(c)
+	return &Store{
+		d: d,
 	}
-
-	db.SetMaxOpenConns(c.MaxOpenConn)
-	db.SetMaxIdleConns(c.MaxIdleConn)
-	db.SetConnMaxLifetime(time.Duration(c.ConnMaxLifetime) * time.Second)
-
-	if err := db.Ping(); err != nil {
-		panic(err)
-	}
-	return db
-}
-
-func DatabaseDns(c *conf.Database) string {
-	return fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=%v&collation=%v&parseTime=true&timeout=2s&loc=Local", c.User, c.Password, c.Host, c.Port, c.Database, c.Charset, c.Collation)
 }

@@ -3,6 +3,7 @@ package conf
 import (
 	"bytes"
 	"fmt"
+	"gitlab.com/jetfueltw/cpw/micro/database"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"io/ioutil"
 	"time"
@@ -18,7 +19,7 @@ type Config struct {
 	RPCServer       *RPCServer
 	HTTPServer      *HTTPServer
 	HTTPAdminServer *HTTPServer
-	DB              *Database
+	DB              *database.Conf
 	Kafka           *Kafka
 	Redis           *redis.Conf
 	Api             *Api

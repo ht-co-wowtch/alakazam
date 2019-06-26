@@ -30,6 +30,9 @@ stop:
 	pkill -f bin/job
 	pkill -f bin/comet
 
+migrate:
+	bin/logic -c bin/logic.yml -migrate=true
+
 proto-build:
 	cd protocol/proto && protoc \
 	--proto_path=${GOPATH}/src \
