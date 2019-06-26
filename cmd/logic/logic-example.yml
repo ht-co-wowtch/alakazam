@@ -12,11 +12,12 @@ api:
   # 單一連線最多閒置多久
   idleConnTimeout: 2m
 
-# httpServer
-httpServer:
-  host: :3111
-  readTimeout: 1
-  writeTimeout: 1
+# http server
+http:
+  debug: true
+  addr: :3111
+  readTimeout: 1s
+  writeTimeout: 1s
   cors:
     origins:
       - '*'
@@ -27,11 +28,12 @@ httpServer:
       - User-Agent
       - Authorization
 
-# httpAdminServer
-httpAdminServer:
-  host: :3112
-  readTimeout: 1
-  writeTimeout: 1
+# http admin server
+admin:
+  debug: true
+  addr: :3112
+  readTimeout: 1s
+  writeTimeout: 1s
 
 # grpc server
 rpcServer:

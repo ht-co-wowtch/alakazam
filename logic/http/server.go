@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
+	server "gitlab.com/jetfueltw/cpw/micro/http"
 	"net/http"
 )
 
@@ -26,15 +26,12 @@ type Server struct {
 }
 
 // New new a http server.
-func New(c *conf.HTTPServer, srv LogicHttpServer) *Server {
+func New(c *server.Conf, srv LogicHttpServer) *Server {
 	engine := gin.New()
 	engine.Use(loggerHandler, recoverHandler)
 	s := &Server{
-		server: &http.Server{
-			Addr:    c.Addr,
-			Handler: engine,
-		},
-		logic: srv,
+		server: server.NewServer(c, engine),
+		logic:  srv,
 	}
 
 	s.logic.InitRoute(engine)

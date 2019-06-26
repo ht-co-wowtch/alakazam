@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gitlab.com/jetfueltw/cpw/micro/client"
 	"gitlab.com/jetfueltw/cpw/micro/database"
+	"gitlab.com/jetfueltw/cpw/micro/http"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"io/ioutil"
 	"time"
@@ -18,8 +19,8 @@ var (
 
 type Config struct {
 	RPCServer       *RPCServer
-	HTTPServer      *HTTPServer
-	HTTPAdminServer *HTTPServer
+	HTTPServer      *http.Conf
+	HTTPAdminServer *http.Conf
 	DB              *database.Conf
 	Kafka           *Kafka
 	Redis           *redis.Conf
