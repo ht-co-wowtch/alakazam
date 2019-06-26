@@ -6,10 +6,8 @@ kafka:
     - 127.0.0.1:9092
 
 # grpc client for comet
-rpcClient:
-  host: :3109
-  # 連線超時
-  timeout: 1
+grpcClient:
+  addr: :3109
 
 # 推送給comet
 comet:
@@ -21,4 +19,4 @@ comet:
 # 房間消息聚合
 room:
   # 消息聚合goroutine(每個房間一個)等待多久都沒收到訊息自動close
-  idle: 900
+  idle: 15m
