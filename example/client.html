@@ -248,7 +248,7 @@
             }
 
             function auth() {
-                var token = '{"token":"' + token + '", "room_id":"6318a4f786e64c6487a30687e9df3a13"}'
+                var token = '{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIxNWMzYzYxZjkwMGE0MzNmYjhmMWE5YjMxMTRjZjcyYyIsInNpdGVfY29kZSI6ImRlZmF1bHQiLCJzZXNzaW9uX2lkIjoiNTlkOTQ5MDhjZGU3NDVlMTgxYjk1NzYyMGJiNTVmYjUiLCJpYXQiOjE1NjE1MzQxNDJ9.j9W57cTJmghSQUKvaF8TCo9wkSNem_8wjbTJ3BPn_a0", "room_id":"6318a4f786e64c6487a30687e9df3a13"}'
                 var headerBuf = new ArrayBuffer(rawHeaderLen);
                 var headerView = new DataView(headerBuf, 0);
                 var bodyBuf = textEncoder.encode(token);

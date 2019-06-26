@@ -3,7 +3,6 @@ package logic
 import (
 	"github.com/go-redis/redis"
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
@@ -116,7 +115,7 @@ func (l *Logic) GetRoomPermission(rId string) int {
 	return i
 }
 
-func (l *Logic) isMessage(rid string, status int, option *client.Params) error {
+func (l *Logic) isMessage(rid string, status int, uid, token string) error {
 	if !permission.IsMoney(status) {
 		return nil
 	}
@@ -127,9 +126,9 @@ func (l *Logic) isMessage(rid string, status int, option *client.Params) error {
 		return errors.FailureError
 	}
 
-	money, err := l.client.GetDepositAndDml(day, option)
+	money, err := l.client.GetDepositAndDml(day, uid, token)
 	if err != nil {
-		log.Errorf("Logic isMessage client GetDepositAndDml(id:%s day:%d) error(%v)", option.Uid, day, err)
+		log.Errorf("Logic isMessage client GetDepositAndDml(id:%s day:%d) error(%v)", uid, day, err)
 		return errors.FailureError
 	}
 

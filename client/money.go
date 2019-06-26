@@ -1,29 +1,12 @@
 package client
 
-import (
-	"encoding/json"
-	"net/url"
-	"time"
-)
-
 type Money struct {
 	Dml     int `json:"dml"`
 	Deposit int `json:"deposit"`
 }
 
-func (c *Client) GetDepositAndDml(day int, option *Params) (money Money, err error) {
-	now := time.Now()
-	query := url.Values{}
-	query.Set("start_at", now.AddDate(0, 0, -day).Format("2006-01-02T00:00:00Z07:00"))
-	query.Set("end_at", now.Format(time.RFC3339))
-
-	b, err := c.get("http://localhost:3005/deposit-dml", query, bearer(option))
-	if err != nil {
-		return money, err
-	}
-
-	err = json.Unmarshal(b, &money)
-
+// TODO 待實作
+func (c *Client) GetDepositAndDml(day int, uid, token string) (money Money, err error) {
 	return money, err
 }
 
@@ -39,14 +22,7 @@ type olderReply struct {
 	Balance float64 `json:"balance"`
 }
 
-func (c *Client) NewOlder(older Older, option *Params) (float64, error) {
-	b, err := c.post("/give-lucky-money", nil, older, bearer(option))
-	if err != nil {
-		return 0, err
-	}
-
-	var r olderReply
-	err = json.Unmarshal(b, &r)
-
-	return r.Balance, err
+// TODO 待實作
+func (c *Client) NewOlder(older Older, uid, token string) (float64, error) {
+	return 0, nil
 }

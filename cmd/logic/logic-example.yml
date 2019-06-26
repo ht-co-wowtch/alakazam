@@ -2,8 +2,15 @@
 # 一定要比redis.expire還小
 heartbeat: 240
 
+# 三方應用接口 config
 api:
-  host: http://127.0.0.1:9000
+  host: http://127.0.0.1:3005
+  # 最大連接數量
+  maxConns: 30
+  # 最大空閒連接數
+  maxIdleConns: 10
+  # 單一連線最多閒置多久
+  idleConnTimeout: 2m
 
 # httpServer
 httpServer:

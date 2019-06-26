@@ -70,7 +70,7 @@ grpcServer:
 
 # 三方應用接口 config
 api:
-  host: http://127.0.0.1:9000
+  host: http://127.0.0.1:3005
   # 最大連接數量
   maxConns: 30
   # 最大空閒連接數

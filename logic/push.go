@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"time"
@@ -41,13 +40,7 @@ func (l *Logic) PushRoom(c *gin.Context, p *PushRoom) error {
 	if err := l.Auth(&p.User); err != nil {
 		return err
 	}
-
-	option := &client.Params{
-		Uid:   p.Uid,
-		Token: c.GetString("token"),
-	}
-
-	if err := l.isMessage(p.roomId, p.roomStatus, option); err != nil {
+	if err := l.isMessage(p.roomId, p.roomStatus, p.Uid, c.GetString("token")); err != nil {
 		return err
 	}
 

@@ -11,14 +11,19 @@ type User struct {
 	Type   int    `json:"type"`
 }
 
-func (c *Client) Auth(token string) (auth User, err error) {
-	b, err := c.get("/profile", nil, bearer(&Params{Token: token}))
-
+func (c *Client) Auth(token string) (User, error) {
+	resp, err := c.c.Get("/profile", nil, map[string][]string{"Authorization": []string{"Bearer " + token}})
 	if err != nil {
-		return auth, err
+		return User{}, err
 	}
 
-	err = json.Unmarshal(b, &auth)
-
-	return auth, err
+	defer resp.Body.Close()
+	if err := checkResponse(resp); err != nil {
+		return User{}, err
+	}
+	var u User
+	if err := json.NewDecoder(resp.Body).Decode(&u); err != nil {
+		return User{}, err
+	}
+	return u, nil
 }

@@ -1,13 +1,13 @@
 package conf
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+	"gitlab.com/jetfueltw/cpw/micro/client"
+)
 
-type Api struct {
-	Host string
-}
-
-func newApi() *Api {
-	return &Api{
-		Host: viper.GetString("api.host"),
-	}
+func newApi() *client.Conf {
+	v := viper.Sub("api")
+	// TODO 處理error
+	c, _ := client.ReadViper(v)
+	return c
 }

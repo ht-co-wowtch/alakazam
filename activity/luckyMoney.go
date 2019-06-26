@@ -1,11 +1,7 @@
 package activity
 
 import (
-	"fmt"
-	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"strconv"
 )
 
 const (
@@ -17,7 +13,7 @@ const (
 )
 
 type moneyApi interface {
-	NewOlder(older client.Older, option *client.Params) (float64, error)
+	NewOlder(older client.Older, uid, token string) (float64, error)
 }
 
 type storeApi struct {
@@ -60,40 +56,5 @@ type GiveMoney struct {
 // 發紅包
 // TODO 未完
 func (l *LuckyMoney) Give(money *GiveMoney) (string, error) {
-	var total float64
-
-	amount, err := strconv.ParseFloat(fmt.Sprintf("%.2f", money.Amount), 64)
-
-	if err != nil || money.Amount != amount {
-		return "", errors.AmountError
-	}
-
-	switch money.Type {
-	case Money:
-		total = float64(money.Count) * money.Amount
-	case LuckMoney:
-		total = money.Amount
-	default:
-		return "", errors.DataError
-	}
-
-	c := client.Older{
-		OrderId: uuid.New().String(),
-		Amount:  total,
-	}
-
-	p := &client.Params{
-		Token: money.Token,
-	}
-
-	if _, err := l.money.NewOlder(c, p); err != nil {
-		switch err {
-		case client.InsufficientBalanceError:
-			return "", errors.BalanceError
-		default:
-			return "", errors.FailureError
-		}
-	}
-
-	return c.OrderId, nil
+	return "", nil
 }
