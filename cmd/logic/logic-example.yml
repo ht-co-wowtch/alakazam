@@ -1,17 +1,3 @@
-# comet連線用戶心跳(秒)，timeout logic會清除在線紀錄
-# 一定要比redis.expire還小
-heartbeat: 240
-
-# 三方應用接口 config
-api:
-  host: http://127.0.0.1:3005
-  # 最大連接數量
-  maxConns: 30
-  # 最大空閒連接數
-  maxIdleConns: 10
-  # 單一連線最多閒置多久
-  idleConnTimeout: 2m
-
 # http server
 http:
   debug: true
@@ -36,10 +22,20 @@ admin:
   writeTimeout: 1s
 
 # grpc server
-rpcServer:
-  host: :3119
+grpcServer:
+  addr: :3119
 
-# redis config
+# 三方應用接口 config
+api:
+  host: http://127.0.0.1:3005
+  # 最大連接數量
+  maxConns: 30
+  # 最大空閒連接數
+  maxIdleConns: 10
+  # 單一連線最多閒置多久
+  idleConnTimeout: 2m
+
+# redis server
 redis:
   # redis host
   addr: :6379
@@ -82,5 +78,6 @@ database:
   slave1:
     port: 3306
 
-
-
+# comet連線用戶心跳(秒)，timeout logic會清除在線紀錄
+# 一定要比redis.expire還小
+heartbeat: 240

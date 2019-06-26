@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gitlab.com/jetfueltw/cpw/micro/client"
 	"gitlab.com/jetfueltw/cpw/micro/database"
+	"gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/http"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"io/ioutil"
@@ -18,7 +19,7 @@ var (
 )
 
 type Config struct {
-	RPCServer       *RPCServer
+	RPCServer       *grpc.Conf
 	HTTPServer      *http.Conf
 	HTTPAdminServer *http.Conf
 	DB              *database.Conf

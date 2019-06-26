@@ -3,37 +3,18 @@ package grpc
 import (
 	"context"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"net"
-
+	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
 	// use gzip decoder
 	_ "google.golang.org/grpc/encoding/gzip"
 )
 
 // New logic grpc server
-func New(c *conf.RPCServer, l *logic.Logic) *grpc.Server {
-	keepParams := grpc.KeepaliveParams(keepalive.ServerParameters{
-		MaxConnectionIdle:     c.IdleTimeout,
-		MaxConnectionAgeGrace: c.ForceCloseWait,
-		Time:                  c.KeepAliveInterval,
-		Timeout:               c.KeepAliveTimeout,
-		MaxConnectionAge:      c.MaxLifeTime,
+func New(c *rpc.Conf, l *logic.Logic) *grpc.Server {
+	return rpc.New(c, func(s *grpc.Server) {
+		pb.RegisterLogicServer(s, &server{l})
 	})
-	srv := grpc.NewServer(keepParams)
-	pb.RegisterLogicServer(srv, &server{l})
-	lis, err := net.Listen(c.Network, c.Addr)
-	if err != nil {
-		panic(err)
-	}
-	go func() {
-		if err := srv.Serve(lis); err != nil {
-			panic(err)
-		}
-	}()
-	return srv
 }
 
 type server struct {
