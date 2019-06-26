@@ -1,81 +1,62 @@
 package permission
 
 import (
-	"fmt"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
+	"strconv"
 	"testing"
 )
 
 func TestRoomInt(t *testing.T) {
-	Convey("房間權限", t, func() {
-		Convey("當房間只有發話權限", func() {
-			actual := ToRoomInt(store.Room{
+	testCases := []struct {
+		room     store.Room
+		expected int
+	}{
+		{
+			room: store.Room{
 				IsMessage: true,
-			})
-			expected := Message
-
-			Convey(fmt.Sprintf("權限只有%d", expected), func() {
-				So(actual, ShouldEqual, expected)
-			})
-		})
-		Convey("當房間只有跟注權限", func() {
-			actual := ToRoomInt(store.Room{
+			},
+			expected: Message,
+		},
+		{
+			room: store.Room{
 				IsFollow: true,
-			})
-
-			expected := getFollow + sendFollow
-
-			Convey(fmt.Sprintf("權限只有%d", expected), func() {
-				So(actual, ShouldEqual, expected)
-			})
-		})
-
-		Convey("當房間只有金額發話限制", func() {
-			actual := ToRoomInt(store.Room{
+			},
+			expected: getFollow + sendFollow,
+		},
+		{
+			room: store.Room{
 				DayLimit: 1,
 				DmlLimit: 1000,
-			})
-
-			expected := money
-
-			Convey(fmt.Sprintf("權限只有%d", expected), func() {
-				So(actual, ShouldEqual, expected)
-			})
-		})
-
-		Convey("當房間有金額發話限制與跟注權限", func() {
-			actual := ToRoomInt(store.Room{
+			},
+			expected: money,
+		},
+		{
+			room: store.Room{
 				IsFollow: true,
 				DayLimit: 1,
 				DmlLimit: 1000,
-			})
-
-			expected := money + getFollow + sendFollow
-
-			Convey(fmt.Sprintf("權限只有%d", expected), func() {
-				So(actual, ShouldEqual, expected)
-			})
-		})
-
-		Convey("當房間有金額發話限制沒有設定打碼量天數", func() {
-			actual := ToRoomInt(store.Room{
+			},
+			expected: money + getFollow + sendFollow,
+		},
+		{
+			room: store.Room{
 				DmlLimit: 1000,
-			})
-
-			Convey("權限只有0", func() {
-				So(actual, ShouldEqual, 0)
-			})
-		})
-
-		Convey("當房間有金額發話限制沒有設定金額", func() {
-			actual := ToRoomInt(store.Room{
+			},
+			expected: 0,
+		},
+		{
+			room: store.Room{
 				DayLimit: 1,
-			})
+			},
+			expected: 0,
+		},
+	}
 
-			Convey("權限只有0", func() {
-				So(actual, ShouldEqual, 0)
-			})
+	for i, v := range testCases {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			actual := ToRoomInt(v.room)
+			assert.Equal(t, v.expected, actual)
 		})
-	})
+	}
 }

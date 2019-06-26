@@ -14,7 +14,7 @@ func ToRoomInt(room store.Room) int {
 	if room.IsFollow {
 		i += sendFollow + getFollow
 	}
-	if room.DayLimit > 0 && room.DayLimit+room.DepositLimit > 0 {
+	if room.DayLimit > 0 && room.DmlLimit+room.DepositLimit > 0 {
 		i += money
 	}
 	return i
