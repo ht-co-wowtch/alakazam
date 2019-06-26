@@ -5,7 +5,7 @@ import (
 	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/models"
 	"gitlab.com/jetfueltw/cpw/micro/id"
 )
 
@@ -38,7 +38,7 @@ type Limit struct {
 }
 
 func (l *Logic) CreateRoom(r Room) (string, error) {
-	room := store.Room{
+	room := models.Room{
 		Id:                r.Id,
 		IsMessage:         r.IsMessage,
 		IsFollow:          r.IsFollow,
@@ -60,7 +60,7 @@ func (l *Logic) CreateRoom(r Room) (string, error) {
 }
 
 func (l *Logic) UpdateRoom(id string, r Room) bool {
-	room := store.Room{
+	room := models.Room{
 		Id:           id,
 		IsMessage:    r.IsMessage,
 		IsFollow:     r.IsFollow,
@@ -79,7 +79,7 @@ func (l *Logic) UpdateRoom(id string, r Room) bool {
 	return true
 }
 
-func (l *Logic) GetRoom(roomId string) (store.Room, bool) {
+func (l *Logic) GetRoom(roomId string) (models.Room, bool) {
 	r, ok, err := l.db.GetRoom(roomId)
 	if err != nil {
 		return r, false

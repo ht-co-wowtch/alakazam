@@ -7,7 +7,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/admin"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/front"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/models"
 	"os"
 	"os/signal"
 	"syscall"
@@ -33,7 +33,7 @@ func main() {
 	}
 
 	if migrate {
-		if err := store.Migrate(conf.Conf.DB); err != nil {
+		if err := models.Migrate(conf.Conf.DB); err != nil {
 			panic(err)
 		}
 		return

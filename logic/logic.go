@@ -3,7 +3,7 @@ package logic
 import (
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/stream"
 	"os"
 	"time"
@@ -21,7 +21,7 @@ type Logic struct {
 	//
 	c *conf.Config
 
-	db *store.Store
+	db *models.Store
 
 	cache *cache.Cache
 
@@ -37,7 +37,7 @@ type Logic struct {
 func New(c *conf.Config) (l *Logic) {
 	l = &Logic{
 		c:      c,
-		db:     store.NewStore(c.DB),
+		db:     models.NewStore(c.DB),
 		cache:  cache.NewRedis(c.Redis),
 		stream: stream.NewKafkaPub(c.Kafka),
 		client: client.New(c.Api),

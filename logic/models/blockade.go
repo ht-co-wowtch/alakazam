@@ -1,4 +1,4 @@
-package store
+package models
 
 func (s *Store) SetBlockade(uid, remark string) (int64, error) {
 	return s.updateBlockade(uid, remark, true)

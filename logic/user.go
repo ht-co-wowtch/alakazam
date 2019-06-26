@@ -5,7 +5,7 @@ import (
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/models"
 )
 
 // 一個聊天室會員的基本資料
@@ -64,7 +64,7 @@ func (l *Logic) authRoom(u *User) error {
 }
 
 // 登入到聊天室
-func (l *Logic) login(token, roomId, server string) (*store.Member, string, error) {
+func (l *Logic) login(token, roomId, server string) (*models.Member, string, error) {
 	user, err := l.client.Auth(token)
 	if err != nil {
 		log.Errorf("Logic client GetUser token:%s error(%v)", token, err)
@@ -74,7 +74,7 @@ func (l *Logic) login(token, roomId, server string) (*store.Member, string, erro
 	// TODO 處理error
 	u, ok, _ := l.db.Find(user.Uid)
 	if !ok {
-		u = &store.Member{
+		u = &models.Member{
 			Uid:        user.Uid,
 			Name:       user.Name,
 			Avatar:     user.Avatar,

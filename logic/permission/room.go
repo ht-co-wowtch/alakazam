@@ -1,12 +1,12 @@
 package permission
 
-import "gitlab.com/jetfueltw/cpw/alakazam/logic/store"
+import "gitlab.com/jetfueltw/cpw/alakazam/logic/models"
 
 const (
 	RoomDefaultPermission = Message + sendFollow + getFollow + getBonus
 )
 
-func ToRoomInt(room store.Room) int {
+func ToRoomInt(room models.Room) int {
 	i := 0
 	if room.IsMessage {
 		i += Message

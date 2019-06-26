@@ -2,37 +2,37 @@ package permission
 
 import (
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/models"
 	"strconv"
 	"testing"
 )
 
 func TestRoomInt(t *testing.T) {
 	testCases := []struct {
-		room     store.Room
+		room     models.Room
 		expected int
 	}{
 		{
-			room: store.Room{
+			room: models.Room{
 				IsMessage: true,
 			},
 			expected: Message,
 		},
 		{
-			room: store.Room{
+			room: models.Room{
 				IsFollow: true,
 			},
 			expected: getFollow + sendFollow,
 		},
 		{
-			room: store.Room{
+			room: models.Room{
 				DayLimit: 1,
 				DmlLimit: 1000,
 			},
 			expected: money,
 		},
 		{
-			room: store.Room{
+			room: models.Room{
 				IsFollow: true,
 				DayLimit: 1,
 				DmlLimit: 1000,
@@ -40,13 +40,13 @@ func TestRoomInt(t *testing.T) {
 			expected: money + getFollow + sendFollow,
 		},
 		{
-			room: store.Room{
+			room: models.Room{
 				DmlLimit: 1000,
 			},
 			expected: 0,
 		},
 		{
-			room: store.Room{
+			room: models.Room{
 				DayLimit: 1,
 			},
 			expected: 0,
