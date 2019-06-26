@@ -1,10 +1,9 @@
 package conf
 
 import (
-	"bytes"
 	"fmt"
-	"github.com/spf13/viper"
-	"io/ioutil"
+	"gitlab.com/jetfueltw/cpw/micro/config"
+	"gitlab.com/jetfueltw/cpw/micro/grpc"
 	"time"
 )
 
@@ -19,42 +18,8 @@ type Config struct {
 	TCP       *TCP
 	Protocol  *Protocol
 	Bucket    *Bucket
-	RPCClient *RPCClient
-	RPCServer *RPCServer
-}
-
-// grpc client config
-type RPCClient struct {
-	// grpc client host
-	Addr string
-
-	// client連線timeout
-	Timeout time.Duration
-}
-
-// grpc server config.
-type RPCServer struct {
-	// host
-	Network string
-
-	// port
-	Addr string
-
-	// 當連線閒置多久後發送一個`GOAWAY` Framer 封包告知Client說太久沒活動
-	//至於Client收到`GOAWAY`後要做什麼目前要自己實現stream，server只是做通知而已，grpc server默認沒開啟此功能
-	IdleTimeout time.Duration
-
-	// 任何連線只要連線超過某時間就會強制被close，但是在close之前會先發送`GOAWAY`Framer 封包告知Client
-	MaxLifeTime time.Duration
-
-	// MaxConnectionAge要關閉之前等待的時間
-	ForceCloseWait time.Duration
-
-	// keepalive頻率(心跳週期)
-	KeepAliveInterval time.Duration
-
-	// 每次做keepalive完後等待多少秒如果server沒有回應則將此連線close掉
-	KeepAliveTimeout time.Duration
+	RPCClient *grpc.Conf
+	RPCServer *grpc.Conf
 }
 
 // tcp config
@@ -94,7 +59,7 @@ type TCP struct {
 // websocket config
 type Websocket struct {
 	// Websocket 要監聽的port
-	Host string
+	Addr string
 }
 
 // protocol config
@@ -139,64 +104,49 @@ type Bucket struct {
 	RoutineSize int
 }
 
-func Read(path string) (err error) {
-	viper.SetConfigType("yaml")
-	b, err := ioutil.ReadFile(path)
+func Read(path string) error {
+	v, err := config.Read(path)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	if err := viper.ReadConfig(bytes.NewBuffer(b)); err != nil {
-		panic(err)
-	} else {
-		fmt.Println("Using config file:", path)
+	Conf = new(Config)
+	Conf.RPCClient, _ = grpc.ReadViper(v.Sub("grpcClient"))
+	Conf.RPCServer, _ = grpc.ReadViper(v.Sub("grpcServer"))
+	Conf.TCP = &TCP{
+		Sndbuf:       4096,
+		Rcvbuf:       4096,
+		KeepAlive:    false,
+		Reader:       32,
+		ReadBuf:      512,
+		ReadBufSize:  4096,
+		Writer:       32,
+		WriteBuf:     512,
+		WriteBufSize: 4096,
 	}
-	Conf = load()
-	return
-}
+	Conf.Websocket = &Websocket{
+		Addr: v.GetString("websocket.addr"),
+	}
 
-// 載入config
-func load() *Config {
-	return &Config{
-		RPCClient: &RPCClient{
-			Addr:    viper.GetString("rpcClient.host"),
-			Timeout: time.Duration(viper.GetInt("rpcClient.timeout")) * time.Second,
-		},
-		RPCServer: &RPCServer{
-			Network:           "tcp",
-			Addr:              viper.GetString("rpcServer.host"),
-			IdleTimeout:       time.Second * 60,
-			MaxLifeTime:       time.Hour * 2,
-			ForceCloseWait:    time.Second * 20,
-			KeepAliveInterval: time.Second * 60,
-			KeepAliveTimeout:  time.Second * 20,
-		},
-		TCP: &TCP{
-			Sndbuf:       4096,
-			Rcvbuf:       4096,
-			KeepAlive:    false,
-			Reader:       32,
-			ReadBuf:      512,
-			ReadBufSize:  4096,
-			Writer:       32,
-			WriteBuf:     512,
-			WriteBufSize: 4096,
-		},
-		Websocket: &Websocket{
-			Host: viper.GetString("websocket.host"),
-		},
-		Protocol: &Protocol{
-			Timer:            viper.GetInt("protocol.timer"),
-			TimerSize:        viper.GetInt("protocol.timerSize"),
-			ProtoSize:        viper.GetInt("protocol.clientProto"),
-			RevBuffer:        viper.GetInt("protocol.receiveProtoBuffer"),
-			HandshakeTimeout: time.Second * time.Duration(viper.GetInt("protocol.handshakeTimeout")),
-		},
-		Bucket: &Bucket{
-			Size:          viper.GetInt("bucket.size"),
-			Channel:       viper.GetInt("bucket.channel"),
-			Room:          viper.GetInt("bucket.room"),
-			RoutineAmount: uint64(viper.GetInt("bucket.routineAmount")),
-			RoutineSize:   viper.GetInt("bucket.routineSize"),
-		},
+	p := v.Sub("protocol")
+	ht, err := time.ParseDuration(p.GetString("handshakeTimeout"))
+	if err != nil {
+		return err
 	}
+	Conf.Protocol = &Protocol{
+		Timer:            p.GetInt("timer"),
+		TimerSize:        p.GetInt("timerSize"),
+		ProtoSize:        p.GetInt("clientProto"),
+		RevBuffer:        p.GetInt("receiveProtoBuffer"),
+		HandshakeTimeout: ht,
+	}
+	b := v.Sub("bucket")
+	Conf.Bucket = &Bucket{
+		Size:          b.GetInt("size"),
+		Channel:       b.GetInt("channel"),
+		Room:          b.GetInt("room"),
+		RoutineAmount: uint64(b.GetInt("routineAmount")),
+		RoutineSize:   b.GetInt("routineSize"),
+	}
+	fmt.Println("Using config file:", path)
+	return nil
 }

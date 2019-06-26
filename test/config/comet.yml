@@ -1,16 +1,14 @@
 # grpc server
-rpcServer:
-  host: :3109
+grpcServer:
+  addr: :3109
 
 # grpc client
-rpcClient:
-  host: :3119
-  # 連線超時
-  timeout: 1
+grpcClient:
+  addr: :3119
 
 # websocket連線
 websocket:
-  host: :3102
+  addr: :3102
 
 # 優化參數
 protocol:
@@ -24,7 +22,7 @@ protocol:
   # 由於寫的速度有可能大於讀的速度，這時會自行close此連線，透過調大此值可以有更多緩衝close
   clientProto: 3
   # 連線後多久(秒)沒申請進入某房間就把連線close
-  handshakeTimeout: 8
+  handshakeTimeout: 8s
 
 # 分散紀錄各user連線相關結構
 bucket:

@@ -32,14 +32,14 @@ func main() {
 
 	// server tcp 連線
 	srv := comet.NewServer(conf.Conf)
-	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Host, runtime.NumCPU()); err != nil {
+	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Addr, runtime.NumCPU()); err != nil {
 		panic(err)
 	}
 
 	// 啟動grpc server
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
 
-	fmt.Printf("comet start success | websocket: %s | RpcServer: %s\n", conf.Conf.Websocket.Host, conf.Conf.RPCServer.Addr)
+	fmt.Printf("comet start success | websocket: %s | RpcServer: %s\n", conf.Conf.Websocket.Addr, conf.Conf.RPCServer.Addr)
 
 	// 接收到close signal的處理
 	c := make(chan os.Signal, 1)
