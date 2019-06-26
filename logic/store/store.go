@@ -4,6 +4,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
 	"gitlab.com/jetfueltw/cpw/micro/database"
+	"time"
 )
 
 var tables []interface{}
@@ -26,6 +27,7 @@ func Table() []interface{} {
 func NewStore(c *database.Conf) *Store {
 	// TODO 處理error
 	d, _ := database.NewORM(c)
+	d.SetTZDatabase(time.Local)
 	return &Store{
 		d: d,
 	}

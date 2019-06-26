@@ -9,11 +9,13 @@ require (
 	github.com/gin-gonic/gin v1.4.0
 	github.com/go-redis/redis v6.15.2+incompatible
 	github.com/go-sql-driver/mysql v1.4.1
+	github.com/go-xorm/core v0.6.2
 	github.com/go-xorm/xorm v0.7.3
 	github.com/gogo/protobuf v1.2.1
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/protobuf v1.3.1
 	github.com/google/uuid v1.1.1
+	github.com/mattn/go-sqlite3 v1.10.0
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a
@@ -26,6 +28,7 @@ require (
 	google.golang.org/grpc v1.21.1
 	gopkg.in/Shopify/sarama.v1 v1.19.0
 	gopkg.in/go-playground/validator.v8 v8.18.2
+	gopkg.in/testfixtures.v2 v2.5.3
 )
 
 replace gitlab.com/jetfueltw/cpw/micro => gitlab.com/jetfueltw/cpw/micro.git v0.2.0
