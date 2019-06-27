@@ -49,38 +49,32 @@ func (s *Server) giveRedEnvelope(c *gin.Context) error {
 	if err := s.logic.PushRedEnvelope(reply, arg.User); err != nil {
 		return err
 	}
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, gin.H{
+		"id":    reply.Order,
+		"token": reply.Token,
+	})
 	return nil
 }
 
-type TakeLuckyMoney struct {
-	Token string `json:"token"`
+type TakeRedEnvelope struct {
+	logic.User
+
+	Token string `json:"token" binding:"required"`
 }
 
-// TODO 未完
 func (s *Server) takeRedEnvelope(c *gin.Context) error {
-	arg := new(TakeLuckyMoney)
+	arg := new(TakeRedEnvelope)
 	if err := c.ShouldBindJSON(arg); err != nil {
-		return errors.DataError
+		return err
 	}
-
-	var p struct {
-		Id         string `json:"id"`
-		Name       string `json:"name"`
-		Avatar     string `json:"avatar"`
-		LuckyMoney struct {
-			Message string  `json:"message"`
-			Amount  float64 `json:"amount"`
-		}
+	if err := s.logic.Auth(&arg.User); err != nil {
+		return err
 	}
-
-	p.Id = "f0962f33-b444-4ac0-8be9-2a8423178212"
-	p.Name = "test"
-	p.Avatar = "https://via.placeholder.com/30x30"
-	p.LuckyMoney.Message = "測試"
-	p.LuckyMoney.Amount = 1
-
-	c.JSON(http.StatusOK, p)
+	reply, err := s.client.TakeRedEnvelope(arg.Token, c.GetString("token"))
+	if err != nil {
+		return err
+	}
+	c.JSON(http.StatusOK, reply)
 	return nil
 }
 

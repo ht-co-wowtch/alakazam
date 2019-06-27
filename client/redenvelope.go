@@ -79,3 +79,37 @@ func (c *Client) GiveRedEnvelope(envelope RedEnvelope, token string) (RedEnvelop
 	}
 	return u, nil
 }
+
+type TakeEnvelopeReply struct {
+	// 紅包id
+	Id string `json:"id"`
+
+	// 誰發的紅包
+	Uid string `json:"uid"`
+
+	// 紅包訊息
+	Message string `json:"message"`
+
+	// 搶紅包的狀態
+	Status string `json:"status"`
+
+	// 搶到的金額
+	Amount float64 `json:"amount"`
+}
+
+// 搶紅包
+func (c *Client) TakeRedEnvelope(redEnvelopeToken, token string) (TakeEnvelopeReply, error) {
+	resp, err := c.c.PutJson("/red-envelope", nil, map[string]string{"token": redEnvelopeToken}, bearer(token))
+	if err != nil {
+		return TakeEnvelopeReply{}, err
+	}
+	defer resp.Body.Close()
+	if err := checkResponse(resp); err != nil {
+		return TakeEnvelopeReply{}, err
+	}
+	var u TakeEnvelopeReply
+	if err := json.NewDecoder(resp.Body).Decode(&u); err != nil {
+		return TakeEnvelopeReply{}, err
+	}
+	return u, nil
+}
