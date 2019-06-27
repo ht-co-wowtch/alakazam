@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
-	response "gitlab.com/jetfueltw/cpw/alakazam/logic/http"
 	"net/http"
 )
 
@@ -15,7 +14,6 @@ func (s *Server) pushAll(c *gin.Context) error {
 		return errors.DataError
 	}
 	if err := s.logic.PushAll(p); err != nil {
-		response.Errors(c, err)
 		return err
 	}
 	c.Status(http.StatusNoContent)
