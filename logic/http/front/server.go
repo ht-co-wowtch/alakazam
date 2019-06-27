@@ -27,7 +27,7 @@ func (s *Server) InitRoute(e *gin.Engine) {
 	c := cors.Config{
 		AllowCredentials: true,
 		AllowOrigins:     conf.Conf.HTTPServer.Cors.Origins,
-		AllowMethods:     []string{"GET", "POST"},
+		AllowMethods:     []string{"GET", "POST", "PUT"},
 		AllowHeaders:     conf.Conf.HTTPServer.Cors.Headers,
 		MaxAge:           time.Minute * 5,
 	}
