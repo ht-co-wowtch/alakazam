@@ -416,9 +416,9 @@
             dataType: "json",
             success: function (data) {
                 console.log(data)
-                $('#exampleModalLongTitle').text(data.status)
+                $('#exampleModalLongTitle').text(data.status_message)
                 $('#modal-name').text(data.name + "的紅包")
-                $('#modal-text').text(data.status_message)
+                $('#modal-text').text(data.message)
                 $('#modal-money').text("獲得 $" + data.amount)
                 $('#exampleModalCenter').modal('show');
             },
