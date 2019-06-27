@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"fmt"
+	"errors"
 	"strconv"
 )
 
@@ -41,15 +41,21 @@ func (c *Cache) DeleteUser(uid, key string) (bool, error) {
 	return aff >= 1, err
 }
 
+var errUserNil = errors.New("get user cache data has nil")
+
 func (c *Cache) GetUser(uid string, key string) (roomId, name string, status int, err error) {
 	res, err := c.c.HMGet(keyUidInfo(uid), key, hashNameKey, hashStatusKey).Result()
 	if err != nil {
 		return "", "", 0, err
 	}
-	if len(res) != 3 {
-		return "", "", 0, fmt.Errorf("conn.Receive() len is %d insufficient 3", len(res))
+	for _, v := range res {
+		if v == nil {
+			return "", "", 0, errUserNil
+		}
 	}
-	status, err = strconv.Atoi(res[2].(string))
+	if status, err = strconv.Atoi(res[2].(string)); err != nil {
+		return "", "", 0, err
+	}
 	return res[0].(string), res[1].(string), status, err
 }
 

@@ -72,6 +72,19 @@ func TestGetUser(t *testing.T) {
 	assert.Equal(t, permission.PlayDefaultPermission, s)
 }
 
+func TestGetUserBuNil(t *testing.T) {
+	uid := id.UUid32()
+	key := id.UUid32()
+	roomId := id.UUid32()
+	name := "test"
+
+	_ = c.SetUser(uid, key, roomId, name, "test", permission.PlayDefaultPermission)
+
+	_, _, _, err := c.GetUser(uid, "123")
+
+	assert.Equal(t, errUserNil, err)
+}
+
 func TestChangeRoom(t *testing.T) {
 	uid := id.UUid32()
 	key := id.UUid32()
