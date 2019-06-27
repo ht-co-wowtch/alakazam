@@ -130,6 +130,22 @@
                         </span>
                 </div>
             </div>
+            <div class="panel-footer">
+                <div class="input-group">
+                    <input type="radio" name="red_type" value="random">拼手氣<br>
+                    <input type="radio" name="red_type" value="equally" checked>普通<br>
+                    <input id="red_amount" type="number" class="form-control input-sm"
+                           placeholder="紅包金額，最低1元，單包 or 總金額 看選擇的種類"/>
+                    <input id="red_count" type="number" class="form-control input-sm"
+                           placeholder="紅包數量"/>
+                    <input id="red_message" type="text" class="form-control input-sm"
+                           placeholder="紅包訊息"/>
+                    <span class="input-group-btn">
+                            <button class="btn btn-warning btn-sm" id="btn-chat" onclick="sendRed()">
+                                發紅包</button>
+                        </span>
+                </div>
+            </div>
         </div>
     </div>
     <input type="hidden" id="uid" name="uid" value="">
@@ -278,6 +294,34 @@
                 uid: document.getElementById("uid").value,
                 key: document.getElementById("key").value,
                 message: document.getElementById("btn-input").value
+            }),
+            headers: {
+                "Authorization": "Bearer " + document.getElementById("token").value,
+            },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+            },
+            error: function (data) {
+                alert(data.message)
+            }
+        });
+    }
+
+    function sendRed() {
+        var amount = new Number(document.getElementById("red_amount").value);
+        var count = new Number(document.getElementById("red_count").value)
+        $.ajax({
+            type: "post",
+            url: 'http://' + host + ':3111' + '/red-envelope',
+            async: false,
+            data: JSON.stringify({
+                uid: document.getElementById("uid").value,
+                key: document.getElementById("key").value,
+                amount:amount,
+                count:count,
+                message: document.getElementById("red_message").value,
+                type: $("input[name=red_type]:checked").val()
             }),
             headers: {
                 "Authorization": "Bearer " + document.getElementById("token").value,
