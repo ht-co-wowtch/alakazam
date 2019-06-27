@@ -37,4 +37,5 @@ func (s *Server) InitRoute(e *gin.Engine) {
 	e.POST("/push/room", http.Handler(s.pushRoom))
 	e.POST("/red-envelope", http.Handler(s.giveRedEnvelope))
 	e.PUT("/red-envelope", http.Handler(s.takeRedEnvelope))
+	e.GET("/red-envelope/:id", http.Handler(s.getRedEnvelope))
 }

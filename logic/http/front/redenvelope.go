@@ -78,6 +78,15 @@ func (s *Server) takeRedEnvelope(c *gin.Context) error {
 	return nil
 }
 
+func (s *Server) getRedEnvelope(c *gin.Context) error {
+	reply, err := s.client.GetRedEnvelope(c.Param("id"), c.GetString("token"))
+	if err != nil {
+		return err
+	}
+	c.JSON(http.StatusOK, reply)
+	return nil
+}
+
 func validatorLuckyMoney(c *gin.Context, arg *GiveRedEnvelope) error {
 	var err error
 	if err = c.ShouldBindJSON(arg); err != nil {
