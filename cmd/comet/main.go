@@ -27,6 +27,8 @@ func main() {
 	if err := conf.Read(confPath); err != nil {
 		panic(err)
 	}
+	fmt.Println("Using config file:", confPath)
+
 	rand.Seed(time.Now().UTC().UnixNano())
 	runtime.GOMAXPROCS(runtime.NumCPU())
 

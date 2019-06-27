@@ -23,6 +23,7 @@ func main() {
 	if err := conf.Read(confPath); err != nil {
 		panic(err)
 	}
+	fmt.Println("Using config file:", confPath)
 
 	j := job.New(conf.Conf)
 	go j.Consume()

@@ -6,6 +6,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/database"
 	"gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/http"
+	"gitlab.com/jetfueltw/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"time"
 
@@ -73,5 +74,9 @@ func Read(path string) error {
 		Brokers: v.GetStringSlice("kafka.brokers"),
 	}
 	Conf.Heartbeat = (time.Duration(viper.GetInt("heartbeat")) * time.Second).Nanoseconds()
-	return nil
+	l, err := log.ReadViper(v.Sub("log"))
+	if err != nil {
+		return err
+	}
+	return log.Start(l)
 }

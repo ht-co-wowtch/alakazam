@@ -1,9 +1,9 @@
 package conf
 
 import (
-	"fmt"
 	"gitlab.com/jetfueltw/cpw/micro/config"
 	"gitlab.com/jetfueltw/cpw/micro/grpc"
+	"gitlab.com/jetfueltw/cpw/micro/log"
 	"time"
 )
 
@@ -147,6 +147,9 @@ func Read(path string) error {
 		RoutineAmount: uint64(b.GetInt("routineAmount")),
 		RoutineSize:   b.GetInt("routineSize"),
 	}
-	fmt.Println("Using config file:", path)
-	return nil
+	l, err := log.ReadViper(v.Sub("log"))
+	if err != nil {
+		return err
+	}
+	return log.Start(l)
 }

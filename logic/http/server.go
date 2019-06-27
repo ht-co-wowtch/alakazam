@@ -28,7 +28,7 @@ type Server struct {
 // New new a http server.
 func New(c *server.Conf, srv LogicHttpServer) *Server {
 	engine := gin.New()
-	engine.Use(loggerHandler, recoverHandler)
+	engine.Use(recoverHandler)
 	s := &Server{
 		server: server.NewServer(c, engine),
 		logic:  srv,

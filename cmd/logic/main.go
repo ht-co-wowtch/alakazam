@@ -31,6 +31,7 @@ func main() {
 	if err := conf.Read(confPath); err != nil {
 		panic(err)
 	}
+	fmt.Println("Using config file:", confPath)
 
 	if migrate {
 		if err := models.Migrate(conf.Conf.DB); err != nil {
