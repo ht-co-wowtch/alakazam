@@ -9,15 +9,15 @@ import (
 )
 
 // 所有房間推送
-func (s *Server) pushAll(c *gin.Context) {
+func (s *Server) pushAll(c *gin.Context) error {
 	p := new(logic.PushRoomAllForm)
 	if err := c.ShouldBindJSON(p); err != nil {
-		response.ErrorE(c, errors.DataError)
-		return
+		return errors.DataError
 	}
 	if err := s.logic.PushAll(p); err != nil {
 		response.Errors(c, err)
-		return
+		return err
 	}
 	c.Status(http.StatusNoContent)
+	return nil
 }

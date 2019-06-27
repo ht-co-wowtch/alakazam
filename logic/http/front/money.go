@@ -5,7 +5,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/activity"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
-	response "gitlab.com/jetfueltw/cpw/alakazam/logic/http"
 	"gopkg.in/go-playground/validator.v8"
 	"net/http"
 )
@@ -18,16 +17,14 @@ type LuckyMoney struct {
 
 // 發紅包
 // TODO 未完
-func (s *Server) giveLuckyMoney(c *gin.Context) {
+func (s *Server) giveLuckyMoney(c *gin.Context) error {
 	arg := new(LuckyMoney)
 	if err := validatorLuckyMoney(c, arg); err != nil {
-		response.Errors(c, err)
-		return
+		return err
 	}
 
 	if err := s.logic.Auth(&arg.User); err != nil {
-		response.Errors(c, err)
-		return
+		return err
 	}
 
 	arg.Token = c.GetString("token")
@@ -35,16 +32,15 @@ func (s *Server) giveLuckyMoney(c *gin.Context) {
 	id, err := s.money.Give(&arg.GiveRedEnvelope)
 
 	if err != nil {
-		response.Errors(c, err)
-		return
+		return err
 	}
 
 	if err := s.logic.PushMoney(id, arg.Message, &arg.User); err != nil {
-		response.Errors(c, err)
-		return
+		return err
 	}
 
 	c.Status(http.StatusNoContent)
+	return nil
 }
 
 type TakeLuckyMoney struct {
@@ -52,11 +48,10 @@ type TakeLuckyMoney struct {
 }
 
 // TODO 未完
-func (s *Server) takeLuckyMoney(c *gin.Context) {
+func (s *Server) takeLuckyMoney(c *gin.Context) error {
 	arg := new(TakeLuckyMoney)
 	if err := c.ShouldBindJSON(arg); err != nil {
-		response.ErrorE(c, errors.DataError)
-		return
+		return errors.DataError
 	}
 
 	var p struct {
@@ -76,6 +71,7 @@ func (s *Server) takeLuckyMoney(c *gin.Context) {
 	p.LuckyMoney.Amount = 1
 
 	c.JSON(http.StatusOK, p)
+	return nil
 }
 
 func validatorLuckyMoney(c *gin.Context, arg *LuckyMoney) error {

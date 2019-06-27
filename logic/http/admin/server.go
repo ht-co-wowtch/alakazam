@@ -3,6 +3,7 @@ package admin
 import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
 )
 
 type Server struct {
@@ -17,17 +18,18 @@ func New(l *logic.Logic) *Server {
 
 func (s *Server) InitRoute(e *gin.Engine) {
 	// 封鎖
-	e.POST("/blockade", s.setBlockade)
-	e.DELETE("/blockade", s.removeBlockade)
+	e.POST("/blockade", http.Handler(s.setBlockade))
+	e.DELETE("/blockade", http.Handler(s.removeBlockade))
 
 	// 禁言
-	e.POST("/banned", s.setBanned)
-	e.DELETE("/banned", s.removeBanned)
+	e.POST("/banned", http.Handler(s.setBanned))
+	e.DELETE("/banned", http.Handler(s.removeBanned))
 
 	// 設定房間
-	e.POST("/room", s.CreateRoom)
-	e.PUT("/room/:id", s.UpdateRoom)
-	e.GET("/room/:id", s.GetRoom)
+	e.POST("/room", http.Handler(s.CreateRoom))
+	e.PUT("/room/:id", http.Handler(s.UpdateRoom))
+	e.GET("/room/:id", http.Handler(s.GetRoom))
 
-	e.POST("/push/all", s.pushAll)
+	e.POST("/push/all", http.Handler(s.pushAll))
+
 }

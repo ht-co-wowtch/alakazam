@@ -34,7 +34,7 @@ func (s *Server) InitRoute(e *gin.Engine) {
 
 	e.Use(cors.New(c), http.AuthenticationHandler)
 
-	e.POST("/push/room", s.pushRoom)
-	e.POST("/give-lucky-money", s.giveLuckyMoney)
-	e.POST("/take-lucky-money", s.takeLuckyMoney)
+	e.POST("/push/room", http.Handler(s.pushRoom))
+	e.POST("/give-lucky-money", http.Handler(s.giveLuckyMoney))
+	e.POST("/take-lucky-money", http.Handler(s.takeLuckyMoney))
 }

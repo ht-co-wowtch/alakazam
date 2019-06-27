@@ -4,50 +4,47 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
-	response "gitlab.com/jetfueltw/cpw/alakazam/logic/http"
 	"net/http"
 )
 
-func (s *Server) CreateRoom(c *gin.Context) {
+func (s *Server) CreateRoom(c *gin.Context) error {
 	var params logic.Room
 	if err := bindRoom(c, &params); err != nil {
-		response.Errors(c, err)
-		return
+		return err
 	}
 
 	roomId, err := s.logic.CreateRoom(params)
 
 	if err != nil {
-		response.ErrorE(c, errors.FailureError)
-		return
+		return errors.FailureError
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"room_id": roomId,
 	})
+	return nil
 }
 
-func (s *Server) UpdateRoom(c *gin.Context) {
+func (s *Server) UpdateRoom(c *gin.Context) error {
 	var params logic.Room
 	if err := bindRoom(c, &params); err != nil {
-		response.Errors(c, err)
-		return
+		return err
 	}
 
 	if !s.logic.UpdateRoom(c.Param("id"), params) {
-		response.ErrorE(c, errors.FailureError)
-		return
+		return errors.FailureError
 	}
 
 	c.Status(http.StatusNoContent)
+	return nil
 }
 
-func (s *Server) GetRoom(c *gin.Context) {
+func (s *Server) GetRoom(c *gin.Context) error {
 	r, ok := s.logic.GetRoom(c.Param("id"))
 	if !ok {
-		response.ErrorE(c, errors.NoRowsError)
-		return
+		return errors.NoRowsError
 	}
 	c.JSON(http.StatusOK, r)
+	return nil
 }
 
 func bindRoom(c *gin.Context, params *logic.Room) error {

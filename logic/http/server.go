@@ -4,7 +4,9 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	log "github.com/golang/glog"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	server "gitlab.com/jetfueltw/cpw/micro/http"
+	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -44,6 +46,24 @@ func New(c *server.Conf, srv LogicHttpServer) *Server {
 
 	s.ctx, s.cancel = context.WithCancel(context.Background())
 	return s
+}
+
+type HandlerFunc func(*gin.Context) error
+
+func Handler(f HandlerFunc) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if err := f(c); err != nil {
+			errHandler(c, err)
+		}
+	}
+}
+
+func errHandler(c *gin.Context, err error) {
+	e := errdefs.Err(err)
+	if e.Status == http.StatusInternalServerError {
+		log.Error(e, zap.Error(e.Err))
+	}
+	c.JSON(e.Status, e)
 }
 
 // Close close the server.
