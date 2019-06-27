@@ -171,20 +171,41 @@
         this.createConnect(MAX_CONNECT_TIMES, DELAY);
     }
 
-    var appendMsg = function (text) {
+    var appendMsg = function (text, op) {
         obj = JSON.parse(text);
-        document.getElementById("chat").innerHTML += "<li class=\"left clearfix\"><span class=\"chat-img pull-left\">\n" +
-            "                            <img src=\"http://placehold.it/50/55C1E7/fff&text=U\" alt=\"User Avatar\" class=\"img-circle\"/>\n" +
-            "                        </span>\n" +
-            "                                <div class=\"chat-body clearfix\">\n" +
-            "                                    <div class=\"header\">\n" + "                                    <small class=\" text-muted\"><span class=\"\"></span></small>\n" +
-            "                                        <strong class=\"primary-font\">" + obj.name + "</strong>\n" +
-            "                                    </div>\n" +
-            "                                    <p>\n" +
-            obj.message +
-            "                                    </p>\n" +
-            "                                </div>\n" +
-            "                            </li>";
+        if (op == 6) {
+            document.getElementById("chat").innerHTML += "<li class=\"left clearfix\"><span class=\"chat-img pull-left\">\n" +
+                "                            <img src=\"http://placehold.it/50/55C1E7/fff&text=U\" alt=\"User Avatar\" class=\"img-circle\"/>\n" +
+                "                        </span>\n" +
+                "                                <div class=\"chat-body clearfix\">\n" +
+                "                                    <div class=\"header\">\n" + "                                    <small class=\" text-muted\"><span class=\"\"></span></small>\n" +
+                "                                        <strong class=\"primary-font\">" + obj.name + "</strong>\n" +
+                "                                    </div>\n" +
+                "                                    <p>\n" +
+                obj.message +
+                "                                    </p>\n" +
+                "                                </div>\n" +
+                "                            </li>";
+        }
+
+        if (op == 9) {
+            document.getElementById("chat").innerHTML += "<li class=\"left clearfix\ red-message \" data-token=\"" +
+                obj.token +
+                "\"><span class=\"chat-img pull-left\">\n" +
+                "                            <img src=\"./redenvelope.png\" alt=\"User Avatar\" class=\"img-circle\"/>\n" +
+                "                        </span>\n" +
+                "                                <div class=\"chat-body clearfix\">\n" +
+                "                                    <div class=\"header\">\n" + "                                    <small class=\" text-muted\"><span class=\"\"></span></small>\n" +
+                "                                        <strong class=\"primary-font\">" + obj.name + "</strong>\n" +
+                "                                    </div>\n" +
+                "                                    <p>\n" +
+                obj.message +
+                "                                    </p>\n" +
+                "                                </div>\n" +
+
+                "                            </li>";
+        }
+
     }
 
     function login() {
@@ -232,12 +253,12 @@
                         var msgBody = textDecoder.decode(data.slice(offset + headerLen, offset + packetLen));
                         if (op == 6) {
                             messageReceived(msgBody);
-                            appendMsg(msgBody);
+                            appendMsg(msgBody, 6);
                         }
 
                         if (op == 9) {
                             messageReceived(msgBody);
-                            appendMsg(msgBody);
+                            appendMsg(msgBody, 9);
                         }
                     }
                     break;
@@ -318,8 +339,8 @@
             data: JSON.stringify({
                 uid: document.getElementById("uid").value,
                 key: document.getElementById("key").value,
-                amount:amount,
-                count:count,
+                amount: amount,
+                count: count,
                 message: document.getElementById("red_message").value,
                 type: $("input[name=red_type]:checked").val()
             }),
@@ -355,6 +376,31 @@
         res.set(u82, ab1.byteLength);
         return res.buffer;
     }
+
+    $(document).on('click', '.red-message', function () {
+        $.ajax({
+            type: "put",
+            url: 'http://' + host + ':3111' + '/red-envelope',
+            async: false,
+            data: JSON.stringify({
+                uid: document.getElementById("uid").value,
+                key: document.getElementById("key").value,
+                token: $(this).data("token")
+            }),
+            headers: {
+                "Authorization": "Bearer " + document.getElementById("token").value,
+            },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                alert(data.status)
+            },
+            error: function (data) {
+                alert(data.message)
+            }
+        });
+    });
+
 </script>
 <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </body>
