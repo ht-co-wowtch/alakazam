@@ -117,6 +117,20 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-5">
+            <div class="panel-footer">
+                <div class="input-group">
+                    <input id="rid" type="text" class="form-control input-sm"
+                           placeholder="房間id"/>
+                    <input id="token" type="text" class="form-control input-sm"
+                           placeholder="認證token"/>
+                    <span class="input-group-btn">
+                            <button class="btn btn-warning btn-sm" id="btn-chat" onclick="login()">
+                                進入聊天室</button>
+                        </span>
+                </div>
+            </div>
+        </div>
     </div>
     <input type="hidden" id="uid" name="uid" value="">
     <input type="hidden" id="key" name="key" value="">
@@ -130,7 +144,6 @@
     const opOffset = 6;
     // const host = "192.168.0.138"
     const host = "127.0.0.1"
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIxNWMzYzYxZjkwMGE0MzNmYjhmMWE5YjMxMTRjZjcyYyIsInNpdGVfY29kZSI6ImRlZmF1bHQiLCJzZXNzaW9uX2lkIjoiYmZkZTQ2YjhlY2MyNDM4OGE4Y2NmMGY4MzIyYTkwMTgiLCJpYXQiOjE1NjE0MjYzODl9.V-3Ucf1wM-bxJOePuqVVJkLjgMF-HNWyQ0W6NReA_OM"
 
     var ws
     var textDecoder = new TextDecoder();
@@ -158,123 +171,103 @@
             "                            </li>";
     }
 
-    Client.prototype.createConnect = function (max, delay) {
-        var self = this;
-        if (max === 0) {
-            return;
-        }
-        connect();
-
+    function login() {
         var heartbeatInterval;
+        ws = new WebSocket('ws://' + host + ':3102/sub');
+        ws.binaryType = 'arraybuffer';
+        ws.onopen = function () {
+            auth();
+        }
 
-        function connect() {
-            ws = new WebSocket('ws://' + host + ':3102/sub');
-            ws.binaryType = 'arraybuffer';
-            ws.onopen = function () {
-                auth();
-            }
+        ws.onmessage = function (evt) {
+            var data = evt.data;
+            var dataView = new DataView(data, 0);
+            var packetLen = dataView.getInt32(packetOffset);
+            var headerLen = dataView.getInt16(headerOffset);
+            var op = dataView.getInt32(opOffset);
+            console.log("receiveHeader: packetLen=" + packetLen, "headerLen=" + headerLen, "op=" + op);
 
-            ws.onmessage = function (evt) {
-                var data = evt.data;
-                var dataView = new DataView(data, 0);
-                var packetLen = dataView.getInt32(packetOffset);
-                var headerLen = dataView.getInt16(headerOffset);
-                var op = dataView.getInt32(opOffset);
-                console.log("receiveHeader: packetLen=" + packetLen, "headerLen=" + headerLen, "op=" + op);
+            switch (op) {
+                case 2:
+                    var json = textDecoder.decode(data.slice(headerLen, packetLen));
+                    var msgBody = JSON.parse(json)
 
-                switch (op) {
-                    case 2:
-                        var json = textDecoder.decode(data.slice(headerLen, packetLen));
-                        var msgBody = JSON.parse(json)
+                    document.getElementById("uid").value = msgBody.uid
+                    document.getElementById("key").value = msgBody.key
 
-                        document.getElementById("uid").value = msgBody.uid
-                        document.getElementById("key").value = msgBody.key
+                    document.getElementById("status").innerHTML = "<color style='color:green'>ok<color>";
+                    document.getElementById("room_id").innerHTML = msgBody.room_id;
+                    console.log(msgBody)
+                    console.log("receive: auth reply");
 
-                        document.getElementById("status").innerHTML = "<color style='color:green'>ok<color>";
-                        document.getElementById("room_id").innerHTML = msgBody.room_id;
-                        console.log(msgBody)
-                        console.log("receive: auth reply");
+                    heartbeat();
+                    heartbeatInterval = setInterval(heartbeat, 30 * 1000);
+                    break;
+                case 4:
+                    document.getElementById("count").innerHTML = "<color style='color:green'>" + dataView.getInt32(headerLen) + "<color>"
+                    console.log("receive: heartbeat");
+                    break;
+                case 5:
+                    for (var offset = rawHeaderLen; offset < data.byteLength; offset += packetLen) {
+                        var packetLen = dataView.getInt32(offset);
+                        var headerLen = dataView.getInt16(offset + headerOffset);
+                        var op = dataView.getInt32(offset + opOffset);
 
-                        heartbeat();
-                        heartbeatInterval = setInterval(heartbeat, 30 * 1000);
-                        break;
-                    case 4:
-                        document.getElementById("count").innerHTML = "<color style='color:green'>" + dataView.getInt32(headerLen) + "<color>"
-                        console.log("receive: heartbeat");
-                        break;
-                    case 5:
-                        for (var offset = rawHeaderLen; offset < data.byteLength; offset += packetLen) {
-                            var packetLen = dataView.getInt32(offset);
-                            var headerLen = dataView.getInt16(offset + headerOffset);
-                            var op = dataView.getInt32(offset + opOffset);
-
-                            var msgBody = textDecoder.decode(data.slice(offset + headerLen, offset + packetLen));
-                            if (op == 6) {
-                                messageReceived(msgBody);
-                                appendMsg(msgBody);
-                            }
-
-                            if (op == 9) {
-                                messageReceived(msgBody);
-                                appendMsg(msgBody);
-                            }
+                        var msgBody = textDecoder.decode(data.slice(offset + headerLen, offset + packetLen));
+                        if (op == 6) {
+                            messageReceived(msgBody);
+                            appendMsg(msgBody);
                         }
-                        break;
-                    case 8:
-                        var json = textDecoder.decode(data.slice(headerLen, packetLen));
-                        var msgBody = JSON.parse(json)
 
-                        document.getElementById("room_id").innerHTML = msgBody.room_id
-                    default:
-                        break
-                }
-            }
+                        if (op == 9) {
+                            messageReceived(msgBody);
+                            appendMsg(msgBody);
+                        }
+                    }
+                    break;
+                case 8:
+                    var json = textDecoder.decode(data.slice(headerLen, packetLen));
+                    var msgBody = JSON.parse(json)
 
-            ws.onclose = function () {
-                if (heartbeatInterval) clearInterval(heartbeatInterval);
-                setTimeout(reConnect, delay);
-
-                document.getElementById("status").innerHTML = "<color style='color:red'>failed<color>";
-            }
-
-            function heartbeat() {
-                var headerBuf = new ArrayBuffer(rawHeaderLen);
-                var headerView = new DataView(headerBuf, 0);
-                headerView.setInt32(packetOffset, rawHeaderLen);
-                headerView.setInt16(headerOffset, rawHeaderLen);
-                headerView.setInt32(opOffset, 3);
-                ws.send(headerBuf);
-                console.log("send: heartbeat");
-            }
-
-            function auth() {
-                var token = '{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIxNWMzYzYxZjkwMGE0MzNmYjhmMWE5YjMxMTRjZjcyYyIsInNpdGVfY29kZSI6ImRlZmF1bHQiLCJzZXNzaW9uX2lkIjoiNTlkOTQ5MDhjZGU3NDVlMTgxYjk1NzYyMGJiNTVmYjUiLCJpYXQiOjE1NjE1MzQxNDJ9.j9W57cTJmghSQUKvaF8TCo9wkSNem_8wjbTJ3BPn_a0", "room_id":"6318a4f786e64c6487a30687e9df3a13"}'
-                var headerBuf = new ArrayBuffer(rawHeaderLen);
-                var headerView = new DataView(headerBuf, 0);
-                var bodyBuf = textEncoder.encode(token);
-                headerView.setInt32(packetOffset, rawHeaderLen + bodyBuf.byteLength);
-                headerView.setInt16(headerOffset, rawHeaderLen);
-                headerView.setInt32(opOffset, 1);
-                ws.send(mergeArrayBuffer(headerBuf, bodyBuf));
-            }
-
-            function messageReceived(body) {
-                var notify = self.options.notify;
-                if (notify) notify(body);
-                console.log("messageReceived:", "body=" + body);
+                    document.getElementById("room_id").innerHTML = msgBody.room_id
+                default:
+                    break
             }
         }
 
-        function reConnect() {
-            self.createConnect(--max, delay * 2);
+        ws.onclose = function () {
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            setTimeout(reConnect, delay);
+
+            document.getElementById("status").innerHTML = "<color style='color:red'>failed<color>";
+        }
+
+        function heartbeat() {
+            var headerBuf = new ArrayBuffer(rawHeaderLen);
+            var headerView = new DataView(headerBuf, 0);
+            headerView.setInt32(packetOffset, rawHeaderLen);
+            headerView.setInt16(headerOffset, rawHeaderLen);
+            headerView.setInt32(opOffset, 3);
+            ws.send(headerBuf);
+            console.log("send: heartbeat");
+        }
+
+        function auth() {
+
+            var token = '{"token":"' + document.getElementById("token").value + '", "room_id":"' + document.getElementById("rid").value + '"}'
+            var headerBuf = new ArrayBuffer(rawHeaderLen);
+            var headerView = new DataView(headerBuf, 0);
+            var bodyBuf = textEncoder.encode(token);
+            headerView.setInt32(packetOffset, rawHeaderLen + bodyBuf.byteLength);
+            headerView.setInt16(headerOffset, rawHeaderLen);
+            headerView.setInt32(opOffset, 1);
+            ws.send(mergeArrayBuffer(headerBuf, bodyBuf));
+        }
+
+        function messageReceived(body) {
+            console.log("messageReceived:", "body=" + body);
         }
     }
-
-    var client = new Client({
-        notify: function (data) {
-            console.log(data);
-        }
-    });
 
     function send() {
         $.ajax({
@@ -287,7 +280,7 @@
                 message: document.getElementById("btn-input").value
             }),
             headers: {
-                "Authorization": "Bearer " + token,
+                "Authorization": "Bearer " + document.getElementById("token").value,
             },
             contentType: "application/json; charset=utf-8",
             dataType: "json",
