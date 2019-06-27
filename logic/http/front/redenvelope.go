@@ -74,6 +74,16 @@ func (s *Server) takeRedEnvelope(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
+	switch reply.Status {
+	case "success":
+		reply.StatusMessage = "获得红包"
+	case "received":
+		reply.StatusMessage = "已经抢过了"
+	case "gone":
+		reply.StatusMessage = "手慢了，红包派完了"
+	default:
+		reply.StatusMessage = "不存在的红包"
+	}
 	c.JSON(http.StatusOK, reply)
 	return nil
 }

@@ -84,14 +84,20 @@ type TakeEnvelopeReply struct {
 	// 紅包id
 	Id string `json:"id"`
 
-	// 誰發的紅包
+	// 發紅包人的uid
 	Uid string `json:"uid"`
+
+	// 發紅包人的名稱
+	Name string `json:"name"`
 
 	// 紅包訊息
 	Message string `json:"message"`
 
 	// 搶紅包的狀態
 	Status string `json:"status"`
+
+	// 搶紅包的狀態說明
+	StatusMessage string `json:"status_message"`
 
 	// 搶到的金額
 	Amount float64 `json:"amount"`
