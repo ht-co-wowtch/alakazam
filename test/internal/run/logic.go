@@ -17,7 +17,7 @@ func RunLogic(path string) func() {
 	}
 
 	srv := logic.New(conf.Conf)
-	money := activity.NewLuckyMoney(client.New(conf.Conf.Api))
+	money := activity.NewRedEnvelope(client.New(conf.Conf.Api))
 	httpSrv := httpServer.New(conf.Conf.HTTPServer, front.New(srv, money))
 	httpAdminSrv := httpServer.New(conf.Conf.HTTPAdminServer, admin.New(srv))
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)

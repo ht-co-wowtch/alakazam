@@ -13,7 +13,7 @@ import (
 type LuckyMoney struct {
 	logic.User
 
-	activity.GiveMoney
+	activity.GiveRedEnvelope
 }
 
 // 發紅包
@@ -32,7 +32,7 @@ func (s *Server) giveLuckyMoney(c *gin.Context) {
 
 	arg.Token = c.GetString("token")
 
-	id, err := s.money.Give(&arg.GiveMoney)
+	id, err := s.money.Give(&arg.GiveRedEnvelope)
 
 	if err != nil {
 		response.Errors(c, err)

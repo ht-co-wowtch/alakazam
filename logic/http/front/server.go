@@ -13,10 +13,10 @@ import (
 type Server struct {
 	logic *logic.Logic
 
-	money *activity.LuckyMoney
+	money *activity.RedEnvelopeClient
 }
 
-func New(l *logic.Logic, money *activity.LuckyMoney) *Server {
+func New(l *logic.Logic, money *activity.RedEnvelopeClient) *Server {
 	return &Server{
 		logic: l,
 		money: money,

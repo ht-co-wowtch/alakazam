@@ -12,31 +12,17 @@ const (
 	LuckMoney = int(2)
 )
 
-type moneyApi interface {
-	NewOlder(older client.Older, uid, token string) (float64, error)
+type RedEnvelopeClient struct {
+	client *client.Client
 }
 
-type storeApi struct {
-}
-
-type queueApi struct {
-}
-
-type LuckyMoney struct {
-	money moneyApi
-
-	store storeApi
-
-	queue queueApi
-}
-
-func NewLuckyMoney(money moneyApi) *LuckyMoney {
-	return &LuckyMoney{
-		money: money,
+func NewRedEnvelope(client *client.Client) *RedEnvelopeClient {
+	return &RedEnvelopeClient{
+		client: client,
 	}
 }
 
-type GiveMoney struct {
+type GiveRedEnvelope struct {
 	// 單包金額 or 總金額 看Type種類決定
 	// 最少0.01元
 	Amount float64 `json:"amount" binding:"required,min=0.01"`
@@ -55,6 +41,6 @@ type GiveMoney struct {
 
 // 發紅包
 // TODO 未完
-func (l *LuckyMoney) Give(money *GiveMoney) (string, error) {
+func (l *RedEnvelopeClient) Give(money *GiveRedEnvelope) (string, error) {
 	return "", nil
 }

@@ -41,8 +41,7 @@ func main() {
 
 	// new srever
 	srv := logic.New(conf.Conf)
-	// TODO 待重構
-	money := activity.NewLuckyMoney(client.New(conf.Conf.Api))
+	money := activity.NewRedEnvelope(client.New(conf.Conf.Api))
 	httpSrv := http.New(conf.Conf.HTTPServer, front.New(srv, money))
 	httpAdminSrv := http.New(conf.Conf.HTTPAdminServer, admin.New(srv))
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
