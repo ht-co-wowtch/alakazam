@@ -150,6 +150,28 @@
     </div>
     <input type="hidden" id="uid" name="uid" value="">
     <input type="hidden" id="key" name="key" value="">
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">搶到紅包</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="modal-name">xxx的紅包</p>
+                    <p id="modal-text">紅包訊息</p>
+                    <p id="modal-money">獲得多少錢</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
@@ -393,7 +415,12 @@
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function (data) {
-                alert(data.status)
+                console.log(data)
+                $('#exampleModalLongTitle').text(data.status)
+                $('#modal-name').text(data.name + "的紅包")
+                $('#modal-text').text(data.status_message)
+                $('#modal-money').text("獲得 $" + data.amount)
+                $('#exampleModalCenter').modal('show');
             },
             error: function (data) {
                 alert(data.message)
