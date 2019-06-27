@@ -3,7 +3,7 @@ package front
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/activity"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
@@ -13,13 +13,13 @@ import (
 type Server struct {
 	logic *logic.Logic
 
-	money *activity.RedEnvelopeClient
+	client *client.Client
 }
 
-func New(l *logic.Logic, money *activity.RedEnvelopeClient) *Server {
+func New(l *logic.Logic, client *client.Client) *Server {
 	return &Server{
-		logic: l,
-		money: money,
+		logic:  l,
+		client: client,
 	}
 }
 
@@ -35,6 +35,6 @@ func (s *Server) InitRoute(e *gin.Engine) {
 	e.Use(cors.New(c), http.AuthenticationHandler)
 
 	e.POST("/push/room", http.Handler(s.pushRoom))
-	e.POST("/give-lucky-money", http.Handler(s.giveLuckyMoney))
-	e.POST("/take-lucky-money", http.Handler(s.takeLuckyMoney))
+	e.POST("/red-envelope", http.Handler(s.giveRedEnvelope))
+	e.PUT("/red-envelope", http.Handler(s.takeRedEnvelope))
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/activity"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/admin"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/front"
@@ -42,8 +41,7 @@ func main() {
 
 	// new srever
 	srv := logic.New(conf.Conf)
-	money := activity.NewRedEnvelope(client.New(conf.Conf.Api))
-	httpSrv := http.New(conf.Conf.HTTPServer, front.New(srv, money))
+	httpSrv := http.New(conf.Conf.HTTPServer, front.New(srv, client.New(conf.Conf.Api)))
 	httpAdminSrv := http.New(conf.Conf.HTTPAdminServer, admin.New(srv))
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
 

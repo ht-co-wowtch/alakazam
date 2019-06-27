@@ -27,3 +27,7 @@ func checkResponse(resp *http.Response) error {
 	}
 	return nil
 }
+
+func bearer(token string) map[string][]string {
+	return map[string][]string{"Authorization": []string{"Bearer " + token}}
+}

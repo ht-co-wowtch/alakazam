@@ -12,7 +12,7 @@ type User struct {
 }
 
 func (c *Client) Auth(token string) (User, error) {
-	resp, err := c.c.Get("/profile", nil, map[string][]string{"Authorization": []string{"Bearer " + token}})
+	resp, err := c.c.Get("/profile", nil, bearer(token))
 	if err != nil {
 		return User{}, err
 	}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	log "github.com/golang/glog"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"time"
@@ -40,7 +41,7 @@ func (l *Logic) PushRoom(c *gin.Context, p *PushRoom) error {
 	if err := l.Auth(&p.User); err != nil {
 		return err
 	}
-	if err := l.isMessage(p.roomId, p.roomStatus, p.Uid, c.GetString("token")); err != nil {
+	if err := l.isMessage(p.RoomId, p.roomStatus, p.Uid, c.GetString("token")); err != nil {
 		return err
 	}
 
@@ -57,7 +58,7 @@ func (l *Logic) PushRoom(c *gin.Context, p *PushRoom) error {
 		return errors.FailureError
 	}
 
-	if err := l.stream.BroadcastRoomMsg(p.roomId, msg, grpc.PushMsg_ROOM); err != nil {
+	if err := l.stream.BroadcastRoomMsg(p.RoomId, msg, grpc.PushMsg_ROOM); err != nil {
 		return errors.FailureError
 	}
 	return nil
@@ -66,6 +67,9 @@ func (l *Logic) PushRoom(c *gin.Context, p *PushRoom) error {
 type Money struct {
 	Message
 
+	// 紅包id
+	Id string `json:"id"`
+
 	// 紅包token
 	Token string `json:"token"`
 
@@ -73,24 +77,23 @@ type Money struct {
 	Expired int64 `json:"expired"`
 }
 
-func (l *Logic) PushMoney(id, message string, user *User) error {
+func (l *Logic) PushRedEnvelope(give client.RedEnvelopeReply, user User) error {
 	msg, err := json.Marshal(Money{
 		Message: Message{
 			Uid:     user.Uid,
 			Name:    user.name,
 			Avatar:  "",
-			Message: message,
+			Message: give.Message,
 			Time:    time.Now().Format("15:04:05"),
 		},
-		Token:   "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTcyMTE2NTAsIm5iZiI6MTU1NzIxMTY1MCwiaXNzIjoibG9naW4iLCJzZXNzaW9uX3Rva2VuIjoiZjc2OTYyM2Y0YTNlNDE4MWE4NzAwYWNkYTE3NzE1MmIiLCJkYXRhIjp7InVpZCI6IjEyNTdlN2Q5ZTFjOTQ0ZWY5YTZmMTI5Y2I5NDk1ZDAyIiwidXNlcm5hbWUiOiJyb290In19.7VJxH3tQpnJqWTlPbId7f0Rt7eQoaVvaJmbWxtHTqRU",
-		Expired: time.Now().Add(time.Hour).Unix(),
+		Id:      give.Uid,
+		Token:   give.Token,
+		Expired: give.ExpireAt.Unix(),
 	})
-
 	if err != nil {
 		return errors.FailureError
 	}
-
-	if err := l.stream.BroadcastRoomMsg(user.roomId, msg, grpc.PushMsg_MONEY); err != nil {
+	if err := l.stream.BroadcastRoomMsg(user.RoomId, msg, grpc.PushMsg_MONEY); err != nil {
 		return errors.FailureError
 	}
 	return nil

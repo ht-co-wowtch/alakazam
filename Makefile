@@ -4,8 +4,7 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOTEST=$(GOCMD) test
 
-build:
-	rm -rf bin/
+build: clean
 	mkdir bin/
 	cp cmd/comet/comet-example.yml bin/comet.yml
 	cp cmd/logic/logic-example.yml bin/logic.yml
@@ -13,6 +12,15 @@ build:
 	$(GOBUILD) -o bin/comet cmd/comet/main.go
 	$(GOBUILD) -o bin/logic cmd/logic/main.go
 	$(GOBUILD) -o bin/job cmd/job/main.go
+
+build-debug: clean
+	mkdir bin/
+	cp cmd/comet/comet-example.yml bin/comet.yml
+	cp cmd/logic/logic-example.yml bin/logic.yml
+	cp cmd/job/job-example.yml bin/job.yml
+	$(GOBUILD) -gcflags "all=-N -l" -o bin/comet cmd/comet/main.go
+	$(GOBUILD) -gcflags "all=-N -l" -o bin/logic cmd/logic/main.go
+	$(GOBUILD) -gcflags "all=-N -l" -o bin/job cmd/job/main.go
 
 clean:
 	rm -rf bin/

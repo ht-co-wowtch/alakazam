@@ -17,21 +17,21 @@ type User struct {
 	Key string `json:"key" binding:"required"`
 
 	// 房間id
-	roomId string
+	RoomId string `json:"-"`
 
 	// 名稱
-	name string
+	name string `json:"-"`
 
 	// 權限狀態
-	status int
+	status int `json:"-"`
 
 	// 房間權限狀態
-	roomStatus int
+	roomStatus int `json:"-"`
 }
 
 // 會員在線認證
 func (l *Logic) auth(u *User) (err error) {
-	u.roomId, u.name, u.status, err = l.cache.GetUser(u.Uid, u.Key)
+	u.RoomId, u.name, u.status, err = l.cache.GetUser(u.Uid, u.Key)
 
 	if err != nil {
 		return errors.FailureError
@@ -41,7 +41,7 @@ func (l *Logic) auth(u *User) (err error) {
 		return errors.LoginError
 	}
 
-	if u.roomId == "" {
+	if u.RoomId == "" {
 		return errors.RoomError
 	}
 
@@ -50,7 +50,7 @@ func (l *Logic) auth(u *User) (err error) {
 
 // 房間權限認證
 func (l *Logic) authRoom(u *User) error {
-	u.roomStatus = l.GetRoomPermission(u.roomId)
+	u.roomStatus = l.GetRoomPermission(u.RoomId)
 
 	if permission.IsBanned(u.roomStatus) {
 		return errors.RoomBannedError

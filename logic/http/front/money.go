@@ -2,43 +2,53 @@ package front
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/activity"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gopkg.in/go-playground/validator.v8"
 	"net/http"
 )
 
-type LuckyMoney struct {
+type GiveRedEnvelope struct {
 	logic.User
 
-	activity.GiveRedEnvelope
+	// 單包金額 or 總金額 看Type種類決定
+	Amount int `json:"amount" binding:"required"`
+
+	Count int `json:"count" binding:"required"`
+
+	// 紅包說明
+	Message string `json:"message" binding:"required,max=20"`
+
+	// 紅包種類 拼手氣 or 普通
+	Type string `json:"type" binding:"required"`
 }
 
 // 發紅包
-// TODO 未完
-func (s *Server) giveLuckyMoney(c *gin.Context) error {
-	arg := new(LuckyMoney)
-	if err := validatorLuckyMoney(c, arg); err != nil {
+func (s *Server) giveRedEnvelope(c *gin.Context) error {
+	arg := new(GiveRedEnvelope)
+	if err := c.ShouldBindJSON(arg); err != nil {
 		return err
 	}
-
 	if err := s.logic.Auth(&arg.User); err != nil {
 		return err
 	}
 
-	arg.Token = c.GetString("token")
-
-	id, err := s.money.Give(&arg.GiveRedEnvelope)
-
+	give := client.RedEnvelope{
+		RoomId:    arg.RoomId,
+		Message:   arg.Message,
+		Type:      arg.Type,
+		Amount:    arg.Amount,
+		Count:     arg.Count,
+		ExpireMin: 60,
+	}
+	reply, err := s.client.GiveRedEnvelope(give, c.GetString("token"))
 	if err != nil {
 		return err
 	}
-
-	if err := s.logic.PushMoney(id, arg.Message, &arg.User); err != nil {
+	if err := s.logic.PushRedEnvelope(reply, arg.User); err != nil {
 		return err
 	}
-
 	c.Status(http.StatusNoContent)
 	return nil
 }
@@ -48,7 +58,7 @@ type TakeLuckyMoney struct {
 }
 
 // TODO 未完
-func (s *Server) takeLuckyMoney(c *gin.Context) error {
+func (s *Server) takeRedEnvelope(c *gin.Context) error {
 	arg := new(TakeLuckyMoney)
 	if err := c.ShouldBindJSON(arg); err != nil {
 		return errors.DataError
@@ -74,7 +84,7 @@ func (s *Server) takeLuckyMoney(c *gin.Context) error {
 	return nil
 }
 
-func validatorLuckyMoney(c *gin.Context, arg *LuckyMoney) error {
+func validatorLuckyMoney(c *gin.Context, arg *GiveRedEnvelope) error {
 	var err error
 	if err = c.ShouldBindJSON(arg); err != nil {
 		v := err.(validator.ValidationErrors)

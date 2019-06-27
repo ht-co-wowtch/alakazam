@@ -1,7 +1,6 @@
 package run
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/activity"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
@@ -17,8 +16,13 @@ func RunLogic(path string) func() {
 	}
 
 	srv := logic.New(conf.Conf)
-	money := activity.NewRedEnvelope(client.New(conf.Conf.Api))
-	httpSrv := httpServer.New(conf.Conf.HTTPServer, front.New(srv, money))
+	httpSrv := httpServer.New(
+		conf.Conf.HTTPServer,
+		front.New(
+			srv,
+			client.New(conf.Conf.Api),
+		),
+	)
 	httpAdminSrv := httpServer.New(conf.Conf.HTTPAdminServer, admin.New(srv))
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
 
