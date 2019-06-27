@@ -11,8 +11,7 @@ func AuthenticationHandler(c *gin.Context) {
 	token := strings.Split(authorization, " ")
 
 	if len(token) != 2 || token[0] != "Bearer" || token[1] == "" {
-		c.Abort()
-		ErrorE(c, errors.AuthorizationError)
+		c.AbortWithStatusJSON(errors.AuthorizationError.Status, errors.AuthorizationError)
 		return
 	}
 
