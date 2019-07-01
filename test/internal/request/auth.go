@@ -3,7 +3,6 @@ package request
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
@@ -23,10 +22,13 @@ type authToken struct {
 }
 
 type ConnectReply struct {
-	RoomId     string                `json:"room_id"`
-	Uid        string                `json:"Uid"`
-	Key        string                `json:"Key"`
-	Permission permission.Permission `json:"permission"`
+	RoomId     string `json:"room_id"`
+	Uid        string `json:"Uid"`
+	Key        string `json:"Key"`
+	Permission struct {
+		IsBanned      bool `json:"is_banned"`
+		IsRedEnvelope bool `json:"is_red_envelope"`
+	} `json:"permission"`
 }
 
 type Auth struct {

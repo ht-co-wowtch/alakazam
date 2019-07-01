@@ -6,7 +6,7 @@ import (
 	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"time"
 )
 
@@ -52,7 +52,7 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	case nil:
 	// 封鎖會員
 	case errors.BlockadeError:
-		r.Permission = permission.Blockade
+		r.Permission = models.Blockade
 		return r, nil
 	default:
 		return r, err
@@ -60,7 +60,7 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 
 	r.Uid = user.Uid
 	r.Name = user.Name
-	r.Permission = user.Permission
+	r.Permission = user.Status()
 	r.RoomId = params.RoomID
 	r.Key = key
 

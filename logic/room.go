@@ -4,7 +4,6 @@ import (
 	"github.com/go-redis/redis"
 	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/id"
 )
@@ -72,7 +71,7 @@ func (l *Logic) UpdateRoom(id string, r Room) bool {
 		log.Errorf("l.db.CreateRoom(room: %v) error(%v)", r, err)
 		return false
 	}
-	if err := l.cache.SetRoom(id, permission.ToRoomInt(room), room.DayLimit, room.DmlLimit, room.DepositLimit); err != nil {
+	if err := l.cache.SetRoom(id, room.Status(), room.DayLimit, room.DmlLimit, room.DepositLimit); err != nil {
 		log.Errorf("Logic UpdateRoom cache SetRoom(id:%s) error(%v)", id, err)
 		return false
 	}
@@ -101,12 +100,12 @@ func (l *Logic) GetRoomPermission(rId string) int {
 			return 0
 		}
 		if ok {
-			i = permission.ToRoomInt(room)
+			i = room.Status()
 			day = room.DayLimit
 			dml = room.DmlLimit
 			amount = room.DepositLimit
 		} else {
-			i = permission.RoomDefaultPermission
+			i = models.RoomStatus
 		}
 		if err := l.cache.SetRoom(rId, i, day, dml, amount); err != nil {
 			log.Errorf("Logic isBanned cache SetRoom(id:%s) error(%v) ", rId, err)
@@ -116,7 +115,7 @@ func (l *Logic) GetRoomPermission(rId string) int {
 }
 
 func (l *Logic) isMessage(rid string, status int, uid, token string) error {
-	if !permission.IsMoney(status) {
+	if !models.IsMoney(status) {
 		return nil
 	}
 

@@ -4,7 +4,6 @@ import (
 	log "github.com/golang/glog"
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 )
 
@@ -52,7 +51,7 @@ func (l *Logic) auth(u *User) (err error) {
 func (l *Logic) authRoom(u *User) error {
 	u.roomStatus = l.GetRoomPermission(u.RoomId)
 
-	if permission.IsBanned(u.roomStatus) {
+	if models.IsBanned(u.roomStatus) {
 		return errors.RoomBannedError
 	}
 
@@ -75,10 +74,10 @@ func (l *Logic) login(token, roomId, server string) (*models.Member, string, err
 	u, ok, _ := l.db.Find(user.Uid)
 	if !ok {
 		u = &models.Member{
-			Uid:        user.Uid,
-			Name:       user.Name,
-			Avatar:     user.Avatar,
-			Permission: permission.PlayDefaultPermission,
+			Uid:    user.Uid,
+			Name:   user.Name,
+			Avatar: user.Avatar,
+			Type:   user.Type,
 		}
 		if aff, err := l.db.CreateUser(u); err != nil || aff <= 0 {
 			log.Errorf("CreateUser(uid:%s) affected %d error(%v)", user.Uid, aff, err)
@@ -99,12 +98,11 @@ func (l *Logic) login(token, roomId, server string) (*models.Member, string, err
 	key := uuid.New().String()
 
 	// 儲存user資料至redis
-	if err := l.cache.SetUser(u.Uid, key, roomId, u.Name, server, u.Permission); err != nil {
+	if err := l.cache.SetUser(u, key, roomId, server); err != nil {
 		log.Errorf("l.dao.SetUser(%s,%s,%s,%s) error(%v)", u.Uid, key, u.Name, server, err)
 	} else {
 		log.Infof("conn connected key:%s server:%s uid:%s token:%s", key, server, u.Uid, token)
 	}
-
 	return u, key, nil
 }
 

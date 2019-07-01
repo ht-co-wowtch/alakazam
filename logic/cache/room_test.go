@@ -2,7 +2,7 @@ package cache
 
 import (
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/id"
 	"strconv"
 	"testing"
@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	status = permission.PlayDefaultPermission
+	status = models.PlayStatus
 	day    = 1
 	dml    = 100
 	amount = 500

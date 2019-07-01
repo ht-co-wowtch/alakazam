@@ -3,11 +3,34 @@ package models
 import "time"
 
 const (
+	// 封鎖
+	Blockade = 0
+
+	// 聊天
+	Message = 1
+
+	// 搶紅包
+	redEnvelope = 2
+
+	PlayStatus = Message + redEnvelope
+)
+
+// 是否禁言
+func IsBanned(status int) bool {
+	return (Message & status) != Message
+}
+
+// 是否可搶/發紅包
+func IsRedEnvelope(status int) bool {
+	return (redEnvelope & status) != redEnvelope
+}
+
+const (
 	// 訪客
-	Guest = "guest"
+	Guest = 0
 
 	// 營銷
-	Marketing = "marketing"
+	Marketing = 1
 
 	// 玩家
 	Player = 2
@@ -22,6 +45,8 @@ type Member struct {
 
 	Avatar string `xorm:"varchar(255) not null"`
 
+	Type int `xorm:"tinyint(1) default(2)"`
+
 	Permission int `xorm:"not null"`
 
 	// 是否被封鎖
@@ -29,6 +54,20 @@ type Member struct {
 
 	// 建立時間
 	CreateAt time.Time `xorm:"not null"`
+}
+
+func (r *Member) Status() int {
+	if r.IsBlockade {
+		return 0
+	}
+	var status int
+	switch r.Type {
+	case Guest:
+		status = Message
+	case Player, Marketing:
+		status = PlayStatus
+	}
+	return status
 }
 
 func (r *Member) TableName() string {

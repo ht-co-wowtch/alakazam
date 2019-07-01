@@ -2,7 +2,7 @@ package cache
 
 import (
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/id"
 	"strconv"
 	"testing"
@@ -15,7 +15,8 @@ func TestSetUser(t *testing.T) {
 	roomId := id.UUid32()
 	name := "test"
 	server := "server"
-	err := c.SetUser(uid, key, roomId, name, server, permission.PlayDefaultPermission)
+	member := &models.Member{Uid: uid, Name: name, Type: models.Player}
+	err := c.SetUser(member, key, roomId, server)
 
 	u := r.HGetAll(keyUidInfo(uid)).Val()
 
@@ -23,7 +24,7 @@ func TestSetUser(t *testing.T) {
 	assert.Equal(t, map[string]string{
 		key:           roomId,
 		hashNameKey:   name,
-		hashStatusKey: strconv.Itoa(permission.PlayDefaultPermission),
+		hashStatusKey: strconv.Itoa(models.PlayStatus),
 		hashServerKey: server,
 	}, u)
 
@@ -61,15 +62,16 @@ func TestGetUser(t *testing.T) {
 	key := id.UUid32()
 	roomId := id.UUid32()
 	name := "test"
+	member := &models.Member{Uid: uid, Name: name, Type: models.Player}
 
-	_ = c.SetUser(uid, key, roomId, name, "test", permission.PlayDefaultPermission)
+	_ = c.SetUser(member, key, roomId, "test")
 
 	r, n, s, err := c.GetUser(uid, key)
 
 	assert.Nil(t, err)
 	assert.Equal(t, roomId, r)
 	assert.Equal(t, name, n)
-	assert.Equal(t, permission.PlayDefaultPermission, s)
+	assert.Equal(t, models.PlayStatus, s)
 }
 
 func TestGetUserBuNil(t *testing.T) {
@@ -77,8 +79,9 @@ func TestGetUserBuNil(t *testing.T) {
 	key := id.UUid32()
 	roomId := id.UUid32()
 	name := "test"
+	member := &models.Member{Uid: uid, Name: name, Type: models.Player}
 
-	_ = c.SetUser(uid, key, roomId, name, "test", permission.PlayDefaultPermission)
+	_ = c.SetUser(member, key, roomId, "test")
 
 	_, _, _, err := c.GetUser(uid, "123")
 

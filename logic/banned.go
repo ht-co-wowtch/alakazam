@@ -2,7 +2,7 @@ package logic
 
 import (
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 )
 
 func (l *Logic) SetBanned(uid, remark string, expired int) error {
@@ -10,7 +10,7 @@ func (l *Logic) SetBanned(uid, remark string, expired int) error {
 }
 
 func (l *Logic) isUserBanned(uid string, status int) bool {
-	if !permission.IsBanned(status) {
+	if !models.IsBanned(status) {
 		return false
 	}
 	_, ok, err := l.cache.GetBanned(uid)

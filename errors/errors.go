@@ -17,8 +17,8 @@ var (
 	AuthorizationError             = eNew(http.StatusUnauthorized, 10024010, "Unauthorized")
 	BlockadeError, BlockadeMessage = eNewB(http.StatusUnauthorized, 10024011, "您在封鎖状态，无法进入聊天室")
 	LoginError                     = eNew(http.StatusUnauthorized, 10024012, "请先登入会员")
-	BannedError                    = eNew(http.StatusUnauthorized, 10024013, "您在禁言状态，无法发言")
 
+	BannedError     = errdefs.Unauthorized(errors.New("您在禁言状态，无法发言"), 3)
 	RoomBannedError = errdefs.Unauthorized(errors.New("聊天室目前禁言状态，无法发言"), 4)
 
 	MoneyError   = eNew(http.StatusUnauthorized, 10024015, "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元")

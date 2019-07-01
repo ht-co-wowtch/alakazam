@@ -19,7 +19,6 @@ func TestCreateUser(t *testing.T) {
 		Uid:        uid,
 		Name:       "test",
 		Avatar:     "/",
-		Permission: 1,
 		IsBlockade: true,
 	}
 
@@ -78,6 +77,7 @@ func TestFindMember(t *testing.T) {
 		Uid:        uidA,
 		Name:       "testA",
 		Avatar:     "/",
+		Type:       Player,
 		Permission: 31,
 		CreateAt:   at,
 	}, m)

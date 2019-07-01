@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"io"
 	"net"
@@ -365,7 +365,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 		return
 	}
 
-	if c.Status == permission.Blockade {
+	if c.Status == models.Blockade {
 		if e := authReply(ws, p, errors.BlockadeMessage); e != nil {
 			err = e
 		}
@@ -375,10 +375,13 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 	// 需要回覆給client告知uid與key
 	// 因為後續發話需依靠這兩個欄位來做pk
 	var reply struct {
-		Uid        string                 `json:"uid"`
-		Key        string                 `json:"key"`
-		RoomId     string                 `json:"room_id"`
-		Permission *permission.Permission `json:"permission"`
+		Uid        string `json:"uid"`
+		Key        string `json:"key"`
+		RoomId     string `json:"room_id"`
+		Permission struct {
+			IsBanned      bool `json:"is_banned"`
+			IsRedEnvelope bool `json:"is_red_envelope"`
+		} `json:"permission"`
 	}
 	uid = c.Uid
 	key = c.Key
@@ -389,7 +392,8 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 	reply.Uid = uid
 	reply.Key = key
 	reply.RoomId = rid
-	reply.Permission = permission.NewPermission(int(c.Status))
+	reply.Permission.IsBanned = models.IsBanned(int(c.Status))
+	reply.Permission.IsRedEnvelope = models.IsRedEnvelope(int(c.Status))
 	b, _ := json.Marshal(reply)
 	err = authReply(ws, p, b)
 	return

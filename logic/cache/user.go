@@ -3,24 +3,18 @@ package cache
 import (
 	"errors"
 	"github.com/go-redis/redis"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"strconv"
 )
 
 // 儲存user資訊
-// HSET :
-// 主key => uid_{user id}
-// user key => user roomId
-// name => user name
-// status => user status
-// token => 三方應用接口token
-// server => comet server name
-func (c *Cache) SetUser(uid, key, roomId, name, server string, status int) error {
-	keyI := keyUidInfo(uid)
+func (c *Cache) SetUser(member *models.Member, key, roomId, server string) error {
+	keyI := keyUidInfo(member.Uid)
 	tx := c.c.Pipeline()
 	f := map[string]interface{}{
 		key:           roomId,
-		hashNameKey:   name,
-		hashStatusKey: status,
+		hashNameKey:   member.Name,
+		hashStatusKey: member.Status(),
 		hashServerKey: server,
 	}
 	tx.HMSet(keyI, f)

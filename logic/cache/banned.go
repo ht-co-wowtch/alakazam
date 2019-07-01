@@ -2,7 +2,7 @@ package cache
 
 import (
 	"github.com/go-redis/redis"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"time"
 )
 
@@ -12,7 +12,7 @@ func (c *Cache) SetBanned(uid string, expired int) error {
 	sec := time.Duration(expired) * time.Second
 	tx := c.c.Pipeline()
 	tx.Set(keyBannedInfo(uid), time.Now().Add(sec).Unix(), sec)
-	tx.HIncrBy(keyUidInfo(uid), hashStatusKey, -permission.Message)
+	tx.HIncrBy(keyUidInfo(uid), hashStatusKey, -models.Message)
 	_, err := tx.Exec()
 	return err
 }
@@ -33,7 +33,7 @@ func (c *Cache) GetBanned(uid string) (time.Time, bool, error) {
 func (c *Cache) DelBanned(uid string) error {
 	tx := c.c.Pipeline()
 	tx.Del(keyBannedInfo(uid))
-	tx.HIncrBy(keyUidInfo(uid), hashStatusKey, permission.Message)
+	tx.HIncrBy(keyUidInfo(uid), hashStatusKey, models.Message)
 	_, err := tx.Exec()
 	return err
 }

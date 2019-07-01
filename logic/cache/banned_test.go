@@ -20,7 +20,7 @@ func TestSetBanned(t *testing.T) {
 	assert.False(t, ex.IsZero())
 
 	status, err := r.HGet(keyUidInfo(uid), hashStatusKey).Int()
-	assert.Equal(t, -2, status)
+	assert.Equal(t, -1, status)
 	assert.Nil(t, err)
 }
 

@@ -2,6 +2,19 @@ package models
 
 import "time"
 
+const (
+	money = 4
+)
+
+// 是否有充值&打碼量限制
+func IsMoney(status int) bool {
+	return (money & status) == money
+}
+
+const (
+	RoomStatus = Message
+)
+
 type Room struct {
 	// 要設定的房間id
 	Id string `xorm:"pk"`
@@ -29,6 +42,17 @@ type Room struct {
 
 	// 建立時間
 	CreateAt time.Time `xorm:"not null"`
+}
+
+func (r *Room) Status() int {
+	var status int
+	if r.IsMessage {
+		status += Message
+	}
+	if r.DayLimit > 0 && r.DmlLimit+r.DepositLimit > 0 {
+		status += money
+	}
+	return status
 }
 
 func (r *Room) TableName() string {
