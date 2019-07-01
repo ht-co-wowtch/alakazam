@@ -102,3 +102,28 @@ func TestChangeRoom(t *testing.T) {
 
 	assert.Equal(t, c.expire, m)
 }
+
+func TestGetUserName(t *testing.T) {
+	uid := []string{"1", "2", "3", "4"}
+	for _, v := range uid {
+		if err := r.HSet(keyUidInfo(v), hashNameKey, v).Err(); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	name, err := c.GetUserName(uid)
+
+	assert.Nil(t, err)
+	assert.Equal(t, uid, name)
+}
+
+// BenchmarkGetUserName-4   	   10000	    174115 ns/op
+func BenchmarkGetUserName(b *testing.B) {
+	uid := []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
+	for _, v := range uid {
+		r.HSet(keyUidInfo(v), hashNameKey, v)
+	}
+	for i := 0; i < b.N; i++ {
+		c.GetUserName(uid)
+	}
+}

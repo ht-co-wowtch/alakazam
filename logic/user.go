@@ -107,3 +107,7 @@ func (l *Logic) login(token, roomId, server string) (*models.Member, string, err
 
 	return u, key, nil
 }
+
+func (l *Logic) GetUserName(uid []string) ([]string, error) {
+	return l.cache.GetUserName(uid)
+}

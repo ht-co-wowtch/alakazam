@@ -127,6 +127,9 @@ type RedEnvelopeDetail struct {
 	// 發紅包的會員uid
 	Uid string `json:"uid"`
 
+	// 發紅包的會員名稱
+	Name string `json:"name"`
+
 	// 紅包訊息
 	Message string `json:"message"`
 
@@ -152,12 +155,15 @@ type RedEnvelopeDetail struct {
 	ExpireAt time.Time `json:"expire_at"`
 
 	// 哪些會員搶走
-	Members []memberDetail
+	Members []memberDetail `json:"members"`
 }
 
 type memberDetail struct {
 	// 搶走紅包會員uid
 	Uid string `json:"uid"`
+
+	// 搶走紅包會員的姓名
+	Name string `json:"name"`
 
 	// 搶走紅包會員拿走多少金額
 	Amount float64 `json:"amount"`

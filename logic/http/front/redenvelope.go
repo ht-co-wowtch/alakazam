@@ -74,6 +74,13 @@ func (s *Server) takeRedEnvelope(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
+
+	name, err := s.logic.GetUserName([]string{reply.Uid})
+	if err != nil {
+		return err
+	}
+	reply.Name = name[0]
+
 	switch reply.Status {
 	case "success":
 		reply.StatusMessage = "获得红包"
@@ -92,6 +99,19 @@ func (s *Server) getRedEnvelope(c *gin.Context) error {
 	reply, err := s.client.GetRedEnvelope(c.Param("id"), c.GetString("token"))
 	if err != nil {
 		return err
+	}
+	name := make([]string, len(reply.Members)+1)
+	name[0] = reply.Uid
+	for i, v := range reply.Members {
+		name[i+1] = v.Uid
+	}
+	n, err := s.logic.GetUserName(name)
+	if err != nil {
+		return err
+	}
+	reply.Name = n[0]
+	for i, v := range n[1:] {
+		reply.Members[i].Name = v
 	}
 	c.JSON(http.StatusOK, reply)
 	return nil

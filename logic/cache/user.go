@@ -2,6 +2,7 @@ package cache
 
 import (
 	"errors"
+	"github.com/go-redis/redis"
 	"strconv"
 )
 
@@ -57,6 +58,25 @@ func (c *Cache) GetUser(uid string, key string) (roomId, name string, status int
 		return "", "", 0, err
 	}
 	return res[0].(string), res[1].(string), status, err
+}
+
+// 取會員名稱
+// TODO user name 資料結構需要優化，不然這樣 redis O(n)
+func (c *Cache) GetUserName(uid []string) ([]string, error) {
+	tx := c.c.Pipeline()
+	cmd := make([]*redis.StringCmd, len(uid))
+	for i, id := range uid {
+		cmd[i] = tx.HGet(keyUidInfo(id), hashNameKey)
+	}
+	_, err := tx.Exec()
+	if err != nil {
+		return nil, err
+	}
+	name := make([]string, len(uid))
+	for i, v := range cmd {
+		name[i] = v.Val()
+	}
+	return name, nil
 }
 
 // 更換房間

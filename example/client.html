@@ -152,7 +152,8 @@
     <input type="hidden" id="key" name="key" value="">
 
     <!-- Modal -->
-    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -167,7 +168,29 @@
                     <p id="modal-money">獲得多少錢</p>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" id="modal-id" class="btn btn-primary" data-id="">查取领取详细</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModaTitle">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div id="red-select" class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
                 </div>
             </div>
         </div>
@@ -420,6 +443,7 @@
                 $('#modal-name').text(data.name + "的紅包")
                 $('#modal-text').text(data.message)
                 $('#modal-money').text("獲得 $" + data.amount)
+                $('#modal-id').data("id", data.id)
                 $('#exampleModalCenter').modal('show');
             },
             error: function (data) {
@@ -428,6 +452,39 @@
         });
     });
 
+    $(document).on('click', '#modal-id', function () {
+        $.ajax({
+            type: "get",
+            url: 'http://' + host + ':3111' + '/red-envelope/' + $(this).data("id"),
+            async: false,
+            headers: {
+                "Authorization": "Bearer " + document.getElementById("token").value,
+            },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                $('#exampleModaTitle').text(data.name + "的紅包")
+                document.getElementById("red-select").innerHTML =
+                    "                    <p>" + data.message + "</p>\n" +
+                    "                    <p>獲得 $" + data.amount + "</p>\n" +
+                    "                    <p>已領取" + data.take_count + "/" + data.count + "個紅包, " + data.take_amount + "/" + data.total_amount + "額度</p> <br>"
+                var mes = ""
+                for (var k in data.members) {
+                    mes += "<div>\n" +
+                        "    <p>" + data.members[k].name + "</p>\n" +
+                        "        <p>" + data.members[k].take_at + "</p>\n" +
+                        "        <p>" + data.members[k].amount + " 額度</p>\n" +
+                        "        </div>\n" +
+                        "        <br>"
+                }
+                document.getElementById("red-select").innerHTML = mes
+                $('#exampleModalLong').modal('show');
+            },
+            error: function (data) {
+                alert(data.message)
+            }
+        });
+    });
 </script>
 <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </body>
