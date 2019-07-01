@@ -2,9 +2,9 @@ package run
 
 import (
 	"gitlab.com/jetfueltw/cpw/alakazam/admin/conf"
+	admin "gitlab.com/jetfueltw/cpw/alakazam/admin/http"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/admin"
 )
 
 func RunAdmin(path string) func() {

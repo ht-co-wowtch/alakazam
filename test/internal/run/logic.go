@@ -6,7 +6,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/grpc"
 	httpServer "gitlab.com/jetfueltw/cpw/alakazam/logic/http"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/front"
 )
 
 func RunLogic(path string) func() {
@@ -17,7 +16,7 @@ func RunLogic(path string) func() {
 	srv := logic.New(conf.Conf)
 	httpSrv := httpServer.New(
 		conf.Conf.HTTPServer,
-		front.New(
+		httpServer.NewContext(
 			srv,
 			client.New(conf.Conf.Api),
 		),

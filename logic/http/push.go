@@ -1,4 +1,4 @@
-package admin
+package http
 
 import (
 	"github.com/gin-gonic/gin"
@@ -7,13 +7,13 @@ import (
 	"net/http"
 )
 
-// 所有房間推送
-func (s *Server) pushAll(c *gin.Context) error {
-	p := new(logic.PushRoomAllForm)
-	if err := c.ShouldBindJSON(p); err != nil {
+// 單一房間推送訊息
+func (s *Context) pushRoom(c *gin.Context) error {
+	arg := new(logic.PushRoom)
+	if err := c.ShouldBindJSON(arg); err != nil {
 		return errors.DataError
 	}
-	if err := s.logic.PushAll(p); err != nil {
+	if err := s.logic.PushRoom(c, arg); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)

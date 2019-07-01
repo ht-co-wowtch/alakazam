@@ -12,9 +12,9 @@ func CreateRoom(room logic.Room) Response {
 	return PostJson(getAdminHost()+"/room", b)
 }
 
-func UpdateRoom(roomId string, room logic.Room) Response {
+func UpdateRoom(room logic.Room) Response {
 	b, _ := json.Marshal(room)
-	return PutJson(fmt.Sprintf(getAdminHost()+"/room/%s", roomId), b)
+	return PutJson(getAdminHost()+"/room", b)
 }
 
 func GetRoom(roomId string) Response {

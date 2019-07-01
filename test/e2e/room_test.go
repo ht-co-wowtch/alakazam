@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
@@ -199,13 +198,16 @@ func TestUpdateRoom(t *testing.T) {
 		Id:        roomId,
 		IsMessage: false,
 	})
-	request.UpdateRoom(roomId, logic.Room{
+	request.UpdateRoom(logic.Room{
+		Id:        roomId,
 		IsMessage: true,
 	})
 
 	r := request.GetRoom(roomId)
 
-	var p models.Room
+	var p struct {
+		IsMessage bool `json:"is_message"`
+	}
 
 	if err := json.Unmarshal(r.Body, &p); err != nil {
 		t.Fatal(err)

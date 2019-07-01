@@ -1,4 +1,4 @@
-package front
+package http
 
 import (
 	"github.com/gin-contrib/cors"
@@ -6,24 +6,23 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
 	"time"
 )
 
-type Server struct {
+type Context struct {
 	logic *logic.Logic
 
 	client *client.Client
 }
 
-func New(l *logic.Logic, client *client.Client) *Server {
-	return &Server{
+func NewContext(l *logic.Logic, client *client.Client) *Context {
+	return &Context{
 		logic:  l,
 		client: client,
 	}
 }
 
-func (s *Server) InitRoute(e *gin.Engine) {
+func (s *Context) InitRoute(e *gin.Engine) {
 	c := cors.Config{
 		AllowCredentials: true,
 		AllowOrigins:     conf.Conf.HTTPServer.Cors.Origins,
@@ -32,10 +31,10 @@ func (s *Server) InitRoute(e *gin.Engine) {
 		MaxAge:           time.Minute * 5,
 	}
 
-	e.Use(cors.New(c), http.AuthenticationHandler)
+	e.Use(cors.New(c), AuthenticationHandler)
 
-	e.POST("/push/room", http.Handler(s.pushRoom))
-	e.POST("/red-envelope", http.Handler(s.giveRedEnvelope))
-	e.PUT("/red-envelope", http.Handler(s.takeRedEnvelope))
-	e.GET("/red-envelope/:id", http.Handler(s.getRedEnvelope))
+	e.POST("/push/room", Handler(s.pushRoom))
+	e.POST("/red-envelope", Handler(s.giveRedEnvelope))
+	e.PUT("/red-envelope", Handler(s.takeRedEnvelope))
+	e.GET("/red-envelope/:id", Handler(s.getRedEnvelope))
 }
