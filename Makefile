@@ -5,30 +5,23 @@ GOBUILD=$(GOCMD) build
 GOTEST=$(GOCMD) test
 
 build: clean
-	mkdir bin/
-	cp cmd/comet/comet-example.yml bin/comet.yml
-	cp cmd/logic/logic-example.yml bin/logic.yml
-	cp cmd/job/job-example.yml bin/job.yml
 	$(GOBUILD) -o bin/comet cmd/comet/main.go
 	$(GOBUILD) -o bin/logic cmd/logic/main.go
 	$(GOBUILD) -o bin/job cmd/job/main.go
 
 build-debug: clean
-	mkdir bin/
-	cp cmd/comet/comet-example.yml bin/comet.yml
-	cp cmd/logic/logic-example.yml bin/logic.yml
-	cp cmd/job/job-example.yml bin/job.yml
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/comet cmd/comet/main.go
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/logic cmd/logic/main.go
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/job cmd/job/main.go
 
 clean:
 	rm -rf bin/
+	mkdir bin/
 
 run:
-	nohup bin/logic -c bin/logic.yml -stderrthreshold=INFO 2>&1 > bin/logic.log &
-	nohup bin/comet -c bin/comet.yml -stderrthreshold=INFO 2>&1 > bin/comet.log &
-	nohup bin/job -c bin/job.yml -stderrthreshold=INFO 2>&1 > bin/job.log &
+	nohup bin/logic -c logic.yml -stderrthreshold=INFO 2>&1 > bin/logic.log &
+	nohup bin/comet -c comet.yml -stderrthreshold=INFO 2>&1 > bin/comet.log &
+	nohup bin/job -c job.yml -stderrthreshold=INFO 2>&1 > bin/job.log &
 
 stop:
 	pkill -f bin/logic
