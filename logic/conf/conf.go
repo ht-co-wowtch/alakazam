@@ -18,13 +18,12 @@ var (
 )
 
 type Config struct {
-	RPCServer       *grpc.Conf
-	HTTPServer      *http.Conf
-	HTTPAdminServer *http.Conf
-	DB              *database.Conf
-	Kafka           *Kafka
-	Redis           *redis.Conf
-	Api             *client.Conf
+	RPCServer  *grpc.Conf
+	HTTPServer *http.Conf
+	DB         *database.Conf
+	Kafka      *Kafka
+	Redis      *redis.Conf
+	Api        *client.Conf
 	// comet連線用戶心跳，server會清除在線紀錄
 	Heartbeat int64
 }
@@ -46,10 +45,6 @@ func Read(path string) error {
 
 	Conf = new(Config)
 	Conf.HTTPServer, err = http.ReadViper(v.Sub("http"))
-	if err != nil {
-		return err
-	}
-	Conf.HTTPAdminServer, err = http.ReadViper(v.Sub("admin"))
 	if err != nil {
 		return err
 	}

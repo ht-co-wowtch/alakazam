@@ -14,13 +14,6 @@ http:
       - User-Agent
       - Authorization
 
-# http admin server
-admin:
-  debug: true
-  addr: :3112
-  readTimeout: 1s
-  writeTimeout: 1s
-
 # grpc server
 grpcServer:
   addr: :3119

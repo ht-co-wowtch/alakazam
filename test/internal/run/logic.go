@@ -6,7 +6,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/grpc"
 	httpServer "gitlab.com/jetfueltw/cpw/alakazam/logic/http"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/admin"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/front"
 )
 
@@ -23,13 +22,11 @@ func RunLogic(path string) func() {
 			client.New(conf.Conf.Api),
 		),
 	)
-	httpAdminSrv := httpServer.New(conf.Conf.HTTPAdminServer, admin.New(srv))
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
 
 	return func() {
 		srv.Close()
 		httpSrv.Close()
-		httpAdminSrv.Close()
 		rpcSrv.GracefulStop()
 	}
 }

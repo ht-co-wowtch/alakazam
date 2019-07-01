@@ -30,6 +30,7 @@ stop:
 	pkill -f bin/logic
 	pkill -f bin/job
 	pkill -f bin/comet
+	pkill -f bin/admin
 
 migrate:
 	bin/logic -c bin/logic.yml -migrate=true

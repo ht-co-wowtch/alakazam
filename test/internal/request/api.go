@@ -3,7 +3,8 @@ package request
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
+	admin "gitlab.com/jetfueltw/cpw/alakazam/admin/conf"
+	logic "gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"net/url"
 )
 
@@ -27,7 +28,7 @@ func PushBroadcast(roomId []string, message string) Response {
 }
 
 func getHost() string {
-	return fmt.Sprintf("http://127.0.0.1%s", conf.Conf.HTTPServer.Addr)
+	return fmt.Sprintf("http://127.0.0.1%s", logic.Conf.HTTPServer.Addr)
 }
 
 func SetBanned(uid, remark string, sec int) Response {
@@ -62,5 +63,5 @@ func DeleteBlockade(uid string) Response {
 }
 
 func getAdminHost() string {
-	return fmt.Sprintf("http://127.0.0.1%s", conf.Conf.HTTPAdminServer.Addr)
+	return fmt.Sprintf("http://127.0.0.1%s", admin.Conf.HTTPServer.Addr)
 }
