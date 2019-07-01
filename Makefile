@@ -8,11 +8,13 @@ build: clean
 	$(GOBUILD) -o bin/comet cmd/comet/main.go
 	$(GOBUILD) -o bin/logic cmd/logic/main.go
 	$(GOBUILD) -o bin/job cmd/job/main.go
+	$(GOBUILD) -o bin/admin cmd/admin/main.go
 
 build-debug: clean
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/comet cmd/comet/main.go
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/logic cmd/logic/main.go
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/job cmd/job/main.go
+	$(GOBUILD) -gcflags "all=-N -l" -o bin/admin cmd/admin/main.go
 
 clean:
 	rm -rf bin/
@@ -22,6 +24,7 @@ run:
 	nohup bin/logic -c logic.yml -stderrthreshold=INFO 2>&1 > bin/logic.log &
 	nohup bin/comet -c comet.yml -stderrthreshold=INFO 2>&1 > bin/comet.log &
 	nohup bin/job -c job.yml -stderrthreshold=INFO 2>&1 > bin/job.log &
+	nohup bin/admin -c admin.yml 2>&1 > bin/admin.log &
 
 stop:
 	pkill -f bin/logic

@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/admin"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http/front"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"os"
@@ -42,7 +41,6 @@ func main() {
 	// new srever
 	srv := logic.New(conf.Conf)
 	httpSrv := http.New(conf.Conf.HTTPServer, front.New(srv, client.New(conf.Conf.Api)))
-	httpAdminSrv := http.New(conf.Conf.HTTPAdminServer, admin.New(srv))
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
 
 	fmt.Printf("logic start success | RpcServer: %s\n", conf.Conf.RPCServer.Addr)
@@ -57,7 +55,6 @@ func main() {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			srv.Close()
 			httpSrv.Close()
-			httpAdminSrv.Close()
 			rpcSrv.GracefulStop()
 			log.Flush()
 			return

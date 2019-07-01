@@ -3,8 +3,10 @@ package logic
 import (
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/stream"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/micro/database"
+	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"os"
 	"time"
 
@@ -45,6 +47,14 @@ func New(c *conf.Config) (l *Logic) {
 	_ = l.loadOnline()
 	go l.onlineproc()
 	return l
+}
+
+func NewAdmin(c1 *database.Conf, c2 *redis.Conf, c3 *conf.Kafka) (*Logic) {
+	return &Logic{
+		db:     models.NewStore(c1),
+		cache:  cache.NewRedis(c2),
+		stream: stream.NewKafkaPub(c3),
+	}
 }
 
 // Close close resources.
