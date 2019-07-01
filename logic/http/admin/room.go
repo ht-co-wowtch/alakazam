@@ -30,7 +30,7 @@ func (s *Server) UpdateRoom(c *gin.Context) error {
 		return err
 	}
 
-	if !s.logic.UpdateRoom(c.Param("id"), params) {
+	if !s.logic.UpdateRoom(params) {
 		return errors.FailureError
 	}
 
@@ -43,7 +43,16 @@ func (s *Server) GetRoom(c *gin.Context) error {
 	if !ok {
 		return errors.NoRowsError
 	}
-	c.JSON(http.StatusOK, r)
+	c.JSON(http.StatusOK, gin.H{
+		"id":                  r.Id,
+		"is_message":          r.IsMessage,
+		"day_limit":           r.DayLimit,
+		"deposit_limit":       r.DepositLimit,
+		"dml_limit":           r.DmlLimit,
+		"red_envelope_expire": r.RedEnvelopeExpire,
+		"create_at":           r.CreateAt,
+		"update_at":           r.UpdateAt,
+	})
 	return nil
 }
 
@@ -58,11 +67,11 @@ func bindRoom(c *gin.Context, params *logic.Room) error {
 		if params.Limit.Dml <= 0 {
 			return errors.SetRoomError.Mes("打码量不可小于等于0")
 		}
-	} else if params.Limit.Day < 0 || params.Limit.Amount < 0 || params.Limit.Dml < 0 {
+	} else if params.Limit.Day < 0 || params.Limit.Deposit < 0 || params.Limit.Dml < 0 {
 		return errors.FailureError
 	} else if params.Limit.Day == 0 && params.Limit.Dml > 0 {
 		return errors.SetRoomError.Mes("需设定充值天数")
-	} else if params.Limit.Day == 0 && params.Limit.Amount > 0 {
+	} else if params.Limit.Day == 0 && params.Limit.Deposit > 0 {
 		return errors.SetRoomError.Mes("需设定充值天数")
 	}
 	return nil

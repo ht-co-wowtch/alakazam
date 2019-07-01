@@ -45,6 +45,9 @@ type Room struct {
 }
 
 func (r *Room) Status() int {
+	if r.Id == "" {
+		return RoomStatus
+	}
 	var status int
 	if r.IsMessage {
 		status += Message

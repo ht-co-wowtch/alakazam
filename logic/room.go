@@ -30,7 +30,7 @@ type Limit struct {
 	Day int `json:"day"`
 
 	// 儲值金額
-	Amount int `json:"amount"`
+	Deposit int `json:"deposit"`
 
 	// 打碼量
 	Dml int `json:"dml"`
@@ -42,7 +42,7 @@ func (l *Logic) CreateRoom(r Room) (string, error) {
 		IsMessage:         r.IsMessage,
 		IsFollow:          r.IsFollow,
 		DayLimit:          r.Limit.Day,
-		DepositLimit:      r.Limit.Amount,
+		DepositLimit:      r.Limit.Deposit,
 		DmlLimit:          r.Limit.Dml,
 		RedEnvelopeExpire: r.RedEnvelopeExpire,
 	}
@@ -55,24 +55,24 @@ func (l *Logic) CreateRoom(r Room) (string, error) {
 	if aff, err := l.db.CreateRoom(room); err != nil || aff <= 0 {
 		return "", err
 	}
-	return r.Id, nil
+	return r.Id, l.cache.SetRoom(room)
 }
 
-func (l *Logic) UpdateRoom(id string, r Room) bool {
+func (l *Logic) UpdateRoom(r Room) bool {
 	room := models.Room{
-		Id:           id,
+		Id:           r.Id,
 		IsMessage:    r.IsMessage,
 		IsFollow:     r.IsFollow,
 		DayLimit:     r.Limit.Day,
-		DepositLimit: r.Limit.Amount,
+		DepositLimit: r.Limit.Deposit,
 		DmlLimit:     r.Limit.Dml,
 	}
 	if _, err := l.db.UpdateRoom(room); err != nil {
 		log.Errorf("l.db.CreateRoom(room: %v) error(%v)", r, err)
 		return false
 	}
-	if err := l.cache.SetRoom(id, room.Status(), room.DayLimit, room.DmlLimit, room.DepositLimit); err != nil {
-		log.Errorf("Logic UpdateRoom cache SetRoom(id:%s) error(%v)", id, err)
+	if err := l.cache.SetRoom(room); err != nil {
+		log.Errorf("Logic UpdateRoom cache SetRoom(id:%s) error(%v)", r.Id, err)
 		return false
 	}
 	return true
@@ -93,21 +93,13 @@ func (l *Logic) GetRoomPermission(rId string) int {
 		log.Errorf("Logic isBanned cache GetRoom(id:%s) error(%v) ", rId, err)
 	}
 	if i == 0 {
-		var day, dml, amount int
-		room, ok, err := l.db.GetRoom(rId)
+		room, _, err := l.db.GetRoom(rId)
 		// TODO 需要error判斷回傳值
 		if err != nil {
 			return 0
 		}
-		if ok {
-			i = room.Status()
-			day = room.DayLimit
-			dml = room.DmlLimit
-			amount = room.DepositLimit
-		} else {
-			i = models.RoomStatus
-		}
-		if err := l.cache.SetRoom(rId, i, day, dml, amount); err != nil {
+		i = room.Status()
+		if err := l.cache.SetRoom(room); err != nil {
 			log.Errorf("Logic isBanned cache SetRoom(id:%s) error(%v) ", rId, err)
 		}
 	}
