@@ -1,7 +1,6 @@
 package logic
 
 import (
-	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 )
 
@@ -27,9 +26,5 @@ func (l *Logic) isUserBanned(uid string, status int) (bool, error) {
 }
 
 func (l *Logic) RemoveBanned(uid string) error {
-	if err := l.cache.DelBanned(uid); err != nil {
-		log.Errorf("dao.DelBanned(uid: %s) error(%v)", uid, err)
-		return err
-	}
-	return nil
+	return l.cache.DelBanned(uid)
 }

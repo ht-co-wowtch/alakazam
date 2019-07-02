@@ -2,22 +2,24 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"github.com/gin-gonic/gin/binding"
 	"net/http"
 )
 
 // 設定禁言
 func (s *Server) setBanned(c *gin.Context) error {
-	var params struct {
-		Uid     string `json:"uid" binding:"required"`
-		Expired int    `json:"expired" binding:"required"`
-		Remark  string `json:"remark" binding:"required"`
+	params := struct {
+		Uid     string `form:"uid" binding:"required,len=32"`
+		Expired int    `json:"expired" binding:"required,min=1,max=120"`
+		Remark  string `json:"remark" binding:"required,max=20"`
+	}{
+		Uid: c.Param("uid"),
 	}
 	if err := c.ShouldBindJSON(&params); err != nil {
-		return errors.DataError
+		return err
 	}
 	if err := s.logic.SetBanned(params.Uid, params.Remark, params.Expired); err != nil {
-		return errors.FailureError
+		return err
 	}
 	c.Status(http.StatusNoContent)
 	return nil
@@ -25,14 +27,16 @@ func (s *Server) setBanned(c *gin.Context) error {
 
 // 解除禁言
 func (s *Server) removeBanned(c *gin.Context) error {
-	var params struct {
-		Uid string `form:"uid" binding:"required"`
+	params := struct {
+		Uid string `form:"uid" binding:"required,len=32"`
+	}{
+		Uid: c.Param("uid"),
 	}
-	if err := c.ShouldBindQuery(&params); err != nil {
-		return errors.DataError
+	if err := binding.Validator.ValidateStruct(&params); err != nil {
+		return err
 	}
 	if err := s.logic.RemoveBanned(params.Uid); err != nil {
-		return errors.FailureError
+		return err
 	}
 	c.Status(http.StatusNoContent)
 	return nil

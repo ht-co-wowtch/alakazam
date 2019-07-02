@@ -22,8 +22,8 @@ func (s *Server) InitRoute(e *gin.Engine) {
 	e.DELETE("/blockade", http.Handler(s.removeBlockade))
 
 	// 禁言
-	e.POST("/banned", http.Handler(s.setBanned))
-	e.DELETE("/banned", http.Handler(s.removeBanned))
+	e.POST("/banned/:uid", http.Handler(s.setBanned))
+	e.DELETE("/banned/:uid", http.Handler(s.removeBanned))
 
 	// 設定房間
 	e.POST("/room", http.Handler(s.CreateRoom))
