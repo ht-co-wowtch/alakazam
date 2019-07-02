@@ -1,7 +1,7 @@
 package http
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"net/http"
@@ -35,6 +35,8 @@ import (
 //	log.Infof("METHOD:%s | PATH:%s | CODE:%d | IP:%s | TIME:%d | ECODE:%d", method, path, statusCode, clientIP, latency/time.Millisecond, ecode)
 //}
 
+var errInternalServer = errdefs.New(0, 0, "应用程序错误")
+
 // try catch log
 func recoverHandler(c *gin.Context) {
 	defer func() {
@@ -44,7 +46,7 @@ func recoverHandler(c *gin.Context) {
 			buf = buf[:runtime.Stack(buf, false)]
 			httprequest, _ := httputil.DumpRequest(c.Request, false)
 
-			c.AbortWithStatusJSON(http.StatusInternalServerError, errors.ErrInternalServer)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, errInternalServer)
 
 			log.DPanic("[Recovery]",
 				zap.Time("time", time.Now()),
