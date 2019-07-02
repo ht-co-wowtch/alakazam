@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"github.com/go-redis/redis"
 	log "github.com/golang/glog"
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
@@ -29,36 +30,45 @@ type User struct {
 }
 
 // 會員在線認證
-func (l *Logic) auth(u *User) (err error) {
+func (l *Logic) auth(u *User) error {
+	var err error
 	u.RoomId, u.name, u.status, err = l.cache.GetUser(u.Uid, u.Key)
-
 	if err != nil {
-		return errors.FailureError
+		return err
 	}
-
 	if u.name == "" {
 		return errors.LoginError
 	}
-
-	if u.RoomId == "" {
-		return errors.RoomError
-	}
-
 	return nil
 }
 
 // 房間權限認證
 func (l *Logic) authRoom(u *User) error {
-	u.roomStatus = l.GetRoomPermission(u.RoomId)
-
+	var err error
+	u.roomStatus, err = l.cache.GetRoom(u.RoomId)
+	if err != nil && err != redis.Nil {
+		return err
+	}
+	if u.roomStatus == 0 {
+		room, _, err := l.db.GetRoom(u.RoomId)
+		if err != nil {
+			return err
+		}
+		u.roomStatus = room.Status()
+		if err := l.cache.SetRoom(room); err != nil {
+			return err
+		}
+	}
 	if models.IsBanned(u.roomStatus) {
 		return errors.RoomBannedError
 	}
-
-	if l.isUserBanned(u.Uid, u.status) {
+	is, err := l.isUserBanned(u.Uid, u.status)
+	if err != nil {
+		return err
+	}
+	if is {
 		return errors.BannedError
 	}
-
 	return nil
 }
 

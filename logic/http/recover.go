@@ -1,7 +1,7 @@
 package http
 
 import (
-	"gitlab.com/jetfueltw/cpw/micro/errdefs"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"net/http"
@@ -44,7 +44,7 @@ func recoverHandler(c *gin.Context) {
 			buf = buf[:runtime.Stack(buf, false)]
 			httprequest, _ := httputil.DumpRequest(c.Request, false)
 
-			c.AbortWithStatusJSON(http.StatusInternalServerError, errdefs.ErrInternalServer)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, errors.ErrInternalServer)
 
 			log.DPanic("[Recovery]",
 				zap.Time("time", time.Now()),

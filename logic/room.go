@@ -1,7 +1,6 @@
 package logic
 
 import (
-	"github.com/go-redis/redis"
 	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
@@ -84,26 +83,6 @@ func (l *Logic) GetRoom(roomId string) (models.Room, bool) {
 		return r, false
 	}
 	return r, ok
-}
-
-func (l *Logic) GetRoomPermission(rId string) int {
-	i, err := l.cache.GetRoom(rId)
-
-	if err != nil && err != redis.Nil {
-		log.Errorf("Logic isBanned cache GetRoom(id:%s) error(%v) ", rId, err)
-	}
-	if i == 0 {
-		room, _, err := l.db.GetRoom(rId)
-		// TODO 需要error判斷回傳值
-		if err != nil {
-			return 0
-		}
-		i = room.Status()
-		if err := l.cache.SetRoom(room); err != nil {
-			log.Errorf("Logic isBanned cache SetRoom(id:%s) error(%v) ", rId, err)
-		}
-	}
-	return i
 }
 
 func (l *Logic) isMessage(rid string, status int, uid, token string) error {

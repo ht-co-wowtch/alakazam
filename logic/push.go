@@ -32,7 +32,6 @@ func (l *Logic) Auth(u *User) error {
 	if err := l.authRoom(u); err != nil {
 		return err
 	}
-
 	return nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"strconv"
 )
 
@@ -45,7 +46,7 @@ func (c *Cache) GetUser(uid string, key string) (roomId, name string, status int
 	}
 	for _, v := range res {
 		if v == nil {
-			return "", "", 0, errUserNil
+			return "", "", 0, errdefs.InvalidParameter(errUserNil)
 		}
 	}
 	if status, err = strconv.Atoi(res[2].(string)); err != nil {
