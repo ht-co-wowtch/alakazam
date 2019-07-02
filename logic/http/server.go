@@ -3,9 +3,9 @@ package http
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	server "gitlab.com/jetfueltw/cpw/micro/http"
+	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"net/http"
 )
@@ -61,7 +61,7 @@ func Handler(f HandlerFunc) gin.HandlerFunc {
 func errHandler(c *gin.Context, err error) {
 	e := errdefs.Err(err)
 	if e.Status == http.StatusInternalServerError {
-		log.Error(e, zap.Error(e.Err))
+		log.Error("api error", zap.Error(e.Err))
 	}
 	c.JSON(e.Status, e)
 }
