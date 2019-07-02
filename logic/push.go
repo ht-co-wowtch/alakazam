@@ -22,7 +22,7 @@ type PushRoom struct {
 	User
 
 	// user push message
-	Message string `json:"message" binding:"required"`
+	Message string `json:"message" binding:"required,max=100"`
 }
 
 func (l *Logic) Auth(u *User) error {
