@@ -88,13 +88,13 @@ func (l *Logic) isMessage(rid string, status int, uid, token string) error {
 	day, dml, amount, err := l.cache.GetRoomByMoney(rid)
 	if err != nil {
 		log.Errorf("Logic isMessage cache GetRoomByMoney(room id:%s) error(%v)", rid, err)
-		return errors.FailureError
+		return err
 	}
 
 	money, err := l.client.GetDepositAndDml(day, uid, token)
 	if err != nil {
 		log.Errorf("Logic isMessage client GetDepositAndDml(id:%s day:%d) error(%v)", uid, day, err)
-		return errors.FailureError
+		return err
 	}
 
 	if dml > money.Dml || amount > money.Deposit {

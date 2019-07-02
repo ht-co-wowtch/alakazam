@@ -3,9 +3,7 @@ package logic
 import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
-	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"time"
 )
@@ -90,7 +88,7 @@ func (l *Logic) PushRedEnvelope(give client.RedEnvelopeReply, user User) error {
 		return err
 	}
 	if err := l.stream.BroadcastRoomMsg(user.RoomId, msg, grpc.PushMsg_MONEY); err != nil {
-		return errors.FailureError
+		return err
 	}
 	return nil
 }
@@ -112,11 +110,10 @@ func (l *Logic) PushAll(p *PushRoomAllForm) error {
 		Time:    time.Now().Format("15:04:05"),
 	})
 	if err != nil {
-		log.Errorf("pushAll json.Marshal() error(%v)", err)
-		return errors.FailureError
+		return err
 	}
 	if err := l.stream.BroadcastMsg(p.RoomId, msg); err != nil {
-		return errors.FailureError
+		return err
 	}
 	return nil
 }
