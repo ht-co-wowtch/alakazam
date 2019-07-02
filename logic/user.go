@@ -37,7 +37,7 @@ func (l *Logic) auth(u *User) error {
 		return err
 	}
 	if u.name == "" {
-		return errors.LoginError
+		return errors.ErrLogin
 	}
 	return nil
 }
@@ -60,14 +60,14 @@ func (l *Logic) authRoom(u *User) error {
 		}
 	}
 	if models.IsBanned(u.roomStatus) {
-		return errors.RoomBannedError
+		return errors.ErrRoomBanned
 	}
 	is, err := l.isUserBanned(u.Uid, u.status)
 	if err != nil {
 		return err
 	}
 	if is {
-		return errors.BannedError
+		return errors.ErrBanned
 	}
 	return nil
 }
@@ -76,8 +76,7 @@ func (l *Logic) authRoom(u *User) error {
 func (l *Logic) login(token, roomId, server string) (*models.Member, string, error) {
 	user, err := l.client.Auth(token)
 	if err != nil {
-		log.Errorf("Logic client GetUser token:%s error(%v)", token, err)
-		return nil, "", errors.UserError
+		return nil, "", err
 	}
 
 	// TODO 處理error
@@ -90,8 +89,7 @@ func (l *Logic) login(token, roomId, server string) (*models.Member, string, err
 			Type:   user.Type,
 		}
 		if aff, err := l.db.CreateUser(u); err != nil || aff <= 0 {
-			log.Errorf("CreateUser(uid:%s) affected %d error(%v)", user.Uid, aff, err)
-			return nil, "", errors.ConnectError
+			return nil, "", err
 		}
 	} else if u.IsBlockade {
 		return u, "", errors.BlockadeError

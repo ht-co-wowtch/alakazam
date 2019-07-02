@@ -51,7 +51,7 @@ func (s *Server) GetRoom(c *gin.Context) error {
 		return err
 	}
 	if !ok {
-		return errors.NoRowsError
+		return errors.ErrNoRows
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"id":                  r.Id,

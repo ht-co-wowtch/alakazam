@@ -40,12 +40,10 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 		RoomID string `json:"room_id"`
 	}
 	if err := json.Unmarshal(token, &params); err != nil {
-		log.Errorf("json.Unmarshal(%s) error(%v)", token, err)
-		return nil, errors.ConnectError
+		return nil, err
 	}
 
 	r := new(ConnectReply)
-
 	user, key, err := l.login(params.Token, params.RoomID, server)
 
 	switch err {
@@ -66,7 +64,6 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 
 	// 告知comet連線多久沒心跳就直接close
 	r.Hb = l.c.Heartbeat
-
 	return r, nil
 }
 

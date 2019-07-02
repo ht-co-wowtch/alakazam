@@ -11,11 +11,12 @@ import (
 )
 
 var (
-	LoginError      = errdefs.Unauthorized(New("请先登入会员"))
-	RoomBannedError = errdefs.Unauthorized(New("聊天室目前禁言状态，无法发言"), 1)
-	BannedError     = errdefs.Unauthorized(New("您在禁言状态，无法发言"), 2)
-	NoPageError     = errdefs.NotFound(New("无此Api"))
-	NoRowsError     = errdefs.NotFound(New("没有资料"), 1)
+	ErrLogin      = errdefs.Unauthorized(New("请先登入会员"))
+	ErrRoomBanned = errdefs.Unauthorized(New("聊天室目前禁言状态，无法发言"), 1)
+	ErrBanned     = errdefs.Unauthorized(New("您在禁言状态，无法发言"), 2)
+
+	ErrNoPage = errdefs.NotFound(New("无此Api"))
+	ErrNoRows = errdefs.NotFound(New("没有资料"), 1)
 
 	ConnectError = eNew(http.StatusBadRequest, 10024000, "进入聊天室失败")
 	FailureError = eNew(http.StatusBadRequest, 10024001, "操作失败")
