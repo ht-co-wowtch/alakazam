@@ -11,10 +11,9 @@ import (
 )
 
 var (
-	LoginError = errdefs.Unauthorized(New("请先登入会员"))
+	LoginError      = errdefs.Unauthorized(New("请先登入会员"))
 	RoomBannedError = errdefs.Unauthorized(New("聊天室目前禁言状态，无法发言"), 1)
 	BannedError     = errdefs.Unauthorized(New("您在禁言状态，无法发言"), 2)
-
 
 	ConnectError = eNew(http.StatusBadRequest, 10024000, "进入聊天室失败")
 	FailureError = eNew(http.StatusBadRequest, 10024001, "操作失败")
@@ -23,7 +22,6 @@ var (
 	NoRowsError                    = eNew(http.StatusNotFound, 10024040, "没有资料")
 	AuthorizationError             = eNew(http.StatusUnauthorized, 10024010, "Unauthorized")
 	BlockadeError, BlockadeMessage = eNewB(http.StatusUnauthorized, 10024011, "您在封鎖状态，无法进入聊天室")
-
 
 	MoneyError   = eNew(http.StatusUnauthorized, 10024015, "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元")
 	BalanceError = eNew(http.StatusPaymentRequired, 10024020, "您的余额不足发红包")
@@ -47,8 +45,10 @@ func (m output) Validation(e validator.ValidationErrors) interface{} {
 	return validation.ValidationErrorsMap(e)
 }
 
-func (m output) JsonUnmarshalType(e *json.UnmarshalTypeError) string {
-	return "操作失败"
+func (m output) JsonUnmarshalType(e *json.UnmarshalTypeError) interface{} {
+	return map[string]string{
+		e.Field: "栏位资料格式有误",
+	}
 }
 
 func (m output) InternalServer(e error) string {
