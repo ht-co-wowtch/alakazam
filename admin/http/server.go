@@ -18,8 +18,8 @@ func New(l *logic.Logic) *Server {
 
 func (s *Server) InitRoute(e *gin.Engine) {
 	// 封鎖
-	e.POST("/blockade", http.Handler(s.setBlockade))
-	e.DELETE("/blockade", http.Handler(s.removeBlockade))
+	e.POST("/blockade/:uid", http.Handler(s.setBlockade))
+	e.DELETE("/blockade/:uid", http.Handler(s.removeBlockade))
 
 	// 禁言
 	e.POST("/banned/:uid", http.Handler(s.setBanned))
