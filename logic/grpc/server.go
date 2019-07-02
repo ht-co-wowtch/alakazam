@@ -4,6 +4,7 @@ import (
 	"context"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
@@ -45,7 +46,9 @@ func (s *server) Ping(ctx context.Context, req *pb.PingReq) (*pb.PingReply, erro
 func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectReply, error) {
 	r, err := s.srv.Connect(req.Server, req.Token)
 	if err != nil {
-		log.Error("grpc connect", zap.Error(err), zap.String("data", string(req.Token)))
+		if _, ok := err.(*errdefs.Error); !ok {
+			log.Error("grpc connect", zap.Error(err), zap.String("data", string(req.Token)))
+		}
 		return &pb.ConnectReply{}, err
 	}
 	return &pb.ConnectReply{
