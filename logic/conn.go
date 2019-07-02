@@ -86,7 +86,6 @@ func (l *Logic) Heartbeat(uid, key, roomId, name, server string) error {
 	// 沒更新成功就直接做覆蓋
 	if !has {
 		e := fmt.Errorf("Heartbeat(uid:%s key:%s server:%s) error(%v)", uid, key, server, err)
-		log.Error(e)
 		return e
 	}
 	return nil
