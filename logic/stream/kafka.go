@@ -11,7 +11,7 @@ import (
 
 // 房間推送，以下為條件
 // 1. room id
-func (d *Stream) BroadcastRoomMsg(room string, msg []byte, model grpc.PushMsg_Type) (err error) {
+func (d *Stream) BroadcastRoomMsg(room string, msg []byte, model grpc.PushMsg_Type) error {
 	pushMsg := &grpc.PushMsg{
 		Type: model,
 		Room: []string{room},
@@ -19,7 +19,7 @@ func (d *Stream) BroadcastRoomMsg(room string, msg []byte, model grpc.PushMsg_Ty
 	}
 	b, err := proto.Marshal(pushMsg)
 	if err != nil {
-		return
+		return err
 	}
 	m := &sarama.ProducerMessage{
 		Key:   sarama.StringEncoder(room),
@@ -27,9 +27,9 @@ func (d *Stream) BroadcastRoomMsg(room string, msg []byte, model grpc.PushMsg_Ty
 		Value: sarama.ByteEncoder(b),
 	}
 	if _, _, err = d.SendMessage(m); err != nil {
-		log.Errorf("PushMsg.send(broadcast_room pushMsg:%v) error(%v)", pushMsg, err)
+		return err
 	}
-	return
+	return nil
 }
 
 // 多房間推送，以下為條件

@@ -51,14 +51,11 @@ func (l *Logic) PushRoom(c *gin.Context, p *PushRoom) error {
 		Message: p.Message,
 		Time:    time.Now().Format("15:04:05"),
 	})
-
 	if err != nil {
-		log.Errorf("pushRoom json.Marshal(uid: %s ) error(%v)", p.Uid, err)
-		return errors.FailureError
+		return err
 	}
-
 	if err := l.stream.BroadcastRoomMsg(p.RoomId, msg, grpc.PushMsg_ROOM); err != nil {
-		return errors.FailureError
+		return err
 	}
 	return nil
 }
@@ -90,7 +87,7 @@ func (l *Logic) PushRedEnvelope(give client.RedEnvelopeReply, user User) error {
 		Expired: give.ExpireAt.Unix(),
 	})
 	if err != nil {
-		return errors.FailureError
+		return err
 	}
 	if err := l.stream.BroadcastRoomMsg(user.RoomId, msg, grpc.PushMsg_MONEY); err != nil {
 		return errors.FailureError
