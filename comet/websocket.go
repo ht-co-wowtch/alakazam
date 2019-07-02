@@ -3,7 +3,6 @@ package comet
 import (
 	"context"
 	"encoding/json"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"io"
@@ -21,6 +20,21 @@ import (
 const (
 	maxInt = 1<<31 - 1
 )
+
+var blockadeMessage []byte
+
+func init() {
+	errBlockade := struct {
+		Message string `json:"message"`
+	}{
+		Message: "您在封鎖状态，无法进入聊天室",
+	}
+	b, err := json.Marshal(errBlockade)
+	if err != nil {
+		panic(err)
+	}
+	blockadeMessage = b
+}
 
 // 開始監聽Websocket
 func InitWebsocket(server *Server, host string, accept int) (err error) {
@@ -366,7 +380,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 	}
 
 	if c.Status == models.Blockade {
-		if e := authReply(ws, p, errors.BlockadeMessage); e != nil {
+		if e := authReply(ws, p, blockadeMessage); e != nil {
 			err = e
 		}
 		return

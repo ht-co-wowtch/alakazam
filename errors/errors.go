@@ -2,7 +2,6 @@ package errors
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/validation"
@@ -22,16 +21,12 @@ var (
 	ConnectError = eNew(http.StatusBadRequest, 10024000, "进入聊天室失败")
 	FailureError = eNew(http.StatusBadRequest, 10024001, "操作失败")
 
-	UserError                      = eNew(http.StatusBadRequest, 10024003, "取得用户资料失败")
-	BlockadeError, BlockadeMessage = eNewB(http.StatusUnauthorized, 10024011, "您在封鎖状态，无法进入聊天室")
+	UserError = eNew(http.StatusBadRequest, 10024003, "取得用户资料失败")
 
 	MoneyError   = eNew(http.StatusUnauthorized, 10024015, "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元")
 	BalanceError = eNew(http.StatusPaymentRequired, 10024020, "您的余额不足发红包")
 	AmountError  = eNew(http.StatusPaymentRequired, 10024021, "金额错误")
 	DataError    = eNew(http.StatusUnprocessableEntity, 10024220, "资料验证错误")
-	SetRoomError = eNew(http.StatusUnprocessableEntity, 10024221, "")
-
-	ErrInternalServer = errors.New("应用程序错误")
 )
 
 func init() {

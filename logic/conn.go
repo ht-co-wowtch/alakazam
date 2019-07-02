@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"time"
 )
 
@@ -45,23 +43,14 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 
 	r := new(ConnectReply)
 	user, key, err := l.login(params.Token, params.RoomID, server)
-
-	switch err {
-	case nil:
-	// 封鎖會員
-	case errors.BlockadeError:
-		r.Permission = models.Blockade
-		return r, nil
-	default:
-		return r, err
+	if err != nil {
+		return nil, err
 	}
-
 	r.Uid = user.Uid
 	r.Name = user.Name
 	r.Permission = user.Status()
 	r.RoomId = params.RoomID
 	r.Key = key
-
 	// 告知comet連線多久沒心跳就直接close
 	r.Hb = l.c.Heartbeat
 	return r, nil

@@ -58,7 +58,7 @@ type Member struct {
 
 func (r *Member) Status() int {
 	if r.IsBlockade {
-		return 0
+		return Blockade
 	}
 	var status int
 	switch r.Type {

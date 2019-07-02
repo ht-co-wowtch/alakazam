@@ -2,10 +2,11 @@ package logic
 
 import (
 	"github.com/go-redis/redis"
-	log "github.com/golang/glog"
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 )
 
 // 一個聊天室會員的基本資料
@@ -79,8 +80,10 @@ func (l *Logic) login(token, roomId, server string) (*models.Member, string, err
 		return nil, "", err
 	}
 
-	// TODO 處理error
-	u, ok, _ := l.db.Find(user.Uid)
+	u, ok, err := l.db.Find(user.Uid)
+	if err != nil {
+		return nil, "", err
+	}
 	if !ok {
 		u = &models.Member{
 			Uid:    user.Uid,
@@ -92,14 +95,14 @@ func (l *Logic) login(token, roomId, server string) (*models.Member, string, err
 			return nil, "", err
 		}
 	} else if u.IsBlockade {
-		return u, "", errors.BlockadeError
+		return u, "", nil
 	}
 
 	if u.Name != user.Name || u.Avatar != user.Avatar {
 		u.Name = user.Name
 		u.Avatar = user.Avatar
 		if aff, err := l.db.UpdateUser(u); err != nil || aff <= 0 {
-			log.Errorf("UpdateUser(uid:%s) affected %d error(%v)", user.Uid, aff, err)
+			log.Error("UpdateUser", zap.String("uid", user.Uid), zap.Int64("affected", aff), zap.Error(err))
 		}
 	}
 
@@ -107,9 +110,16 @@ func (l *Logic) login(token, roomId, server string) (*models.Member, string, err
 
 	// 儲存user資料至redis
 	if err := l.cache.SetUser(u, key, roomId, server); err != nil {
-		log.Errorf("l.dao.SetUser(%s,%s,%s,%s) error(%v)", u.Uid, key, u.Name, server, err)
+		return nil, "", err
 	} else {
-		log.Infof("conn connected key:%s server:%s uid:%s token:%s", key, server, u.Uid, token)
+		zap.String()
+		log.Info(
+			"conn connected",
+			zap.String("key", key),
+			zap.String("uid", u.Uid),
+			zap.String("room_id", roomId),
+			zap.String("server", server),
+		)
 	}
 	return u, key, nil
 }
