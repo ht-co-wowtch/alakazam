@@ -14,12 +14,13 @@ var (
 	LoginError      = errdefs.Unauthorized(New("请先登入会员"))
 	RoomBannedError = errdefs.Unauthorized(New("聊天室目前禁言状态，无法发言"), 1)
 	BannedError     = errdefs.Unauthorized(New("您在禁言状态，无法发言"), 2)
+	NoPageError     = errdefs.NotFound(New("无此Api"))
+	NoRowsError     = errdefs.NotFound(New("没有资料"), 1)
 
 	ConnectError = eNew(http.StatusBadRequest, 10024000, "进入聊天室失败")
 	FailureError = eNew(http.StatusBadRequest, 10024001, "操作失败")
 
 	UserError                      = eNew(http.StatusBadRequest, 10024003, "取得用户资料失败")
-	NoRowsError                    = eNew(http.StatusNotFound, 10024040, "没有资料")
 	AuthorizationError             = eNew(http.StatusUnauthorized, 10024010, "Unauthorized")
 	BlockadeError, BlockadeMessage = eNewB(http.StatusUnauthorized, 10024011, "您在封鎖状态，无法进入聊天室")
 

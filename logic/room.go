@@ -9,7 +9,7 @@ import (
 
 type Room struct {
 	// 要設定的房間id
-	Id string `json:"id"`
+	Id string `json:"id" binding:"len=32"`
 
 	// 是否禁言
 	IsMessage bool `json:"is_message"`
@@ -21,12 +21,12 @@ type Room struct {
 	Limit Limit `json:"limit"`
 
 	// 紅包多久過期
-	RedEnvelopeExpire int `json:"red_envelope_expire"`
+	RedEnvelopeExpire int `json:"red_envelope_expire" binding:"required,max=120"`
 }
 
 type Limit struct {
 	// 限制範圍
-	Day int `json:"day"`
+	Day int `json:"day" binding:"max=31"`
 
 	// 儲值金額
 	Deposit int `json:"deposit"`
@@ -57,32 +57,27 @@ func (l *Logic) CreateRoom(r Room) (string, error) {
 	return r.Id, l.cache.SetRoom(room)
 }
 
-func (l *Logic) UpdateRoom(r Room) bool {
+func (l *Logic) UpdateRoom(r Room) error {
 	room := models.Room{
-		Id:           r.Id,
-		IsMessage:    r.IsMessage,
-		IsFollow:     r.IsFollow,
-		DayLimit:     r.Limit.Day,
-		DepositLimit: r.Limit.Deposit,
-		DmlLimit:     r.Limit.Dml,
+		Id:                r.Id,
+		IsMessage:         r.IsMessage,
+		IsFollow:          r.IsFollow,
+		DayLimit:          r.Limit.Day,
+		DepositLimit:      r.Limit.Deposit,
+		DmlLimit:          r.Limit.Dml,
+		RedEnvelopeExpire: r.RedEnvelopeExpire,
 	}
 	if _, err := l.db.UpdateRoom(room); err != nil {
-		log.Errorf("l.db.CreateRoom(room: %v) error(%v)", r, err)
-		return false
+		return err
 	}
 	if err := l.cache.SetRoom(room); err != nil {
-		log.Errorf("Logic UpdateRoom cache SetRoom(id:%s) error(%v)", r.Id, err)
-		return false
+		return err
 	}
-	return true
+	return nil
 }
 
-func (l *Logic) GetRoom(roomId string) (models.Room, bool) {
-	r, ok, err := l.db.GetRoom(roomId)
-	if err != nil {
-		return r, false
-	}
-	return r, ok
+func (l *Logic) GetRoom(roomId string) (models.Room, bool, error) {
+	return l.db.GetRoom(roomId)
 }
 
 func (l *Logic) isMessage(rid string, status int, uid, token string) error {

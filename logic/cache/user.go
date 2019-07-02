@@ -46,7 +46,7 @@ func (c *Cache) GetUser(uid string, key string) (roomId, name string, status int
 	}
 	for _, v := range res {
 		if v == nil {
-			return "", "", 0, errdefs.InvalidParameter(errUserNil)
+			return "", "", 0, errdefs.InvalidParameter(errUserNil, 1)
 		}
 	}
 	if status, err = strconv.Atoi(res[2].(string)); err != nil {

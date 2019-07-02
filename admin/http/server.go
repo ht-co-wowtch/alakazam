@@ -27,9 +27,8 @@ func (s *Server) InitRoute(e *gin.Engine) {
 
 	// 設定房間
 	e.POST("/room", http.Handler(s.CreateRoom))
-	e.PUT("/room", http.Handler(s.UpdateRoom))
+	e.PUT("/room/:id", http.Handler(s.UpdateRoom))
 	e.GET("/room/:id", http.Handler(s.GetRoom))
 
 	e.POST("/push/all", http.Handler(s.pushAll))
-
 }

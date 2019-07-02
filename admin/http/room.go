@@ -2,8 +2,10 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"net/http"
 )
 
@@ -12,11 +14,9 @@ func (s *Server) CreateRoom(c *gin.Context) error {
 	if err := bindRoom(c, &params); err != nil {
 		return err
 	}
-
 	roomId, err := s.logic.CreateRoom(params)
-
 	if err != nil {
-		return errors.FailureError
+		return err
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"room_id": roomId,
@@ -26,20 +26,30 @@ func (s *Server) CreateRoom(c *gin.Context) error {
 
 func (s *Server) UpdateRoom(c *gin.Context) error {
 	var params logic.Room
+	params.Id = c.Param("id")
 	if err := bindRoom(c, &params); err != nil {
 		return err
 	}
-
-	if !s.logic.UpdateRoom(params) {
-		return errors.FailureError
+	if err := s.logic.UpdateRoom(params); err != nil {
+		return err
 	}
-
 	c.Status(http.StatusNoContent)
 	return nil
 }
 
 func (s *Server) GetRoom(c *gin.Context) error {
-	r, ok := s.logic.GetRoom(c.Param("id"))
+	params := struct {
+		Id string `form:"id" binding:"required"`
+	}{
+		Id: c.Param("id"),
+	}
+	if err := binding.Validator.ValidateStruct(&params); err != nil {
+		return err
+	}
+	r, ok, err := s.logic.GetRoom(params.Id)
+	if err != nil {
+		return err
+	}
 	if !ok {
 		return errors.NoRowsError
 	}
@@ -58,21 +68,12 @@ func (s *Server) GetRoom(c *gin.Context) error {
 
 func bindRoom(c *gin.Context, params *logic.Room) error {
 	if err := c.ShouldBindJSON(params); err != nil {
-		return errors.DataError
+		return err
 	}
-	if params.Limit.Day > 0 {
-		if params.Limit.Day > 31 {
-			return errors.SetRoomError.Mes("限制充值聊天天数不能大于31")
+	if params.Limit.Day != 0 {
+		if (params.Limit.Deposit < 0 && params.Limit.Dml < 0) || (params.Limit.Deposit+params.Limit.Dml <= 0) {
+			return errdefs.InvalidParameter(errors.New("需设定打码or充值量"), 2)
 		}
-		if params.Limit.Dml <= 0 {
-			return errors.SetRoomError.Mes("打码量不可小于等于0")
-		}
-	} else if params.Limit.Day < 0 || params.Limit.Deposit < 0 || params.Limit.Dml < 0 {
-		return errors.FailureError
-	} else if params.Limit.Day == 0 && params.Limit.Dml > 0 {
-		return errors.SetRoomError.Mes("需设定充值天数")
-	} else if params.Limit.Day == 0 && params.Limit.Deposit > 0 {
-		return errors.SetRoomError.Mes("需设定充值天数")
 	}
 	return nil
 }
