@@ -112,7 +112,6 @@ func (l *Logic) login(token, roomId, server string) (*models.Member, string, err
 	if err := l.cache.SetUser(u, key, roomId, server); err != nil {
 		return nil, "", err
 	} else {
-		zap.String()
 		log.Info(
 			"conn connected",
 			zap.String("key", key),

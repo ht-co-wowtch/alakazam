@@ -1,7 +1,6 @@
 package logic
 
 import (
-	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/id"
@@ -84,19 +83,14 @@ func (l *Logic) isMessage(rid string, status int, uid, token string) error {
 	if !models.IsMoney(status) {
 		return nil
 	}
-
 	day, dml, amount, err := l.cache.GetRoomByMoney(rid)
 	if err != nil {
-		log.Errorf("Logic isMessage cache GetRoomByMoney(room id:%s) error(%v)", rid, err)
 		return err
 	}
-
 	money, err := l.client.GetDepositAndDml(day, uid, token)
 	if err != nil {
-		log.Errorf("Logic isMessage client GetDepositAndDml(id:%s day:%d) error(%v)", uid, day, err)
 		return err
 	}
-
 	if dml > money.Dml || amount > money.Deposit {
 		return errors.MoneyError.Format(day, amount, dml)
 	}

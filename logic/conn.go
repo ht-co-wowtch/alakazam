@@ -3,8 +3,8 @@ package logic
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
+	"gitlab.com/jetfueltw/cpw/micro/log"
 	"time"
 )
 
