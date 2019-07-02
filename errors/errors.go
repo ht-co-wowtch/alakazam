@@ -37,6 +37,15 @@ func init() {
 		panic(err)
 	}
 	errdefs.SetOutput(output{})
+
+	validation.Set(validation.Required, "栏位必填")
+	validation.Set(validation.Min, "栏位长度至少")
+	validation.Set(validation.Max, "栏位长度最大")
+	validation.Set(validation.Len, "栏位长度必须是")
+	validation.Set(validation.Lt, "栏位必须小于")
+	validation.Set(validation.Lte, "栏位必须小于或等于")
+	validation.Set(validation.Gt, "栏位必须大于")
+	validation.Set(validation.Gte, "栏位必须大于或等于")
 }
 
 type output struct{}
