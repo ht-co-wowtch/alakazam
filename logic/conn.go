@@ -2,9 +2,7 @@ package logic
 
 import (
 	"encoding/json"
-	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
-	"gitlab.com/jetfueltw/cpw/micro/log"
 	"time"
 )
 
@@ -58,35 +56,19 @@ func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 
 // redis清除某人連線資訊
 func (l *Logic) Disconnect(uid, key, server string) (has bool, err error) {
-	if has, err = l.cache.DeleteUser(uid, key); err != nil {
-		log.Errorf("l.dao.DeleteUser(%s,%s) error(%v)", uid, key, err)
-		return
-	}
-	log.Infof("conn disconnected server:%s uid:%s key:%s", server, uid, key)
-	return
+	return l.cache.DeleteUser(uid, key)
 }
 
 // user key更換房間
-func (l *Logic) ChangeRoom(uid, key, roomId string) (err error) {
-	if err = l.cache.ChangeRoom(uid, key, roomId); err != nil {
-		log.Errorf("l.dao.DeleteUser(%s,%s)", uid, key)
-		return
-	}
-	log.Infof("conn ChangeRoom  uid:%s key:%s roomId:%s", uid, key, roomId)
-	return
+func (l *Logic) ChangeRoom(uid, key, roomId string) error {
+	return l.cache.ChangeRoom(uid, key, roomId)
 }
 
 // 更新某人redis資訊的過期時間
 func (l *Logic) Heartbeat(uid, key, roomId, name, server string) error {
-	has, err := l.cache.RefreshUserExpire(uid)
+	_, err := l.cache.RefreshUserExpire(uid)
 	if err != nil {
-		log.Errorf("l.dao.RefreshUserExpire(%s,%s,%s) error(%v)", uid, key, server, err)
 		return err
-	}
-	// 沒更新成功就直接做覆蓋
-	if !has {
-		e := fmt.Errorf("Heartbeat(uid:%s key:%s server:%s) error(%v)", uid, key, server, err)
-		return e
 	}
 	return nil
 }
