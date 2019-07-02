@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	ErrLogin      = errdefs.Unauthorized(New("请先登入会员"))
-	ErrRoomBanned = errdefs.Unauthorized(New("聊天室目前禁言状态，无法发言"), 1)
-	ErrBanned     = errdefs.Unauthorized(New("您在禁言状态，无法发言"), 2)
+	ErrLogin         = errdefs.Unauthorized(New("请先登入会员"))
+	ErrRoomBanned    = errdefs.Unauthorized(New("聊天室目前禁言状态，无法发言"), 1)
+	ErrBanned        = errdefs.Unauthorized(New("您在禁言状态，无法发言"), 2)
+	ErrAuthorization = errdefs.Unauthorized(New("Unauthorized"), 3)
 
 	ErrNoPage = errdefs.NotFound(New("无此Api"))
 	ErrNoRows = errdefs.NotFound(New("没有资料"), 1)
@@ -22,7 +23,6 @@ var (
 	FailureError = eNew(http.StatusBadRequest, 10024001, "操作失败")
 
 	UserError                      = eNew(http.StatusBadRequest, 10024003, "取得用户资料失败")
-	AuthorizationError             = eNew(http.StatusUnauthorized, 10024010, "Unauthorized")
 	BlockadeError, BlockadeMessage = eNewB(http.StatusUnauthorized, 10024011, "您在封鎖状态，无法进入聊天室")
 
 	MoneyError   = eNew(http.StatusUnauthorized, 10024015, "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元")
