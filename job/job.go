@@ -2,14 +2,14 @@ package job
 
 import (
 	"context"
+	cluster "github.com/bsm/sarama-cluster"
 	"github.com/gogo/protobuf/proto"
 	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 	"os"
 	"sync"
-
-	cluster "github.com/bsm/sarama-cluster"
-	log "github.com/golang/glog"
 )
 
 // Job is push job.
@@ -70,9 +70,9 @@ func (j *Job) Consume() {
 	for {
 		select {
 		case err := <-j.consumer.Errors():
-			log.Errorf("consumer error(%v)", err)
+			log.Error("kafka consumer", zap.Error(err))
 		case n := <-j.consumer.Notifications():
-			log.Infof("consumer rebalanced(%v)", n)
+			log.Error("kafka consumer notifications", zap.Any("data", n))
 		case msg, ok := <-j.consumer.Messages():
 			if !ok {
 				return
@@ -81,13 +81,19 @@ func (j *Job) Consume() {
 			// process push message
 			pushMsg := new(grpc.PushMsg)
 			if err := proto.Unmarshal(msg.Value, pushMsg); err != nil {
-				log.Errorf("proto.Unmarshal(%v) error(%v)", msg, err)
+				log.Error("proto unmarshal", zap.Error(err), zap.Any("data", msg))
 				continue
 			}
-			log.Infof("consume: %s/%d/%d\t%s\t%+v", msg.Topic, msg.Partition, msg.Offset, msg.Key, pushMsg)
+			log.Info("consume",
+				zap.String("topic", msg.Topic),
+				zap.Int32("partition", msg.Partition),
+				zap.Int64("offset", msg.Offset),
+				zap.String("key", string(msg.Key)),
+				zap.Any("pushMsg", pushMsg),
+			)
 			// 開始處理推送至comet server
 			if err := j.push(context.Background(), pushMsg); err != nil {
-				log.Errorf("j.push(%v) error(%v)", pushMsg, err)
+				log.Error("push", zap.Error(err))
 			}
 		}
 	}

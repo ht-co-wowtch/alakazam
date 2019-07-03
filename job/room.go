@@ -2,12 +2,12 @@ package job
 
 import (
 	"errors"
-	"time"
-
-	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	comet "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
+	"time"
 )
 
 var (
@@ -72,7 +72,8 @@ func (r *Room) pushproc(batch int, sigTime time.Duration) {
 		// 緩衝訊息
 		buf = bytes.NewWriterSize(int(comet.MaxBodySize))
 	)
-	log.Infof("start room:%s goroutine", r.id)
+
+	log.Info("start room goroutine", zap.String("id", r.id))
 
 	// 控制多久才推送訊息給comet server
 	td := time.AfterFunc(sigTime, func() {
@@ -135,7 +136,7 @@ func (r *Room) pushproc(batch int, sigTime time.Duration) {
 
 	// 該房間已超過多久都有訊息要推送就刪除
 	r.job.delRoom(r.id)
-	log.Infof("room:%s goroutine exit", r.id)
+	log.Info("room goroutine exit", zap.String("id", r.id))
 }
 
 // 移除房間訊息聚合
@@ -157,7 +158,7 @@ func (j *Job) getRoom(roomID string) *Room {
 			j.rooms[roomID] = room
 		}
 		j.roomsMutex.Unlock()
-		log.Infof("new a room:%s active:%d", roomID, len(j.rooms))
+		log.Info("new a room active", zap.String("id", roomID), zap.Int("active", len(j.rooms)))
 	}
 	return room
 }

@@ -3,13 +3,13 @@ package job
 import (
 	"context"
 	"fmt"
-	"sync/atomic"
-	"time"
-
-	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
 	comet "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/grpc"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
+	"sync/atomic"
+	"time"
 )
 
 // 與Comet server 建立grpc client
@@ -101,7 +101,7 @@ func (c *Comet) process(roomChan chan *comet.BroadcastRoomReq, broadcastChan cha
 				Speed: broadcastArg.Speed,
 			})
 			if err != nil {
-				log.Errorf("c.client.Broadcast arg: %v error(%v)", broadcastArg, err)
+				log.Error("grpc client push broadcast", zap.Error(err), zap.Any("arg", broadcastArg))
 			}
 		// 單一房間推送
 		case roomArg := <-roomChan:
@@ -110,7 +110,7 @@ func (c *Comet) process(roomChan chan *comet.BroadcastRoomReq, broadcastChan cha
 				Proto:  roomArg.Proto,
 			})
 			if err != nil {
-				log.Errorf("c.client.BroadcastRoom arg: %v error(%v)", roomArg, err)
+				log.Error("grpc client push room", zap.Error(err), zap.Any("arg", roomArg))
 			}
 		case <-c.ctx.Done():
 			return
@@ -141,5 +141,5 @@ func (c *Comet) Close() (err error) {
 		err = fmt.Errorf("close comet(room:%d broadcast:%d) timeout", len(c.roomChan), len(c.broadcastChan))
 	}
 	c.cancel()
-	return
+	return err
 }

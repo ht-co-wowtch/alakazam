@@ -21,9 +21,9 @@ clean:
 	mkdir bin/
 
 run:
-	nohup bin/logic -c logic.yml -stderrthreshold=INFO 2>&1 > bin/logic.log &
-	nohup bin/comet -c comet.yml -stderrthreshold=INFO 2>&1 > bin/comet.log &
-	nohup bin/job -c job.yml -stderrthreshold=INFO 2>&1 > bin/job.log &
+	nohup bin/logic -c logic.yml 2>&1 > bin/logic.log &
+	nohup bin/comet -c comet.yml 2>&1 > bin/comet.log &
+	nohup bin/job -c job.yml 2>&1 > bin/job.log &
 	nohup bin/admin -c admin.yml 2>&1 > bin/admin.log &
 
 stop:

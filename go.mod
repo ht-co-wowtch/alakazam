@@ -12,7 +12,6 @@ require (
 	github.com/go-xorm/core v0.6.2
 	github.com/go-xorm/xorm v0.7.3
 	github.com/gogo/protobuf v1.2.1
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/protobuf v1.3.1
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/google/uuid v1.1.1
