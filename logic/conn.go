@@ -3,6 +3,7 @@ package logic
 import (
 	"encoding/json"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
+	"gopkg.in/go-playground/validator.v8"
 	"time"
 )
 
@@ -26,16 +27,26 @@ type ConnectReply struct {
 	Permission int
 }
 
+var v *validator.Validate
+
+func init() {
+	v = validator.New(&validator.Config{TagName: "binding"})
+}
+
 // redis紀錄某人連線資訊
 func (l *Logic) Connect(server string, token []byte) (*ConnectReply, error) {
 	var params struct {
 		// 帳務中心+版的認證token
-		Token string `json:"token"`
+		Token string `json:"token" binding:"required"`
 
 		// client要進入的room
-		RoomID string `json:"room_id"`
+		RoomID string `json:"room_id" binding:"required"`
 	}
+
 	if err := json.Unmarshal(token, &params); err != nil {
+		return nil, err
+	}
+	if err := v.Struct(&params); err != nil {
 		return nil, err
 	}
 
