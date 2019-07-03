@@ -6,8 +6,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/micro/log"
-	"go.uber.org/zap"
 )
 
 // 訊息推送至comet server
@@ -52,8 +50,7 @@ func (j *Job) broadcast(body []byte, speed int32) {
 		Proto: p,
 		Speed: speed,
 	}
-	for serverName, c := range comets {
-		log.Info("broadcast server", zap.String("name", serverName))
+	for _, c := range comets {
 		c.Broadcast(&args)
 	}
 }
@@ -68,8 +65,7 @@ func (j *Job) broadcastRoomRawBytes(roomID string, body []byte) (err error) {
 		},
 	}
 	comets := j.cometServers
-	for serverName, c := range comets {
-		log.Info("broadcastRoom server", zap.String("name", serverName))
+	for _, c := range comets {
 		c.BroadcastRoom(&args)
 	}
 	return
