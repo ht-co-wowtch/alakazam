@@ -33,7 +33,7 @@
 
     cd cmd/kafka
     docker-compose up -d
-    
+
 ## Architecture
 
 ![arch](./doc/architecture.png)
@@ -49,8 +49,8 @@
 
 - [x] 用戶禁言
 - [x] 用戶封鎖
-- [ ] 用戶搶紅包
-- [ ] 用戶發紅包
+- [x] 用戶搶紅包
+- [x] 用戶發紅包
 - [ ] 用戶發跟注
 - [ ] 用戶跟注
 - [x] 用戶切換房間
@@ -77,39 +77,36 @@ TODO
 - [ ] 整合測試 bash shell
 - [ ] database,redis connection pool  maxConn 優化
 - [ ] 限制訊息長度
-- [ ] Test Case 用BDD改寫
 
 ## Quick Reference
 
 前台：
 1. 如何跟進入聊天室 [答案](#room)
 2. 如何進入聊天室有失敗會怎樣 `答案:失敗會直接close連線`
-3. 如何在聊天室發訊息 [請看前台訊息推送API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649)
+3. 如何在聊天室發訊息 [請看前台訊息推送API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80)
 4. 如何接收聊天室訊息 [答案](#message)
 5. 封鎖狀態下進入聊天室會怎樣 [答案](#response)
-6. 禁言狀態下聊天會怎樣 [請看前台訊息推送API範例](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649)
+6. 禁言狀態下聊天會怎樣 [請看前台訊息推送API範例-禁言中](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80)
 7. 如何知道用戶在聊天室相關權限，如聊天，發紅包等等動作 [答案](#response)
-8. 如何在聊天室發紅包 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af)
-9. 聊天室發紅包訊息結構 [答案](#lucky-money)
-10. 如何搶紅包 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#68e59552-6c95-45ab-9f9e-3eaad7c1989d)
-11. 如何在聊天室發跟注
-12. 如何跟注
-13. 如何切換聊天室房間[答案](#change-room)
-14. 如何拿到歷史紀錄
-15. 如何跟聊天室做心跳 [答案](#heartbeat)
-16. 聊天室心跳週期是多少 `答案:每分鐘心跳一次`
-17. 如何產生一個跟websocket溝通的Protocol [答案](#buffer)
-18. 如何拿到房間在線人數 [答案](#heartbeat-reply)
+8. 如何在聊天室發紅包 [請看前台發紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af)
+9. 聊天室發紅包訊息結構 [答案](#red-envelope-reply)
+10. 如何搶紅包 [請看前台搶紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#68e59552-6c95-45ab-9f9e-3eaad7c1989d)
+11. 如何切換聊天室房間[答案](#change-room)
+12. 如何拿到歷史紀錄
+13. 如何跟聊天室做心跳 [答案](#heartbeat)
+14. 聊天室心跳週期是多少 `答案:server要求五分鐘內至少一次`
+15. 如何產生一個跟websocket溝通的Protocol [答案](#buffer)
+16. 如何拿到房間在線人數 [答案](#heartbeat-reply)
 
 後台：
-1. 如何以管理員身份廣播多個聊天室 [請看後台訊息推送API範例](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#c14d247c-4210-446e-aa0d-97989e4fd03c)
+1. 如何以管理員身份廣播多個聊天室 [請看後台訊息推送API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#c14d247c-4210-446e-aa0d-97989e4fd03c)
 2. 如何以系統公告身份廣播多個聊天室
 3. 如何得到線上所有聊天室清單與在線人數
 4. 如何得到某聊天室歷史紀錄
-5. 如何禁言某會員 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#1f05bf12-bceb-431c-b50a-cda72b61804e)
-6. 如何封鎖某會員 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#c84c8a03-1e15-412d-889d-642c537d0d45)
-7. 如何解禁言某會員 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#b39e8934-9ca3-4dae-8d23-d1931e1bf5ee)
-8. 如何解封鎖某會員 [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#db157cff-a26b-4d07-a109-ff7d676f9ecb)
+5. 如何禁言某會員  [請看後台禁言API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#1f05bf12-bceb-431c-b50a-cda72b61804e)
+6. 如何封鎖某會員 [請看後台封鎖API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#c84c8a03-1e15-412d-889d-642c537d0d45)
+7. 如何解禁言某會員 [請看後台解禁言API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#b39e8934-9ca3-4dae-8d23-d1931e1bf5ee)
+8. 如何解封鎖某會員 [請看後台解封鎖API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#db157cff-a26b-4d07-a109-ff7d676f9ecb)
 9. 如何在聊天室發紅包
 10. 如何在聊天室發跟注
 11. 如何將訊息置頂
@@ -142,7 +139,7 @@ Body |不固定|傳送的資料16bytes之後就是Body|json格式
 不同的Operation說明本次Protocol資料是什麼，如心跳回覆,訊息等等
 
 value | 說明 | body type |
------|-----|-------|
+-----|-----|-------|-------
 1|[要求連線到某一個房間](#room)  | json |
 2|[連線到某一個房間結果回覆](#room-reply) | json |
 3|[發送心跳](#heartbeat) | 無Body |
@@ -151,7 +148,7 @@ value | 說明 | body type |
 6|[聊天室訊息](#message-raw) | json |
 7|[更換房間](#change-room) | json |
 8|[回覆更換房間結果](#change-room-reply) | json |
-9|[紅包](#change-room-reply) | json |
+9|[紅包](#red-envelope-reply) | json |
 
 ### Body
 聊天室的訊息內容
@@ -252,7 +249,7 @@ ws.onmessage = function (evt) {
         // 判斷是否為訊息
         case 5:
             // 一開始offset為本次Protocol Header長度，因為Body內有多筆訊息
-            // 所以需要for將body內所有訊息取出來，每一則訊息還是依照解析 Protocol
+            // 所以需要for將body內所有訊息取出來，每一則訊息還是依照解析 Protocol
             // 的方式從header取到足夠資訊來找出Body位置
             for (var offset = headerLen; offset < data.byteLength; offset += packetLen) {
                 var packetLen = dataView.getInt32(offset);
@@ -283,30 +280,23 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
     "uid": "82ea16cd2d6a49d887440066ef739669",
     "key": "defb108d-3d51-475a-b266-4a7f459e7a59",
     "permission": {
-        "message": true,
-        "send_bonus": true,
-        "get_bonus": true,
-        "send_follow": true,
-        "get_follow": true
+        "is_banned": false,
+        "is_red_envelope": true
     }
 }
 ```
 name|說明|
-----|-----|
-uid|user uid，發送訊息會用到
-key|這次web socket連線id，發送訊息會用到
+----|-----|-----
+uid|user uid，發送訊息會用到|
+key|這次web socket連線id，發送訊息會用到|
 room_id|房間id|
-permission.message|是否可以聊天
-permission.send_bonus|是否可以發紅包
-permission.get_bonus|是否可以搶紅包
-permission.send_follow|是否可以發跟注
-permission.get_follow|是否可以跟注
+permission.is_banned|是否被禁言|
+permission.is_red_envelope|是否可以發/搶紅包|
 
-被封鎖Body內容如下
+如何會員被封鎖，server close連線後會回傳一個Body內容如下
 
 ```
 {
-    "code": "10024011",
     "message": "您在封鎖状态，无法进入聊天室"
 }
 ```
@@ -356,31 +346,31 @@ name|說明|格式
 ----|-----|-----|
 room_id|新房間id|string
 
-####  Lucky Money
+####  Red Envelope Reply
 
 Operation = `9`=> 回覆更換房間結果
 
 ![arch](./doc/luckyMoney.png)
 
-```
+```json
 {
-    "uid": "c991a5dc24734d8cb976a4d50132fca0",
-    "name": "test1559641930",
-    "avatar": "https://via.placeholder.com/30x30",
-    "message": "紅包",
-    "time": "17:52:31",
-    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTcyMTE2NTAsIm5iZiI6MTU1NzIxMTY1MCwiaXNzIjoibG9naW4iLCJzZXNzaW9uX3Rva2VuIjoiZjc2OTYyM2Y0YTNlNDE4MWE4NzAwYWNkYTE3NzE1MmIiLCJkYXRhIjp7InVpZCI6IjEyNTdlN2Q5ZTFjOTQ0ZWY5YTZmMTI5Y2I5NDk1ZDAyIiwidXNlcm5hbWUiOiJyb290In19.7VJxH3tQpnJqWTlPbId7f0Rt7eQoaVvaJmbWxtHTqRU",
-    "expired": 1559645551
+    "uid": "15c3c61f900a433fb8f1a9b3114cf72c",
+    "name": "sam78",
+    "message": "發大財",
+    "time": "11:24:53",
+    "id": "15c3c61f900a433fb8f1a9b3114cf72c",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjIxMzE0OTMsImlkIjoiOTJhYzM5ZmE5ZmNhNDAwNzk0ZjNiNzJjNmI3NWQ0NzQiLCJtZXNzYWdlIjoi55m85aSn6LKhIiwidWlkIjoiMTVjM2M2MWY5MDBhNDMzZmI4ZjFhOWIzMTE0Y2Y3MmMifQ.I2giGD4QsABDN89YlxXeo-xea8-Ua91JoYqV7NNIZZs",
+    "expired": 1562131493
 }
 ```
 
 name|說明|格式
-----|-----|-----|
+----|-----|-----
 uid|發紅包人的uid|string
 name|發紅包人名稱|string
-avatar|發紅包人頭像url| string
 message|紅包說明|string
-time|發送時間|string
+time|發送時間|15:03:04
+id|紅包id|string
 token|搶紅包的token|string
 expired|紅包過期時間|時間戳記 
 
@@ -396,13 +386,13 @@ expired|紅包過期時間|時間戳記
       "room_id": "a7d20d4133c14a62b617ee38e793cf55"
   }
 ```
-name|說明|
-----|-----|
-token|請自行透過[paras服務](https://jetfueltw.postman.co/collections/2999246-70e3e838-def8-4d53-ba12-e1b2797eec57?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#13ab4886-ab04-4e38-90b1-a0e73c4c8e0f)登入後拿到token
-room_id|想要進入的房間id，透過`paras服務`取得
+name|說明|格式|限制
+----|-----|-----|----
+token|請自行透過[paras服務](https://jetfueltw.postman.co/collections/2999246-70e3e838-def8-4d53-ba12-e1b2797eec57?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#13ab4886-ab04-4e38-90b1-a0e73c4c8e0f)登入後拿到token|string|jwt
+room_id|想要進入的房間id，透過`paras服務`取得|string|長度是32
 
-結果|說明|
-----|-----|
+結果|說明
+----|-----
 成功|[Response](#response)
 失敗(非封鎖造成)|server會把websocket close
 
@@ -419,9 +409,9 @@ headerView.setInt32(opOffset, 3);
 ![arch](./doc/heartbeat.png)
 
 結果|說明|
-----|-----|
-成功|[Response](#response)
-失敗|失敗就會close連線
+----|-----|-----
+成功|[Response](#heartbeat-reply)|
+失敗|失敗就會close連線|
 
 ### Change Room
 
@@ -434,27 +424,9 @@ room_id|新房間id|string
 ![arch](./doc/changeRoom.png)
 
 結果|說明|
-----|-----|
-成功|[Response](#change-room)
-失敗|失敗就會close連線
-
-## Member Permissions
-會員權限與身份
-
-狀態 |進入聊天室 |查看聊天 | 聊天 |發紅包|搶紅包|跟注|發跟注|
------|-----|-----|-----|-----|-----|-----|-----|
-禁言|yes|yes|no|yes|yes|yes|no|
-不足打碼&充值量|yes|yes|no|yes|no|yes|no|
-封鎖|no|no|no|no|no|no|no|
-
-身份 |進入聊天室 |查看聊天 | 聊天 |發紅包|搶紅包|跟注|發跟注|訊息置頂|充值限制聊天|打碼量聊天|
------|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-帶玩帳號|yes|yes|yes|yes|yes|yes|yes|no|no|no
-一般帳號|yes|yes|yes|yes|yes|yes|yes|no|yes|yes
-試玩帳號|yes|yes|no|no|no|no|no|no|no|no
-未登入|no|no|no|no|no|no|no|no|no|no
-
-> 帶玩帳號,後台,假人都不算帳
+----|-----|-----
+成功|[Response](#change-room-reply)|
+失敗|失敗就會close連線|
 
 ## Message Rule
 訊息內容
@@ -472,7 +444,7 @@ room_id|新房間id|string
 - 搶紅包
 - 系統公告
 
-歷史訊息，以10分鐘當1個區段，回滑能看到1小時訊息為止，以下是訊息種類
+歷史訊息，以10分鐘當1個區段，回滑能看到2小時訊息為止，以下是訊息種類
 
 - 會員
 - 管理員
@@ -503,18 +475,9 @@ room_id|新房間id|string
 }
 ```
 
-Error Code|異常狀況| 訊息
------|-----|-----
-|10024000|請求進入聊天室資料錯誤|进入聊天室失败|
-|10024001|用戶不在此聊天室且要發話|没有在此房间
-|10024011|被封鎖|您在封鎖状态，无法进入聊天室|
-|10024012|未登入|请先登入会员|
-|10024013|被禁言者發言|您在禁言状态，无法发言|
-|10024220|聊天室發話資料有誤|资料验证错误|
-|10025000|預料之外的錯誤|应用程序错误|
-||後台執行禁言|[会员名称] 被禁言
-||後台執行封鎖|[会员名称] 被封鎖
-||不符後台條件發言|您无法发言，当前发言条件：前两天充值不少于[  ]元；打码量不少于[  ]元
+Error Code| 訊息
+-----|-----
+|
 
 ## Tag
 tag|說明|
