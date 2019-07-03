@@ -1,10 +1,9 @@
 package time
 
 import (
+	"gitlab.com/jetfueltw/cpw/micro/log"
 	"sync"
 	itime "time"
-
-	log "github.com/golang/glog"
 )
 
 const (
@@ -228,7 +227,7 @@ func (t *Timer) expire() {
 		t.del(td)
 		t.lock.Unlock()
 		if fn == nil {
-			log.Warning("expire timer no fn")
+			log.Warn("expire timer no fn")
 		} else {
 			if Debug {
 				log.Infof("timer key: %s, expire: %s, index: %d expired, call fn", td.Key, td.ExpireString(), td.index)

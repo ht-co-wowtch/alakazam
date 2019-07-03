@@ -3,17 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/grpc"
+	"gitlab.com/jetfueltw/cpw/micro/log"
 	"math/rand"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
 	"time"
-
-	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/comet"
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/grpc"
 )
 
 var (
@@ -53,7 +52,7 @@ func main() {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			rpcSrv.GracefulStop()
 			srv.Close()
-			log.Flush()
+			log.Sync()
 			return
 		case syscall.SIGHUP:
 		default:

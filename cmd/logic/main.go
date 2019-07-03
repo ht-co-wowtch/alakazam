@@ -4,16 +4,15 @@ import (
 	"flag"
 	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"os"
-	"os/signal"
-	"syscall"
-
-	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 var (
@@ -55,7 +54,7 @@ func main() {
 			srv.Close()
 			httpSrv.Close()
 			rpcSrv.GracefulStop()
-			log.Flush()
+			log.Sync()
 			return
 		case syscall.SIGHUP:
 		default:
