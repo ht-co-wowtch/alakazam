@@ -60,7 +60,11 @@ func (m output) InternalServer(e error) string {
 }
 
 func (m output) Error(e *errdefs.Error) interface{} {
-	return "应用程序错误"
+	switch e.Code {
+	case 12024020:
+		return "您的余额不足发红包"
+	}
+	return "操作失败"
 }
 
 func (m output) Other(err error) string {
