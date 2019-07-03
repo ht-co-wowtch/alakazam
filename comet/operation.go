@@ -3,9 +3,10 @@ package comet
 import (
 	"context"
 	"encoding/json"
-	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/encoding/gzip"
 )
@@ -68,7 +69,7 @@ func (s *Server) Operate(ctx context.Context, p *pd.Proto, ch *Channel, b *Bucke
 		}
 
 		if err := b.ChangeRoom(r.RoomId, ch); err != nil {
-			log.Errorf("Change Room (%s) error(%v)", p.Body, err)
+			log.Error("change room", zap.Error(err), zap.Binary("data", p.Body))
 		} else if _, err := s.rpcClient.ChangeRoom(ctx, &pd.ChangeRoomReq{
 			Uid:    ch.Uid,
 			Key:    ch.Key,
