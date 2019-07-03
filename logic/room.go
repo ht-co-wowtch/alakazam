@@ -1,7 +1,10 @@
 package logic
 
 import (
+	"fmt"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 )
 
 type Room struct {
@@ -70,7 +73,7 @@ func (l *Logic) isMessage(rid string, status int, uid, token string) error {
 	if !models.IsMoney(status) {
 		return nil
 	}
-	day, dml, amount, err := l.cache.GetRoomByMoney(rid)
+	day, dml, deposit, err := l.cache.GetRoomByMoney(rid)
 	if err != nil {
 		return err
 	}
@@ -78,9 +81,9 @@ func (l *Logic) isMessage(rid string, status int, uid, token string) error {
 	if err != nil {
 		return err
 	}
-	// TODO error
-	if dml > money.Dml || amount > money.Deposit {
-		return nil
+	if float64(dml) > money.Dml || float64(deposit) > money.Deposit {
+		e := errors.New(fmt.Sprintf("您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元", day, deposit, dml))
+		return errdefs.Unauthorized(e, 4)
 	}
 	return nil
 }

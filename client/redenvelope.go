@@ -5,16 +5,6 @@ import (
 	"time"
 )
 
-type Money struct {
-	Dml     int `json:"dml"`
-	Deposit int `json:"deposit"`
-}
-
-// TODO 待實作
-func (c *Client) GetDepositAndDml(day int, uid, token string) (money Money, err error) {
-	return money, err
-}
-
 type RedEnvelope struct {
 	// 房間id
 	RoomId string `json:"room_id"`
