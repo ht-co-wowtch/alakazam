@@ -3,6 +3,7 @@ package cache
 import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/id"
 	"strconv"
 	"testing"
@@ -85,7 +86,7 @@ func TestGetUserBuNil(t *testing.T) {
 
 	_, _, _, err := c.GetUser(uid, "123")
 
-	assert.Equal(t, errUserNil, err)
+	assert.Equal(t, errdefs.InvalidParameter(errUserNil, 1), err)
 }
 
 func TestChangeRoom(t *testing.T) {
