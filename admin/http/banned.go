@@ -10,7 +10,7 @@ import (
 func (s *Server) setBanned(c *gin.Context) error {
 	params := struct {
 		Uid     string `form:"uid" binding:"required,len=32"`
-		Expired int    `json:"expired" binding:"required,min=1,max=120"`
+		Expired int    `json:"expired" binding:"required"`
 		Remark  string `json:"remark" binding:"required,max=50"`
 	}{
 		Uid: c.Param("uid"),
