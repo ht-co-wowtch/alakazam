@@ -12,10 +12,10 @@ import (
 // 一個聊天室會員的基本資料
 type User struct {
 	// user uid
-	Uid string `json:"uid" binding:"required"`
+	Uid string `json:"uid" binding:"required,len=32"`
 
 	// user connection key
-	Key string `json:"key" binding:"required"`
+	Key string `json:"key" binding:"required,len=36"`
 
 	// 房間id
 	RoomId string `json:"-"`
