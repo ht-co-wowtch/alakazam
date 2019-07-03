@@ -199,7 +199,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 
 	// websocket連線等待read做auth
 	if p, err = ch.protoRing.Set(); err == nil {
-		if ch.Uid, ch.Key, ch.Name, rid, hb, err = s.authWebsocket(ctx, ws, p); err == nil {
+		if rid, hb, err = s.authWebsocket(ctx, ws, ch, p); err == nil {
 			// 將user Channel放到某一個Bucket內做保存
 			b = s.Bucket(ch.Key)
 			err = b.Put(rid, ch)
@@ -358,11 +358,11 @@ failed:
 }
 
 // websocket請求連線至某房間
-func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.Proto) (uid, key, name, rid string, hb time.Duration, err error) {
+func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Channel, p *grpc.Proto) (string, time.Duration, error) {
 	for {
 		// 如果第一次連線送的資料不是請求連接到某房間則會一直等待
-		if err = p.ReadWebsocket(ws); err != nil {
-			return
+		if err := p.ReadWebsocket(ws); err != nil {
+			return "", time.Duration(0), err
 		}
 		if p.Op == protocol.OpAuth {
 			break
@@ -374,21 +374,20 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 	// 有兩種情況會無法進入聊天室
 	// 1. 請求進入聊天室資料有誤
 	// 2. 被封鎖
-	c := new(grpc.ConnectReply)
-	if c, err = s.Connect(ctx, p); err != nil {
-		return
+	c, err := s.Connect(ctx, p)
+	if err != nil {
+		return "", time.Duration(0), err
 	}
-
 	if c.Status == models.Blockade {
 		if e := authReply(ws, p, blockadeMessage); e != nil {
-			err = e
+			log.Warn("auth reply", zap.Error(e), zap.String("uid", c.Uid), zap.String("room_id", c.RoomID))
 		}
-		return
+		return "", time.Duration(0), io.EOF
 	}
 
 	// 需要回覆給client告知uid與key
 	// 因為後續發話需依靠這兩個欄位來做pk
-	var reply struct {
+	reply := struct {
 		Uid        string `json:"uid"`
 		Key        string `json:"key"`
 		RoomId     string `json:"room_id"`
@@ -396,21 +395,25 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *grpc.
 			IsBanned      bool `json:"is_banned"`
 			IsRedEnvelope bool `json:"is_red_envelope"`
 		} `json:"permission"`
+	}{
+		Uid:    c.Uid,
+		Key:    c.Key,
+		RoomId: c.RoomID,
 	}
-	uid = c.Uid
-	key = c.Key
-	name = c.Name
-	rid = c.RoomID
-	hb = time.Duration(c.Heartbeat)
-
-	reply.Uid = uid
-	reply.Key = key
-	reply.RoomId = rid
 	reply.Permission.IsBanned = models.IsBanned(int(c.Status))
 	reply.Permission.IsRedEnvelope = models.IsRedEnvelope(int(c.Status))
-	b, _ := json.Marshal(reply)
-	err = authReply(ws, p, b)
-	return
+
+	b, err := json.Marshal(reply)
+	if err != nil {
+		return "", time.Duration(0), err
+	}
+	if err = authReply(ws, p, b); err != nil {
+		return "", time.Duration(0), err
+	}
+	ch.Uid = c.Uid
+	ch.Key = c.Key
+	ch.Name = c.Name
+	return c.RoomID, time.Duration(c.Heartbeat), nil
 }
 
 // 回覆連線至某房間結果
