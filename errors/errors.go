@@ -59,6 +59,10 @@ func (m output) InternalServer(e error) string {
 	return "应用程序错误"
 }
 
+func (m output) Error(e *errdefs.Error) interface{} {
+	return "应用程序错误"
+}
+
 func (m output) Other(err error) string {
 	switch e := err.(type) {
 	case Error:
