@@ -22,7 +22,7 @@ func IsBanned(status int) bool {
 
 // 是否可搶/發紅包
 func IsRedEnvelope(status int) bool {
-	return (redEnvelope & status) != redEnvelope
+	return (redEnvelope & status) == redEnvelope
 }
 
 const (
