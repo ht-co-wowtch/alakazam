@@ -1,14 +1,12 @@
 package logic
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"gitlab.com/jetfueltw/cpw/micro/id"
 )
 
 type Room struct {
 	// 要設定的房間id
-	Id string `json:"id" binding:"len=32"`
+	Id string `json:"id" binding:"required,len=32"`
 
 	// 是否禁言
 	IsMessage bool `json:"is_message"`
@@ -39,12 +37,6 @@ func (l *Logic) CreateRoom(r Room) (string, error) {
 		DayLimit:     r.Limit.Day,
 		DepositLimit: r.Limit.Deposit,
 		DmlLimit:     r.Limit.Dml,
-	}
-	if r.Id == "" {
-		room.Id = id.UUid32()
-	}
-	if len(room.Id) != 32 {
-		return "", errors.DataError
 	}
 	if aff, err := l.db.CreateRoom(room); err != nil || aff <= 0 {
 		return "", err
@@ -86,8 +78,9 @@ func (l *Logic) isMessage(rid string, status int, uid, token string) error {
 	if err != nil {
 		return err
 	}
+	// TODO error
 	if dml > money.Dml || amount > money.Deposit {
-		return errors.MoneyError.Format(day, amount, dml)
+		return nil
 	}
 	return nil
 }
