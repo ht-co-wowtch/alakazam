@@ -21,7 +21,6 @@ func TestCreateRoom(t *testing.T) {
 		DayLimit:          1,
 		DepositLimit:      100,
 		DmlLimit:          100,
-		RedEnvelopeExpire: 10,
 	}
 
 	aff, err := s.CreateRoom(room)
@@ -39,7 +38,6 @@ func TestCreateRoom(t *testing.T) {
 	assert.Equal(t, room.DayLimit, r.DayLimit)
 	assert.Equal(t, room.DepositLimit, r.DepositLimit)
 	assert.Equal(t, room.DmlLimit, r.DmlLimit)
-	assert.Equal(t, room.RedEnvelopeExpire, r.RedEnvelopeExpire)
 }
 
 func TestUpdateRoom(t *testing.T) {
@@ -52,7 +50,6 @@ func TestUpdateRoom(t *testing.T) {
 		DayLimit:          2,
 		DepositLimit:      200,
 		DmlLimit:          200,
-		RedEnvelopeExpire: 20,
 	}
 
 	aff, err := s.UpdateRoom(room)
@@ -88,7 +85,6 @@ func TestGetRoom(t *testing.T) {
 		DayLimit:          1,
 		DepositLimit:      100,
 		DmlLimit:          1000,
-		RedEnvelopeExpire: 10,
 		UpdateAt:          at,
 		CreateAt:          at,
 	}, r)

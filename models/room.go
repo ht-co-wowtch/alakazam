@@ -34,9 +34,6 @@ type Room struct {
 	// 打碼量限制
 	DmlLimit int `xorm:"default(0)"`
 
-	// 紅包多久過期(分鐘)
-	RedEnvelopeExpire int `xorm:"default(0)"`
-
 	// 更新時間
 	UpdateAt time.Time `xorm:"not null"`
 
@@ -69,7 +66,7 @@ func (s *Store) CreateRoom(room Room) (int64, error) {
 }
 
 func (s *Store) UpdateRoom(room Room) (int64, error) {
-	return s.d.Cols("is_message", "is_follow", "day_limit", "deposit_limit", "dml_limit", "red_envelope_expire").
+	return s.d.Cols("is_message", "is_follow", "day_limit", "deposit_limit", "dml_limit").
 		Where("id = ?", room.Id).
 		Update(&room)
 }

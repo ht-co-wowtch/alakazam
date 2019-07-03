@@ -54,14 +54,13 @@ func (s *Server) GetRoom(c *gin.Context) error {
 		return errors.ErrNoRows
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"id":                  r.Id,
-		"is_message":          r.IsMessage,
-		"day_limit":           r.DayLimit,
-		"deposit_limit":       r.DepositLimit,
-		"dml_limit":           r.DmlLimit,
-		"red_envelope_expire": r.RedEnvelopeExpire,
-		"create_at":           r.CreateAt,
-		"update_at":           r.UpdateAt,
+		"id":            r.Id,
+		"is_message":    r.IsMessage,
+		"day_limit":     r.DayLimit,
+		"deposit_limit": r.DepositLimit,
+		"dml_limit":     r.DmlLimit,
+		"create_at":     r.CreateAt,
+		"update_at":     r.UpdateAt,
 	})
 	return nil
 }

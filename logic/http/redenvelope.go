@@ -40,7 +40,7 @@ func (s *Context) giveRedEnvelope(c *gin.Context) error {
 		Type:      arg.Type,
 		Amount:    arg.Amount,
 		Count:     arg.Count,
-		ExpireMin: 60,
+		ExpireMin: 120,
 	}
 	reply, err := s.client.GiveRedEnvelope(give, c.GetString("token"))
 	if err != nil {

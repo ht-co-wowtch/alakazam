@@ -18,9 +18,6 @@ type Room struct {
 
 	// 儲值&打碼量發話限制
 	Limit Limit `json:"limit"`
-
-	// 紅包多久過期
-	RedEnvelopeExpire int `json:"red_envelope_expire" binding:"required,max=120"`
 }
 
 type Limit struct {
@@ -36,13 +33,12 @@ type Limit struct {
 
 func (l *Logic) CreateRoom(r Room) (string, error) {
 	room := models.Room{
-		Id:                r.Id,
-		IsMessage:         r.IsMessage,
-		IsFollow:          r.IsFollow,
-		DayLimit:          r.Limit.Day,
-		DepositLimit:      r.Limit.Deposit,
-		DmlLimit:          r.Limit.Dml,
-		RedEnvelopeExpire: r.RedEnvelopeExpire,
+		Id:           r.Id,
+		IsMessage:    r.IsMessage,
+		IsFollow:     r.IsFollow,
+		DayLimit:     r.Limit.Day,
+		DepositLimit: r.Limit.Deposit,
+		DmlLimit:     r.Limit.Dml,
 	}
 	if r.Id == "" {
 		room.Id = id.UUid32()
@@ -58,13 +54,12 @@ func (l *Logic) CreateRoom(r Room) (string, error) {
 
 func (l *Logic) UpdateRoom(r Room) error {
 	room := models.Room{
-		Id:                r.Id,
-		IsMessage:         r.IsMessage,
-		IsFollow:          r.IsFollow,
-		DayLimit:          r.Limit.Day,
-		DepositLimit:      r.Limit.Deposit,
-		DmlLimit:          r.Limit.Dml,
-		RedEnvelopeExpire: r.RedEnvelopeExpire,
+		Id:           r.Id,
+		IsMessage:    r.IsMessage,
+		IsFollow:     r.IsFollow,
+		DayLimit:     r.Limit.Day,
+		DepositLimit: r.Limit.Deposit,
+		DmlLimit:     r.Limit.Dml,
 	}
 	if _, err := l.db.UpdateRoom(room); err != nil {
 		return err
