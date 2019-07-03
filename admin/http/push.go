@@ -2,7 +2,6 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"net/http"
 )
@@ -11,7 +10,7 @@ import (
 func (s *Server) pushAll(c *gin.Context) error {
 	p := new(logic.PushRoomAllForm)
 	if err := c.ShouldBindJSON(p); err != nil {
-		return errors.DataError
+		return err
 	}
 	if err := s.logic.PushAll(p); err != nil {
 		return err
