@@ -1,99 +1,89 @@
 package logic
 
 import (
-	"database/sql"
 	"fmt"
-	log "github.com/golang/glog"
-	"github.com/gomodule/redigo/redis"
-	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 )
 
-func (l *Logic) CreateRoom(r store.Room) (string, error) {
-	id, _ := uuid.New().MarshalBinary()
-	r.RoomId = fmt.Sprintf("%x", id)
+type Room struct {
+	// 要設定的房間id
+	Id string `json:"id" binding:"required,len=32"`
 
-	if aff, err := l.db.CreateRoom(r); err != nil || aff <= 0 {
-		log.Errorf("l.db.CreateRoom(room: %v) error(%v)", r, err)
+	// 是否禁言
+	IsMessage bool `json:"is_message"`
+
+	// 是否可發/跟注
+	IsFollow bool `json:"is_follow"`
+
+	// 儲值&打碼量發話限制
+	Limit Limit `json:"limit"`
+}
+
+type Limit struct {
+	// 限制範圍
+	Day int `json:"day" binding:"max=31"`
+
+	// 儲值金額
+	Deposit int `json:"deposit"`
+
+	// 打碼量
+	Dml int `json:"dml"`
+}
+
+func (l *Logic) CreateRoom(r Room) (string, error) {
+	room := models.Room{
+		Id:           r.Id,
+		IsMessage:    r.IsMessage,
+		IsFollow:     r.IsFollow,
+		DayLimit:     r.Limit.Day,
+		DepositLimit: r.Limit.Deposit,
+		DmlLimit:     r.Limit.Dml,
+	}
+	if aff, err := l.db.CreateRoom(room); err != nil || aff <= 0 {
 		return "", err
 	}
-	return r.RoomId, nil
+	return r.Id, l.cache.SetRoom(room)
 }
 
-func (l *Logic) UpdateRoom(id string, r store.Room) bool {
-	r.RoomId = id
-	if _, err := l.db.UpdateRoom(r); err != nil {
-		log.Errorf("l.db.CreateRoom(room: %v) error(%v)", r, err)
-		return false
+func (l *Logic) UpdateRoom(r Room) error {
+	room := models.Room{
+		Id:           r.Id,
+		IsMessage:    r.IsMessage,
+		IsFollow:     r.IsFollow,
+		DayLimit:     r.Limit.Day,
+		DepositLimit: r.Limit.Deposit,
+		DmlLimit:     r.Limit.Dml,
 	}
-	if err := l.cache.SetRoom(id, permission.ToRoomInt(r), r.Limit.Day, r.Limit.Dml, r.Limit.Amount); err != nil {
-		log.Errorf("Logic UpdateRoom cache SetRoom(id:%s) error(%v)", id, err)
-		return false
+	if _, err := l.db.UpdateRoom(room); err != nil {
+		return err
 	}
-	return true
+	if err := l.cache.SetRoom(room); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (l *Logic) GetRoom(roomId string) (store.Room, bool) {
-	r, err := l.db.GetRoom(roomId)
-	if err != nil {
-		if err != sql.ErrNoRows {
-			log.Errorf("l.db.GetRoom(roomId: %s) error(%v)", roomId, err)
-		}
-		return r, false
-	}
-	return r, true
+func (l *Logic) GetRoom(roomId string) (models.Room, bool, error) {
+	return l.db.GetRoom(roomId)
 }
 
-func (l *Logic) GetRoomPermission(rId string) int {
-	i, err := l.cache.GetRoom(rId)
-
-	if err != nil && err != redis.ErrNil {
-		log.Errorf("Logic isBanned cache GetRoom(id:%s) error(%v) ", rId, err)
-	}
-	if i == 0 {
-		var day, dml, amount int
-		room, err := l.db.GetRoom(rId)
-
-		if err == nil {
-			i = permission.ToRoomInt(room)
-			day = room.Limit.Day
-			dml = room.Limit.Dml
-			amount = room.Limit.Amount
-		} else {
-			i = permission.RoomDefaultPermission
-			if err != sql.ErrNoRows {
-				log.Errorf("Logic isBanned db GetRoom(id:%s) error(%v) ", rId, err)
-			}
-		}
-
-		if err := l.cache.SetRoom(rId, i, day, dml, amount); err != nil {
-			log.Errorf("Logic isBanned cache SetRoom(id:%s) error(%v) ", rId, err)
-		}
-	}
-	return i
-}
-
-func (l *Logic) isMessage(uid, rid string, status int) error {
-	if !permission.IsMoney(status) {
+func (l *Logic) isMessage(rid string, status int, uid, token string) error {
+	if !models.IsMoney(status) {
 		return nil
 	}
-
-	day, dml, amount, err := l.cache.GetRoomByMoney(rid)
+	day, dml, deposit, err := l.cache.GetRoomByMoney(rid)
 	if err != nil {
-		log.Errorf("Logic isMessage cache GetRoomByMoney(id:%s) error(%v)", rid, err)
-		return errors.FailureError
+		return err
 	}
-
-	money, err := l.client.GetMoney(uid, day)
+	money, err := l.client.GetDepositAndDml(day, uid, token)
 	if err != nil {
-		log.Errorf("Logic isMessage client GetMoney(id:%s day:%d) error(%v)", uid, day, err)
-		return errors.FailureError
+		return err
 	}
-
-	if dml > money.Dml || amount > money.Deposit {
-		return errors.MoneyError.Format(day, amount, dml)
+	if float64(dml) > money.Dml || float64(deposit) > money.Deposit {
+		e := errors.New(fmt.Sprintf("您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元", day, deposit, dml))
+		return errdefs.Unauthorized(e, 4)
 	}
 	return nil
 }

@@ -2,10 +2,8 @@ package cache
 
 import (
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/gomodule/redigo/redis"
-	_ "github.com/mattn/go-sqlite3"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
+	"github.com/go-redis/redis"
+	redism "gitlab.com/jetfueltw/cpw/micro/redis"
 	"time"
 )
 
@@ -49,48 +47,23 @@ func keyRoom(key string) string {
 }
 
 type Cache struct {
-	*redis.Pool
+	c *redis.Client
 
-	expire int32
+	expire time.Duration
 }
 
-func NewRedis(c *conf.Redis) *Cache {
-	return NewRedisDial(c, func() (conn redis.Conn, e error) {
-		conn, err := redis.Dial(c.Network, c.Addr,
-			redis.DialConnectTimeout(c.DialTimeout),
-			redis.DialReadTimeout(c.ReadTimeout),
-			redis.DialWriteTimeout(c.WriteTimeout),
-		)
-		if err != nil {
-			return nil, err
-		}
-		return conn, nil
-	})
-}
-
-func NewRedisDial(c *conf.Redis, dial func() (redis.Conn, error)) *Cache {
-	p := &redis.Pool{
-		MaxIdle:     c.Idle,
-		MaxActive:   c.Active,
-		IdleTimeout: c.IdleTimeout,
-		Dial:        dial,
-	}
+func NewRedis(c *redism.Conf) *Cache {
 	return &Cache{
-		Pool:   p,
-		expire: int32(c.Expire / time.Second),
+		c:      redism.New(c),
+		expire: time.Minute * 30,
 	}
-}
-
-func (c *Cache) FlushAll() error {
-	conn := c.Get()
-	defer conn.Close()
-	return conn.Send("FLUSHALL")
 }
 
 // ping redis是否活著
-func (d *Cache) Ping() error {
-	conn := d.Get()
-	_, err := conn.Do("SET", "PING", "PONG")
-	conn.Close()
-	return err
+func (c *Cache) Ping() error {
+	return c.c.Ping().Err()
+}
+
+func (c *Cache) Close() error {
+	return c.c.Close()
 }

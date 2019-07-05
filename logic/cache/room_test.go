@@ -1,52 +1,63 @@
 package cache
 
 import (
-	"github.com/gomodule/redigo/redis"
-	"github.com/rafaeljusto/redigomock"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/micro/id"
+	"strconv"
 	"testing"
+	"time"
 )
 
-func TestGetRoom(t *testing.T) {
-	roomId := "a1b4bbec3f624ecf84858632a730c688"
+var (
+	day    = 1
+	dml    = 100
+	amount = 500
 
-	mockGetRoom(roomId, []byte(`1`))
-
-	i, err := d.GetRoom(roomId)
-
-	assert.Nil(t, err)
-	assert.Equal(t, 1, i)
-}
-
-func TestGetRoomEmpty(t *testing.T) {
-	roomId := "a1b4bbec3f624ecf84858632a730c688"
-
-	mockGetRoom(roomId, nil)
-
-	i, err := d.GetRoom(roomId)
-
-	assert.Equal(t, redis.ErrNil, err)
-	assert.Equal(t, 0, i)
-}
+	room = models.Room{
+		Id:           id.UUid32(),
+		IsMessage:    true,
+		DayLimit:     day,
+		DmlLimit:     dml,
+		DepositLimit: amount,
+	}
+)
 
 func TestSetRoom(t *testing.T) {
-	roomId := "a1b4bbec3f624ecf84858632a730c688"
-
-	mockSetRoom(roomId)
-
-	err := d.SetRoom(roomId, 1, 1, 1000, 100)
+	err := c.SetRoom(room)
 
 	assert.Nil(t, err)
+
+	m := r.HGetAll(keyRoom(room.Id)).Val()
+
+	assert.Equal(t, map[string]string{
+		hashPermissionKey:  "5",
+		hashLimitDayKey:    strconv.Itoa(day),
+		hashLimitDmlKey:    strconv.Itoa(dml),
+		hashLimitAmountKey: strconv.Itoa(amount),
+	}, m)
+
+	expire := r.TTL(keyRoom(room.Id)).Val()
+
+	assert.Equal(t, time.Hour, expire)
 }
 
-func mockSetRoom(roomId string) {
-	mock.Command("HMSET", keyRoom(roomId), hashPermissionKey, 1, hashLimitDayKey, 1, hashLimitDmlKey, 1000, hashLimitAmountKey, 100).
-		Expect("")
-	mock.Command("EXPIRE", keyRoom(roomId), 60*60).
-		Expect("")
+func TestGetRoomByMoney(t *testing.T) {
+	_ = c.SetRoom(room)
+
+	dy, dl, a, err := c.GetRoomByMoney(room.Id)
+
+	assert.Nil(t, err)
+	assert.Equal(t, day, dy)
+	assert.Equal(t, dml, dl)
+	assert.Equal(t, amount, a)
 }
 
-func mockGetRoom(roomId string, expect interface{}) *redigomock.Cmd {
-	return mock.Command("HGET", keyRoom(roomId), hashPermissionKey).
-		Expect(expect)
+func TestGetRoom(t *testing.T) {
+	_ = c.SetRoom(room)
+
+	s, err := c.GetRoom(room.Id)
+
+	assert.Nil(t, err)
+	assert.Equal(t, s, s)
 }

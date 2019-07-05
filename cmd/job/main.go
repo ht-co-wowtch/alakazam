@@ -3,13 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"gitlab.com/jetfueltw/cpw/alakazam/job"
+	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
+	"gitlab.com/jetfueltw/cpw/micro/log"
 	"os"
 	"os/signal"
 	"syscall"
-
-	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/job"
-	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
 )
 
 var (
@@ -23,6 +22,7 @@ func main() {
 	if err := conf.Read(confPath); err != nil {
 		panic(err)
 	}
+	fmt.Println("Using config file:", confPath)
 
 	j := job.New(conf.Conf)
 	go j.Consume()
@@ -38,7 +38,7 @@ func main() {
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			j.Close()
-			log.Flush()
+			log.Sync()
 			return
 		case syscall.SIGHUP:
 		default:

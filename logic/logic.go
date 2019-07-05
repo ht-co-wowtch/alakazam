@@ -1,15 +1,16 @@
 package logic
 
 import (
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/client"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/store"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/stream"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/micro/database"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"os"
 	"time"
-
-	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 )
 
 const (
@@ -21,7 +22,7 @@ type Logic struct {
 	//
 	c *conf.Config
 
-	db *store.Store
+	db *models.Store
 
 	cache *cache.Cache
 
@@ -35,19 +36,23 @@ type Logic struct {
 
 // New init
 func New(c *conf.Config) (l *Logic) {
-	l = Create(c, store.NewStore(c.DB), cache.NewRedis(c.Redis), stream.NewKafkaPub(c.Kafka), client.New(c.Api))
+	l = &Logic{
+		c:      c,
+		db:     models.NewStore(c.DB),
+		cache:  cache.NewRedis(c.Redis),
+		stream: stream.NewKafkaPub(c.Kafka),
+		client: client.New(c.Api),
+	}
 	_ = l.loadOnline()
 	go l.onlineproc()
 	return l
 }
 
-func Create(c *conf.Config, db *store.Store, cache *cache.Cache, stream *stream.Stream, client *client.Client) *Logic {
+func NewAdmin(c1 *database.Conf, c2 *redis.Conf, c3 *conf.Kafka) (*Logic) {
 	return &Logic{
-		c:      c,
-		db:     db,
-		cache:  cache,
-		stream: stream,
-		client: client,
+		db:     models.NewStore(c1),
+		cache:  cache.NewRedis(c2),
+		stream: stream.NewKafkaPub(c3),
 	}
 }
 

@@ -2,27 +2,22 @@ package grpc
 
 import (
 	"context"
-	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
+	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
+	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
 	"net"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
 	// use gzip decoder
 	_ "google.golang.org/grpc/encoding/gzip"
 )
 
 // New logic grpc server
-func New(c *conf.RPCServer, l *logic.Logic) *grpc.Server {
-	keepParams := grpc.KeepaliveParams(keepalive.ServerParameters{
-		MaxConnectionIdle:     c.IdleTimeout,
-		MaxConnectionAgeGrace: c.ForceCloseWait,
-		Time:                  c.KeepAliveInterval,
-		Timeout:               c.KeepAliveTimeout,
-		MaxConnectionAge:      c.MaxLifeTime,
-	})
-	srv := grpc.NewServer(keepParams)
+func New(c *rpc.Conf, l *logic.Logic) *grpc.Server {
+	srv := rpc.New(c)
 	pb.RegisterLogicServer(srv, &server{l})
 	lis, err := net.Listen(c.Network, c.Addr)
 	if err != nil {
@@ -51,6 +46,9 @@ func (s *server) Ping(ctx context.Context, req *pb.PingReq) (*pb.PingReply, erro
 func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectReply, error) {
 	r, err := s.srv.Connect(req.Server, req.Token)
 	if err != nil {
+		if _, ok := err.(*errdefs.Error); !ok {
+			log.Error("grpc connect", zap.Error(err), zap.String("data", string(req.Token)))
+		}
 		return &pb.ConnectReply{}, err
 	}
 	return &pb.ConnectReply{
@@ -67,19 +65,27 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.DisconnectReply, error) {
 	has, err := s.srv.Disconnect(req.Uid, req.Key, req.Server)
 	if err != nil {
+		log.Error("grpc disconnect", zap.Error(err), zap.String("uid", req.Uid))
 		return &pb.DisconnectReply{}, err
+	} else {
+		log.Info("conn disconnect", zap.String("uid", req.Uid), zap.String("key", req.Key))
 	}
 	return &pb.DisconnectReply{Has: has}, nil
 }
 
 // user當前連線要切換房間
 func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.ChangeRoomReply, error) {
-	return &pb.ChangeRoomReply{}, s.srv.ChangeRoom(req.Uid, req.Key, req.RoomID)
+	err := s.srv.ChangeRoom(req.Uid, req.Key, req.RoomID)
+	if err != nil {
+		log.Error("grpc change room", zap.Error(err), zap.String("uid", req.Uid), zap.String("room_id", req.RoomID))
+	}
+	return &pb.ChangeRoomReply{}, err
 }
 
 // 重置user redis過期時間
 func (s *server) Heartbeat(ctx context.Context, req *pb.HeartbeatReq) (*pb.HeartbeatReply, error) {
 	if err := s.srv.Heartbeat(req.Uid, req.Key, req.RoomId, req.Name, req.Server); err != nil {
+		log.Error("grpc heart beat", zap.Error(err), zap.String("uid", req.Uid), zap.String("room_id", req.RoomId))
 		return &pb.HeartbeatReply{}, err
 	}
 	return &pb.HeartbeatReply{}, nil
@@ -89,6 +95,7 @@ func (s *server) Heartbeat(ctx context.Context, req *pb.HeartbeatReq) (*pb.Heart
 func (s *server) RenewOnline(ctx context.Context, req *pb.OnlineReq) (*pb.OnlineReply, error) {
 	allRoomCount, err := s.srv.RenewOnline(req.Server, req.RoomCount)
 	if err != nil {
+		log.Error("grpc renew online", zap.Error(err), zap.String("server", req.Server))
 		return &pb.OnlineReply{}, err
 	}
 	return &pb.OnlineReply{AllRoomCount: allRoomCount}, nil

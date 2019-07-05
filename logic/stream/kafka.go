@@ -2,7 +2,6 @@ package stream
 
 import (
 	"github.com/gogo/protobuf/proto"
-	log "github.com/golang/glog"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gopkg.in/Shopify/sarama.v1"
@@ -11,15 +10,15 @@ import (
 
 // 房間推送，以下為條件
 // 1. room id
-func (d *Stream) BroadcastRoomMsg(room string, msg []byte) (err error) {
+func (d *Stream) BroadcastRoomMsg(room string, msg []byte, model grpc.PushMsg_Type) error {
 	pushMsg := &grpc.PushMsg{
-		Type: grpc.PushMsg_ROOM,
+		Type: model,
 		Room: []string{room},
 		Msg:  msg,
 	}
 	b, err := proto.Marshal(pushMsg)
 	if err != nil {
-		return
+		return err
 	}
 	m := &sarama.ProducerMessage{
 		Key:   sarama.StringEncoder(room),
@@ -27,13 +26,13 @@ func (d *Stream) BroadcastRoomMsg(room string, msg []byte) (err error) {
 		Value: sarama.ByteEncoder(b),
 	}
 	if _, _, err = d.SendMessage(m); err != nil {
-		log.Errorf("PushMsg.send(broadcast_room pushMsg:%v) error(%v)", pushMsg, err)
+		return err
 	}
-	return
+	return nil
 }
 
 // 多房間推送，以下為條件
-func (d *Stream) BroadcastMsg(roomIds []string, msg []byte) (err error) {
+func (d *Stream) BroadcastMsg(roomIds []string, msg []byte) error {
 	pushMsg := &grpc.PushMsg{
 		Type: grpc.PushMsg_ROOM,
 		Msg:  msg,
@@ -41,7 +40,7 @@ func (d *Stream) BroadcastMsg(roomIds []string, msg []byte) (err error) {
 	}
 	b, err := proto.Marshal(pushMsg)
 	if err != nil {
-		return
+		return err
 	}
 	// TODO Key
 	m := &sarama.ProducerMessage{
@@ -50,7 +49,7 @@ func (d *Stream) BroadcastMsg(roomIds []string, msg []byte) (err error) {
 		Value: sarama.ByteEncoder(b),
 	}
 	if _, _, err = d.SendMessage(m); err != nil {
-		log.Errorf("PushMsg.send(broadcast pushMsg:%v) error(%v)", pushMsg, err)
+		return err
 	}
-	return
+	return nil
 }

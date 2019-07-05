@@ -19,7 +19,7 @@ func RunComet(path string) func() {
 
 	// server tcp 連線
 	srv := comet.NewServer(conf.Conf)
-	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Host, runtime.NumCPU()); err != nil {
+	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Addr, runtime.NumCPU()); err != nil {
 		panic(err)
 	}
 

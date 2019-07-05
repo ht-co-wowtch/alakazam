@@ -2,8 +2,7 @@ package cache
 
 import (
 	"encoding/json"
-	log "github.com/golang/glog"
-	"github.com/gomodule/redigo/redis"
+	"github.com/go-redis/redis"
 	"github.com/zhenjl/cityhash"
 	"strconv"
 )
@@ -18,7 +17,8 @@ type Online struct {
 // HSET Key hashKey jsonBody
 // Key用server name
 // hashKey則是將room name以City Hash32做hash後得出一個數字，以這個數字當hashKey
-func (d *Cache) AddServerOnline(server string, online *Online) (err error) {
+// TODO 需要在思考是否需要這樣的機制
+func (c *Cache) AddServerOnline(server string, online *Online) error {
 	roomsMap := map[uint32]map[string]int32{}
 	for room, count := range online.RoomCount {
 		rMap := roomsMap[cityhash.CityHash32([]byte(room), uint32(len(room)))%8]
@@ -31,49 +31,37 @@ func (d *Cache) AddServerOnline(server string, online *Online) (err error) {
 
 	key := keyServerOnline(server)
 	for hashKey, value := range roomsMap {
-		err = d.addServerOnline(key, strconv.FormatInt(int64(hashKey), 10), &Online{RoomCount: value, Server: online.Server, Updated: online.Updated})
+		err := c.addServerOnline(key, strconv.FormatInt(int64(hashKey), 10), &Online{RoomCount: value, Server: online.Server, Updated: online.Updated})
 		if err != nil {
-			return
+			return err
 		}
 	}
-	return
+	return nil
 }
 
 // 以HSET方式儲存房間人數
 // HSET Key hashKey jsonBody
 // Key用server name
-func (d *Cache) addServerOnline(key string, hashKey string, online *Online) (err error) {
-	conn := d.Get()
-	defer conn.Close()
-	b, _ := json.Marshal(online)
-	if err = conn.Send("HSET", key, hashKey, b); err != nil {
-		log.Errorf("conn.Send(SET %s,%s) error(%v)", key, hashKey, err)
-		return
+func (c *Cache) addServerOnline(key string, hashKey string, online *Online) error {
+	b, err := json.Marshal(online)
+	if err != nil {
+		return err
 	}
-	if err = conn.Send("EXPIRE", key, d.expire); err != nil {
-		log.Errorf("conn.Send(EXPIRE %s) error(%v)", key, err)
-		return
-	}
-	if err = conn.Flush(); err != nil {
-		log.Errorf("conn.Flush() error(%v)", err)
-		return
-	}
-	for i := 0; i < 2; i++ {
-		if _, err = conn.Receive(); err != nil {
-			log.Errorf("conn.Receive() error(%v)", err)
-			return
-		}
-	}
-	return
+	tx := c.c.Pipeline()
+	tx.HSet(key, hashKey, b)
+	tx.Expire(key, c.expire)
+	_, err = tx.Exec()
+	return err
 }
 
 // 根據server name取線上各房間總人數
-func (d *Cache) ServerOnline(server string) (online *Online, err error) {
-	online = &Online{RoomCount: map[string]int32{}}
+// TODO 需要在思考需不需要比對Updated
+func (c *Cache) ServerOnline(server string) (*Online, error) {
+	online := &Online{RoomCount: map[string]int32{}}
 	// server name
 	key := keyServerOnline(server)
 	for i := 0; i < 8; i++ {
-		ol, err := d.serverOnline(key, strconv.FormatInt(int64(i), 10))
+		ol, err := c.serverOnline(key, strconv.FormatInt(int64(i), 10))
 		if err == nil && ol != nil {
 			online.Server = ol.Server
 			if ol.Updated > online.Updated {
@@ -84,13 +72,15 @@ func (d *Cache) ServerOnline(server string) (online *Online, err error) {
 			}
 		}
 	}
-	return
+	return online, nil
 }
 
 // 根據server name與hashKey取該server name內線上各房間總人數
-func (d *Cache) serverOnline(key string, hashKey string) (online *Online, err error) {
-	conn := d.Get()
-	defer conn.Close()
+func (c *Cache) serverOnline(key string, hashKey string) (*Online, error) {
+	b, err := c.c.HGet(key, hashKey).Bytes()
+	if err != nil && err != redis.Nil {
+		return nil, err
+	}
 	// b是一個json
 	// {
 	// 		"server":"ne0002de-MacBook-Pro.local",
@@ -101,28 +91,14 @@ func (d *Cache) serverOnline(key string, hashKey string) (online *Online, err er
 	// }"
 	// 1000是房間id，1是人數
 	// updated是資料更新時間
-	b, err := redis.Bytes(conn.Do("HGET", key, hashKey))
-	if err != nil {
-		if err != redis.ErrNil {
-			log.Errorf("conn.Do(HGET %s %s) error(%v)", key, hashKey, err)
-		}
-		return
-	}
-	online = new(Online)
+	online := new(Online)
 	if err = json.Unmarshal(b, online); err != nil {
-		log.Errorf("serverOnline json.Unmarshal(%s) error(%v)", b, err)
-		return
+		return nil, err
 	}
-	return
+	return online, nil
 }
 
 // 根據server name 刪除線上各房間總人數
-func (d *Cache) DelServerOnline(server string) (err error) {
-	conn := d.Get()
-	defer conn.Close()
-	key := keyServerOnline(server)
-	if _, err = conn.Do("DEL", key); err != nil {
-		log.Errorf("conn.Do(DEL %s) error(%v)", key, err)
-	}
-	return
+func (c *Cache) DelServerOnline(server string) error {
+	return c.c.Del(keyServerOnline(server)).Err()
 }

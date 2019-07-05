@@ -5,25 +5,17 @@ import (
 	"net"
 	"time"
 
-	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/comet"
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/comet/errors"
+	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
 )
 
 // New comet grpc server.
-func New(c *conf.RPCServer, s *comet.Server) *grpc.Server {
-	keepParams := grpc.KeepaliveParams(keepalive.ServerParameters{
-		MaxConnectionIdle:     c.IdleTimeout,
-		MaxConnectionAgeGrace: c.ForceCloseWait,
-		Time:                  c.KeepAliveInterval,
-		Timeout:               c.KeepAliveTimeout,
-		MaxConnectionAge:      c.MaxLifeTime,
-	})
-	srv := grpc.NewServer(keepParams)
+func New(c *rpc.Conf, s *comet.Server) *grpc.Server {
+	srv := rpc.New(c)
 	pb.RegisterCometServer(srv, &server{s})
 	lis, err := net.Listen(c.Network, c.Addr)
 	if err != nil {

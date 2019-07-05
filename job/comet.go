@@ -3,65 +3,22 @@ package job
 import (
 	"context"
 	"fmt"
+	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
+	comet "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/micro/grpc"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 	"sync/atomic"
 	"time"
-
-	log "github.com/golang/glog"
-	comet "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
-)
-
-var (
-	// 心跳包的頻率
-	grpcKeepAliveTime = time.Duration(10) * time.Second
-
-	// 心跳回覆如果超過此時間則close連線
-	grpcKeepAliveTimeout = time.Duration(3) * time.Second
-
-	// 連線失敗後等待多久才又開始嘗試練線
-	grpcBackoffMaxDelay = time.Duration(3) * time.Second
-
-	// grpc htt2 相關參數
-	grpcMaxSendMsgSize = 1 << 24
-	grpcMaxCallMsgSize = 1 << 24
-)
-
-const (
-	// grpc options
-	grpcInitialWindowSize     = 1 << 24
-	grpcInitialConnWindowSize = 1 << 24
 )
 
 // 與Comet server 建立grpc client
-func newCometClient(c *conf.RPCClient) (comet.CometClient, error) {
-	// grpc 連線的timeout
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.Timeout))
-	defer cancel()
-	conn, err := grpc.DialContext(ctx, c.Addr,
-		[]grpc.DialOption{
-			// 與server溝通不用檢查憑證之類
-			grpc.WithInsecure(),
-			// Http2相關參數設定
-			grpc.WithInitialWindowSize(grpcInitialWindowSize),
-			grpc.WithInitialConnWindowSize(grpcInitialConnWindowSize),
-			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(grpcMaxCallMsgSize)),
-			grpc.WithDefaultCallOptions(grpc.MaxCallSendMsgSize(grpcMaxSendMsgSize)),
-			// grpc嘗試連線時間
-			grpc.WithBackoffMaxDelay(grpcBackoffMaxDelay),
-			// 心跳機制參數
-			grpc.WithKeepaliveParams(keepalive.ClientParameters{
-				Time:                grpcKeepAliveTime,
-				Timeout:             grpcKeepAliveTimeout,
-				PermitWithoutStream: true,
-			}),
-		}...,
-	)
+func newCometClient(c *grpc.Conf) (comet.CometClient, error) {
+	conn, err := grpc.NewClient(c)
 	if err != nil {
 		return nil, err
 	}
-	return comet.NewCometClient(conn), err
+	return comet.NewCometClient(conn), nil
 }
 
 // Comet is a comet.
@@ -144,7 +101,7 @@ func (c *Comet) process(roomChan chan *comet.BroadcastRoomReq, broadcastChan cha
 				Speed: broadcastArg.Speed,
 			})
 			if err != nil {
-				log.Errorf("c.client.Broadcast arg: %v error(%v)", broadcastArg, err)
+				log.Error("grpc client push broadcast", zap.Error(err), zap.Any("arg", broadcastArg))
 			}
 		// 單一房間推送
 		case roomArg := <-roomChan:
@@ -153,7 +110,7 @@ func (c *Comet) process(roomChan chan *comet.BroadcastRoomReq, broadcastChan cha
 				Proto:  roomArg.Proto,
 			})
 			if err != nil {
-				log.Errorf("c.client.BroadcastRoom arg: %v error(%v)", roomArg, err)
+				log.Error("grpc client push room", zap.Error(err), zap.Any("arg", roomArg))
 			}
 		case <-c.ctx.Done():
 			return
@@ -184,5 +141,5 @@ func (c *Comet) Close() (err error) {
 		err = fmt.Errorf("close comet(room:%d broadcast:%d) timeout", len(c.roomChan), len(c.broadcastChan))
 	}
 	c.cancel()
-	return
+	return err
 }

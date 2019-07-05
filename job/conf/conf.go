@@ -1,10 +1,9 @@
 package conf
 
 import (
-	"bytes"
-	"fmt"
-	"github.com/spf13/viper"
-	"io/ioutil"
+	"gitlab.com/jetfueltw/cpw/micro/config"
+	"gitlab.com/jetfueltw/cpw/micro/grpc"
+	"gitlab.com/jetfueltw/cpw/micro/log"
 	"time"
 )
 
@@ -35,15 +34,6 @@ type Room struct {
 	Idle time.Duration
 }
 
-// grpc client config
-type RPCClient struct {
-	// grpc client host
-	Addr string
-
-	// client連線timeout
-	Timeout time.Duration
-}
-
 // Comet is comet config.
 type Comet struct {
 	// 處理訊息推送goroutine的chan Buffer多少
@@ -52,7 +42,7 @@ type Comet struct {
 	// 開多個goroutine併發處理訊息做send grpc client
 	RoutineSize int
 
-	RPCClient *RPCClient
+	RPCClient *grpc.Conf
 }
 
 // kafka config
@@ -62,41 +52,40 @@ type Kafka struct {
 	Brokers []string
 }
 
-func Read(path string) (err error) {
-	viper.SetConfigType("yaml")
-	b, err := ioutil.ReadFile(path)
+func Read(path string) error {
+	v, err := config.Read(path)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	if err := viper.ReadConfig(bytes.NewBuffer(b)); err != nil {
-		panic(err)
-	} else {
-		fmt.Println("Using config file:", path)
-	}
-	Conf = load()
-	return
-}
 
-// 載入config
-func load() *Config {
-	return &Config{
-		Kafka: &Kafka{
-			Topic:   viper.GetString("kafka.topic"),
-			Group:   viper.GetString("kafka.group"),
-			Brokers: viper.GetStringSlice("kafka.brokers"),
-		},
-		Comet: &Comet{
-			RoutineChan: viper.GetInt("comet.routineChan"),
-			RoutineSize: viper.GetInt("comet.routineSize"),
-			RPCClient: &RPCClient{
-				Addr:    viper.GetString("rpcClient.host"),
-				Timeout: time.Duration(viper.GetInt("rpcClient.timeout")) * time.Second,
-			},
-		},
-		Room: &Room{
-			Batch:  20,
-			Signal: time.Second,
-			Idle:   time.Duration(viper.GetInt("room.idle")) * time.Second,
-		},
+	Conf = new(Config)
+	client, _ := grpc.ReadViper(v.Sub("grpcClient"))
+	co := v.Sub("comet")
+	Conf.Comet = &Comet{
+		RoutineChan: co.GetInt("routineChan"),
+		RoutineSize: co.GetInt("routineSize"),
+		RPCClient:   client,
 	}
+
+	k := v.Sub("kafka")
+	Conf.Kafka = &Kafka{
+		Topic:   k.GetString("topic"),
+		Group:   k.GetString("group"),
+		Brokers: k.GetStringSlice("brokers"),
+	}
+
+	idle, err := time.ParseDuration(v.GetString("room.idle"))
+	if err != nil {
+		return err
+	}
+	Conf.Room = &Room{
+		Batch:  20,
+		Signal: time.Second,
+		Idle:   idle,
+	}
+	l, err := log.ReadViper(v.Sub("log"))
+	if err != nil {
+		return err
+	}
+	return log.Start(l)
 }

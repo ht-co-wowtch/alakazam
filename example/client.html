@@ -117,9 +117,84 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-5">
+            <div class="panel-footer">
+                <div class="input-group">
+                    <input id="rid" type="text" class="form-control input-sm"
+                           placeholder="房間id"/>
+                    <input id="token" type="text" class="form-control input-sm"
+                           placeholder="認證token"/>
+                    <span class="input-group-btn">
+                            <button class="btn btn-warning btn-sm" id="btn-chat" onclick="login()">
+                                進入聊天室</button>
+                        </span>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="input-group">
+                    <input type="radio" name="red_type" value="random">拼手氣<br>
+                    <input type="radio" name="red_type" value="equally" checked>普通<br>
+                    <input id="red_amount" type="number" class="form-control input-sm"
+                           placeholder="紅包金額，最低1元，單包 or 總金額 看選擇的種類"/>
+                    <input id="red_count" type="number" class="form-control input-sm"
+                           placeholder="紅包數量"/>
+                    <input id="red_message" type="text" class="form-control input-sm"
+                           placeholder="紅包訊息"/>
+                    <span class="input-group-btn">
+                            <button class="btn btn-warning btn-sm" id="btn-chat" onclick="sendRed()">
+                                發紅包</button>
+                        </span>
+                </div>
+            </div>
+        </div>
     </div>
     <input type="hidden" id="uid" name="uid" value="">
     <input type="hidden" id="key" name="key" value="">
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">搶到紅包</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="modal-name">xxx的紅包</p>
+                    <p id="modal-text">紅包訊息</p>
+                    <p id="modal-money">獲得多少錢</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="modal-id" class="btn btn-primary" data-id="">查取领取详细</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModaTitle">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div id="red-select" class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
@@ -141,134 +216,140 @@
         this.createConnect(MAX_CONNECT_TIMES, DELAY);
     }
 
-    var appendMsg = function (text) {
+    var appendMsg = function (text, op) {
         obj = JSON.parse(text);
-        document.getElementById("chat").innerHTML += "<li class=\"left clearfix\"><span class=\"chat-img pull-left\">\n" +
-            "                            <img src=\"http://placehold.it/50/55C1E7/fff&text=U\" alt=\"User Avatar\" class=\"img-circle\"/>\n" +
-            "                        </span>\n" +
-            "                                <div class=\"chat-body clearfix\">\n" +
-            "                                    <div class=\"header\">\n" + "                                    <small class=\" text-muted\"><span class=\"\"></span></small>\n" +
-            "                                        <strong class=\"primary-font\">" + obj.name + "</strong>\n" +
-            "                                    </div>\n" +
-            "                                    <p>\n" +
-            obj.message +
-            "                                    </p>\n" +
-            "                                </div>\n" +
-            "                            </li>";
+        if (op == 6) {
+            document.getElementById("chat").innerHTML += "<li class=\"left clearfix\"><span class=\"chat-img pull-left\">\n" +
+                "                            <img src=\"http://placehold.it/50/55C1E7/fff&text=U\" alt=\"User Avatar\" class=\"img-circle\"/>\n" +
+                "                        </span>\n" +
+                "                                <div class=\"chat-body clearfix\">\n" +
+                "                                    <div class=\"header\">\n" + "                                    <small class=\" text-muted\"><span class=\"\"></span></small>\n" +
+                "                                        <strong class=\"primary-font\">" + obj.name + "</strong>\n" +
+                "                                    </div>\n" +
+                "                                    <p>\n" +
+                obj.message +
+                "                                    </p>\n" +
+                "                                </div>\n" +
+                "                            </li>";
+        }
+
+        if (op == 9) {
+            document.getElementById("chat").innerHTML += "<li class=\"left clearfix\ red-message \" data-token=\"" +
+                obj.token +
+                "\"><span class=\"chat-img pull-left\">\n" +
+                "                            <img src=\"./redenvelope.png\" alt=\"User Avatar\" class=\"img-circle\"/>\n" +
+                "                        </span>\n" +
+                "                                <div class=\"chat-body clearfix\">\n" +
+                "                                    <div class=\"header\">\n" + "                                    <small class=\" text-muted\"><span class=\"\"></span></small>\n" +
+                "                                        <strong class=\"primary-font\">" + obj.name + "</strong>\n" +
+                "                                    </div>\n" +
+                "                                    <p>\n" +
+                obj.message +
+                "                                    </p>\n" +
+                "                                </div>\n" +
+
+                "                            </li>";
+        }
+
     }
 
-    Client.prototype.createConnect = function (max, delay) {
-        var self = this;
-        if (max === 0) {
-            return;
-        }
-        connect();
-
+    function login() {
         var heartbeatInterval;
+        ws = new WebSocket('ws://' + host + ':3102/sub');
+        ws.binaryType = 'arraybuffer';
+        ws.onopen = function () {
+            auth();
+        }
 
-        function connect() {
-            ws = new WebSocket('ws://' + host + ':3102/sub');
-            ws.binaryType = 'arraybuffer';
-            ws.onopen = function () {
-                auth();
-            }
+        ws.onmessage = function (evt) {
+            var data = evt.data;
+            var dataView = new DataView(data, 0);
+            var packetLen = dataView.getInt32(packetOffset);
+            var headerLen = dataView.getInt16(headerOffset);
+            var op = dataView.getInt32(opOffset);
+            console.log("receiveHeader: packetLen=" + packetLen, "headerLen=" + headerLen, "op=" + op);
 
-            ws.onmessage = function (evt) {
-                var data = evt.data;
-                var dataView = new DataView(data, 0);
-                var packetLen = dataView.getInt32(packetOffset);
-                var headerLen = dataView.getInt16(headerOffset);
-                var op = dataView.getInt32(opOffset);
-                console.log("receiveHeader: packetLen=" + packetLen, "headerLen=" + headerLen, "op=" + op);
+            switch (op) {
+                case 2:
+                    var json = textDecoder.decode(data.slice(headerLen, packetLen));
+                    var msgBody = JSON.parse(json)
 
-                switch (op) {
-                    case 2:
-                        var json = textDecoder.decode(data.slice(headerLen, packetLen));
-                        var msgBody = JSON.parse(json)
+                    document.getElementById("uid").value = msgBody.uid
+                    document.getElementById("key").value = msgBody.key
 
-                        document.getElementById("uid").value = msgBody.uid
-                        document.getElementById("key").value = msgBody.key
+                    document.getElementById("status").innerHTML = "<color style='color:green'>ok<color>";
+                    document.getElementById("room_id").innerHTML = msgBody.room_id;
+                    console.log(msgBody)
+                    console.log("receive: auth reply");
 
-                        document.getElementById("status").innerHTML = "<color style='color:green'>ok<color>";
-                        document.getElementById("room_id").innerHTML = msgBody.room_id;
-                        console.log("receive: auth reply");
+                    heartbeat();
+                    heartbeatInterval = setInterval(heartbeat, 30 * 1000);
+                    break;
+                case 4:
+                    document.getElementById("count").innerHTML = "<color style='color:green'>" + dataView.getInt32(headerLen) + "<color>"
+                    console.log("receive: heartbeat");
+                    break;
+                case 5:
+                    for (var offset = rawHeaderLen; offset < data.byteLength; offset += packetLen) {
+                        var packetLen = dataView.getInt32(offset);
+                        var headerLen = dataView.getInt16(offset + headerOffset);
+                        var op = dataView.getInt32(offset + opOffset);
 
-                        heartbeat();
-                        heartbeatInterval = setInterval(heartbeat, 30 * 1000);
-                        break;
-                    case 4:
-                        document.getElementById("count").innerHTML = "<color style='color:green'>" + dataView.getInt32(headerLen) + "<color>"
-                        console.log("receive: heartbeat");
-                        break;
-                    case 5:
-                        for (var offset = rawHeaderLen; offset < data.byteLength; offset += packetLen) {
-                            var packetLen = dataView.getInt32(offset);
-                            var headerLen = dataView.getInt16(offset + headerOffset);
-                            var op = dataView.getInt32(offset + opOffset);
-
-                            if (op == 6) {
-                                var msgBody = textDecoder.decode(data.slice(offset + headerLen, offset + packetLen));
-
-                                messageReceived(msgBody);
-                                appendMsg(msgBody);
-                            }
+                        var msgBody = textDecoder.decode(data.slice(offset + headerLen, offset + packetLen));
+                        if (op == 6) {
+                            messageReceived(msgBody);
+                            appendMsg(msgBody, 6);
                         }
-                        break;
-                    case 8:
-                        var roomId = textDecoder.decode(data.slice(headerLen, packetLen));
-                        document.getElementById("room_id").innerHTML = roomId
-                    default:
-                        break
-                }
-            }
 
-            ws.onclose = function () {
-                if (heartbeatInterval) clearInterval(heartbeatInterval);
-                setTimeout(reConnect, delay);
+                        if (op == 9) {
+                            messageReceived(msgBody);
+                            appendMsg(msgBody, 9);
+                        }
+                    }
+                    break;
+                case 8:
+                    var json = textDecoder.decode(data.slice(headerLen, packetLen));
+                    var msgBody = JSON.parse(json)
 
-                document.getElementById("status").innerHTML = "<color style='color:red'>failed<color>";
-            }
-
-            function heartbeat() {
-                var headerBuf = new ArrayBuffer(rawHeaderLen);
-                var headerView = new DataView(headerBuf, 0);
-                headerView.setInt32(packetOffset, rawHeaderLen);
-                headerView.setInt16(headerOffset, rawHeaderLen);
-                headerView.setInt32(opOffset, 3);
-                ws.send(headerBuf);
-                console.log("send: heartbeat");
-            }
-
-            function auth() {
-                // 請先拿到ticket 文件:https://gitlab.com/jetfueltw/cpw/alakazam/tree/develop#room
-                var token = '{"ticket":"ec2fa7acc9d443489531b156077c09a1", "room_id":"6318a4f786e64c6487a30687e9df3a13"}'
-                var headerBuf = new ArrayBuffer(rawHeaderLen);
-                var headerView = new DataView(headerBuf, 0);
-                var bodyBuf = textEncoder.encode(token);
-                headerView.setInt32(packetOffset, rawHeaderLen + bodyBuf.byteLength);
-                headerView.setInt16(headerOffset, rawHeaderLen);
-                headerView.setInt32(opOffset, 1);
-                console.log(token)
-                ws.send(mergeArrayBuffer(headerBuf, bodyBuf));
-            }
-
-            function messageReceived(body) {
-                var notify = self.options.notify;
-                if (notify) notify(body);
-                console.log("messageReceived:", "body=" + body);
+                    document.getElementById("room_id").innerHTML = msgBody.room_id
+                default:
+                    break
             }
         }
 
-        function reConnect() {
-            self.createConnect(--max, delay * 2);
+        ws.onclose = function () {
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            setTimeout(reConnect, delay);
+
+            document.getElementById("status").innerHTML = "<color style='color:red'>failed<color>";
+        }
+
+        function heartbeat() {
+            var headerBuf = new ArrayBuffer(rawHeaderLen);
+            var headerView = new DataView(headerBuf, 0);
+            headerView.setInt32(packetOffset, rawHeaderLen);
+            headerView.setInt16(headerOffset, rawHeaderLen);
+            headerView.setInt32(opOffset, 3);
+            ws.send(headerBuf);
+            console.log("send: heartbeat");
+        }
+
+        function auth() {
+
+            var token = '{"token":"' + document.getElementById("token").value + '", "room_id":"' + document.getElementById("rid").value + '"}'
+            var headerBuf = new ArrayBuffer(rawHeaderLen);
+            var headerView = new DataView(headerBuf, 0);
+            var bodyBuf = textEncoder.encode(token);
+            headerView.setInt32(packetOffset, rawHeaderLen + bodyBuf.byteLength);
+            headerView.setInt16(headerOffset, rawHeaderLen);
+            headerView.setInt32(opOffset, 1);
+            ws.send(mergeArrayBuffer(headerBuf, bodyBuf));
+        }
+
+        function messageReceived(body) {
+            console.log("messageReceived:", "body=" + body);
         }
     }
-
-    var client = new Client({
-        notify: function (data) {
-            console.log(data);
-        }
-    });
 
     function send() {
         $.ajax({
@@ -280,6 +361,37 @@
                 key: document.getElementById("key").value,
                 message: document.getElementById("btn-input").value
             }),
+            headers: {
+                "Authorization": "Bearer " + document.getElementById("token").value,
+            },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+            },
+            error: function (data) {
+                alert(data.message)
+            }
+        });
+    }
+
+    function sendRed() {
+        var amount = new Number(document.getElementById("red_amount").value);
+        var count = new Number(document.getElementById("red_count").value)
+        $.ajax({
+            type: "post",
+            url: 'http://' + host + ':3111' + '/red-envelope',
+            async: false,
+            data: JSON.stringify({
+                uid: document.getElementById("uid").value,
+                key: document.getElementById("key").value,
+                amount: amount,
+                count: count,
+                message: document.getElementById("red_message").value,
+                type: $("input[name=red_type]:checked").val()
+            }),
+            headers: {
+                "Authorization": "Bearer " + document.getElementById("token").value,
+            },
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function (data) {
@@ -293,7 +405,8 @@
     function room() {
         var headerBuf = new ArrayBuffer(rawHeaderLen);
         var headerView = new DataView(headerBuf, 0);
-        var bodyBuf = textEncoder.encode(document.getElementById("btn-room-id").value);
+        var room = '{"room_id":"' + document.getElementById("btn-room-id").value + '"}'
+        var bodyBuf = textEncoder.encode(room);
         headerView.setInt32(packetOffset, rawHeaderLen + bodyBuf.byteLength);
         headerView.setInt16(headerOffset, rawHeaderLen);
         headerView.setInt32(opOffset, 7);
@@ -308,6 +421,70 @@
         res.set(u82, ab1.byteLength);
         return res.buffer;
     }
+
+    $(document).on('click', '.red-message', function () {
+        $.ajax({
+            type: "put",
+            url: 'http://' + host + ':3111' + '/red-envelope',
+            async: false,
+            data: JSON.stringify({
+                uid: document.getElementById("uid").value,
+                key: document.getElementById("key").value,
+                token: $(this).data("token")
+            }),
+            headers: {
+                "Authorization": "Bearer " + document.getElementById("token").value,
+            },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                console.log(data)
+                $('#exampleModalLongTitle').text(data.status_message)
+                $('#modal-name').text(data.name + "的紅包")
+                $('#modal-text').text(data.message)
+                $('#modal-money').text("獲得 $" + data.amount)
+                $('#modal-id').data("id", data.id)
+                $('#exampleModalCenter').modal('show');
+            },
+            error: function (data) {
+                alert(data.message)
+            }
+        });
+    });
+
+    $(document).on('click', '#modal-id', function () {
+        $.ajax({
+            type: "get",
+            url: 'http://' + host + ':3111' + '/red-envelope/' + $(this).data("id"),
+            async: false,
+            headers: {
+                "Authorization": "Bearer " + document.getElementById("token").value,
+            },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                $('#exampleModaTitle').text(data.name + "的紅包")
+                document.getElementById("red-select").innerHTML =
+                    "                    <p>" + data.message + "</p>\n" +
+                    "                    <p>獲得 $" + data.amount + "</p>\n" +
+                    "                    <p>已領取" + data.take_count + "/" + data.count + "個紅包, " + data.take_amount + "/" + data.total_amount + "額度</p> <br>"
+                var mes = ""
+                for (var k in data.members) {
+                    mes += "<div>\n" +
+                        "    <p>" + data.members[k].name + "</p>\n" +
+                        "        <p>" + data.members[k].take_at + "</p>\n" +
+                        "        <p>" + data.members[k].amount + " 額度</p>\n" +
+                        "        </div>\n" +
+                        "        <br>"
+                }
+                document.getElementById("red-select").innerHTML = mes
+                $('#exampleModalLong').modal('show');
+            },
+            error: function (data) {
+                alert(data.message)
+            }
+        });
+    });
 </script>
 <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </body>

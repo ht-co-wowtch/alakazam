@@ -3,3 +3,12 @@
 \.DS_Store
 \.vscode
 \.vsext
+
+\coverage.html
+\coverage.out
+
+\comet.yml
+\job.yml
+\logic.yml
+\admin.yml
+

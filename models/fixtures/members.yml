@@ -1,0 +1,15 @@
+- id: 1
+  uid: 1d7eff72ab49470882833853875340c1
+  name: testA
+  avatar: /
+  permission: 31
+  is_blockade: 0
+  create_at: 2019-06-26 13:52:32
+
+- id: 2
+  uid: 82ea16cd2d6a49d887440066ef739669
+  name: testB
+  avatar: /
+  permission: 31
+  is_blockade: 1
+  create_at: 2019-06-26 13:52:32

@@ -3,17 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/grpc"
+	"gitlab.com/jetfueltw/cpw/micro/log"
 	"math/rand"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
 	"time"
-
-	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/comet"
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/grpc"
 )
 
 var (
@@ -27,19 +26,21 @@ func main() {
 	if err := conf.Read(confPath); err != nil {
 		panic(err)
 	}
+	fmt.Println("Using config file:", confPath)
+
 	rand.Seed(time.Now().UTC().UnixNano())
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// server tcp 連線
 	srv := comet.NewServer(conf.Conf)
-	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Host, runtime.NumCPU()); err != nil {
+	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Addr, runtime.NumCPU()); err != nil {
 		panic(err)
 	}
 
 	// 啟動grpc server
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
 
-	fmt.Printf("comet start success | websocket: %s | RpcServer: %s\n", conf.Conf.Websocket.Host, conf.Conf.RPCServer.Addr)
+	fmt.Printf("comet start success | websocket: %s | RpcServer: %s\n", conf.Conf.Websocket.Addr, conf.Conf.RPCServer.Addr)
 
 	// 接收到close signal的處理
 	c := make(chan os.Signal, 1)
@@ -51,7 +52,7 @@ func main() {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			rpcSrv.GracefulStop()
 			srv.Close()
-			log.Flush()
+			log.Sync()
 			return
 		case syscall.SIGHUP:
 		default:

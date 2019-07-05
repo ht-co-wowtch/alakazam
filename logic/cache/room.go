@@ -1,8 +1,10 @@
 package cache
 
 import (
-	log "github.com/golang/glog"
-	"github.com/gomodule/redigo/redis"
+	"fmt"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"strconv"
+	"time"
 )
 
 const (
@@ -16,63 +18,46 @@ const (
 )
 
 var (
-	roomExpired = 60 * 60
+	roomExpired = time.Hour
 )
 
-func (c *Cache) GetRoom(id string) (i int, err error) {
-	conn := c.Get()
-	defer conn.Close()
-	if err = conn.Send("HGET", keyRoom(id), hashPermissionKey); err != nil {
-		log.Errorf("GetRoom conn.Send(HGET %s) error(%v)", id, err)
-		return 0, err
-	}
-	if err = conn.Flush(); err != nil {
-		log.Errorf("GetRoom conn.Flush() error(%v)", err)
-		return 0, err
-	}
-	return redis.Int(conn.Receive())
+func (c *Cache) GetRoom(id string) (int, error) {
+	return c.c.HGet(keyRoom(id), hashPermissionKey).Int()
 }
 
-func (c *Cache) GetRoomByMoney(id string) (day, dml, amount int, err error) {
-	conn := c.Get()
-	defer conn.Close()
-	if err = conn.Send("HMGET", keyRoom(id), hashLimitDayKey, hashLimitDmlKey, hashLimitAmountKey); err != nil {
-		log.Errorf("GetRoomByMoney conn.Send(HMGET %s) error(%v)", id, err)
-		return 0, 0, 0, err
-	}
-	if err = conn.Flush(); err != nil {
-		log.Errorf("GetRoomByMoney conn.Flush() error(%v)", err)
-		return 0, 0, 0, err
-	}
-
-	i, err := redis.Ints(conn.Receive())
-
+func (c *Cache) GetRoomByMoney(id string) (day, dml, deposit int, err error) {
+	r, err := c.c.HMGet(keyRoom(id), hashLimitDayKey, hashLimitDmlKey, hashLimitAmountKey).Result()
 	if err != nil {
 		return 0, 0, 0, err
 	}
-	return i[0], i[1], i[2], err
-}
-
-func (c *Cache) SetRoom(id string, permission, day, dml, amount int) error {
-	conn := c.Get()
-	defer conn.Close()
-	if err := conn.Send("HMSET", keyRoom(id), hashPermissionKey, permission, hashLimitDayKey, day, hashLimitDmlKey, dml, hashLimitAmountKey, amount); err != nil {
-		log.Errorf("SetRoom conn.Send(HMSET key:%s permission:%d day:%d amount:%d dml:%d) error(%v)", id, permission, day, amount, dml, err)
-		return err
-	}
-	if err := conn.Send("EXPIRE", keyRoom(id), roomExpired); err != nil {
-		log.Errorf("SetRoom conn.Send(EXPIRE %s) error(%v)", id, err)
-		return err
-	}
-	if err := conn.Flush(); err != nil {
-		log.Errorf("SetRoom conn.Flush() error(%v)", err)
-		return err
-	}
-	for i := 0; i < 2; i++ {
-		if _, err := conn.Receive(); err != nil {
-			log.Errorf("SetRoom conn.Receive() error(%v)", err)
-			return err
+	for _, v := range r {
+		if v == nil {
+			return 0, 0, 0, fmt.Errorf("room: %s limit data is nil", id)
 		}
 	}
-	return nil
+	if day, err = strconv.Atoi(r[0].(string)); err != nil {
+		return 0, 0, 0, fmt.Errorf("cache day limit: %s error(%v)", r[0], err)
+	}
+	if dml, err = strconv.Atoi(r[1].(string)); err != nil {
+		return 0, 0, 0, fmt.Errorf("cache dml limit: %s error(%v)", r[1], err)
+	}
+	if deposit, err = strconv.Atoi(r[2].(string)); err != nil {
+		return 0, 0, 0, fmt.Errorf("cache deposit limit: %s error(%v)", r[2], err)
+	}
+	return day, dml, deposit, nil
+}
+
+func (c *Cache) SetRoom(room models.Room) error {
+	f := map[string]interface{}{
+		hashPermissionKey:  room.Status(),
+		hashLimitDayKey:    room.DayLimit,
+		hashLimitDmlKey:    room.DmlLimit,
+		hashLimitAmountKey: room.DepositLimit,
+	}
+	key := keyRoom(room.Id)
+	tx := c.c.Pipeline()
+	tx.HMSet(key, f)
+	tx.Expire(key, roomExpired)
+	_, err := tx.Exec()
+	return err
 }

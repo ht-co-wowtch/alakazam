@@ -2,9 +2,9 @@ package logic
 
 import (
 	"encoding/json"
-	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
+	"github.com/gin-gonic/gin"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
+	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"time"
 )
 
@@ -16,61 +16,79 @@ type Message struct {
 	Time    string `json:"time"`
 }
 
-type PushRoomForm struct {
-	// user uid
-	Uid string `json:"uid" binding:"required"`
-
-	// user connection key
-	Key string `json:"key" binding:"required"`
+type PushRoom struct {
+	User
 
 	// user push message
-	Message string `json:"message" binding:"required"`
+	Message string `json:"message" binding:"required,max=100"`
+}
+
+func (l *Logic) Auth(u *User) error {
+	if err := l.auth(u); err != nil {
+		return err
+	}
+	if err := l.authRoom(u); err != nil {
+		return err
+	}
+	return nil
 }
 
 // 單一房間推送
-func (l *Logic) PushRoom(p *PushRoomForm) error {
-	rId, name, w, err := l.cache.GetUser(p.Uid, p.Key)
-	if err != nil {
-		return errors.FailureError
+func (l *Logic) PushRoom(c *gin.Context, p *PushRoom) error {
+	if err := l.Auth(&p.User); err != nil {
+		return err
 	}
-
-	if name == "" {
-		return errors.LoginError
-	}
-
-	if rId == "" {
-		return errors.RoomError
-	}
-
-	roomStatus := l.GetRoomPermission(rId)
-
-	if permission.IsBanned(roomStatus) {
-		return errors.RoomBannedError
-	}
-
-	if l.isUserBanned(p.Uid, w) {
-		return errors.BannedError
-	}
-
-	if err := l.isMessage(p.Uid, rId, roomStatus); err != nil {
+	if err := l.isMessage(p.RoomId, p.roomStatus, p.Uid, c.GetString("token")); err != nil {
 		return err
 	}
 
 	msg, err := json.Marshal(Message{
 		Uid:     p.Uid,
-		Name:    name,
+		Name:    p.name,
 		Avatar:  "",
 		Message: p.Message,
 		Time:    time.Now().Format("15:04:05"),
 	})
-
 	if err != nil {
-		log.Errorf("pushRoom json.Marshal(uid: %s ) error(%v)", p.Uid, err)
-		return errors.FailureError
+		return err
 	}
+	if err := l.stream.BroadcastRoomMsg(p.RoomId, msg, grpc.PushMsg_ROOM); err != nil {
+		return err
+	}
+	return nil
+}
 
-	if err := l.stream.BroadcastRoomMsg(rId, msg); err != nil {
-		return errors.FailureError
+type Money struct {
+	Message
+
+	// 紅包id
+	Id string `json:"id"`
+
+	// 紅包token
+	Token string `json:"token"`
+
+	// 紅包過期時間
+	Expired int64 `json:"expired"`
+}
+
+func (l *Logic) PushRedEnvelope(give client.RedEnvelopeReply, user User) error {
+	msg, err := json.Marshal(Money{
+		Message: Message{
+			Uid:     user.Uid,
+			Name:    user.name,
+			Avatar:  "",
+			Message: give.Message,
+			Time:    time.Now().Format("15:04:05"),
+		},
+		Id:      give.Uid,
+		Token:   give.Token,
+		Expired: give.ExpireAt.Unix(),
+	})
+	if err != nil {
+		return err
+	}
+	if err := l.stream.BroadcastRoomMsg(user.RoomId, msg, grpc.PushMsg_MONEY); err != nil {
+		return err
 	}
 	return nil
 }
@@ -92,11 +110,10 @@ func (l *Logic) PushAll(p *PushRoomAllForm) error {
 		Time:    time.Now().Format("15:04:05"),
 	})
 	if err != nil {
-		log.Errorf("pushAll json.Marshal() error(%v)", err)
-		return errors.FailureError
+		return err
 	}
 	if err := l.stream.BroadcastMsg(p.RoomId, msg); err != nil {
-		return errors.FailureError
+		return err
 	}
 	return nil
 }

@@ -1,10 +1,9 @@
 package time
 
 import (
+	"gitlab.com/jetfueltw/cpw/micro/log"
 	"testing"
 	"time"
-
-	log "github.com/golang/glog"
 )
 
 func TestTimer(t *testing.T) {

@@ -3,8 +3,10 @@ package http
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	log "github.com/golang/glog"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
+	server "gitlab.com/jetfueltw/cpw/micro/http"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -26,15 +28,12 @@ type Server struct {
 }
 
 // New new a http server.
-func New(c *conf.HTTPServer, srv LogicHttpServer) *Server {
+func New(c *server.Conf, srv LogicHttpServer) *Server {
 	engine := gin.New()
-	engine.Use(loggerHandler, recoverHandler)
+	engine.Use(recoverHandler)
 	s := &Server{
-		server: &http.Server{
-			Addr:    c.Addr,
-			Handler: engine,
-		},
-		logic: srv,
+		server: server.NewServer(c, engine),
+		logic:  srv,
 	}
 
 	s.logic.InitRoute(engine)
@@ -47,6 +46,24 @@ func New(c *conf.HTTPServer, srv LogicHttpServer) *Server {
 
 	s.ctx, s.cancel = context.WithCancel(context.Background())
 	return s
+}
+
+type HandlerFunc func(*gin.Context) error
+
+func Handler(f HandlerFunc) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if err := f(c); err != nil {
+			errHandler(c, err)
+		}
+	}
+}
+
+func errHandler(c *gin.Context, err error) {
+	e := errdefs.Err(err)
+	if e.Status == http.StatusInternalServerError {
+		log.Error("api error", zap.Error(e.Err))
+	}
+	c.JSON(e.Status, e)
 }
 
 // Close close the server.

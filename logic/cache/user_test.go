@@ -1,58 +1,133 @@
 package cache
 
 import (
-	"github.com/rafaeljusto/redigomock"
-	"testing"
-
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/permission"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
+	"gitlab.com/jetfueltw/cpw/micro/id"
+	"strconv"
+	"testing"
+	"time"
 )
 
 func TestSetUser(t *testing.T) {
-	uid := "82ea16cd2d6a49d887440066ef739669"
-	key := "0b7f8111-8781-4574-8cb8-2eda0adb7598"
-	roomId := "1000"
+	uid := id.UUid32()
+	key := id.UUid32()
+	roomId := id.UUid32()
 	name := "test"
-	mockSetUser(uid, key, roomId, name)
+	server := "server"
+	member := &models.Member{Uid: uid, Name: name, Type: models.Player}
+	err := c.SetUser(member, key, roomId, server)
 
-	err := d.SetUser(uid, key, roomId, name, "", permission.PlayDefaultPermission)
+	u := r.HGetAll(keyUidInfo(uid)).Val()
+
 	assert.Nil(t, err)
+	assert.Equal(t, map[string]string{
+		key:           roomId,
+		hashNameKey:   name,
+		hashStatusKey: strconv.Itoa(models.PlayStatus),
+		hashServerKey: server,
+	}, u)
+
+	expire := r.TTL(keyUidInfo(uid)).Val()
+
+	assert.Equal(t, c.expire, expire)
 }
 
 func TestRefreshUserExpire(t *testing.T) {
-	ok, err := mockRefreshUserExpire("82ea16cd2d6a49d887440066ef739669")
+	uid := id.UUid32()
+	r.Set(keyUidInfo(uid), 1, time.Hour)
 
-	assert.Nil(t, err)
+	ok, err := c.RefreshUserExpire(uid)
+
 	assert.True(t, ok)
+	assert.Nil(t, err)
+
+	m := r.TTL(keyUidInfo(uid)).Val()
+
+	assert.Equal(t, c.expire, m)
 }
 
 func TestDeleteUser(t *testing.T) {
-	uid := "82ea16cd2d6a49d887440066ef739669"
-	key := "0b7f8111-8781-4574-8cb8-2eda0adb7598"
+	uid := id.UUid32()
+	r.HSet(keyUidInfo(uid), "key", "test")
 
-	mockDeleteUser(uid, key)
-	ok, err := d.DeleteUser(uid, key)
+	ok, err := c.DeleteUser(uid, "key")
 
 	assert.Nil(t, err)
 	assert.True(t, ok)
 }
 
-func mockDeleteUser(uid string, key string) *redigomock.Cmd {
-	return mock.Command("HDEL", keyUidInfo(uid), key).
-		Expect([]byte(`true`))
+func TestGetUser(t *testing.T) {
+	uid := id.UUid32()
+	key := id.UUid32()
+	roomId := id.UUid32()
+	name := "test"
+	member := &models.Member{Uid: uid, Name: name, Type: models.Player}
+
+	_ = c.SetUser(member, key, roomId, "test")
+
+	r, n, s, err := c.GetUser(uid, key)
+
+	assert.Nil(t, err)
+	assert.Equal(t, roomId, r)
+	assert.Equal(t, name, n)
+	assert.Equal(t, models.PlayStatus, s)
 }
 
-func mockSetUser(uid string, key string, roomId string, name string) {
-	mock.Command("HMSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, permission.PlayDefaultPermission, hashServerKey, "").
-		Expect("")
-	mock.Command("EXPIRE", keyUidInfo(uid), expireSec).
-		Expect("")
+func TestGetUserBuNil(t *testing.T) {
+	uid := id.UUid32()
+	key := id.UUid32()
+	roomId := id.UUid32()
+	name := "test"
+	member := &models.Member{Uid: uid, Name: name, Type: models.Player}
+
+	_ = c.SetUser(member, key, roomId, "test")
+
+	_, _, _, err := c.GetUser(uid, "123")
+
+	assert.Equal(t, errdefs.InvalidParameter(errUserNil, 1), err)
 }
 
-func mockRefreshUserExpire(uid string) (bool, error) {
-	mock.Command("EXPIRE", keyUidInfo(uid), expireSec).
-		Expect([]byte(`true`))
-	ok, err := d.RefreshUserExpire(uid)
-	return ok, err
+func TestChangeRoom(t *testing.T) {
+	uid := id.UUid32()
+	key := id.UUid32()
+	roomId := id.UUid32()
 
+	err := c.ChangeRoom(uid, key, roomId)
+
+	assert.Nil(t, err)
+
+	i := r.HGet(keyUidInfo(uid), key).Val()
+
+	assert.Equal(t, roomId, i)
+
+	m := r.TTL(keyUidInfo(uid)).Val()
+
+	assert.Equal(t, c.expire, m)
+}
+
+func TestGetUserName(t *testing.T) {
+	uid := []string{"1", "2", "3", "4"}
+	for _, v := range uid {
+		if err := r.HSet(keyUidInfo(v), hashNameKey, v).Err(); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	name, err := c.GetUserName(uid)
+
+	assert.Nil(t, err)
+	assert.Equal(t, uid, name)
+}
+
+// BenchmarkGetUserName-4   	   10000	    174115 ns/op
+func BenchmarkGetUserName(b *testing.B) {
+	uid := []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
+	for _, v := range uid {
+		r.HSet(keyUidInfo(v), hashNameKey, v)
+	}
+	for i := 0; i < b.N; i++ {
+		c.GetUserName(uid)
+	}
 }

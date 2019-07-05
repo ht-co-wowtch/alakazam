@@ -7,10 +7,9 @@ import (
 	"time"
 
 	"github.com/zhenjl/cityhash"
-	logic "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/comet/conf"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
+	logic "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/micro/grpc"
 )
 
 const (
@@ -19,45 +18,10 @@ const (
 
 	// 通知logic Refresh client連線狀態最大心跳時間
 	maxServerHeartbeat = time.Minute * 30
-
-	// grpc htt2 相關參數
-	grpcInitialWindowSize     = 1 << 24
-	grpcInitialConnWindowSize = 1 << 24
-	grpcMaxSendMsgSize        = 1 << 24
-	grpcMaxCallMsgSize        = 1 << 24
-
-	// 心跳包的頻率
-	grpcKeepAliveTime = time.Second * 10
-
-	// 心跳回覆如果超過此時間則close連線
-	grpcKeepAliveTimeout = time.Second * 3
-
-	// 連線失敗後等待多久才又開始嘗試練線
-	grpcBackoffMaxDelay = time.Second * 3
 )
 
-func newLogicClient(c *conf.RPCClient) logic.LogicClient {
-	// grpc 連線的timeout
-	ctx, cancel := context.WithTimeout(context.Background(), c.Timeout)
-	defer cancel()
-	conn, err := grpc.DialContext(ctx, c.Addr,
-		[]grpc.DialOption{
-			// 與server溝通不用檢查憑證之類
-			grpc.WithInsecure(),
-			// Http2相關參數設定
-			grpc.WithInitialWindowSize(grpcInitialWindowSize),
-			grpc.WithInitialConnWindowSize(grpcInitialConnWindowSize),
-			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(grpcMaxCallMsgSize)),
-			grpc.WithDefaultCallOptions(grpc.MaxCallSendMsgSize(grpcMaxSendMsgSize)),
-			//
-			grpc.WithBackoffMaxDelay(grpcBackoffMaxDelay),
-			// 心跳機制參數
-			grpc.WithKeepaliveParams(keepalive.ClientParameters{
-				Time:                grpcKeepAliveTime,
-				Timeout:             grpcKeepAliveTimeout,
-				PermitWithoutStream: true,
-			}),
-		}...)
+func newLogicClient(c *grpc.Conf) logic.LogicClient {
+	conn, err := grpc.NewClient(c)
 	if err != nil {
 		panic(err)
 	}

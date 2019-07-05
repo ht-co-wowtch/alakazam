@@ -1,129 +1,84 @@
 package cache
 
 import (
-	log "github.com/golang/glog"
-	"github.com/gomodule/redigo/redis"
+	"errors"
+	"github.com/go-redis/redis"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"strconv"
 )
 
 // 儲存user資訊
-// HSET :
-// 主key => uid_{user id}
-// user key => user roomId
-// name => user name
-// status => user status
-// server => comet server name
-func (d *Cache) SetUser(uid, key, roomId, name, server string, status int) (err error) {
-	conn := d.Get()
-	defer conn.Close()
-	if err = conn.Send("HMSET", keyUidInfo(uid), key, roomId, hashNameKey, name, hashStatusKey, status, hashServerKey, server); err != nil {
-		log.Errorf("conn.Send(HMSET %s,%s,%s,%s,%d,%s) error(%v)", uid, key, roomId, name, status, server, err)
-		return
+func (c *Cache) SetUser(member *models.Member, key, roomId, server string) error {
+	keyI := keyUidInfo(member.Uid)
+	tx := c.c.Pipeline()
+	f := map[string]interface{}{
+		key:           roomId,
+		hashNameKey:   member.Name,
+		hashStatusKey: member.Status(),
+		hashServerKey: server,
 	}
-	if err = conn.Send("EXPIRE", keyUidInfo(uid), d.expire); err != nil {
-		log.Errorf("conn.Send(EXPIRE %s,%s) error(%v)", uid, key, err)
-		return
-	}
-	if err = conn.Flush(); err != nil {
-		log.Errorf("conn.Flush() error(%v)", err)
-		return
-	}
-	for i := 0; i < 2; i++ {
-		if _, err = conn.Receive(); err != nil {
-			log.Errorf("conn.Receive() error(%v)", err)
-			return
-		}
-	}
-	return
+	tx.HMSet(keyI, f)
+	tx.Expire(keyI, c.expire)
+	_, err := tx.Exec()
+	return err
 }
 
 // restart user資料的過期時間
 // EXPIRE : uid_{user id}  (HSET)
-func (d *Cache) RefreshUserExpire(uid string) (has bool, err error) {
-	conn := d.Get()
-	defer conn.Close()
-	if err = conn.Send("EXPIRE", keyUidInfo(uid), d.expire); err != nil {
-		log.Errorf("conn.Send(EXPIRE %s) error(%v)", uid, err)
-		return
-	}
-	if err = conn.Flush(); err != nil {
-		log.Errorf("conn.Flush() error(%v)", err)
-		return
-	}
-	if has, err = redis.Bool(conn.Receive()); err != nil {
-		log.Errorf("conn.Receive() error(%v)", err)
-		return
-	}
-	return
+func (c *Cache) RefreshUserExpire(uid string) (bool, error) {
+	return c.c.Expire(keyUidInfo(uid), c.expire).Result()
 }
 
 // 移除user資訊
 // DEL : uid_{user id}
-func (d *Cache) DeleteUser(uid, key string) (has bool, err error) {
-	conn := d.Get()
-	defer conn.Close()
-	if err = conn.Send("HDEL", keyUidInfo(uid), key); err != nil {
-		log.Errorf("conn.Send(HDEL %s) error(%v)", uid, err)
-		return
-	}
-	if err = conn.Flush(); err != nil {
-		log.Errorf("conn.Flush() error(%v)", err)
-		return
-	}
-	if has, err = redis.Bool(conn.Receive()); err != nil {
-		log.Errorf("conn.Receive() error(%v)", err)
-		return
-	}
-	return
+func (c *Cache) DeleteUser(uid, key string) (bool, error) {
+	aff, err := c.c.HDel(keyUidInfo(uid), key).Result()
+	return aff >= 1, err
 }
 
-func (d *Cache) GetUser(uid string, key string) (roomId, name string, status int, err error) {
-	conn := d.Get()
-	defer conn.Close()
-	if err = conn.Send("HGETALL", keyUidInfo(uid)); err != nil {
-		log.Errorf("conn.Do(HGETALL %s) error(%v)", uid, err)
-		return
-	}
-	if err = conn.Flush(); err != nil {
-		log.Errorf("conn.Flush() error(%v)", err)
-		return
-	}
-	var res map[string]string
-	res, err = redis.StringMap(conn.Receive())
+var errUserNil = errors.New("get user cache data has nil")
+
+func (c *Cache) GetUser(uid string, key string) (roomId, name string, status int, err error) {
+	res, err := c.c.HMGet(keyUidInfo(uid), key, hashNameKey, hashStatusKey).Result()
 	if err != nil {
-		log.Errorf("conn.Receive() error(%v)", err)
-		return
+		return "", "", 0, err
 	}
-
-	if i, ok := res[hashStatusKey]; ok {
-		// TODO 自行實作redis.StringMap
-		status, err = strconv.Atoi(i)
+	for _, v := range res {
+		if v == nil {
+			return "", "", 0, errdefs.InvalidParameter(errUserNil, 1)
+		}
 	}
+	if status, err = strconv.Atoi(res[2].(string)); err != nil {
+		return "", "", 0, err
+	}
+	return res[0].(string), res[1].(string), status, err
+}
 
-	return res[key], res[hashNameKey], status, err
+// 取會員名稱
+// TODO user name 資料結構需要優化，不然這樣 redis O(n)
+func (c *Cache) GetUserName(uid []string) ([]string, error) {
+	tx := c.c.Pipeline()
+	cmd := make([]*redis.StringCmd, len(uid))
+	for i, id := range uid {
+		cmd[i] = tx.HGet(keyUidInfo(id), hashNameKey)
+	}
+	_, err := tx.Exec()
+	if err != nil {
+		return nil, err
+	}
+	name := make([]string, len(uid))
+	for i, v := range cmd {
+		name[i] = v.Val()
+	}
+	return name, nil
 }
 
 // 更換房間
-func (d *Cache) ChangeRoom(uid, key, roomId string) (err error) {
-	conn := d.Get()
-	defer conn.Close()
-	if err = conn.Send("HSET", keyUidInfo(uid), key, roomId); err != nil {
-		log.Errorf("conn.Send(HSET %s,%s) error(%v)", uid, key, err)
-		return
-	}
-	if err = conn.Send("EXPIRE", keyUidInfo(uid), d.expire); err != nil {
-		log.Errorf("conn.Send(EXPIRE %s,%s) error(%v)", uid, key, err)
-		return
-	}
-	if err = conn.Flush(); err != nil {
-		log.Errorf("conn.Flush() error(%v)", err)
-		return
-	}
-	for i := 0; i < 2; i++ {
-		if _, err = conn.Receive(); err != nil {
-			log.Errorf("conn.Receive() error(%v)", err)
-			return
-		}
-	}
-	return
+func (c *Cache) ChangeRoom(uid, key, roomId string) error {
+	tx := c.c.Pipeline()
+	tx.HSet(keyUidInfo(uid), key, roomId)
+	tx.Expire(keyUidInfo(uid), c.expire)
+	_, err := tx.Exec()
+	return err
 }

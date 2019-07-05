@@ -1,0 +1,50 @@
+# kafka 接收
+kafka:
+  topic: push-topic
+  group: push-group-job
+  brokers:
+    - 127.0.0.1:9092
+
+# grpc client for comet
+grpcClient:
+  addr: :3109
+
+# 推送給comet
+comet:
+  # 開多個goroutine併發處理訊息做send grpc client
+  routineSize: 8
+  # 處理訊息推送goroutine的chan Buffer多少
+  routineChan: 512
+
+# 房間消息聚合
+room:
+  # 消息聚合goroutine(每個房間一個)等待多久都沒收到訊息自動close
+  idle: 15m
+
+log:
+  # 開啟debug模式只會紀錄Info Level以上的log
+  # 使用DPanic level時會Panic
+  debug: true
+  # 是否關閉log的輸出檔案代碼位置
+  disableCaller: true
+  # 是否關閉Warn Level(不包含)以上的stack trace message
+  disableStacktrace: true
+  # log採樣基數
+  sampling:
+    # 當前Sync log數量大於此數字就會開始採樣
+    initial: 10
+    # 採樣機率
+    thereafter: 1
+  # Error Level(包含) 以上的log是否單獨輸出
+  # 不跟Info Level(包含) 以下的log輸出在同一個位置
+  errorAloneOutput: true
+  # log位置
+  # 如果errorAloneOutput = true 則只會有Info Level(包含) 以下 log
+  # 反之則不限定Level
+  outputPaths:
+    - stderr
+  # error log位置
+  # 如果errorAloneOutput = true 則只會有Error Level(包含) 以上 log
+  # 反之則只會有log處理流程中如果有發生錯誤的log
+  errorOutputPaths:
+    - stderr
