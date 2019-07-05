@@ -4,6 +4,8 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOTEST=$(GOCMD) test
 
+ALAKAZAM_TAG ?= $(shell git rev-parse --short HEAD || echo "latest")
+
 build: clean
 	$(GOBUILD) -o bin/comet cmd/comet/main.go
 	$(GOBUILD) -o bin/logic cmd/logic/main.go
@@ -53,3 +55,17 @@ cover:
 		go tool cover -html coverage.out -o coverage.html; \
 	fi
 
+docker-clean:
+	docker rmi `docker images -q --filter 'reference=alakaza*'`
+
+docker-clean-service:
+	docker rmi `docker images -q --filter 'reference=alakazam_*'`
+
+docker-build:
+	sh build.sh
+
+docker-build-service:
+	cd docker && sh build.sh
+
+docker-run:
+	docker run --name alakazam_logic -it -d -v logic.yml:/logic.yml alakazam_logic
