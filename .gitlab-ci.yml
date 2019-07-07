@@ -1,0 +1,72 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+stages:
+  - build
+  - build_service
+
+variables:
+  REGISTRY_IMAGE: $CI_REGISTRY_IMAGE:latest
+  REGISTRY_LOGIC_IMAGE: $CI_REGISTRY_IMAGE/logic
+  REGISTRY_COMET_IMAGE: $CI_REGISTRY_IMAGE/comet
+  REGISTRY_JOB_IMAGE: $CI_REGISTRY_IMAGE/job
+  REGISTRY_ADMIN_IMAGE: $CI_REGISTRY_IMAGE/admin
+
+before_script:
+  - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+
+build:
+  stage: build
+  script:
+    - docker build --pull -t $REGISTRY_IMAGE .
+    - docker push $REGISTRY_IMAGE
+  only:
+    - /^v\d+\.\d+\.\d+$/
+  except:
+    - branches
+
+logic:
+  stage: build_service
+  script:
+    - cd docker/logic
+    - docker build --build-arg image=$REGISTRY_IMAGE -t REGISTRY_LOGIC_IMAGE:${CI_COMMIT_TAG#v} .
+    - docker push REGISTRY_LOGIC_IMAGE:${CI_COMMIT_TAG#v}
+  only:
+    - /^v\d+\.\d+\.\d+$/
+  except:
+    - branches
+
+comet:
+  stage: build_service
+  script:
+    - cd docker/comet
+    - docker build --build-arg image=$REGISTRY_IMAGE -t REGISTRY_COMET_IMAGE:${CI_COMMIT_TAG#v} .
+    - docker push REGISTRY_COMET_IMAGE:${CI_COMMIT_TAG#v}
+  only:
+    - /^v\d+\.\d+\.\d+$/
+  except:
+    - branches
+
+job:
+  stage: build_service
+  script:
+    - cd docker/job
+    - docker build --build-arg image=$REGISTRY_IMAGE -t REGISTRY_JOB_IMAGE:${CI_COMMIT_TAG#v} .
+    - docker push REGISTRY_JOB_IMAGE:${CI_COMMIT_TAG#v}
+  only:
+    - /^v\d+\.\d+\.\d+$/
+  except:
+    - branches
+
+admin:
+  stage: build_service
+  script:
+    - cd docker/admin
+    - docker build --build-arg image=$REGISTRY_IMAGE -t REGISTRY_ADMIN_IMAGE:${CI_COMMIT_TAG#v} .
+    - docker push REGISTRY_ADMIN_IMAGE:${CI_COMMIT_TAG#v}
+  only:
+    - /^v\d+\.\d+\.\d+$/
+  except:
+    - branches
