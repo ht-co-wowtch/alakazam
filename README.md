@@ -138,8 +138,8 @@ Body |不固定|傳送的資料16bytes之後就是Body|json格式
 ### Operation
 不同的Operation說明本次Protocol資料是什麼，如心跳回覆,訊息等等
 
-value | 說明 | body type |
------|-----|-------|-------
+value| 說明 | body | type |
+-----|-----|-------|-------|
 1|[要求連線到某一個房間](#room)  | json |
 2|[連線到某一個房間結果回覆](#room-reply) | json |
 3|[發送心跳](#heartbeat) | 無Body |
@@ -271,10 +271,10 @@ ws.onmessage = function (evt) {
 
 ### Response
 
-#### Room  Reply
+#### Room Reply
 Operation = `2`=> 連線到某一個房間結果回覆Body
 
-```
+```json
 {
     "room_id":"a1b4bbec3f624ecf84858632a730c688",
     "uid": "82ea16cd2d6a49d887440066ef739669",
@@ -285,8 +285,9 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
     }
 }
 ```
+
 name|說明|
-----|-----|-----
+----|-----|
 uid|user uid，發送訊息會用到|
 key|這次web socket連線id，發送訊息會用到|
 room_id|房間id|
@@ -295,7 +296,7 @@ permission.is_red_envelope|是否可以發/搶紅包|
 
 如何會員被封鎖，server close連線後會回傳一個Body內容如下
 
-```
+```json
 {
     "message": "您在封鎖状态，无法进入聊天室"
 }
@@ -313,7 +314,7 @@ Operation = `6`=> 單筆訊息
 
 ![arch](./doc/message_raw.png)
 
-```
+```json
 {
     "uid":"7f547901b02041ab8d7d3381d0703137",
     "name": "sam78",
@@ -336,7 +337,7 @@ Operation = `8`=> 回覆更換房間結果
 
 ![arch](./doc/changeRoomReply.png)
 
-```
+```json
 {
     "room_id":"7f547901b02041ab8d7d3381d0703137"
 }
@@ -380,7 +381,7 @@ expired|紅包過期時間|時間戳記
 
 跟websocket建立完連線後將以下json包裝成[Protocol](#protocol-body)發送至websocket，Protocol Operation[參考](#operation)
 
-```
+```json
   {
       "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTcyMTE2NTAsIm5iZiI6MTU1NzIxMTY1MCwiaXNzIjoibG9naW4iLCJzZXNzaW9uX3Rva2VuIjoiZjc2OTYyM2Y0YTNlNDE4MWE4NzAwYWNkYTE3NzE1MmIiLCJkYXRhIjp7InVpZCI6IjEyNTdlN2Q5ZTFjOTQ0ZWY5YTZmMTI5Y2I5NDk1ZDAyIiwidXNlcm5hbWUiOiJyb290In19.7VJxH3tQpnJqWTlPbId7f0Rt7eQoaVvaJmbWxtHTqRU,
       "room_id": "a7d20d4133c14a62b617ee38e793cf55"
@@ -468,7 +469,7 @@ room_id|新房間id|string
 
 ## System Message
 
-```
+```json
 {
     "code": "10024011",
     "message": "您在封鎖状态，无法进入聊天室"
