@@ -20,6 +20,11 @@ type Config struct {
 	Redis      *redis.Conf
 }
 
+func init() {
+	config.SetEnvReplace(true)
+	config.SetEnvPrefix("alakazam")
+}
+
 func Read(path string) error {
 	v, err := config.Read(path)
 	if err != nil {

@@ -22,7 +22,7 @@ require (
 	github.com/stretchr/testify v1.3.0
 	github.com/yuin/gopher-lua v0.0.0-20190514113301-1cd887cd7036 // indirect
 	github.com/zhenjl/cityhash v0.0.0-20131128155616-cdd6a94144ab
-	gitlab.com/jetfueltw/cpw/micro v0.9.0
+	gitlab.com/jetfueltw/cpw/micro v0.10.0
 	go.uber.org/zap v1.10.0
 	golang.org/x/net v0.0.0-20190522155817-f3200d17e092
 	google.golang.org/grpc v1.21.1
@@ -31,4 +31,4 @@ require (
 	gopkg.in/testfixtures.v2 v2.5.3
 )
 
-replace gitlab.com/jetfueltw/cpw/micro => gitlab.com/jetfueltw/cpw/micro.git v0.9.0
+replace gitlab.com/jetfueltw/cpw/micro => gitlab.com/jetfueltw/cpw/micro.git v0.10.0

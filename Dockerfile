@@ -32,7 +32,13 @@ FROM alpine
 
 WORKDIR /usr/local/bin
 
+COPY config/admin-example.yml admin.yml
+COPY config/comet-example.yml comet.yml
+COPY config/job-example.yml job.yml
+COPY config/logic-example.yml logic.yml
 COPY --from=build /logic .
 COPY --from=build /comet .
 COPY --from=build /job .
 COPY --from=build /admin .
+
+CMD ["/bin/sh"]
