@@ -17,7 +17,7 @@ var (
 )
 
 func main() {
-	flag.StringVar(&confPath, "c", "job-example.yml", "default config path")
+	flag.StringVar(&confPath, "c", "job.yml", "default config path")
 	flag.Parse()
 	if err := conf.Read(confPath); err != nil {
 		panic(err)
