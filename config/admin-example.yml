@@ -42,6 +42,14 @@ database:
   idle: 2
   # 空閒連線多久(秒)沒做事就close
   idleTimeout: 2m
+  slave:
+    host: 127.0.0.1
+    port: 3306
+    user: root
+    password: root
+    active: 30
+    idle: 10
+    idleTimeout: 2m
 
 log:
   # 開啟debug模式只會紀錄Info Level以上的log
