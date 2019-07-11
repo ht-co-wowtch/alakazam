@@ -2,7 +2,7 @@ package stream
 
 import (
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
-	kafka "gopkg.in/Shopify/sarama.v1"
+	kafka "github.com/Shopify/sarama"
 )
 
 type Stream struct {

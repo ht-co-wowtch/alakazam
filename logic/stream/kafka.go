@@ -4,7 +4,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
-	"gopkg.in/Shopify/sarama.v1"
+	"github.com/Shopify/sarama"
 	"strconv"
 )
 
