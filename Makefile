@@ -37,7 +37,7 @@ stop:
 	pkill -f bin/admin
 
 migrate:
-	bin/logic -c bin/logic.yml -migrate=true
+	bin/logic -c logic.yml -migrate=true
 
 proto-build:
 	cd protocol/proto && protoc \
