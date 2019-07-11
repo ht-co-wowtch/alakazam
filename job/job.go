@@ -8,7 +8,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
-	"os"
 	"sync"
 )
 
@@ -36,11 +35,11 @@ func New(c *conf.Config) *Job {
 		consumer: newKafkaSub(c.Kafka),
 		rooms:    make(map[string]*Room),
 	}
-	host, _ := os.Hostname()
 
 	var err error
 	j.cometServers = make(map[string]*Comet, 1)
-	if j.cometServers[host], err = NewComet(c.Comet); err != nil {
+	// TODO hostname 先寫死 後續需要註冊中心來sync
+	if j.cometServers["hostname"], err = NewComet(c.Comet); err != nil {
 		panic(err)
 	}
 	return j

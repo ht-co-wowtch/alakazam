@@ -9,7 +9,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/database"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
-	"os"
 	"time"
 )
 
@@ -78,9 +77,9 @@ func (l *Logic) loadOnline() (err error) {
 	var (
 		roomCount = make(map[string]int32)
 	)
-	host, _ := os.Hostname()
 	var online *cache.Online
-	online, err = l.cache.ServerOnline(host)
+	// TODO hostname 先寫死 後續需要註冊中心來sync
+	online, err = l.cache.ServerOnline("hostname")
 	if err != nil {
 		return
 	}
