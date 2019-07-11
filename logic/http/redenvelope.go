@@ -72,6 +72,9 @@ func (s *Context) takeRedEnvelope(c *gin.Context) error {
 	if err := s.logic.Auth(&arg.User); err != nil {
 		return err
 	}
+	if !models.IsRedEnvelope(int(arg.Status)) {
+		return errors.ErrLogin
+	}
 	reply, err := s.client.TakeRedEnvelope(arg.Token, c.GetString("token"))
 	if err != nil {
 		return err
