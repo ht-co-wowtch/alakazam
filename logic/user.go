@@ -24,7 +24,7 @@ type User struct {
 	name string `json:"-"`
 
 	// 權限狀態
-	status int `json:"-"`
+	Status int `json:"-"`
 
 	// 房間權限狀態
 	roomStatus int `json:"-"`
@@ -33,7 +33,7 @@ type User struct {
 // 會員在線認證
 func (l *Logic) auth(u *User) error {
 	var err error
-	u.RoomId, u.name, u.status, err = l.cache.GetUser(u.Uid, u.Key)
+	u.RoomId, u.name, u.Status, err = l.cache.GetUser(u.Uid, u.Key)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (l *Logic) authRoom(u *User) error {
 	if models.IsBanned(u.roomStatus) {
 		return errors.ErrRoomBanned
 	}
-	is, err := l.isUserBanned(u.Uid, u.status)
+	is, err := l.isUserBanned(u.Uid, u.Status)
 	if err != nil {
 		return err
 	}
