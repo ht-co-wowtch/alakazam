@@ -1,10 +1,8 @@
-# grpc server
-grpcServer:
-  addr: :3109
-
-# grpc client
-grpcClient:
-  addr: :3119
+grpc:
+  server:
+    addr: :3109
+  client:
+    addr: :3119
 
 # websocket連線
 websocket:

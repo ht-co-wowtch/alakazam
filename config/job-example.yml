@@ -6,8 +6,9 @@ kafka:
     - 127.0.0.1:9092
 
 # grpc client for comet
-grpcClient:
-  addr: :3109
+grpc:
+  client:
+    addr: :3109
 
 # 推送給comet
 comet:

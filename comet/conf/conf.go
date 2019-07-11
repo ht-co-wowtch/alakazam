@@ -115,8 +115,8 @@ func Read(path string) error {
 		return err
 	}
 	Conf = new(Config)
-	Conf.RPCClient, _ = grpc.ReadViper(v.Sub("grpcClient"))
-	Conf.RPCServer, _ = grpc.ReadViper(v.Sub("grpcServer"))
+	Conf.RPCClient, _ = grpc.ReadViper(v.Sub("grpc.client"))
+	Conf.RPCServer, _ = grpc.ReadViper(v.Sub("grpc.server"))
 	Conf.TCP = &TCP{
 		Sndbuf:       4096,
 		Rcvbuf:       4096,

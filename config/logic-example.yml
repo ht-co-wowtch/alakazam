@@ -14,9 +14,9 @@ http:
       - User-Agent
       - Authorization
 
-# grpc server
-grpcServer:
-  addr: :3119
+grpc:
+  server:
+    addr: :3119
 
 # 三方應用接口 config
 api:

@@ -64,7 +64,7 @@ func Read(path string) error {
 	}
 
 	Conf = new(Config)
-	client, _ := grpc.ReadViper(v.Sub("grpcClient"))
+	client, _ := grpc.ReadViper(v.Sub("grpc.client"))
 	co := v.Sub("comet")
 	Conf.Comet = &Comet{
 		RoutineChan: co.GetInt("routineChan"),

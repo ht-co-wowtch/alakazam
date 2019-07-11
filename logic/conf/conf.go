@@ -53,7 +53,7 @@ func Read(path string) error {
 	if err != nil {
 		return err
 	}
-	Conf.RPCServer, err = grpc.ReadViper(v.Sub("grpcServer"))
+	Conf.RPCServer, err = grpc.ReadViper(v.Sub("grpc.server"))
 	if err != nil {
 		return err
 	}
