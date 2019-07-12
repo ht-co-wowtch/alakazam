@@ -22,7 +22,7 @@ var (
 type Room struct {
 	c *conf.Room
 
-	job *Job
+	consume *consume
 
 	// 房間id
 	id string
@@ -32,14 +32,14 @@ type Room struct {
 }
 
 // 開一個房間訊息聚合
-func NewRoom(job *Job, id string, c *conf.Room) (r *Room) {
+func NewRoom(consume *consume, id string) (r *Room) {
 	r = &Room{
-		c:     c,
-		id:    id,
-		job:   job,
-		proto: make(chan *comet.Proto, c.Batch*2),
+		c:       consume.rc,
+		id:      id,
+		consume: consume,
+		proto:   make(chan *comet.Proto, consume.rc.Batch*2),
 	}
-	go r.pushproc(c.Batch, c.Signal)
+	go r.pushproc(r.c.Batch, r.c.Signal)
 	return
 }
 
@@ -119,7 +119,7 @@ func (r *Room) pushproc(batch int, sigTime time.Duration) {
 			}
 		}
 
-		_ = r.job.broadcastRoomRawBytes(r.id, buf.Buffer())
+		_ = r.consume.broadcastRoomRawBytes(r.id, buf.Buffer())
 
 		// TODO use reset buffer
 		buf = bytes.NewWriterSize(buf.Size())
@@ -135,30 +135,6 @@ func (r *Room) pushproc(batch int, sigTime time.Duration) {
 	}
 
 	// 該房間已超過多久都有訊息要推送就刪除
-	r.job.delRoom(r.id)
+	r.consume.delRoom(r.id)
 	log.Info("room goroutine exit", zap.String("id", r.id))
-}
-
-// 移除房間訊息聚合
-func (j *Job) delRoom(roomID string) {
-	j.roomsMutex.Lock()
-	delete(j.rooms, roomID)
-	j.roomsMutex.Unlock()
-}
-
-// 根據room id取Roomd用做房間訊息聚合
-func (j *Job) getRoom(roomID string) *Room {
-	j.roomsMutex.RLock()
-	room, ok := j.rooms[roomID]
-	j.roomsMutex.RUnlock()
-	if !ok {
-		j.roomsMutex.Lock()
-		if room, ok = j.rooms[roomID]; !ok {
-			room = NewRoom(j, roomID, j.c.Room)
-			j.rooms[roomID] = room
-		}
-		j.roomsMutex.Unlock()
-		log.Info("new a room active", zap.String("id", roomID), zap.Int("active", len(j.rooms)))
-	}
-	return room
 }
