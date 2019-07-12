@@ -11,7 +11,6 @@
 - [會員身份權限](#member-permissions)
 - [訊息規則](#message-rule)
 - [錯誤訊息](#system-message)
-- [聊天室版本](#tag)
 
 ## Quick Start
 
@@ -326,11 +325,11 @@ Operation = `6`=> 單筆訊息
 
 name|說明|格式
 ----|-----|-----|
-uid|訊息人uid|string
-name|訊息人名稱|string
-avatar|頭像url| string
-message|訊息|string
-time|發送時間|string
+uid|訊息人uid|string|
+name|訊息人名稱|string|
+avatar|頭像url| string|
+message|訊息|string|
+time|發送時間|string|
 
 #### Change Room Reply
 Operation = `8`=> 回覆更換房間結果
@@ -410,7 +409,7 @@ headerView.setInt32(opOffset, 3);
 ![arch](./doc/heartbeat.png)
 
 結果|說明|
-----|-----|-----
+----|-----|
 成功|[Response](#heartbeat-reply)|
 失敗|失敗就會close連線|
 
@@ -418,14 +417,14 @@ headerView.setInt32(opOffset, 3);
 
 Boyd內容帶想要切換的房間Id即可
 
-name|說明|格式
+name|說明|格式|
 ----|-----|-----|
 room_id|新房間id|string
 
 ![arch](./doc/changeRoom.png)
 
 結果|說明|
-----|-----|-----
+----|-----|
 成功|[Response](#change-room-reply)|
 失敗|失敗就會close連線|
 
@@ -475,24 +474,3 @@ room_id|新房間id|string
     "message": "您在封鎖状态，无法进入聊天室"
 }
 ```
-
-Error Code| 訊息
------|-----
-|
-
-## Tag
-tag|說明|
----|----|
-v0.1.0|config改為yml
-v0.1.1|移除Discovery
-v0.1.2|module更名
-v0.1.3|module移除沒用到的package
-v0.2.0|更改protobuf目錄結構
-v0.3.0|protobuf移除不必要參數與method
-v0.4.0|移除有關於Operation推送限制
-v0.5.0|移除room type推送限制
-v0.6.0|refactor log or name
-v0.7.0|移除單人訊息推送 
-v0.7.1|訊息推送內容改json格式且包含user name, avatar,time，推送認證改用uid & key當pk
-v0.7.2|封鎖 and 禁言 api
-v0.7.3|前台房間限制,房間設定api, user三方接口認證
