@@ -23,7 +23,22 @@ COPY . .
 
 RUN set -ex
 
-RUN go build -o /logic cmd/logic/main.go && \
-    go build -o /comet cmd/comet/main.go && \
-    go build -o /job cmd/job/main.go && \
-    go build -o /admin cmd/admin/main.go
+RUN go build -ldflags '-s -w' -o /logic cmd/logic/main.go && \
+    go build -ldflags '-s -w' -o /comet cmd/comet/main.go && \
+    go build -ldflags '-s -w' -o /job cmd/job/main.go && \
+    go build -ldflags '-s -w' -o /admin cmd/admin/main.go
+
+FROM alpine
+
+WORKDIR /usr/local/bin
+
+COPY config/admin-example.yml admin.yml
+COPY config/comet-example.yml comet.yml
+COPY config/job-example.yml job.yml
+COPY config/logic-example.yml logic.yml
+COPY --from=build /logic .
+COPY --from=build /comet .
+COPY --from=build /job .
+COPY --from=build /admin .
+
+CMD ["/bin/sh"]

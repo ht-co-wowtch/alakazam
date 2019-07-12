@@ -3,7 +3,9 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"net/http"
 )
 
@@ -31,7 +33,9 @@ func (s *Context) giveRedEnvelope(c *gin.Context) error {
 	if err := s.logic.Auth(&arg.User); err != nil {
 		return err
 	}
-
+	if !models.IsRedEnvelope(int(arg.Status)) {
+		return errors.ErrLogin
+	}
 	give := client.RedEnvelope{
 		RoomId:    arg.RoomId,
 		Message:   arg.Message,
@@ -67,6 +71,9 @@ func (s *Context) takeRedEnvelope(c *gin.Context) error {
 	}
 	if err := s.logic.Auth(&arg.User); err != nil {
 		return err
+	}
+	if !models.IsRedEnvelope(int(arg.Status)) {
+		return errors.ErrLogin
 	}
 	reply, err := s.client.TakeRedEnvelope(arg.Token, c.GetString("token"))
 	if err != nil {

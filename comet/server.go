@@ -3,7 +3,6 @@ package comet
 import (
 	"context"
 	"math/rand"
-	"os"
 	"time"
 
 	"github.com/zhenjl/cityhash"
@@ -64,7 +63,8 @@ func NewServer(c *conf.Config) *Server {
 		s.buckets[i] = NewBucket(c.Bucket)
 	}
 
-	s.name, _ = os.Hostname()
+	// TODO hostname 先寫死 後續需要註冊中心來sync
+	s.name = "hostname"
 
 	// 統計線上各房間人數
 	go s.onlineproc()

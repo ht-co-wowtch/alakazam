@@ -52,6 +52,11 @@ type Kafka struct {
 	Brokers []string
 }
 
+func init() {
+	config.SetEnvReplace(true)
+	config.SetEnvPrefix("alakazam")
+}
+
 func Read(path string) error {
 	v, err := config.Read(path)
 	if err != nil {
@@ -59,7 +64,7 @@ func Read(path string) error {
 	}
 
 	Conf = new(Config)
-	client, _ := grpc.ReadViper(v.Sub("grpcClient"))
+	client, _ := grpc.ReadViper(v.Sub("grpc.client"))
 	co := v.Sub("comet")
 	Conf.Comet = &Comet{
 		RoutineChan: co.GetInt("routineChan"),

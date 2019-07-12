@@ -104,14 +104,19 @@ type Bucket struct {
 	RoutineSize int
 }
 
+func init() {
+	config.SetEnvReplace(true)
+	config.SetEnvPrefix("alakazam")
+}
+
 func Read(path string) error {
 	v, err := config.Read(path)
 	if err != nil {
 		return err
 	}
 	Conf = new(Config)
-	Conf.RPCClient, _ = grpc.ReadViper(v.Sub("grpcClient"))
-	Conf.RPCServer, _ = grpc.ReadViper(v.Sub("grpcServer"))
+	Conf.RPCClient, _ = grpc.ReadViper(v.Sub("grpc.client"))
+	Conf.RPCServer, _ = grpc.ReadViper(v.Sub("grpc.server"))
 	Conf.TCP = &TCP{
 		Sndbuf:       4096,
 		Rcvbuf:       4096,

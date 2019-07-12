@@ -4,7 +4,9 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOTEST=$(GOCMD) test
 
-ALAKAZAM_TAG ?= $(shell git rev-parse --short HEAD || echo "latest")
+REGISTRY_IMAGE ?= alakazam
+REGISTRY_TAG ?= latest
+REGISTRY_NAME := $(REGISTRY_IMAGE):$(REGISTRY_TAG)
 
 build: clean
 	$(GOBUILD) -o bin/comet cmd/comet/main.go
@@ -35,7 +37,7 @@ stop:
 	pkill -f bin/admin
 
 migrate:
-	bin/logic -c bin/logic.yml -migrate=true
+	bin/logic -c logic.yml -migrate=true
 
 proto-build:
 	cd protocol/proto && protoc \
@@ -62,7 +64,7 @@ docker-clean-service:
 	docker rmi `docker images -q --filter 'reference=alakazam_*'`
 
 docker-build:
-	sh build.sh
+	docker build -t $(REGISTRY_NAME) .
 
 docker-build-service:
 	cd docker && sh build.sh

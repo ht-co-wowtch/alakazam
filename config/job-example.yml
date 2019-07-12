@@ -6,8 +6,9 @@ kafka:
     - 127.0.0.1:9092
 
 # grpc client for comet
-grpcClient:
-  addr: :3109
+grpc:
+  client:
+    addr: :3109
 
 # 推送給comet
 comet:
@@ -32,9 +33,9 @@ log:
   # log採樣基數
   sampling:
     # 當前Sync log數量大於此數字就會開始採樣
-    initial: 10
+    initial: 100
     # 採樣機率
-    thereafter: 1
+    thereafter: 10
   # Error Level(包含) 以上的log是否單獨輸出
   # 不跟Info Level(包含) 以下的log輸出在同一個位置
   errorAloneOutput: true

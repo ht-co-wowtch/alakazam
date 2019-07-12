@@ -8,7 +8,7 @@ type User struct {
 	Uid    string `json:"uid"`
 	Name   string `json:"name"`
 	Avatar string `json:"avatar"`
-	Type   int    `json:"type"`
+	Type   string `json:"type"`
 }
 
 func (c *Client) Auth(token string) (User, error) {

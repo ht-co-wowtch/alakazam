@@ -14,7 +14,7 @@ redis:
   # 最大保留的閒置連線數
   minIdleConns: 2
   # 建立連線超時多久(秒)後放棄
-  dialTimeout: 5s
+  dialTimeout: 2s
   # read多久(秒)沒回覆則放棄
   readTimeout: 2s
   # write多久(秒)沒回覆則放棄
@@ -42,6 +42,14 @@ database:
   idle: 2
   # 空閒連線多久(秒)沒做事就close
   idleTimeout: 2m
+  slave:
+    host: 127.0.0.1
+    port: 3306
+    user: root
+    password: root
+    active: 30
+    idle: 10
+    idleTimeout: 2m
 
 log:
   # 開啟debug模式只會紀錄Info Level以上的log
@@ -54,9 +62,9 @@ log:
   # log採樣基數
   sampling:
     # 當前Sync log數量大於此數字就會開始採樣
-    initial: 10
+    initial: 1000
     # 採樣機率
-    thereafter: 1
+    thereafter: 100
   # Error Level(包含) 以上的log是否單獨輸出
   # 不跟Info Level(包含) 以下的log輸出在同一個位置
   errorAloneOutput: true

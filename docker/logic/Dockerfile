@@ -1,12 +1,11 @@
+ARG image
+
+FROM ${image} as base
 FROM alpine
 
 WORKDIR /usr/local/bin
 
-COPY docker-entrypoint.sh .
-COPY --from=alakazams_build:latest /logic .
-
-RUN chmod +x docker-entrypoint.sh
-
-ENTRYPOINT ["docker-entrypoint.sh"]
+COPY --from=base /usr/local/bin/logic.yml config.yml
+COPY --from=base /usr/local/bin/logic .
 
 CMD ["logic", "-c", "config.yml"]

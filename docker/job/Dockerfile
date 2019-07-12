@@ -1,12 +1,12 @@
+ARG image
+
+FROM ${image} as base
 FROM alpine
 
 WORKDIR /usr/local/bin
 
-COPY docker-entrypoint.sh .
-COPY --from=alakazams_build:latest /job .
+COPY --from=base /usr/local/bin/job.yml config.yml
+COPY --from=base /usr/local/bin/job .
 
-RUN chmod +x docker-entrypoint.sh
-
-ENTRYPOINT ["docker-entrypoint.sh"]
 
 CMD ["job", "-c", "config.yml"]
