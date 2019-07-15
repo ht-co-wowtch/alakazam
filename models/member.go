@@ -27,13 +27,13 @@ func IsRedEnvelope(status int) bool {
 
 const (
 	// 訪客
-	Guest = "guest"
+	Guest = 0
 
 	// 營銷
-	Marketing = "marketing"
+	Marketing = 1
 
 	// 玩家
-	Player = "player"
+	Player = 2
 )
 
 type Member struct {
@@ -45,9 +45,7 @@ type Member struct {
 
 	Avatar string `xorm:"varchar(255) not null"`
 
-	Type string `xorm:"varchar(10) not null"`
-
-	Permission int `xorm:"not null"`
+	Type int `xorm:"tinyint(3) not null"`
 
 	// 是否被封鎖
 	IsBlockade bool `xorm:"default(0) not null"`
