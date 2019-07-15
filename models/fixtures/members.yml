@@ -3,7 +3,6 @@
   name: testA
   avatar: /
   type: player
-  permission: 31
   is_blockade: 0
   create_at: 2019-06-26 13:52:32
 
@@ -12,6 +11,5 @@
   name: testB
   avatar: /
   type: player
-  permission: 31
   is_blockade: 1
   create_at: 2019-06-26 13:52:32
