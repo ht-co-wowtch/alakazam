@@ -124,5 +124,9 @@ func (l *Logic) login(token, roomId, server string) (*models.Member, string, err
 }
 
 func (l *Logic) GetUserName(uid []string) ([]string, error) {
-	return l.cache.GetUserName(uid)
+	name, err := l.cache.GetUserName(uid)
+	if err == redis.Nil {
+		return nil, errors.ErrNoRows
+	}
+	return name, nil
 }

@@ -5,6 +5,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/validation"
 	"gopkg.in/go-playground/validator.v8"
+	"net/http"
 )
 
 var (
@@ -63,6 +64,9 @@ func (m output) Error(e *errdefs.Error) interface{} {
 	switch e.Code {
 	case 12024020:
 		return "您的余额不足发红包"
+	case 15024041:
+		e.Status = http.StatusNotFound
+		return "红包不存在"
 	}
 	return "操作失败"
 }
