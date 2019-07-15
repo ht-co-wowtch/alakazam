@@ -1,8 +1,8 @@
 package stream
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	kafka "github.com/Shopify/sarama"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 )
 
 type Stream struct {
@@ -13,6 +13,7 @@ type Stream struct {
 
 func NewKafkaPub(c *conf.Kafka) *Stream {
 	kc := kafka.NewConfig()
+	kc.Version = kafka.V2_3_0_0
 	kc.Producer.RequiredAcks = kafka.WaitForAll
 	kc.Producer.Retry.Max = 10
 	kc.Producer.Return.Successes = true
