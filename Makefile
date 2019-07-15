@@ -31,10 +31,10 @@ run:
 	nohup bin/admin -c admin.yml 2>&1 > bin/admin.log &
 
 stop:
-	pkill -f bin/logic
-	pkill -f bin/job
 	pkill -f bin/comet
 	pkill -f bin/admin
+	pkill -f bin/logic
+	pkill -f bin/job
 
 migrate:
 	bin/logic -c logic.yml -migrate=true
