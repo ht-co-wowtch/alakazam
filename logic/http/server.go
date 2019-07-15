@@ -61,7 +61,13 @@ func Handler(f HandlerFunc) gin.HandlerFunc {
 func errHandler(c *gin.Context, err error) {
 	e := errdefs.Err(err)
 	if e.Status == http.StatusInternalServerError {
-		log.Error("api error", zap.Error(e.Err))
+		log.Error(
+			"api error",
+			zap.String("path", c.Request.URL.Path),
+			zap.String("rawQuery", c.Request.URL.RawQuery),
+			zap.String("method", c.Request.Method),
+			zap.Error(e.Err),
+		)
 	}
 	c.JSON(e.Status, e)
 }
