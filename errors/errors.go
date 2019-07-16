@@ -28,6 +28,11 @@ var (
 	//DataError    = eNew(http.StatusUnprocessableEntity, 10024220, "资料验证错误")
 )
 
+const (
+	// 紅包已過期
+	TakeEnvelopeExpired = 15024011
+)
+
 func init() {
 	if err := errdefs.SetCode(1002); err != nil {
 		panic(err)

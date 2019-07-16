@@ -2,6 +2,8 @@ package client
 
 import (
 	"encoding/json"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"time"
 )
 
@@ -93,6 +95,20 @@ type TakeEnvelopeReply struct {
 	Amount float64 `json:"amount"`
 }
 
+const (
+	// 搶紅包成功
+	TakeEnvelopeSuccess = "success"
+
+	// 已經搶過該紅包
+	TakeEnvelopeReceived = "received"
+
+	// 紅包已搶完
+	TakeEnvelopeGone = "gone"
+
+	// 紅包已過期
+	TakeEnvelopeExpired = "expired"
+)
+
 // 搶紅包
 func (c *Client) TakeRedEnvelope(redEnvelopeToken, token string) (TakeEnvelopeReply, error) {
 	resp, err := c.c.PutJson("/red-envelope", nil, map[string]string{"token": redEnvelopeToken}, bearer(token))
@@ -101,6 +117,12 @@ func (c *Client) TakeRedEnvelope(redEnvelopeToken, token string) (TakeEnvelopeRe
 	}
 	defer resp.Body.Close()
 	if err := checkResponse(resp); err != nil {
+		switch e := err.(type) {
+		case *errdefs.Error:
+			if e.Code == errors.TakeEnvelopeExpired {
+				return TakeEnvelopeReply{Status: TakeEnvelopeExpired}, nil
+			}
+		}
 		return TakeEnvelopeReply{}, err
 	}
 	var u TakeEnvelopeReply

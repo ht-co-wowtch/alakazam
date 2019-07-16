@@ -80,19 +80,23 @@ func (s *Context) takeRedEnvelope(c *gin.Context) error {
 		return err
 	}
 
-	name, err := s.logic.GetUserName([]string{reply.Uid})
-	if err != nil {
-		return err
+	if reply.Uid != "" {
+		name, err := s.logic.GetUserName([]string{reply.Uid})
+		if err != nil {
+			return err
+		}
+		reply.Name = name[0]
 	}
-	reply.Name = name[0]
 
 	switch reply.Status {
-	case "success":
+	case client.TakeEnvelopeSuccess:
 		reply.StatusMessage = "获得红包"
-	case "received":
+	case client.TakeEnvelopeReceived:
 		reply.StatusMessage = "已经抢过了"
-	case "gone":
+	case client.TakeEnvelopeGone:
 		reply.StatusMessage = "手慢了，红包派完了"
+	case client.TakeEnvelopeExpired:
+		reply.StatusMessage = "红包已过期，不能抢"
 	default:
 		reply.StatusMessage = "不存在的红包"
 	}
