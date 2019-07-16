@@ -30,7 +30,13 @@ var (
 
 const (
 	// 紅包已過期
-	TakeEnvelopeExpired = 15024011
+	TakeEnvelopeExpiredCode = 15024011
+
+	// 紅包不存在
+	EnvelopeNotFoundCode = 15024041
+
+	// 餘額不足
+	BalanceCode = 12024020
 )
 
 func init() {
@@ -67,9 +73,9 @@ func (m output) InternalServer(e error) string {
 
 func (m output) Error(e *errdefs.Error) interface{} {
 	switch e.Code {
-	case 12024020:
+	case BalanceCode:
 		return "您的余额不足发红包"
-	case 15024041:
+	case EnvelopeNotFoundCode:
 		e.Status = http.StatusNotFound
 		return "红包不存在"
 	}
