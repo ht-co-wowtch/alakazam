@@ -2,7 +2,7 @@
   uid: 1d7eff72ab49470882833853875340c1
   name: testA
   avatar: /
-  type: player
+  type: 2
   is_blockade: 0
   create_at: 2019-06-26 13:52:32
 
@@ -10,6 +10,6 @@
   uid: 82ea16cd2d6a49d887440066ef739669
   name: testB
   avatar: /
-  type: player
+  type: 2
   is_blockade: 1
   create_at: 2019-06-26 13:52:32
