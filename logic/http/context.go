@@ -36,5 +36,6 @@ func (s *Context) InitRoute(e *gin.Engine) {
 	e.POST("/push/room", Handler(s.pushRoom))
 	e.POST("/red-envelope", Handler(s.giveRedEnvelope))
 	e.PUT("/red-envelope", Handler(s.takeRedEnvelope))
-	e.GET("/red-envelope/:id", Handler(s.getRedEnvelope))
+	e.GET("/red-envelope/:id", Handler(s.getRedEnvelopeDetail))
+	e.GET("/red-envelope-consume/:id", Handler(s.getRedEnvelope))
 }

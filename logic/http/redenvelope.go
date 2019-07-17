@@ -104,8 +104,8 @@ func (s *Context) takeRedEnvelope(c *gin.Context) error {
 	return nil
 }
 
-func (s *Context) getRedEnvelope(c *gin.Context) error {
-	reply, err := s.client.GetRedEnvelope(c.Param("id"), c.GetString("token"))
+func (s *Context) getRedEnvelopeDetail(c *gin.Context) error {
+	reply, err := s.client.GetRedEnvelopeDetail(c.Param("id"), c.GetString("token"))
 	if err != nil {
 		return err
 	}
@@ -121,6 +121,22 @@ func (s *Context) getRedEnvelope(c *gin.Context) error {
 	reply.Name = n[0]
 	for i, v := range n[1:] {
 		reply.Members[i].Name = v
+	}
+	c.JSON(http.StatusOK, reply)
+	return nil
+}
+
+func (s *Context) getRedEnvelope(c *gin.Context) error {
+	reply, err := s.client.GetRedEnvelope(c.Param("id"), c.GetString("token"))
+	if err != nil {
+		return err
+	}
+	if reply.Amount != 0 {
+		name, err := s.logic.GetUserName([]string{reply.Uid})
+		if err != nil {
+			return err
+		}
+		reply.Name = name[0]
 	}
 	c.JSON(http.StatusOK, reply)
 	return nil
