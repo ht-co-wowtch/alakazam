@@ -247,6 +247,8 @@ gitlab.com/jetfueltw/cpw/micro.git v0.11.0 h1:GoxN16SvhL4C/3T7q94uiDLPZHYY1Z4GfJ
 gitlab.com/jetfueltw/cpw/micro.git v0.11.0/go.mod h1:0kEK2t+i8f2aWwk/9ElmrMSjrxB311unSU6MADBj4wU=
 gitlab.com/jetfueltw/cpw/micro.git v0.13.0 h1:lxStsw71HYoTV1SE9D9f/R6sDrQXFl6brorwbXIYVkA=
 gitlab.com/jetfueltw/cpw/micro.git v0.13.0/go.mod h1:0kEK2t+i8f2aWwk/9ElmrMSjrxB311unSU6MADBj4wU=
+gitlab.com/jetfueltw/cpw/micro.git v0.14.1 h1:rcJV1U0ILh8VjY52mByeDvseYYSEki5TBQCLiMycnw8=
+gitlab.com/jetfueltw/cpw/micro.git v0.14.1/go.mod h1:0kEK2t+i8f2aWwk/9ElmrMSjrxB311unSU6MADBj4wU=
 gitlab.com/nyarla/go-crypt v0.0.0-20160106005555-d9a5dc2b789b/go.mod h1:T3BPAOm2cqquPa0MKWeNkmOM5RQsRhkrwMWonFMN7fE=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.opencensus.io v0.20.1/go.mod h1:6WKK9ahsWS3RSO+PY9ZHZUfv2irvY6gN279GOPZjmmk=
