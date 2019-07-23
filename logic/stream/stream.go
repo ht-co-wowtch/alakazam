@@ -14,8 +14,6 @@ type Stream struct {
 func NewKafkaPub(c *conf.Kafka) *Stream {
 	kc := kafka.NewConfig()
 	kc.Version = kafka.V2_3_0_0
-	kc.Producer.RequiredAcks = kafka.WaitForAll
-	kc.Producer.Retry.Max = 10
 	kc.Producer.Return.Successes = true
 	pub, err := kafka.NewSyncProducer(c.Brokers, kc)
 	if err != nil {
