@@ -29,10 +29,10 @@ type Room struct {
 	DayLimit int `xorm:"tinyint(4) default(0)"`
 
 	// 充值量限制
-	DepositLimit int `xorm:"default(0)"`
+	DepositLimit float64 `xorm:"default(0)"`
 
 	// 打碼量限制
-	DmlLimit int `xorm:"default(0)"`
+	DmlLimit float64 `xorm:"default(0)"`
 
 	// 更新時間
 	UpdateAt time.Time `xorm:"not null"`
