@@ -1,10 +1,18 @@
 package logic
 
 import (
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 )
 
 func (l *Logic) SetBanned(uid, remark string, expired int) error {
+	_, ok, err := l.db.Find(uid)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return errors.ErrNoRows
+	}
 	return l.cache.SetBanned(uid, expired)
 }
 
