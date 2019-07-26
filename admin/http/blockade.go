@@ -15,7 +15,7 @@ func (s *Server) setBlockade(c *gin.Context) error {
 	if err := c.ShouldBindJSON(&params); err != nil {
 		return err
 	}
-	if _, err := s.logic.SetBlockade(params.Uid, params.Remark); err != nil {
+	if err := s.logic.SetBlockade(params.Uid, params.Remark); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)
