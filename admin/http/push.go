@@ -7,7 +7,7 @@ import (
 )
 
 // 所有房間推送
-func (s *Server) pushAll(c *gin.Context) error {
+func (s *Server) push(c *gin.Context) error {
 	p := new(logic.PushRoomAllForm)
 	if err := c.ShouldBindJSON(p); err != nil {
 		return err

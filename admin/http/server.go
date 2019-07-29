@@ -31,5 +31,5 @@ func (s *Server) InitRoute(e *gin.Engine) {
 	e.GET("/room/:id", http.Handler(s.GetRoom))
 	e.DELETE("/room/:id", http.Handler(s.DeleteRoom))
 
-	e.POST("/push/all", http.Handler(s.pushAll))
+	e.POST("/push", http.Handler(s.push))
 }
