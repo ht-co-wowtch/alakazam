@@ -9,6 +9,7 @@ message PushMsg {
         ROOM = 0;
         BROADCAST = 1;
         MONEY = 2;
+        TOP = 3;
     }
     Type type = 1;
     int32 speed = 2;

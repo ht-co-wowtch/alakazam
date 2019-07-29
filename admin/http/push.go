@@ -12,7 +12,7 @@ func (s *Server) push(c *gin.Context) error {
 	if err := c.ShouldBindJSON(p); err != nil {
 		return err
 	}
-	id, err := s.logic.PushAll(p)
+	id, err := s.logic.PushMessage(p)
 	if err != nil {
 		return err
 	}

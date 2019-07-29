@@ -32,9 +32,9 @@ func (d *Stream) BroadcastRoomMsg(room string, msg []byte, model grpc.PushMsg_Ty
 }
 
 // 多房間推送，以下為條件
-func (d *Stream) BroadcastMsg(roomIds []string, msg []byte) (int32, int64, error) {
+func (d *Stream) BroadcastMsg(roomIds []string, msg []byte, model grpc.PushMsg_Type) (int32, int64, error) {
 	pushMsg := &grpc.PushMsg{
-		Type: grpc.PushMsg_ROOM,
+		Type: model,
 		Msg:  msg,
 		Room: roomIds,
 	}

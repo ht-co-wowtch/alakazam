@@ -78,6 +78,13 @@ func (c *consume) push(pushMsg *grpc.PushMsg) error {
 				return err
 			}
 		}
+	// 訊息頂置
+	case grpc.PushMsg_TOP:
+		for _, r := range pushMsg.Room {
+			if err := c.getRoom(r).Push(pushMsg.Msg, protocol.OpTopRaw); err != nil {
+				return err
+			}
+		}
 	// 所有房間推送
 	case grpc.PushMsg_BROADCAST:
 		c.broadcast(pushMsg.Msg, pushMsg.Speed)

@@ -28,6 +28,9 @@ const (
 	// 發紅包
 	OpMoney = int32(9)
 
+	// 訊息置頂
+	OpTopRaw = int32(10)
+
 	// close連線
 	OpProtoFinish = int32(20)
 
