@@ -21,6 +21,9 @@ func (s *Server) push(c *gin.Context) error {
 	})
 	return nil
 }
+
+// TODO 待完成
+func (s *Server) deleteTopMessage(c *gin.Context) error {
 	c.Status(http.StatusNoContent)
 	return nil
 }

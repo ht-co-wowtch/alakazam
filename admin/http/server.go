@@ -32,4 +32,5 @@ func (s *Server) InitRoute(e *gin.Engine) {
 	e.DELETE("/room/:id", http.Handler(s.DeleteRoom))
 
 	e.POST("/push", http.Handler(s.push))
+	e.DELETE("/push/:id", http.Handler(s.deleteTopMessage))
 }
