@@ -12,9 +12,15 @@ func (s *Server) push(c *gin.Context) error {
 	if err := c.ShouldBindJSON(p); err != nil {
 		return err
 	}
-	if err := s.logic.PushAll(p); err != nil {
+	id, err := s.logic.PushAll(p)
+	if err != nil {
 		return err
 	}
+	c.JSON(http.StatusOK, gin.H{
+		"id": id,
+	})
+	return nil
+}
 	c.Status(http.StatusNoContent)
 	return nil
 }

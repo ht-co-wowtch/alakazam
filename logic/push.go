@@ -106,7 +106,7 @@ type PushRoomAllForm struct {
 
 // 所有房間推送
 // TODO 需實作訊息是否頂置
-func (l *Logic) PushAll(p *PushRoomAllForm) error {
+func (l *Logic) PushAll(p *PushRoomAllForm) (int64, error) {
 	msg, err := json.Marshal(Message{
 		Name:    "管理员",
 		Avatar:  "",
@@ -114,10 +114,11 @@ func (l *Logic) PushAll(p *PushRoomAllForm) error {
 		Time:    time.Now().Format("15:04:05"),
 	})
 	if err != nil {
-		return err
+		return 0, err
 	}
-	if err := l.stream.BroadcastMsg(p.RoomId, msg); err != nil {
-		return err
+	_, id, err := l.stream.BroadcastMsg(p.RoomId, msg)
+	if err != nil {
+		return 0, err
 	}
-	return nil
+	return id, nil
 }
