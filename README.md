@@ -63,7 +63,7 @@
 - [ ] 歷史紀錄
 - [ ] 訊息置頂
 - [ ] 房間在線名單
-- [x] 設定房間權限(禁言,紅包,跟注,聊天限制)
+- [x] 設定房間權限(禁言,紅包,聊天限制)
 - [ ] 反垃圾訊息
 
 TODO
@@ -72,7 +72,7 @@ TODO
 - [ ] 分析要放的log(非存DB)
 - [ ] Metrics監控
 - [ ] 註冊中心(etcd)
-- [ ] docker file
+- [x] docker file
 - [ ] 整合測試 bash shell
 - [ ] database,redis connection pool  maxConn 優化
 - [ ] 限制訊息長度
