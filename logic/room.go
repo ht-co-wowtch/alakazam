@@ -14,9 +14,6 @@ type Room struct {
 	// 是否禁言
 	IsMessage bool `json:"is_message"`
 
-	// 是否可發/跟注
-	IsFollow bool `json:"is_follow"`
-
 	// 儲值&打碼量發話限制
 	Limit Limit `json:"limit"`
 }
@@ -36,12 +33,11 @@ func (l *Logic) CreateRoom(r Room) (string, error) {
 	room := models.Room{
 		Id:           r.Id,
 		IsMessage:    r.IsMessage,
-		IsFollow:     r.IsFollow,
 		DayLimit:     r.Limit.Day,
 		DepositLimit: r.Limit.Deposit,
 		DmlLimit:     r.Limit.Dml,
 	}
-	if aff, err := l.db.CreateRoom(room); err != nil || aff <= 0 {
+	if _, err := l.db.CreateRoom(room); err != nil {
 		return "", err
 	}
 	return r.Id, l.cache.SetRoom(room)
@@ -51,13 +47,16 @@ func (l *Logic) UpdateRoom(r Room) error {
 	room := models.Room{
 		Id:           r.Id,
 		IsMessage:    r.IsMessage,
-		IsFollow:     r.IsFollow,
 		DayLimit:     r.Limit.Day,
 		DepositLimit: r.Limit.Deposit,
 		DmlLimit:     r.Limit.Dml,
 	}
-	if _, err := l.db.UpdateRoom(room); err != nil {
+	aff, err := l.db.UpdateRoom(room)
+	if err != nil {
 		return err
+	}
+	if aff <= 0 {
+		return errors.ErrNoRows
 	}
 	if err := l.cache.SetRoom(room); err != nil {
 		return err
