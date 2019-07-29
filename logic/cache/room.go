@@ -49,7 +49,7 @@ func (c *Cache) GetRoomByMoney(id string) (day, dml, deposit int, err error) {
 
 func (c *Cache) SetRoom(room models.Room) error {
 	f := map[string]interface{}{
-		hashPermissionKey:  room.Status(),
+		hashPermissionKey:  room.Permission(),
 		hashLimitDayKey:    room.DayLimit,
 		hashLimitDmlKey:    room.DmlLimit,
 		hashLimitAmountKey: room.DepositLimit,

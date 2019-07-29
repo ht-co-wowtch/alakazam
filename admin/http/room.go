@@ -37,21 +37,20 @@ func (s *Server) UpdateRoom(c *gin.Context) error {
 	return nil
 }
 
+type Rid struct {
+	Id string `form:"id" binding:"required"`
+}
+
 func (s *Server) GetRoom(c *gin.Context) error {
-	params := struct {
-		Id string `form:"id" binding:"required"`
-	}{
+	room := Rid{
 		Id: c.Param("id"),
 	}
-	if err := binding.Validator.ValidateStruct(&params); err != nil {
+	if err := binding.Validator.ValidateStruct(&room.Id); err != nil {
 		return err
 	}
-	r, ok, err := s.logic.GetRoom(params.Id)
+	r, err := s.logic.GetRoom(room.Id)
 	if err != nil {
 		return err
-	}
-	if !ok {
-		return errors.ErrNoRows
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"id":            r.Id,
@@ -62,6 +61,21 @@ func (s *Server) GetRoom(c *gin.Context) error {
 		"create_at":     r.CreateAt,
 		"update_at":     r.UpdateAt,
 	})
+	return nil
+}
+
+func (s *Server) DeleteRoom(c *gin.Context) error {
+	room := Rid{
+		Id: c.Param("id"),
+	}
+	if err := binding.Validator.ValidateStruct(&room.Id); err != nil {
+		return err
+	}
+	err := s.logic.DeleteRoom(room.Id)
+	if err != nil {
+		return err
+	}
+	c.Status(http.StatusNoContent)
 	return nil
 }
 

@@ -16,6 +16,9 @@ type Room struct {
 
 	// 儲值&打碼量發話限制
 	Limit Limit `json:"limit"`
+
+	// 房間狀態
+	status bool
 }
 
 type Limit struct {
@@ -36,9 +39,17 @@ func (l *Logic) CreateRoom(r Room) (string, error) {
 		DayLimit:     r.Limit.Day,
 		DepositLimit: r.Limit.Deposit,
 		DmlLimit:     r.Limit.Dml,
+		Status:       true,
 	}
-	if _, err := l.db.CreateRoom(room); err != nil {
+	dbRoom, err := l.GetRoom(r.Id)
+	if err == errors.ErrNoRows {
+		_, err = l.db.CreateRoom(room)
+	}
+	if err != nil {
 		return "", err
+	}
+	if dbRoom.Id != "" {
+		return room.Id, l.updateRoom(room)
 	}
 	return r.Id, l.cache.SetRoom(room)
 }
@@ -51,12 +62,13 @@ func (l *Logic) UpdateRoom(r Room) error {
 		DepositLimit: r.Limit.Deposit,
 		DmlLimit:     r.Limit.Dml,
 	}
-	aff, err := l.db.UpdateRoom(room)
+	return l.updateRoom(room)
+}
+
+func (l *Logic) updateRoom(room models.Room) error {
+	_, err := l.db.UpdateRoom(room)
 	if err != nil {
 		return err
-	}
-	if aff <= 0 {
-		return errors.ErrNoRows
 	}
 	if err := l.cache.SetRoom(room); err != nil {
 		return err
@@ -64,8 +76,33 @@ func (l *Logic) UpdateRoom(r Room) error {
 	return nil
 }
 
-func (l *Logic) GetRoom(roomId string) (models.Room, bool, error) {
-	return l.db.GetRoom(roomId)
+func (l *Logic) GetRoom(roomId string) (models.Room, error) {
+	r, ok, err := l.db.GetRoom(roomId)
+	if err != nil {
+		return models.Room{}, err
+	}
+	if !ok {
+		return models.Room{}, errors.ErrNoRows
+	}
+	return r, nil
+}
+
+func (l *Logic) DeleteRoom(roomId string) error {
+	r, err := l.GetRoom(roomId)
+	if err != nil {
+		return err
+	}
+	if r.Status == false {
+		return nil
+	}
+	aff, err := l.db.DeleteRoom(roomId)
+	if err != nil {
+		return err
+	}
+	if aff <= 0 {
+		return errors.ErrNoRows
+	}
+	return nil
 }
 
 func (l *Logic) isMessage(rid string, status int, uid, token string) error {

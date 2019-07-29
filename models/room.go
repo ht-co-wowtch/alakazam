@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"github.com/go-xorm/xorm"
+	"time"
+)
 
 const (
 	money = 4
@@ -10,10 +13,6 @@ const (
 func IsMoney(status int) bool {
 	return (money & status) == money
 }
-
-const (
-	RoomStatus = Message
-)
 
 type Room struct {
 	// 要設定的房間id
@@ -34,6 +33,9 @@ type Room struct {
 	// 打碼量限制
 	DmlLimit float64 `xorm:"default(0)"`
 
+	// 房間狀態(開:1 關:0)
+	Status bool `xorm:"default(1)"`
+
 	// 更新時間
 	UpdateAt time.Time `xorm:"not null"`
 
@@ -41,18 +43,18 @@ type Room struct {
 	CreateAt time.Time `xorm:"not null"`
 }
 
-func (r *Room) Status() int {
+func (r *Room) Permission() int {
 	if r.Id == "" {
-		return RoomStatus
+		return Message
 	}
-	var status int
+	var permission int
 	if r.IsMessage {
-		status += Message
+		permission += Message
 	}
 	if r.DayLimit > 0 && r.DmlLimit+r.DepositLimit > 0 {
-		status += money
+		permission += money
 	}
-	return status
+	return permission
 }
 
 func (r *Room) TableName() string {
@@ -62,12 +64,18 @@ func (r *Room) TableName() string {
 func (s *Store) CreateRoom(room Room) (int64, error) {
 	room.UpdateAt = time.Now()
 	room.CreateAt = time.Now()
+	room.Status = true
 	return s.d.InsertOne(&room)
 }
 
 func (s *Store) UpdateRoom(room Room) (int64, error) {
-	return s.d.Cols("is_message", "is_follow", "day_limit", "deposit_limit", "dml_limit").
-		Where("id = ?", room.Id).
+	var u *xorm.Session
+	if room.Status {
+		u = s.d.Cols("is_message", "day_limit", "deposit_limit", "dml_limit", "status")
+	} else {
+		u = s.d.Cols("is_message", "day_limit", "deposit_limit", "dml_limit")
+	}
+	return u.Where("id = ?", room.Id).
 		Update(&room)
 }
 
@@ -75,4 +83,13 @@ func (s *Store) GetRoom(roomId string) (Room, bool, error) {
 	r := Room{}
 	ok, err := s.d.Where("id = ?", roomId).Get(&r)
 	return r, ok, err
+}
+
+func (s *Store) DeleteRoom(roomId string) (int64, error) {
+	r := Room{
+		Status: false,
+	}
+	return s.d.Cols("status").
+		Where("id = ?", roomId).
+		Update(&r)
 }

@@ -44,6 +44,7 @@ func (l *Logic) auth(u *User) error {
 }
 
 // 房間權限認證
+// TODO 需考慮房間被關掉
 func (l *Logic) authRoom(u *User) error {
 	var err error
 	u.roomStatus, err = l.cache.GetRoom(u.RoomId)
@@ -55,7 +56,7 @@ func (l *Logic) authRoom(u *User) error {
 		if err != nil {
 			return err
 		}
-		u.roomStatus = room.Status()
+		u.roomStatus = room.Permission()
 		if err := l.cache.SetRoom(room); err != nil {
 			return err
 		}

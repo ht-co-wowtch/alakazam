@@ -15,12 +15,12 @@ func TestRoomTableName(t *testing.T) {
 
 func TestCreateRoom(t *testing.T) {
 	room := Room{
-		Id:                id.UUid32(),
-		IsMessage:         true,
-		IsFollow:          true,
-		DayLimit:          1,
-		DepositLimit:      100,
-		DmlLimit:          100,
+		Id:           id.UUid32(),
+		IsMessage:    true,
+		IsFollow:     true,
+		DayLimit:     1,
+		DepositLimit: 100,
+		DmlLimit:     100,
 	}
 
 	aff, err := s.CreateRoom(room)
@@ -44,12 +44,12 @@ func TestUpdateRoom(t *testing.T) {
 	assert.NoError(t, prepareTestDatabase())
 
 	room := Room{
-		Id:                roomIdA,
-		IsMessage:         false,
-		IsFollow:          false,
-		DayLimit:          2,
-		DepositLimit:      200,
-		DmlLimit:          200,
+		Id:           roomIdA,
+		IsMessage:    false,
+		IsFollow:     false,
+		DayLimit:     2,
+		DepositLimit: 200,
+		DmlLimit:     200,
 	}
 
 	aff, err := s.UpdateRoom(room)
@@ -79,13 +79,14 @@ func TestGetRoom(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, ok)
 	assert.Equal(t, Room{
-		Id:                roomIdA,
-		IsMessage:         true,
-		IsFollow:          true,
-		DayLimit:          1,
-		DepositLimit:      100,
-		DmlLimit:          1000,
-		UpdateAt:          at,
-		CreateAt:          at,
+		Id:           roomIdA,
+		IsMessage:    true,
+		IsFollow:     true,
+		DayLimit:     1,
+		DepositLimit: 100,
+		DmlLimit:     1000,
+		Status:       true,
+		UpdateAt:     at,
+		CreateAt:     at,
 	}, r)
 }
