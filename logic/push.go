@@ -99,9 +99,13 @@ type PushRoomAllForm struct {
 
 	// user push message
 	Message string `json:"message" binding:"required"`
+
+	// 訊息是否頂置
+	Top bool `json:"top"`
 }
 
 // 所有房間推送
+// TODO 需實作訊息是否頂置
 func (l *Logic) PushAll(p *PushRoomAllForm) error {
 	msg, err := json.Marshal(Message{
 		Name:    "管理员",
