@@ -11,7 +11,25 @@ func TestSetBanned(t *testing.T) {
 	uid := id.UUid32()
 	r.HSet(keyUidInfo(uid), hashStatusKey, 0)
 
-	err := c.SetBanned(uid, 10)
+	err := c.SetBanned(uid, time.Duration(10)*time.Second)
+	assert.Nil(t, err)
+
+	unix, err := r.Get(keyBannedInfo(uid)).Int64()
+	ex := time.Unix(unix, 0)
+	assert.Nil(t, err)
+	assert.False(t, ex.IsZero())
+
+	status, err := r.HGet(keyUidInfo(uid), hashStatusKey).Int()
+	assert.Equal(t, -1, status)
+	assert.Nil(t, err)
+}
+
+func TestSetBannedByExist(t *testing.T) {
+	uid := id.UUid32()
+	r.HSet(keyUidInfo(uid), hashStatusKey, 0)
+
+	c.SetBanned(uid, time.Duration(10)*time.Second)
+	err := c.SetBanned(uid, time.Duration(10)*time.Second)
 	assert.Nil(t, err)
 
 	unix, err := r.Get(keyBannedInfo(uid)).Int64()
@@ -47,7 +65,7 @@ func TestGetBannedEmpty(t *testing.T) {
 func TestDelBanned(t *testing.T) {
 	uid := id.UUid32()
 	r.HSet(keyUidInfo(uid), hashStatusKey, 2)
-	c.SetBanned(uid, 10)
+	c.SetBanned(uid, time.Duration(10)*time.Second)
 	err := c.DelBanned(uid)
 
 	assert.Nil(t, err)

@@ -6,14 +6,19 @@ import (
 	"time"
 )
 
-// TODO expired 參數要改成time.Duration
 // 設定禁言
-func (c *Cache) SetBanned(uid string, expired int) error {
-	sec := time.Duration(expired) * time.Second
+func (c *Cache) SetBanned(uid string, expired time.Duration) error {
+	key := keyBannedInfo(uid)
+	i, err := c.c.Exists(key).Result()
+	if err != nil {
+		return err
+	}
 	tx := c.c.Pipeline()
-	tx.Set(keyBannedInfo(uid), time.Now().Add(sec).Unix(), sec)
-	tx.HIncrBy(keyUidInfo(uid), hashStatusKey, -models.Message)
-	_, err := tx.Exec()
+	tx.Set(key, time.Now().Add(expired).Unix(), expired)
+	if i <= 0 {
+		tx.HIncrBy(keyUidInfo(uid), hashStatusKey, -models.Message)
+	}
+	_, err = tx.Exec()
 	return err
 }
 

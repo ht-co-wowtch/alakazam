@@ -3,6 +3,7 @@ package logic
 import (
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"time"
 )
 
 func (l *Logic) SetBanned(uid, remark string, expired int) error {
@@ -13,7 +14,7 @@ func (l *Logic) SetBanned(uid, remark string, expired int) error {
 	if !ok {
 		return errors.ErrNoRows
 	}
-	return l.cache.SetBanned(uid, expired)
+	return l.cache.SetBanned(uid, time.Duration(expired)*time.Second)
 }
 
 func (l *Logic) isUserBanned(uid string, status int) (bool, error) {
