@@ -26,10 +26,10 @@ type Limit struct {
 	Day int `json:"day" binding:"max=31"`
 
 	// 儲值金額
-	Deposit float64 `json:"deposit"`
+	Deposit int `json:"deposit"`
 
 	// 打碼量
-	Dml float64 `json:"dml"`
+	Dml int `json:"dml"`
 }
 
 func (l *Logic) CreateRoom(r Room) (string, error) {

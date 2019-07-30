@@ -28,10 +28,10 @@ type Room struct {
 	DayLimit int `xorm:"tinyint(4) default(0)"`
 
 	// 充值量限制
-	DepositLimit float64 `xorm:"default(0)"`
+	DepositLimit int `xorm:"default(0)"`
 
 	// 打碼量限制
-	DmlLimit float64 `xorm:"default(0)"`
+	DmlLimit int `xorm:"default(0)"`
 
 	// 房間狀態(開:1 關:0)
 	Status bool `xorm:"default(1)"`
