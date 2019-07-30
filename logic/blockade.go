@@ -2,8 +2,8 @@ package logic
 
 import "gitlab.com/jetfueltw/cpw/alakazam/errors"
 
-func (l *Logic) SetBlockade(uid, remark string) error {
-	aff, err := l.db.SetBlockade(uid, remark)
+func (l *Logic) SetBlockade(uid string) error {
+	aff, err := l.db.SetBlockade(uid)
 	if err != nil {
 		return err
 	}

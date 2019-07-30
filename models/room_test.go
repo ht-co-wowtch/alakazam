@@ -63,7 +63,6 @@ func TestUpdateRoom(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, ok)
 	assert.False(t, r.IsMessage)
-	assert.False(t, r.IsFollow)
 	assert.Equal(t, room.DayLimit, r.DayLimit)
 	assert.Equal(t, room.DepositLimit, r.DepositLimit)
 	assert.Equal(t, room.DmlLimit, r.DmlLimit)

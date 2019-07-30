@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (l *Logic) SetBanned(uid, remark string, expired int) error {
+func (l *Logic) SetBanned(uid string, expired int) error {
 	_, ok, err := l.db.Find(uid)
 	if err != nil {
 		return err
