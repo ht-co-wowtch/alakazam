@@ -93,12 +93,12 @@ func (l *Logic) PushRedEnvelope(give client.RedEnvelopeReply, user User) error {
 	return nil
 }
 
-type PushRoomAllForm struct {
+type PushRoomForm struct {
 	// 要廣播的房間
 	RoomId []string `json:"room_id" binding:"required"`
 
 	// user push message
-	Message string `json:"message" binding:"required"`
+	Message string `json:"message" binding:"required,max=250"`
 
 	// 訊息是否頂置
 	Top bool `json:"top"`
@@ -106,7 +106,7 @@ type PushRoomAllForm struct {
 
 // 所有房間推送
 // TODO 需實作訊息是否頂置
-func (l *Logic) PushMessage(p *PushRoomAllForm) (int64, error) {
+func (l *Logic) PushMessage(p *PushRoomForm) (int64, error) {
 	msg, err := json.Marshal(Message{
 		Name:    "管理员",
 		Avatar:  "",

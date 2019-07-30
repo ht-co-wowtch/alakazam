@@ -6,9 +6,9 @@ import (
 	"net/http"
 )
 
-// 所有房間推送
+// 多房間推送
 func (s *Server) push(c *gin.Context) error {
-	p := new(logic.PushRoomAllForm)
+	p := new(logic.PushRoomForm)
 	if err := c.ShouldBindJSON(p); err != nil {
 		return err
 	}
