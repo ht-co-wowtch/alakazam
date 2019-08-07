@@ -6,15 +6,7 @@ import (
 )
 
 func (s *Server) setBlockade(c *gin.Context) error {
-	params := struct {
-		Uid string `json:"uid" binding:"required,len=32"`
-	}{
-		Uid: c.Param("uid"),
-	}
-	if err := c.ShouldBindJSON(&params); err != nil {
-		return err
-	}
-	if err := s.logic.SetBlockade(params.Uid); err != nil {
+	if err := s.logic.SetBlockade(c.Param("uid")); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)
@@ -22,15 +14,7 @@ func (s *Server) setBlockade(c *gin.Context) error {
 }
 
 func (s *Server) removeBlockade(c *gin.Context) error {
-	params := struct {
-		Uid string `json:"uid" binding:"required,len=32"`
-	}{
-		Uid: c.Param("uid"),
-	}
-	if err := c.ShouldBindQuery(&params); err != nil {
-		return err
-	}
-	if _, err := s.logic.RemoveBlockade(params.Uid); err != nil {
+	if _, err := s.logic.RemoveBlockade(c.Param("uid")); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)
