@@ -1,21 +1,32 @@
 package logic
 
-import "gitlab.com/jetfueltw/cpw/alakazam/errors"
-
-// TODO 需要踢人，如果沒有該會員？
-func (l *Logic) SetBlockade(uid string) error {
-	aff, err := l.db.SetBlockade(uid)
+// TODO 需要踢人
+func (l *Logic) SetBlockade(uid string) (bool, error) {
+	m, ok, err := l.db.Find(uid)
 	if err != nil {
-		return err
+		return false, err
 	}
-	if aff <= 0 {
-		return errors.ErrNoRows
+	if !ok {
+		return false, nil
 	}
-	return nil
+	if m.IsBlockade {
+		return true, nil
+	}
+	aff, err := l.db.SetBlockade(uid)
+	return aff == 1, err
 }
 
-// TODO 如果沒有該會員？
 func (l *Logic) RemoveBlockade(uid string) (bool, error) {
+	m, ok, err := l.db.Find(uid)
+	if err != nil {
+		return false, err
+	}
+	if !ok {
+		return false, nil
+	}
+	if !m.IsBlockade {
+		return true, nil
+	}
 	aff, err := l.db.DeleteBanned(uid)
-	return aff >= 1, err
+	return aff == 1, err
 }
