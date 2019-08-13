@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/admin/conf"
-	admin "gitlab.com/jetfueltw/cpw/alakazam/admin/http"
+	admin "gitlab.com/jetfueltw/cpw/alakazam/admin/api"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
 	"gitlab.com/jetfueltw/cpw/micro/log"
