@@ -33,4 +33,6 @@ func (s *Server) InitRoute(e *gin.Engine) {
 
 	e.POST("/push", http.Handler(s.push))
 	e.DELETE("/push/:id", http.Handler(s.deleteTopMessage))
+
+	e.POST("/red-envelope", http.Handler(s.giveRedEnvelope))
 }

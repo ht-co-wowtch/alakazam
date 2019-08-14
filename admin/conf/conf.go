@@ -4,6 +4,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"gitlab.com/jetfueltw/cpw/micro/config"
 	"gitlab.com/jetfueltw/cpw/micro/database"
+	"gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/http"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
@@ -15,6 +16,7 @@ var (
 
 type Config struct {
 	HTTPServer *http.Conf
+	NidoranRPC *grpc.Conf
 	DB         *database.Conf
 	Kafka      *conf.Kafka
 	Redis      *redis.Conf
@@ -33,6 +35,10 @@ func Read(path string) error {
 
 	Conf = new(Config)
 	Conf.HTTPServer, err = http.ReadViper(v.Sub("http"))
+	if err != nil {
+		return err
+	}
+	Conf.NidoranRPC, err = grpc.ReadViper(v.Sub("grpc.nidoran"))
 	if err != nil {
 		return err
 	}
