@@ -1,11 +1,10 @@
-package grpc
+package pb
 
 import (
 	"errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
 )
 
 const (
@@ -71,10 +70,10 @@ var (
 
 var (
 	// 處理tcp資料的flag
-	ProtoReady = &Proto{Op: protocol.OpProtoReady}
+	ProtoReady = &Proto{Op: OpProtoReady}
 
 	// tcp close連線
-	ProtoFinish = &Proto{Op: protocol.OpProtoFinish}
+	ProtoFinish = &Proto{Op: OpProtoFinish}
 )
 
 // Proto內容寫至bytes

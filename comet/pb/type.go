@@ -1,4 +1,4 @@
-package protocol
+package pb
 
 const (
 	// client要求連線到某一個房間

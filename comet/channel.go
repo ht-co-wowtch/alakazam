@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
 )
 
 // 用於推送消息給user，可以把這個識別user在聊天室內的地址
@@ -20,7 +20,7 @@ type Channel struct {
 	protoRing Ring
 
 	// 透過此管道處理Job service 送過來的資料
-	signal chan *grpc.Proto
+	signal chan *pb.Proto
 
 	// 用於寫操作的byte
 	Writer bufio.Writer
@@ -56,12 +56,12 @@ func NewChannel(protoSize, revBuffer int) *Channel {
 	c.protoRing.Init(protoSize)
 
 	// grpc接收資料的緩充量
-	c.signal = make(chan *grpc.Proto, revBuffer)
+	c.signal = make(chan *pb.Proto, revBuffer)
 	return c
 }
 
 // 針對某人推送訊息
-func (c *Channel) Push(p *grpc.Proto) (err error) {
+func (c *Channel) Push(p *pb.Proto) (err error) {
 	// 當發送訊息速度大於消費速度則會阻塞
 	// 使用select方式來避免這一塊但此時會有訊息丟失的風險存在
 	// 可以提高signal buffer來避免但會耗費內存
@@ -74,16 +74,16 @@ func (c *Channel) Push(p *grpc.Proto) (err error) {
 }
 
 // 等待管道接收grpc資料
-func (c *Channel) Ready() *grpc.Proto {
+func (c *Channel) Ready() *pb.Proto {
 	return <-c.signal
 }
 
 // 接收到tcp資料傳遞給處理的goroutine
 func (c *Channel) Signal() {
-	c.signal <- grpc.ProtoReady
+	c.signal <- pb.ProtoReady
 }
 
 // 關閉連線flag
 func (c *Channel) Close() {
-	c.signal <- grpc.ProtoFinish
+	c.signal <- pb.ProtoFinish
 }

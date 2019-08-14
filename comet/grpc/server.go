@@ -7,7 +7,7 @@ import (
 
 	"gitlab.com/jetfueltw/cpw/alakazam/comet"
 	"gitlab.com/jetfueltw/cpw/alakazam/comet/errors"
-	pb "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
 	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
 
 	"google.golang.org/grpc"

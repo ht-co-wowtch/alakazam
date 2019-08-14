@@ -3,8 +3,8 @@ package job
 import (
 	"context"
 	"fmt"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
-	comet "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
@@ -13,12 +13,12 @@ import (
 )
 
 // 與Comet server 建立grpc client
-func newCometClient(c *grpc.Conf) (comet.CometClient, error) {
+func newCometClient(c *grpc.Conf) (pb.CometClient, error) {
 	conn, err := grpc.NewClient(c)
 	if err != nil {
 		return nil, err
 	}
-	return comet.NewCometClient(conn), nil
+	return pb.NewCometClient(conn), nil
 }
 
 // Comet is a comet.
@@ -27,13 +27,13 @@ type Comet struct {
 	name string
 
 	// Comet grpc client
-	client comet.CometClient
+	client pb.CometClient
 
 	// 處理單一房間訊息推送給comet的chan
-	roomChan []chan *comet.BroadcastRoomReq
+	roomChan []chan *pb.BroadcastRoomReq
 
 	// 處理多房間訊息推送給comet的chan
-	broadcastChan chan *comet.BroadcastReq
+	broadcastChan chan *pb.BroadcastReq
 
 	// 決定併發單人訊息推送至comet的goroutine參數
 	// 使用原子鎖做遞增來平均分配給goroutine
@@ -56,8 +56,8 @@ type Comet struct {
 // new a comet
 func NewComet(c *conf.Comet) (*Comet, error) {
 	cmt := &Comet{
-		roomChan:      make([]chan *comet.BroadcastRoomReq, c.RoutineSize),
-		broadcastChan: make(chan *comet.BroadcastReq, c.RoutineSize),
+		roomChan:      make([]chan *pb.BroadcastRoomReq, c.RoutineSize),
+		broadcastChan: make(chan *pb.BroadcastReq, c.RoutineSize),
 		routineSize:   uint64(c.RoutineSize),
 	}
 
@@ -70,7 +70,7 @@ func NewComet(c *conf.Comet) (*Comet, error) {
 
 	// 開多個goroutine併發做send grpc client
 	for i := 0; i < c.RoutineSize; i++ {
-		cmt.roomChan[i] = make(chan *comet.BroadcastRoomReq, c.RoutineChan)
+		cmt.roomChan[i] = make(chan *pb.BroadcastRoomReq, c.RoutineChan)
 		go cmt.process(cmt.roomChan[i], cmt.broadcastChan)
 	}
 	return cmt, nil
@@ -80,23 +80,23 @@ func NewComet(c *conf.Comet) (*Comet, error) {
 // Comet自己會預先開好多個goroutine，每個goroutine內都有一把
 // 用於房間訊息推送chan，用原子鎖遞增%goroutine總數量來輪替
 // 由哪一個goroutine，也就是平均分配推送的量給各goroutine
-func (c *Comet) BroadcastRoom(arg *comet.BroadcastRoomReq) {
+func (c *Comet) BroadcastRoom(arg *pb.BroadcastRoomReq) {
 	idx := atomic.AddUint64(&c.roomChanNum, 1) % c.routineSize
 	c.roomChan[idx] <- arg
 }
 
 // 多個房間推送
-func (c *Comet) Broadcast(arg *comet.BroadcastReq) {
+func (c *Comet) Broadcast(arg *pb.BroadcastReq) {
 	c.broadcastChan <- arg
 }
 
 // 處理訊息推送給comet server
-func (c *Comet) process(roomChan chan *comet.BroadcastRoomReq, broadcastChan chan *comet.BroadcastReq) {
+func (c *Comet) process(roomChan chan *pb.BroadcastRoomReq, broadcastChan chan *pb.BroadcastReq) {
 	for {
 		select {
 		// 多個房間推送
 		case broadcastArg := <-broadcastChan:
-			_, err := c.client.Broadcast(context.Background(), &comet.BroadcastReq{
+			_, err := c.client.Broadcast(context.Background(), &pb.BroadcastReq{
 				Proto: broadcastArg.Proto,
 				Speed: broadcastArg.Speed,
 			})
@@ -105,7 +105,7 @@ func (c *Comet) process(roomChan chan *comet.BroadcastRoomReq, broadcastChan cha
 			}
 		// 單一房間推送
 		case roomArg := <-roomChan:
-			_, err := c.client.BroadcastRoom(context.Background(), &comet.BroadcastRoomReq{
+			_, err := c.client.BroadcastRoom(context.Background(), &pb.BroadcastRoomReq{
 				RoomID: roomArg.RoomID,
 				Proto:  roomArg.Proto,
 			})

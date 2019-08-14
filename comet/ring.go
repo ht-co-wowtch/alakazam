@@ -1,7 +1,7 @@
 package comet
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/comet/errors"
 )
 
@@ -20,7 +20,7 @@ type Ring struct {
 	wp uint64
 
 	// 多個grpc Proto結構
-	data []grpc.Proto
+	data []pb.Proto
 }
 
 func (r *Ring) Init(num int) {
@@ -36,13 +36,13 @@ func (r *Ring) init(num uint64) {
 		}
 		num = num << 1
 	}
-	r.data = make([]grpc.Proto, num)
+	r.data = make([]pb.Proto, num)
 	r.num = num
 	r.mask = r.num - 1
 }
 
 // 取用於寫的grpc.Proto，如果讀跟寫游標相等代表沒有可以讀的Proto
-func (r *Ring) Get() (proto *grpc.Proto, err error) {
+func (r *Ring) Get() (proto *pb.Proto, err error) {
 	if r.rp == r.wp {
 		return nil, errors.ErrRingEmpty
 	}
@@ -83,7 +83,7 @@ func (r *Ring) GetAdv() {
 //							↑
 //							w
 //
-func (r *Ring) Set() (proto *grpc.Proto, err error) {
+func (r *Ring) Set() (proto *pb.Proto, err error) {
 	if r.wp-r.rp >= r.num {
 		return nil, errors.ErrRingFull
 	}

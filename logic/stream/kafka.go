@@ -3,15 +3,15 @@ package stream
 import (
 	"github.com/Shopify/sarama"
 	"github.com/gogo/protobuf/proto"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	cometpb "gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
+	logicpb "gitlab.com/jetfueltw/cpw/alakazam/logic/pb"
 	"strconv"
 )
 
 // 房間推送，以下為條件
 // 1. room id
-func (d *Stream) BroadcastRoomMsg(room string, msg []byte, model grpc.PushMsg_Type) error {
-	pushMsg := &grpc.PushMsg{
+func (d *Stream) BroadcastRoomMsg(room string, msg []byte, model logicpb.PushMsg_Type) error {
+	pushMsg := &logicpb.PushMsg{
 		Type: model,
 		Room: []string{room},
 		Msg:  msg,
@@ -32,8 +32,8 @@ func (d *Stream) BroadcastRoomMsg(room string, msg []byte, model grpc.PushMsg_Ty
 }
 
 // 多房間推送，以下為條件
-func (d *Stream) BroadcastMsg(roomIds []string, msg []byte, model grpc.PushMsg_Type) (int32, int64, error) {
-	pushMsg := &grpc.PushMsg{
+func (d *Stream) BroadcastMsg(roomIds []string, msg []byte, model logicpb.PushMsg_Type) (int32, int64, error) {
+	pushMsg := &logicpb.PushMsg{
 		Type: model,
 		Msg:  msg,
 		Room: roomIds,
@@ -44,7 +44,7 @@ func (d *Stream) BroadcastMsg(roomIds []string, msg []byte, model grpc.PushMsg_T
 	}
 	// TODO Key
 	m := &sarama.ProducerMessage{
-		Key:   sarama.StringEncoder(strconv.FormatInt(int64(protocol.OpRaw), 10)),
+		Key:   sarama.StringEncoder(strconv.FormatInt(int64(cometpb.OpRaw), 10)),
 		Topic: d.c.Topic,
 		Value: sarama.ByteEncoder(b),
 	}

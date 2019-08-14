@@ -7,7 +7,7 @@ import (
 
 	"github.com/zhenjl/cityhash"
 	"gitlab.com/jetfueltw/cpw/alakazam/comet/conf"
-	logic "gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	 "gitlab.com/jetfueltw/cpw/alakazam/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/grpc"
 )
 
@@ -19,12 +19,12 @@ const (
 	maxServerHeartbeat = time.Minute * 30
 )
 
-func newLogicClient(c *grpc.Conf) logic.LogicClient {
+func newLogicClient(c *grpc.Conf) pb.LogicClient {
 	conn, err := grpc.NewClient(c)
 	if err != nil {
 		panic(err)
 	}
-	return logic.NewLogicClient(conn)
+	return pb.NewLogicClient(conn)
 }
 
 // comet server
@@ -45,7 +45,7 @@ type Server struct {
 	name string
 
 	// Logic service grpc client
-	rpcClient logic.LogicClient
+	rpcClient pb.LogicClient
 }
 
 // new Server

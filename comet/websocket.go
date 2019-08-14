@@ -3,12 +3,11 @@ package comet
 import (
 	"context"
 	"encoding/json"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	xtime "gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"io"
@@ -114,7 +113,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 		hb time.Duration
 
 		// grpc 自訂Protocol
-		p *grpc.Proto
+		p *pb.Proto
 
 		// 管理Channel與Room
 		b *Bucket
@@ -241,7 +240,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 		if err = p.ReadWebsocket(ws); err != nil {
 			break
 		}
-		if p.Op == protocol.OpHeartbeat {
+		if p.Op == pb.OpHeartbeat {
 			// comet有心跳機制維護連線狀態，對於logic來說也需要有人利用心跳機制去告知哪個user還在線
 			// 目前在不在線這個狀態都是由comet控管，但不需要每次webSocket -> 心跳 -> comet就 -> 心跳 -> logic
 			// 所以webSocket -> comet 心跳週期會比 comet -> logic還要短
@@ -251,7 +250,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 			// webSocket -> 每30秒心跳 -> comet <====== 每次只要不超過5分鐘沒心跳則comet會認為連線沒問題
 			// webSocket -> 每30秒心跳 -> comet -> 判斷是否已經快20分鐘沒通知logic(是就發) -> logic
 			tr.Set(trd, hb)
-			p.Op = protocol.OpHeartbeatReply
+			p.Op = pb.OpHeartbeatReply
 			p.Body = nil
 			if now := time.Now(); now.Sub(lastHB) > serverHeartbeat {
 				if err = s.Heartbeat(ctx, ch); err != nil {
@@ -305,18 +304,18 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 		switch p {
 
 		// websocket連線要關閉
-		case grpc.ProtoFinish:
+		case pb.ProtoFinish:
 			finish = true
 			goto failed
 
 			// 有資料需要推送
-		case grpc.ProtoReady:
+		case pb.ProtoReady:
 			for {
 				// 取得上次透過Set()寫入資料的Proto
 				if p, err = ch.protoRing.Get(); err != nil {
 					break
 				}
-				if p.Op == protocol.OpHeartbeatReply {
+				if p.Op == pb.OpHeartbeatReply {
 					if ch.Room != nil {
 						online = ch.Room.OnlineNum()
 					}
@@ -353,18 +352,18 @@ failed:
 	wp.Put(wb)
 	// must ensure all channel message discard, for reader won't blocking Signal
 	for !finish {
-		finish = (ch.Ready() == grpc.ProtoFinish)
+		finish = (ch.Ready() == pb.ProtoFinish)
 	}
 }
 
 // websocket請求連線至某房間
-func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Channel, p *grpc.Proto) (string, time.Duration, error) {
+func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Channel, p *pb.Proto) (string, time.Duration, error) {
 	for {
 		// 如果第一次連線送的資料不是請求連接到某房間則會一直等待
 		if err := p.ReadWebsocket(ws); err != nil {
 			return "", time.Duration(0), err
 		}
-		if p.Op == protocol.OpAuth {
+		if p.Op == pb.OpAuth {
 			break
 		} else {
 			log.Error("ws request not auth", zap.Int32("op", p.Op))
@@ -417,8 +416,8 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 }
 
 // 回覆連線至某房間結果
-func authReply(ws *websocket.Conn, p *grpc.Proto, b []byte) (err error) {
-	p.Op = protocol.OpAuthReply
+func authReply(ws *websocket.Conn, p *pb.Proto, b []byte) (err error) {
+	p.Op = pb.OpAuthReply
 	p.Body = b
 	if err = p.WriteWebsocket(ws); err != nil {
 		return

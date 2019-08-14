@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 
 	"gitlab.com/jetfueltw/cpw/alakazam/comet/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
 )
 
 // 用於管理Room與Channel關於推送的邏輯
@@ -23,7 +23,7 @@ type Bucket struct {
 
 	// 一個Bucket會開多個goroutine，每個goroutine都有一把此chan針對房間做推送
 	// 推送時會採用原子操作遞增並除於grpc.BroadcastRoomReq數量取餘數來決定使用哪一個
-	routines []chan *grpc.BroadcastRoomReq
+	routines []chan *pb.BroadcastRoomReq
 
 	// 用於決定由哪一個routines來做房間推送，此數字由atomic.AddUint64做原子操作遞增
 	routinesNum uint64
@@ -37,9 +37,9 @@ func NewBucket(c *conf.Bucket) (b *Bucket) {
 	b.c = c
 
 	// 設定該Bucket需要開幾個goroutine併發做房間訊息推送
-	b.routines = make([]chan *grpc.BroadcastRoomReq, c.RoutineAmount)
+	b.routines = make([]chan *pb.BroadcastRoomReq, c.RoutineAmount)
 	for i := uint64(0); i < c.RoutineAmount; i++ {
-		c := make(chan *grpc.BroadcastRoomReq, c.RoutineSize)
+		c := make(chan *pb.BroadcastRoomReq, c.RoutineSize)
 		b.routines[i] = c
 		go b.roomproc(c)
 	}
@@ -176,7 +176,7 @@ func (b *Bucket) Channel(key string) (ch *Channel) {
 }
 
 // 對Bucket內所有Channel
-func (b *Bucket) Broadcast(p *grpc.Proto) {
+func (b *Bucket) Broadcast(p *pb.Proto) {
 	var ch *Channel
 	b.cLock.RLock()
 	for _, ch = range b.chs {
@@ -205,7 +205,7 @@ func (b *Bucket) DelRoom(room *Room) {
 // Bucket自己會預先開好多個goroutine，每個goroutine內都有一把
 // 用於訊息推送chan，用原子鎖遞增%goroutine總數量來輪替
 // 由哪一個goroutine，也就是平均分配推送的量給各goroutine
-func (b *Bucket) BroadcastRoom(arg *grpc.BroadcastRoomReq) {
+func (b *Bucket) BroadcastRoom(arg *pb.BroadcastRoomReq) {
 	num := atomic.AddUint64(&b.routinesNum, 1) % b.c.RoutineAmount
 	b.routines[num] <- arg
 }
@@ -240,7 +240,7 @@ func (b *Bucket) UpRoomsCount(roomCountMap map[string]int32) {
 }
 
 // 接收logic grpc client資料做某房間訊息推送
-func (b *Bucket) roomproc(c chan *grpc.BroadcastRoomReq) {
+func (b *Bucket) roomproc(c chan *pb.BroadcastRoomReq) {
 	for {
 		arg := <-c
 		if room := b.Room(arg.RoomID); room != nil {

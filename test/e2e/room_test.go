@@ -3,10 +3,9 @@ package e2e
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
-	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/request"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/id"
@@ -40,7 +39,7 @@ func TestPushMessage(t *testing.T) {
 	time.Sleep(time.Second * 2)
 
 	var err error
-	var p []grpc.Proto
+	var p []pb.Proto
 	if p, err = userB.ReadMessage(); err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +50,7 @@ func TestPushMessage(t *testing.T) {
 	}
 
 	assert.Len(t, p, 1)
-	assert.Equal(t, pd.OpRaw, p[0].Op)
+	assert.Equal(t, pb.OpRaw, p[0].Op)
 	assert.Equal(t, "test", b.Message)
 	assert.Equal(t, uidA, b.Uid)
 	assert.NotEmpty(t, b.Name)
@@ -80,7 +79,7 @@ func TestChangeRoom(t *testing.T) {
 	time.Sleep(time.Second * 2)
 
 	var err error
-	var p []grpc.Proto
+	var p []pb.Proto
 	if p, err = userB.ReadMessage(); err != nil {
 		t.Fatal(err)
 	}
@@ -102,7 +101,7 @@ func TestHeartbeat(t *testing.T) {
 	}
 	online := binary.BigEndian.Int32(userA.Proto.Body)
 
-	assert.Equal(t, pd.OpHeartbeatReply, userA.Proto.Op)
+	assert.Equal(t, pb.OpHeartbeatReply, userA.Proto.Op)
 	assert.Equal(t, int32(1), online)
 }
 

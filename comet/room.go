@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"gitlab.com/jetfueltw/cpw/alakazam/comet/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
 )
 
 // 房間結構，紀錄Channel採用雙向鏈結串列結構，房間內有A,B,C 三人結構如下，此三人都是Channel
@@ -126,7 +126,7 @@ func (r *Room) Del(ch *Channel) bool {
 }
 
 // 單一房間所有人的訊息推送
-func (r *Room) Push(p *grpc.Proto) {
+func (r *Room) Push(p *pb.Proto) {
 	r.rLock.RLock()
 	// Channel採用雙向鏈結串列，所以用for往next找直到nil
 	for ch := r.next; ch != nil; ch = ch.Next {

@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/gogo/protobuf/proto"
+	cometpb "gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
+	logicpb "gitlab.com/jetfueltw/cpw/alakazam/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"sync"
@@ -48,7 +48,7 @@ func (c *consume) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama
 			return errMessageNotFound
 		}
 		session.MarkMessage(msg, "")
-		pushMsg := new(grpc.PushMsg)
+		pushMsg := new(logicpb.PushMsg)
 		if err := proto.Unmarshal(msg.Value, pushMsg); err != nil {
 			log.Error("proto unmarshal", zap.Error(err), zap.Any("data", msg))
 			return err
@@ -69,28 +69,28 @@ func (c *consume) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama
 }
 
 // 訊息推送至comet server
-func (c *consume) push(pushMsg *grpc.PushMsg) error {
+func (c *consume) push(pushMsg *logicpb.PushMsg) error {
 	switch pushMsg.Type {
 	// 單一/多房間推送
-	case grpc.PushMsg_ROOM:
+	case logicpb.PushMsg_ROOM:
 		for _, r := range pushMsg.Room {
-			if err := c.getRoom(r).Push(pushMsg.Msg, protocol.OpRaw); err != nil {
+			if err := c.getRoom(r).Push(pushMsg.Msg, cometpb.OpRaw); err != nil {
 				return err
 			}
 		}
 	// 訊息頂置
-	case grpc.PushMsg_TOP:
+	case logicpb.PushMsg_TOP:
 		for _, r := range pushMsg.Room {
-			if err := c.getRoom(r).Push(pushMsg.Msg, protocol.OpTopRaw); err != nil {
+			if err := c.getRoom(r).Push(pushMsg.Msg, cometpb.OpTopRaw); err != nil {
 				return err
 			}
 		}
 	// 所有房間推送
-	case grpc.PushMsg_BROADCAST:
+	case logicpb.PushMsg_BROADCAST:
 		c.broadcast(pushMsg.Msg, pushMsg.Speed)
-	case grpc.PushMsg_MONEY:
+	case logicpb.PushMsg_MONEY:
 		if len(pushMsg.Room) == 1 && pushMsg.Room[0] != "" {
-			return c.getRoom(pushMsg.Room[0]).Push(pushMsg.Msg, protocol.OpMoney)
+			return c.getRoom(pushMsg.Room[0]).Push(pushMsg.Msg, cometpb.OpMoney)
 		} else {
 			return fmt.Errorf("money can only be pushed to a single room: %s", pushMsg.Msg)
 		}
@@ -104,16 +104,16 @@ func (c *consume) push(pushMsg *grpc.PushMsg) error {
 // 多房間訊息推送給comet
 func (c *consume) broadcast(body []byte, speed int32) {
 	buf := bytes.NewWriterSize(len(body) + 64)
-	p := &grpc.Proto{
-		Op:   protocol.OpRaw,
+	p := &cometpb.Proto{
+		Op:   cometpb.OpRaw,
 		Body: body,
 	}
 	p.WriteTo(buf)
 	p.Body = buf.Buffer()
-	p.Op = protocol.OpBatchRaw
+	p.Op = cometpb.OpBatchRaw
 	comets := c.servers
 	speed /= int32(len(comets))
-	var args = grpc.BroadcastReq{
+	var args = cometpb.BroadcastReq{
 		Proto: p,
 		Speed: speed,
 	}
@@ -124,10 +124,10 @@ func (c *consume) broadcast(body []byte, speed int32) {
 
 // 房間訊息推送給comet
 func (c *consume) broadcastRoomRawBytes(roomID string, body []byte) (err error) {
-	args := grpc.BroadcastRoomReq{
+	args := cometpb.BroadcastRoomReq{
 		RoomID: roomID,
-		Proto: &grpc.Proto{
-			Op:   protocol.OpBatchRaw,
+		Proto: &cometpb.Proto{
+			Op:   cometpb.OpBatchRaw,
 			Body: body,
 		},
 	}

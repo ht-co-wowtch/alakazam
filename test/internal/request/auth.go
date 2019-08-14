@@ -3,9 +3,8 @@ package request
 import (
 	"encoding/json"
 	"fmt"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
-	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/protocol"
 	"gitlab.com/jetfueltw/cpw/micro/client"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
@@ -36,7 +35,7 @@ type Auth struct {
 
 	Wr    *bufio.Writer
 	Rd    *bufio.Reader
-	Proto *grpc.Proto
+	Proto *pb.Proto
 }
 
 var (
@@ -86,8 +85,8 @@ func DialAuthToken(roomId, token string) (*Auth, error) {
 	wr := bufio.NewWriter(conn)
 	rd := bufio.NewReader(conn)
 
-	proto := new(grpc.Proto)
-	proto.Op = pd.OpAuth
+	proto := new(pb.Proto)
+	proto.Op = pb.OpAuth
 	proto.Body, _ = json.Marshal(authToken)
 
 	if err = protocol.Write(wr, proto); err != nil {
@@ -113,8 +112,8 @@ func DialAuthToken(roomId, token string) (*Auth, error) {
 }
 
 func (a *Auth) ChangeRoom(roomId string) error {
-	proto := new(grpc.Proto)
-	proto.Op = pd.OpChangeRoom
+	proto := new(pb.Proto)
+	proto.Op = pb.OpChangeRoom
 	proto.Body = []byte(fmt.Sprintf(`{"room_id":"%s"}`, roomId))
 	if err := protocol.Write(a.Wr, proto); err != nil {
 		return err
@@ -130,8 +129,8 @@ func (a *Auth) PushRoom(message string) Response {
 }
 
 func (a *Auth) Heartbeat() error {
-	hbProto := new(grpc.Proto)
-	hbProto.Op = pd.OpHeartbeat
+	hbProto := new(pb.Proto)
+	hbProto.Op = pb.OpHeartbeat
 	hbProto.Body = nil
 	if err := protocol.Write(a.Wr, hbProto); err != nil {
 		return err
@@ -146,7 +145,7 @@ func (a *Auth) Read() error {
 	return protocol.Read(a.Rd, a.Proto)
 }
 
-func (a *Auth) ReadMessage() ([]grpc.Proto, error) {
+func (a *Auth) ReadMessage() ([]pb.Proto, error) {
 	return protocol.ReadMessage(a.Rd, a.Proto)
 }
 

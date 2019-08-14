@@ -3,10 +3,10 @@ package protocol
 import (
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
 )
 
-func Read(rr *bufio.Reader, p *grpc.Proto) (err error) {
+func Read(rr *bufio.Reader, p *pb.Proto) (err error) {
 	var (
 		bodyLen   int
 		headerLen int16
@@ -22,7 +22,7 @@ func Read(rr *bufio.Reader, p *grpc.Proto) (err error) {
 	return
 }
 
-func ReadMessage(rr *bufio.Reader, p *grpc.Proto) (protos []grpc.Proto, err error) {
+func ReadMessage(rr *bufio.Reader, p *pb.Proto) (protos []pb.Proto, err error) {
 	var (
 		bodyLen   int
 		headerLen int16
@@ -31,7 +31,7 @@ func ReadMessage(rr *bufio.Reader, p *grpc.Proto) (protos []grpc.Proto, err erro
 
 	packLen, headerLen, err = readHeader(rr, p)
 	for offset := int(headerLen); offset < int(packLen); offset += int(packLen) {
-		proto := new(grpc.Proto)
+		proto := new(pb.Proto)
 		packLen, headerLen, err = readHeader(rr, proto)
 		if bodyLen = int(packLen - int32(headerLen)); bodyLen > 0 {
 			proto.Body, err = rr.Pop(bodyLen)
@@ -43,35 +43,35 @@ func ReadMessage(rr *bufio.Reader, p *grpc.Proto) (protos []grpc.Proto, err erro
 	return
 }
 
-func Write(wr *bufio.Writer, p *grpc.Proto) (err error) {
+func Write(wr *bufio.Writer, p *pb.Proto) (err error) {
 	var (
 		buf     []byte
 		packLen int32
 	)
 
-	packLen = grpc.RawHeaderSize + int32(len(p.Body))
-	if buf, err = wr.Peek(grpc.RawHeaderSize); err != nil {
+	packLen = pb.RawHeaderSize + int32(len(p.Body))
+	if buf, err = wr.Peek(pb.RawHeaderSize); err != nil {
 		return
 	}
-	binary.BigEndian.PutInt32(buf[grpc.PackOffset:], packLen)
-	binary.BigEndian.PutInt16(buf[grpc.HeaderOffset:], int16(grpc.RawHeaderSize))
-	binary.BigEndian.PutInt32(buf[grpc.OpOffset:], p.Op)
+	binary.BigEndian.PutInt32(buf[pb.PackOffset:], packLen)
+	binary.BigEndian.PutInt16(buf[pb.HeaderOffset:], int16(pb.RawHeaderSize))
+	binary.BigEndian.PutInt32(buf[pb.OpOffset:], p.Op)
 	if p.Body != nil {
 		_, err = wr.Write(p.Body)
 	}
 	return wr.Flush()
 }
 
-func readHeader(rr *bufio.Reader, p *grpc.Proto) (packLen int32, headerLen int16, err error) {
+func readHeader(rr *bufio.Reader, p *pb.Proto) (packLen int32, headerLen int16, err error) {
 	var (
 		buf []byte
 	)
-	if buf, err = rr.Pop(grpc.RawHeaderSize); err != nil {
+	if buf, err = rr.Pop(pb.RawHeaderSize); err != nil {
 		return
 	}
 
-	packLen = binary.BigEndian.Int32(buf[grpc.PackOffset:grpc.HeaderOffset])
-	headerLen = binary.BigEndian.Int16(buf[grpc.HeaderOffset:grpc.OpOffset])
-	p.Op = binary.BigEndian.Int32(buf[grpc.OpOffset:])
+	packLen = binary.BigEndian.Int32(buf[pb.PackOffset:pb.HeaderOffset])
+	headerLen = binary.BigEndian.Int16(buf[pb.HeaderOffset:pb.OpOffset])
+	p.Op = binary.BigEndian.Int32(buf[pb.OpOffset:])
 	return
 }

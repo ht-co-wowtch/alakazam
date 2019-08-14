@@ -3,7 +3,7 @@ package e2e
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
-	pd "gitlab.com/jetfueltw/cpw/alakazam/protocol"
+	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/test/internal/request"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/id"
@@ -16,7 +16,7 @@ func TestRoomBlockade(t *testing.T) {
 
 	defer userA.DeleteBanned()
 
-	assert.Equal(t, pd.OpAuthReply, userA.Proto.Op)
+	assert.Equal(t, pb.OpAuthReply, userA.Proto.Op)
 
 	userA.SetBlockade("test")
 	userA = request.DialAuth(t, roomId, uidA)
@@ -38,5 +38,5 @@ func TestDeleteBlockade(t *testing.T) {
 
 	userA := request.DialAuth(t, roomId, uidA)
 
-	assert.Equal(t, pd.OpAuthReply, userA.Proto.Op)
+	assert.Equal(t, pb.OpAuthReply, userA.Proto.Op)
 }

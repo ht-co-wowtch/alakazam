@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
-	"gitlab.com/jetfueltw/cpw/alakazam/protocol/grpc"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/pb"
 	"time"
 )
 
@@ -52,7 +52,7 @@ func (l *Logic) PushRoom(c *gin.Context, p *PushRoom) error {
 	if err != nil {
 		return err
 	}
-	if err := l.stream.BroadcastRoomMsg(p.RoomId, msg, grpc.PushMsg_ROOM); err != nil {
+	if err := l.stream.BroadcastRoomMsg(p.RoomId, msg, pb.PushMsg_ROOM); err != nil {
 		return err
 	}
 	return nil
@@ -87,7 +87,7 @@ func (l *Logic) PushRedEnvelope(give client.RedEnvelopeReply, user User) error {
 	if err != nil {
 		return err
 	}
-	if err := l.stream.BroadcastRoomMsg(user.RoomId, msg, grpc.PushMsg_MONEY); err != nil {
+	if err := l.stream.BroadcastRoomMsg(user.RoomId, msg, pb.PushMsg_MONEY); err != nil {
 		return err
 	}
 	return nil
@@ -116,11 +116,11 @@ func (l *Logic) PushMessage(p *PushRoomForm) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	var t grpc.PushMsg_Type
+	var t pb.PushMsg_Type
 	if p.Top {
-		t = grpc.PushMsg_TOP
+		t = pb.PushMsg_TOP
 	} else {
-		t = grpc.PushMsg_ROOM
+		t = pb.PushMsg_ROOM
 	}
 	_, id, err := l.stream.BroadcastMsg(p.RoomId, msg, t)
 	if err != nil {
