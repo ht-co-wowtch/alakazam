@@ -49,11 +49,17 @@ func (c *Consumer) Run(handler ConsumerGroupHandler) {
 				log.Error("kafka consumer", zap.Error(err))
 			}
 		}
+		if c.ctx.Err() != nil {
+			return
+		}
 	}
 }
 
 func (c *Consumer) Close() {
-	c.Close()
+	c.ctx.Done()
+	if err := c.group.Close(); err != nil {
+		log.Error(err.Error())
+	}
 }
 
 type consumer struct {
