@@ -3,13 +3,13 @@ package room
 import (
 	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 )
 
 func (r *Room) Auth(u *member.User) error {
 	var err error
-	u.RoomStatus, err = r.cache.GetRoom(u.RoomId)
+	u.RoomStatus, err = r.c.GetRoom(u.RoomId)
 	if err != nil && err != redis.Nil {
 		return err
 	}
@@ -19,7 +19,7 @@ func (r *Room) Auth(u *member.User) error {
 			return err
 		}
 		u.RoomStatus = room.Permission()
-		if err := r.cache.SetRoom(room); err != nil {
+		if err := r.c.SetRoom(room); err != nil {
 			return err
 		}
 	}

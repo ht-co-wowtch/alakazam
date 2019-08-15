@@ -6,12 +6,12 @@ import (
 	admin "gitlab.com/jetfueltw/cpw/alakazam/admin/api"
 	"gitlab.com/jetfueltw/cpw/alakazam/admin/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/member"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/room"
+	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"gitlab.com/jetfueltw/cpw/micro/log"
+	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"os"
 	"os/signal"
 	"syscall"
@@ -32,9 +32,9 @@ func main() {
 	srv := logic.NewAdmin(conf.Conf.DB, conf.Conf.Redis, conf.Conf.Kafka)
 
 	store := models.NewStore(conf.Conf.DB)
-	redis := cache.NewRedis(conf.Conf.Redis)
-	m := member.New(store, redis, nil)
-	r := room.New(store, redis, m, nil, 0)
+	cache := redis.New(conf.Conf.Redis)
+	m := member.New(store, cache, nil)
+	r := room.New(store, cache, m, nil, 0)
 
 	httpAdminSrv := http.New(conf.Conf.HTTPServer, admin.New(srv, m, r, srv.MessageService()))
 

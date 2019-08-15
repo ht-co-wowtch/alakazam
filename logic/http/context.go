@@ -6,9 +6,9 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/member"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/message"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/room"
+	"gitlab.com/jetfueltw/cpw/alakazam/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"time"
 )
 

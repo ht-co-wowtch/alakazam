@@ -1,13 +1,13 @@
 package logic
 
 import (
+	goRedis "github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/member"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/message"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/room"
+	"gitlab.com/jetfueltw/cpw/alakazam/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"gitlab.com/jetfueltw/cpw/micro/database"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
@@ -25,7 +25,7 @@ type Logic struct {
 
 	db *models.Store
 
-	cache *cache.Cache
+	cache *goRedis.Client
 
 	stream *message.Producer
 
@@ -44,7 +44,7 @@ func New(c *conf.Config) (l *Logic) {
 	l = &Logic{
 		c:      c,
 		db:     models.NewStore(c.DB),
-		cache:  cache.NewRedis(c.Redis),
+		cache:  redis.New(c.Redis),
 		stream: message.NewProducer(c.Kafka),
 		client: client.New(c.Api),
 	}
@@ -70,7 +70,7 @@ func (l *Logic) MessageService() *message.Producer {
 func NewAdmin(c1 *database.Conf, c2 *redis.Conf, c3 *conf.Kafka) (*Logic) {
 	return &Logic{
 		db:     models.NewStore(c1),
-		cache:  cache.NewRedis(c2),
+		cache:  redis.New(c2),
 		stream: message.NewProducer(c3),
 	}
 }
@@ -97,9 +97,9 @@ func (l *Logic) loadOnline() (err error) {
 	var (
 		roomCount = make(map[string]int32)
 	)
-	var online *cache.Online
+	var online *room.Online
 	// TODO hostname 先寫死 後續需要註冊中心來sync
-	online, err = l.cache.ServerOnline("hostname")
+	online, err = l.room.GetOnline("hostname")
 	if err != nil {
 		return
 	}

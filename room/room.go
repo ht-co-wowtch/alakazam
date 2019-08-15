@@ -3,10 +3,10 @@ package room
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gopkg.in/go-playground/validator.v8"
@@ -15,16 +15,16 @@ import (
 
 type Room struct {
 	db        *models.Store
-	cache     *cache.Cache
+	c         *Cache
 	member    *member.Member
 	cli       *client.Client
 	heartbeat int64
 }
 
-func New(db *models.Store, cache *cache.Cache, member *member.Member, cli *client.Client, heartbeat int64) *Room {
+func New(db *models.Store, cache *redis.Client, member *member.Member, cli *client.Client, heartbeat int64) *Room {
 	return &Room{
 		db:        db,
-		cache:     cache,
+		c:         newCache(cache),
 		member:    member,
 		cli:       cli,
 		heartbeat: heartbeat,
@@ -75,7 +75,7 @@ func (l *Room) CreateRoom(r Status) (string, error) {
 	if dbRoom.Id != "" {
 		return room.Id, l.updateRoom(room)
 	}
-	return r.Id, l.cache.SetRoom(room)
+	return r.Id, l.c.SetRoom(room)
 }
 
 func (l *Room) UpdateRoom(r Status) error {
@@ -123,7 +123,7 @@ func (l *Room) updateRoom(room models.Room) error {
 	if err != nil {
 		return err
 	}
-	if err := l.cache.SetRoom(room); err != nil {
+	if err := l.c.SetRoom(room); err != nil {
 		return err
 	}
 	return nil
@@ -133,7 +133,7 @@ func (l *Room) IsMessage(rid string, status int, uid, token string) error {
 	if !models.IsMoney(status) {
 		return nil
 	}
-	day, dml, deposit, err := l.cache.GetRoomByMoney(rid)
+	day, dml, deposit, err := l.c.GetRoomByMoney(rid)
 	if err != nil {
 		return err
 	}
@@ -208,32 +208,32 @@ func (l *Room) Connect(server string, token []byte) (*ConnectReply, error) {
 
 // redis清除某人連線資訊
 func (l *Room) Disconnect(uid, key, server string) (has bool, err error) {
-	return l.cache.DeleteUser(uid, key)
+	return l.member.Logout(uid, key)
 }
 
 // user key更換房間
 func (l *Room) ChangeRoom(uid, key, roomId string) error {
-	return l.cache.ChangeRoom(uid, key, roomId)
+	return l.member.ChangeRoom(uid, key, roomId)
 }
 
 // 更新某人redis資訊的過期時間
 func (l *Room) Heartbeat(uid, key, roomId, name, server string) error {
-	_, err := l.cache.RefreshUserExpire(uid)
-	if err != nil {
-		return err
-	}
-	return nil
+	return l.member.Heartbeat(uid)
 }
 
 // restart redis內存的每個房間總人數
 func (l *Room) RenewOnline(server string, roomCount map[string]int32) (map[string]int32, error) {
-	online := &cache.Online{
+	online := &Online{
 		Server:    server,
 		RoomCount: roomCount,
 		Updated:   time.Now().Unix(),
 	}
-	if err := l.cache.AddServerOnline(server, online); err != nil {
+	if err := l.c.AddServerOnline(server, online); err != nil {
 		return nil, err
 	}
 	return roomCount, nil
+}
+
+func (r *Room) GetOnline(server string) (*Online, error) {
+	return r.c.ServerOnline(server)
 }

@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/room"
+	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"net/http"
 )
 

@@ -5,7 +5,6 @@ import (
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
@@ -13,17 +12,15 @@ import (
 
 type Member struct {
 	cli *client.Client
-
-	db *models.Store
-
-	cache *cache.Cache
+	db  *models.Store
+	c   *Cache
 }
 
-func New(db *models.Store, cache *cache.Cache, cli *client.Client) *Member {
+func New(db *models.Store, cache *redis.Client, cli *client.Client) *Member {
 	return &Member{
-		db:    db,
-		cache: cache,
-		cli:   cli,
+		db:  db,
+		cli: cli,
+		c:   newCache(cache),
 	}
 }
 
@@ -48,13 +45,13 @@ type User struct {
 	RoomStatus int `json:"-"`
 }
 
-func (l *Member) Login(token, roomId, server string) (*models.Member, string, error) {
-	user, err := l.cli.Auth(token)
+func (m *Member) Login(token, roomId, server string) (*models.Member, string, error) {
+	user, err := m.cli.Auth(token)
 	if err != nil {
 		return nil, "", err
 	}
 
-	u, ok, err := l.db.Find(user.Uid)
+	u, ok, err := m.db.Find(user.Uid)
 	if err != nil {
 		return nil, "", err
 	}
@@ -65,7 +62,7 @@ func (l *Member) Login(token, roomId, server string) (*models.Member, string, er
 			Avatar: user.Avatar,
 			Type:   user.Type,
 		}
-		if aff, err := l.db.CreateUser(u); err != nil || aff <= 0 {
+		if aff, err := m.db.CreateUser(u); err != nil || aff <= 0 {
 			return nil, "", err
 		}
 	} else if u.IsBlockade {
@@ -75,7 +72,7 @@ func (l *Member) Login(token, roomId, server string) (*models.Member, string, er
 	if u.Name != user.Name || u.Avatar != user.Avatar {
 		u.Name = user.Name
 		u.Avatar = user.Avatar
-		if aff, err := l.db.UpdateUser(u); err != nil || aff <= 0 {
+		if aff, err := m.db.UpdateUser(u); err != nil || aff <= 0 {
 			log.Error("UpdateUser", zap.String("uid", user.Uid), zap.Int64("affected", aff), zap.Error(err))
 		}
 	}
@@ -83,7 +80,7 @@ func (l *Member) Login(token, roomId, server string) (*models.Member, string, er
 	key := uuid.New().String()
 
 	// 儲存user資料至redis
-	if err := l.cache.SetUser(u, key, roomId, server); err != nil {
+	if err := m.c.SetUser(u, key, roomId, server); err != nil {
 		return nil, "", err
 	} else {
 		log.Info(
@@ -97,10 +94,14 @@ func (l *Member) Login(token, roomId, server string) (*models.Member, string, er
 	return u, key, nil
 }
 
+func (m *Member) Logout(uid, key string) (bool, error) {
+	return m.c.DeleteUser(uid, key)
+}
+
 // 會員在線認證
-func (l *Member) Auth(u *User) error {
+func (m *Member) Auth(u *User) error {
 	var err error
-	u.RoomId, u.Name, u.Status, err = l.cache.GetUser(u.Uid, u.Key)
+	u.RoomId, u.Name, u.Status, err = m.c.GetUser(u.Uid, u.Key)
 	if err != nil {
 		return err
 	}
@@ -110,10 +111,22 @@ func (l *Member) Auth(u *User) error {
 	return nil
 }
 
-func (l *Member) GetUserName(uid []string) ([]string, error) {
-	name, err := l.cache.GetUserName(uid)
+func (m *Member) GetUserName(uid []string) ([]string, error) {
+	name, err := m.c.GetUserName(uid)
 	if err == redis.Nil {
 		return nil, errors.ErrNoRows
 	}
 	return name, nil
+}
+
+func (m *Member) Heartbeat(uid string) error {
+	_, err := m.c.RefreshUserExpire(uid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Member) ChangeRoom(uid, key, roomId string) error {
+	return m.ChangeRoom(uid, key, roomId)
 }

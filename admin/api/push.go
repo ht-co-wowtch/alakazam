@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/message"
+	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"net/http"
 )
 

@@ -1,13 +1,44 @@
-package cache
+package room
 
 import (
+	"fmt"
+	"github.com/alicebob/miniredis"
+	goRedis "github.com/go-redis/redis"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/id"
+	"gitlab.com/jetfueltw/cpw/micro/redis"
+	"os"
 	"strconv"
 	"testing"
 	"time"
 )
+
+var (
+	r *goRedis.Client
+	c *Cache
+)
+
+func TestMain(m *testing.M) {
+	s, err := miniredis.Run()
+	if err != nil {
+		fatalTestError("Error creating redis test : %v\n", err)
+	}
+	r = redis.New(&redis.Conf{
+		Addr: s.Addr(),
+	})
+	c = &Cache{
+		c: r,
+	}
+	exitStatus := m.Run()
+	s.Close()
+	os.Exit(exitStatus)
+}
+
+func fatalTestError(fmtStr string, args ...interface{}) {
+	fmt.Fprintf(os.Stderr, fmtStr, args...)
+	os.Exit(1)
+}
 
 var (
 	day    = 1
@@ -60,4 +91,20 @@ func TestGetRoom(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, s, s)
+}
+
+func TestAddServerOnline(t *testing.T) {
+	unix := time.Now().Unix()
+	server := &Online{
+		Server:    "123",
+		RoomCount: map[string]int32{"1": 1, "2": 2},
+		Updated:   unix,
+	}
+	err := c.AddServerOnline("123", server)
+
+	assert.Nil(t, err)
+
+	o, err := c.ServerOnline("123")
+
+	assert.Equal(t, server, o)
 }

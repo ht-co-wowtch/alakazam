@@ -1,12 +1,91 @@
-package cache
+package member
 
 import (
 	"errors"
+	"fmt"
 	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"strconv"
+	"time"
 )
+
+const (
+	// user id的前綴詞，用於存儲在redis當key
+	prefixUidInfo = "uid_%s"
+
+	// user 禁言key的前綴詞
+	prefixBannedInfo = "b_%s"
+)
+
+type Cache struct {
+	c *redis.Client
+
+	expire time.Duration
+}
+
+func newCache(client *redis.Client) *Cache {
+	return &Cache{
+		c:      client,
+		expire: time.Minute * 30,
+	}
+}
+
+func keyUidInfo(uid string) string {
+	return fmt.Sprintf(prefixUidInfo, uid)
+}
+
+func keyBannedInfo(uid string) string {
+	return fmt.Sprintf(prefixBannedInfo, uid)
+}
+
+const (
+	// user hash table name key
+	hashNameKey = "name"
+
+	// user hash table status key
+	hashStatusKey = "status"
+
+	// user hash table server key
+	hashServerKey = "server"
+)
+
+// 設定禁言
+func (c *Cache) SetBanned(uid string, expired time.Duration) error {
+	key := keyBannedInfo(uid)
+	i, err := c.c.Exists(key).Result()
+	if err != nil {
+		return err
+	}
+	tx := c.c.Pipeline()
+	tx.Set(key, time.Now().Add(expired).Unix(), expired)
+	if i <= 0 {
+		tx.HIncrBy(keyUidInfo(uid), hashStatusKey, -models.Message)
+	}
+	_, err = tx.Exec()
+	return err
+}
+
+// 取得禁言時效
+func (c *Cache) GetBanned(uid string) (time.Time, bool, error) {
+	sec, err := c.c.Get(keyBannedInfo(uid)).Int64()
+	if err != nil {
+		if err == redis.Nil {
+			err = nil
+		}
+		return time.Time{}, false, err
+	}
+	return time.Unix(sec, 0), true, nil
+}
+
+// 解除禁言
+func (c *Cache) DelBanned(uid string) error {
+	tx := c.c.Pipeline()
+	tx.Del(keyBannedInfo(uid))
+	tx.HIncrBy(keyUidInfo(uid), hashStatusKey, models.Message)
+	_, err := tx.Exec()
+	return err
+}
 
 // 儲存user資訊
 func (c *Cache) SetUser(member *models.Member, key, roomId, server string) error {
