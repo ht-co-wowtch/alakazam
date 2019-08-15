@@ -41,6 +41,7 @@ func New(conf *conf.Config) *Server {
 	return &Server{
 		ctx:        ctx,
 		cancel:     cancel,
+		cache:      cache,
 		httpServer: httpServer,
 	}
 }
