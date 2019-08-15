@@ -5,8 +5,10 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"net/http"
+	"time"
 )
 
 type GiveRedEnvelope struct {
@@ -48,7 +50,19 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := s.message.PushRedEnvelope(reply, arg.User); err != nil {
+	msg := message.Message{
+		Uid:     arg.User.Uid,
+		Name:    arg.User.Name,
+		Avatar:  "",
+		Message: give.Message,
+		Time:    time.Now().Format("15:04:05"),
+	}
+	red := message.RedEnvelope{
+		Id:      reply.Uid,
+		Token:   reply.Token,
+		Expired: reply.ExpireAt.Unix(),
+	}
+	if err := s.message.SendRedEnvelope(arg.User.RoomId, msg, red); err != nil {
 		return err
 	}
 	c.JSON(http.StatusOK, gin.H{

@@ -2,17 +2,27 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"net/http"
 )
 
+type PushRoomForm struct {
+	// 要廣播的房間
+	RoomId []string `json:"room_id" binding:"required"`
+
+	// user push message
+	Message string `json:"message" binding:"required,max=250"`
+
+	// 訊息是否頂置
+	Top bool `json:"top"`
+}
+
 // 多房間推送
 func (s *httpServer) push(c *gin.Context) error {
-	p := new(message.PushRoomForm)
+	p := new(PushRoomForm)
 	if err := c.ShouldBindJSON(p); err != nil {
 		return err
 	}
-	id, err := s.message.PushMessage(p)
+	id, err := s.message.SendForAdmin(p.RoomId, p.Message, p.Top)
 	if err != nil {
 		return err
 	}
