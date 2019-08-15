@@ -4,6 +4,8 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/room"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/stream"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/database"
@@ -31,6 +33,10 @@ type Logic struct {
 
 	// 房間在線人數，key是房間id
 	roomCount map[string]int32
+
+	member *member.Member
+
+	room *room.Room
 }
 
 // New init
@@ -42,6 +48,8 @@ func New(c *conf.Config) (l *Logic) {
 		stream: stream.NewKafkaPub(c.Kafka),
 		client: client.New(c.Api),
 	}
+	l.member = member.New(l.db, l.cache)
+	l.room = room.New(l.db, l.cache, l.member)
 	_ = l.loadOnline()
 	go l.onlineproc()
 	return l

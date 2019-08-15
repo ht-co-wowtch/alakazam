@@ -4,13 +4,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"net/http"
 )
 
 type GiveRedEnvelope struct {
-	logic.User
+	member.User
 
 	// 單包金額 or 總金額 看Type種類決定
 	Amount int `json:"amount" binding:"required"`
@@ -59,7 +59,7 @@ func (s *Context) giveRedEnvelope(c *gin.Context) error {
 }
 
 type TakeRedEnvelope struct {
-	logic.User
+	member.User
 
 	Token string `json:"token" binding:"required"`
 }

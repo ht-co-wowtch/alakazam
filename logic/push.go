@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/pb"
 	"time"
 )
@@ -17,17 +18,17 @@ type Message struct {
 }
 
 type PushRoom struct {
-	User
+	member.User
 
 	// user push message
 	Message string `json:"message" binding:"required,max=100"`
 }
 
-func (l *Logic) Auth(u *User) error {
-	if err := l.auth(u); err != nil {
+func (l *Logic) Auth(u *member.User) error {
+	if err := l.member.Auth(u); err != nil {
 		return err
 	}
-	if err := l.authRoom(u); err != nil {
+	if err := l.room.Auth(u); err != nil {
 		return err
 	}
 	return nil
@@ -38,13 +39,13 @@ func (l *Logic) PushRoom(c *gin.Context, p *PushRoom) error {
 	if err := l.Auth(&p.User); err != nil {
 		return err
 	}
-	if err := l.isMessage(p.RoomId, p.roomStatus, p.Uid, c.GetString("token")); err != nil {
+	if err := l.isMessage(p.RoomId, p.RoomStatus, p.Uid, c.GetString("token")); err != nil {
 		return err
 	}
 
 	msg, err := json.Marshal(Message{
 		Uid:     p.Uid,
-		Name:    p.name,
+		Name:    p.Name,
 		Avatar:  "",
 		Message: p.Message,
 		Time:    time.Now().Format("15:04:05"),
@@ -71,11 +72,11 @@ type Money struct {
 	Expired int64 `json:"expired"`
 }
 
-func (l *Logic) PushRedEnvelope(give client.RedEnvelopeReply, user User) error {
+func (l *Logic) PushRedEnvelope(give client.RedEnvelopeReply, user member.User) error {
 	msg, err := json.Marshal(Money{
 		Message: Message{
 			Uid:     user.Uid,
-			Name:    user.name,
+			Name:    user.Name,
 			Avatar:  "",
 			Message: give.Message,
 			Time:    time.Now().Format("15:04:05"),
