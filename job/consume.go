@@ -2,10 +2,7 @@ package job
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"github.com/Shopify/sarama"
-	"github.com/gogo/protobuf/proto"
 	cometpb "gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/logic/pb"
@@ -31,45 +28,8 @@ type consume struct {
 	ctx context.Context
 }
 
-func (c *consume) Setup(sarama.ConsumerGroupSession) error {
-	return nil
-}
-
-func (c *consume) Cleanup(sarama.ConsumerGroupSession) error {
-	return nil
-}
-
-var errMessageNotFound = errors.New("consumer group claim read message not found")
-
-func (c *consume) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
-	select {
-	case msg, ok := <-claim.Messages():
-		if !ok {
-			return errMessageNotFound
-		}
-		session.MarkMessage(msg, "")
-		pushMsg := new(logicpb.PushMsg)
-		if err := proto.Unmarshal(msg.Value, pushMsg); err != nil {
-			log.Error("proto unmarshal", zap.Error(err), zap.Any("data", msg))
-			return err
-		}
-		log.Info("consume",
-			zap.String("topic", msg.Topic),
-			zap.Int32("partition", msg.Partition),
-			zap.Int64("offset", msg.Offset),
-			zap.String("key", string(msg.Key)),
-			zap.Any("pushMsg", pushMsg),
-		)
-		// 開始處理推送至comet server
-		if err := c.push(pushMsg); err != nil {
-			log.Error("push", zap.Error(err))
-		}
-	}
-	return nil
-}
-
 // 訊息推送至comet server
-func (c *consume) push(pushMsg *logicpb.PushMsg) error {
+func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 	switch pushMsg.Type {
 	// 單一/多房間推送
 	case logicpb.PushMsg_ROOM:

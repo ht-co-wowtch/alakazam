@@ -13,7 +13,7 @@ type Producer struct {
 
 	brokers []string
 
-	kafka.SyncProducer
+	producer kafka.SyncProducer
 }
 
 func NewProducer(brokers []string, topic string) *Producer {
@@ -25,10 +25,14 @@ func NewProducer(brokers []string, topic string) *Producer {
 		panic(err)
 	}
 	return &Producer{
-		brokers:      brokers,
-		topic:        topic,
-		SyncProducer: pub,
+		brokers:  brokers,
+		topic:    topic,
+		producer: pub,
 	}
+}
+
+func (p *Producer) Close() {
+	p.Close()
 }
 
 // 房間推送，以下為條件
@@ -48,7 +52,7 @@ func (d *Producer) BroadcastRoom(room string, msg []byte, model logicpb.PushMsg_
 		Topic: d.topic,
 		Value: kafka.ByteEncoder(b),
 	}
-	if _, _, err = d.SendMessage(m); err != nil {
+	if _, _, err = d.producer.SendMessage(m); err != nil {
 		return err
 	}
 	return nil
@@ -71,7 +75,7 @@ func (d *Producer) Broadcast(roomIds []string, msg []byte, model logicpb.PushMsg
 		Topic: d.topic,
 		Value: kafka.ByteEncoder(b),
 	}
-	partition, offset, err := d.SendMessage(m)
+	partition, offset, err := d.producer.SendMessage(m)
 	if err != nil {
 		return 0, 0, err
 	}
