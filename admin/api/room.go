@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (s *Server) CreateRoom(c *gin.Context) error {
+func (s *httpServer) CreateRoom(c *gin.Context) error {
 	var params room.Status
 	if err := c.ShouldBindJSON(&params); err != nil {
 		return err
@@ -22,7 +22,7 @@ func (s *Server) CreateRoom(c *gin.Context) error {
 	return nil
 }
 
-func (s *Server) UpdateRoom(c *gin.Context) error {
+func (s *httpServer) UpdateRoom(c *gin.Context) error {
 	var params room.Status
 	params.Id = c.Param("id")
 	if err := c.ShouldBindJSON(&params); err != nil {
@@ -39,7 +39,7 @@ type Rid struct {
 	Id string `form:"id" binding:"required"`
 }
 
-func (s *Server) GetRoom(c *gin.Context) error {
+func (s *httpServer) GetRoom(c *gin.Context) error {
 	rid := Rid{
 		Id: c.Param("id"),
 	}
@@ -66,7 +66,7 @@ func (s *Server) GetRoom(c *gin.Context) error {
 	return nil
 }
 
-func (s *Server) DeleteRoom(c *gin.Context) error {
+func (s *httpServer) DeleteRoom(c *gin.Context) error {
 	room := Rid{
 		Id: c.Param("id"),
 	}

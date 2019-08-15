@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (s *Server) setBlockade(c *gin.Context) error {
+func (s *httpServer) setBlockade(c *gin.Context) error {
 	ok, err := s.member.SetBlockade(c.Param("uid"))
 	if err != nil {
 		return err
@@ -18,7 +18,7 @@ func (s *Server) setBlockade(c *gin.Context) error {
 	return nil
 }
 
-func (s *Server) removeBlockade(c *gin.Context) error {
+func (s *httpServer) removeBlockade(c *gin.Context) error {
 	ok, err := s.member.RemoveBlockade(c.Param("uid"))
 	if err != nil {
 		return err

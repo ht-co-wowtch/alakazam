@@ -7,7 +7,7 @@ import (
 )
 
 // 設定禁言
-func (s *Server) setBanned(c *gin.Context) error {
+func (s *httpServer) setBanned(c *gin.Context) error {
 	params := struct {
 		Uid     string `form:"uid" binding:"required,len=32"`
 		Expired int    `json:"expired" binding:"required"`
@@ -25,7 +25,7 @@ func (s *Server) setBanned(c *gin.Context) error {
 }
 
 // 解除禁言
-func (s *Server) removeBanned(c *gin.Context) error {
+func (s *httpServer) removeBanned(c *gin.Context) error {
 	params := struct {
 		Uid string `form:"uid" binding:"required,len=32"`
 	}{

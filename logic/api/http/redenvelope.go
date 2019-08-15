@@ -25,7 +25,7 @@ type GiveRedEnvelope struct {
 }
 
 // 發紅包
-func (s *Context) giveRedEnvelope(c *gin.Context) error {
+func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	arg := new(GiveRedEnvelope)
 	if err := c.ShouldBindJSON(arg); err != nil {
 		return err
@@ -64,7 +64,7 @@ type TakeRedEnvelope struct {
 	Token string `json:"token" binding:"required"`
 }
 
-func (s *Context) takeRedEnvelope(c *gin.Context) error {
+func (s *httpServer) takeRedEnvelope(c *gin.Context) error {
 	arg := new(TakeRedEnvelope)
 	if err := c.ShouldBindJSON(arg); err != nil {
 		return err
@@ -104,7 +104,7 @@ func (s *Context) takeRedEnvelope(c *gin.Context) error {
 	return nil
 }
 
-func (s *Context) getRedEnvelopeDetail(c *gin.Context) error {
+func (s *httpServer) getRedEnvelopeDetail(c *gin.Context) error {
 	reply, err := s.client.GetRedEnvelopeDetail(c.Param("id"), c.GetString("token"))
 	if err != nil {
 		return err
@@ -126,7 +126,7 @@ func (s *Context) getRedEnvelopeDetail(c *gin.Context) error {
 	return nil
 }
 
-func (s *Context) getRedEnvelope(c *gin.Context) error {
+func (s *httpServer) getRedEnvelope(c *gin.Context) error {
 	reply, err := s.client.GetRedEnvelope(c.Param("id"), c.GetString("token"))
 	if err != nil {
 		return err

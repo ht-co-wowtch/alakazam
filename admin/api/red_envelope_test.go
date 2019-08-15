@@ -9,9 +9,9 @@ import (
 )
 
 func TestGiveRedEnvelope(t *testing.T) {
-	s := &Server{}
+	s := &httpServer{}
 	g := gin.New()
-	s.InitRoute(g)
+	handler(g, s)
 
 	req := httptest.NewRequest("POST", "/red-envelope", nil)
 	w := httptest.NewRecorder()

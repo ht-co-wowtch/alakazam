@@ -7,12 +7,15 @@ import (
 )
 
 // 單一房間推送訊息
-func (s *Context) pushRoom(c *gin.Context) error {
+func (s *httpServer) pushRoom(c *gin.Context) error {
 	p := new(message.PushRoom)
 	if err := c.ShouldBindJSON(p); err != nil {
 		return err
 	}
 	if err := s.member.Auth(&p.User); err != nil {
+		return err
+	}
+	if err := s.room.Auth(&p.User); err != nil {
 		return err
 	}
 	if err := s.room.IsMessage(p.RoomId, p.RoomStatus, p.Uid, c.GetString("token")); err != nil {

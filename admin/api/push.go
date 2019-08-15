@@ -7,7 +7,7 @@ import (
 )
 
 // 多房間推送
-func (s *Server) push(c *gin.Context) error {
+func (s *httpServer) push(c *gin.Context) error {
 	p := new(message.PushRoomForm)
 	if err := c.ShouldBindJSON(p); err != nil {
 		return err
@@ -23,7 +23,7 @@ func (s *Server) push(c *gin.Context) error {
 }
 
 // TODO 待完成
-func (s *Server) deleteTopMessage(c *gin.Context) error {
+func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 	c.Status(http.StatusNoContent)
 	return nil
 }

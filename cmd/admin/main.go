@@ -2,16 +2,9 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	admin "gitlab.com/jetfueltw/cpw/alakazam/admin/api"
+	"gitlab.com/jetfueltw/cpw/alakazam/admin"
 	"gitlab.com/jetfueltw/cpw/alakazam/admin/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
-	"gitlab.com/jetfueltw/cpw/alakazam/member"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"gitlab.com/jetfueltw/cpw/micro/log"
-	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"os"
 	"os/signal"
 	"syscall"
@@ -27,18 +20,9 @@ func main() {
 	if err := conf.Read(confPath); err != nil {
 		panic(err)
 	}
-	fmt.Println("Using config file:", confPath)
+	log.Infof("Using config file: [%s]", confPath)
 
-	srv := logic.NewAdmin(conf.Conf.DB, conf.Conf.Redis, conf.Conf.Kafka)
-
-	store := models.NewStore(conf.Conf.DB)
-	cache := redis.New(conf.Conf.Redis)
-	m := member.New(store, cache, nil)
-	r := room.New(store, cache, m, nil, 0)
-
-	httpAdminSrv := http.New(conf.Conf.HTTPServer, admin.New(srv, m, r, srv.MessageService()))
-
-	fmt.Printf("admin start success")
+	srv := admin.New(conf.Conf)
 
 	// 接收到close signal的處理
 	c := make(chan os.Signal, 1)
@@ -49,7 +33,6 @@ func main() {
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			srv.Close()
-			httpAdminSrv.Close()
 			log.Sync()
 			return
 		case syscall.SIGHUP:

@@ -128,5 +128,5 @@ func (m *Member) Heartbeat(uid string) error {
 }
 
 func (m *Member) ChangeRoom(uid, key, roomId string) error {
-	return m.ChangeRoom(uid, key, roomId)
+	return m.c.ChangeRoom(uid, key, roomId)
 }

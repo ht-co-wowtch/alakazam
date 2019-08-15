@@ -252,6 +252,8 @@ github.com/zhenjl/cityhash v0.0.0-20131128155616-cdd6a94144ab/go.mod h1:P6L88wrq
 github.com/ziutek/mymysql v1.5.4/go.mod h1:LMSpPZ6DbqWFxNCHW77HeMg9I646SAhApZ/wKdgO/C0=
 gitlab.com/jetfueltw/cpw/micro.git v0.14.2 h1:E7lkgB4Hzf+vnXzzx/CmENRgSQPI2PqjI+/IjlnwLwo=
 gitlab.com/jetfueltw/cpw/micro.git v0.14.2/go.mod h1:0kEK2t+i8f2aWwk/9ElmrMSjrxB311unSU6MADBj4wU=
+gitlab.com/jetfueltw/cpw/micro.git v0.15.0 h1:TqJLPL+EjqKbcQs3aIS6qia3gWuXVkZ1qRtojcz1pfE=
+gitlab.com/jetfueltw/cpw/micro.git v0.15.0/go.mod h1:0kEK2t+i8f2aWwk/9ElmrMSjrxB311unSU6MADBj4wU=
 gitlab.com/nyarla/go-crypt v0.0.0-20160106005555-d9a5dc2b789b/go.mod h1:T3BPAOm2cqquPa0MKWeNkmOM5RQsRhkrwMWonFMN7fE=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.opencensus.io v0.20.1/go.mod h1:6WKK9ahsWS3RSO+PY9ZHZUfv2irvY6gN279GOPZjmmk=

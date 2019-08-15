@@ -1,8 +1,7 @@
-package grpc
+package rpc
 
 import (
 	"context"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
@@ -10,30 +9,18 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"net"
-
 	// use gzip decoder
 	_ "google.golang.org/grpc/encoding/gzip"
 )
 
 // New logic grpc server
-func New(c *rpc.Conf, l *logic.Logic) *grpc.Server {
+func New(c *rpc.Conf, room *room.Room) *grpc.Server {
 	srv := rpc.New(c)
-	pb.RegisterLogicServer(srv, &server{srv: l, room: l.RoomService()})
-	lis, err := net.Listen(c.Network, c.Addr)
-	if err != nil {
-		panic(err)
-	}
-	go func() {
-		if err := srv.Serve(lis); err != nil {
-			panic(err)
-		}
-	}()
+	pb.RegisterLogicServer(srv, &server{room})
 	return srv
 }
 
 type server struct {
-	srv  *logic.Logic
 	room *room.Room
 }
 

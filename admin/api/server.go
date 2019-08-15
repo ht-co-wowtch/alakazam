@@ -2,46 +2,59 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
+	api "gitlab.com/jetfueltw/cpw/alakazam/logic/api/http"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
+	web "gitlab.com/jetfueltw/cpw/micro/http"
+	"net/http"
 )
 
-type Server struct {
+type httpServer struct {
 	member  *member.Member
 	message *message.Producer
 	room    *room.Room
-	logic   *logic.Logic
+	nidoran *client.Client
 }
 
-func New(l *logic.Logic, member *member.Member, room *room.Room, message *message.Producer) *Server {
-	return &Server{
-		member:  member,
-		room:    room,
-		logic:   l,
-		message: message,
+func NewServer(conf *web.Conf, member *member.Member, message *message.Producer, room *room.Room, nidoran *client.Client) *http.Server {
+	if conf.Debug {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
 	}
+	engine := web.NewHandler()
+	engine.Use(api.RecoverHandler)
+
+	srv := &httpServer{
+		member:  member,
+		message: message,
+		room:    room,
+		nidoran: nidoran,
+	}
+
+	handler(engine, srv)
+	return web.NewServer(conf, engine)
 }
 
-func (s *Server) InitRoute(e *gin.Engine) {
+func handler(e *gin.Engine, s *httpServer) {
 	// 封鎖
-	e.POST("/blockade/:uid", http.Handler(s.setBlockade))
-	e.DELETE("/blockade/:uid", http.Handler(s.removeBlockade))
+	e.POST("/blockade/:uid", api.ErrHandler(s.setBlockade))
+	e.DELETE("/blockade/:uid", api.ErrHandler(s.removeBlockade))
 
 	// 禁言
-	e.POST("/banned/:uid", http.Handler(s.setBanned))
-	e.DELETE("/banned/:uid", http.Handler(s.removeBanned))
+	e.POST("/banned/:uid", api.ErrHandler(s.setBanned))
+	e.DELETE("/banned/:uid", api.ErrHandler(s.removeBanned))
 
 	// 設定房間
-	e.POST("/room", http.Handler(s.CreateRoom))
-	e.PUT("/room/:id", http.Handler(s.UpdateRoom))
-	e.GET("/room/:id", http.Handler(s.GetRoom))
-	e.DELETE("/room/:id", http.Handler(s.DeleteRoom))
+	e.POST("/room", api.ErrHandler(s.CreateRoom))
+	e.PUT("/room/:id", api.ErrHandler(s.UpdateRoom))
+	e.GET("/room/:id", api.ErrHandler(s.GetRoom))
+	e.DELETE("/room/:id", api.ErrHandler(s.DeleteRoom))
 
-	e.POST("/push", http.Handler(s.push))
-	e.DELETE("/push/:id", http.Handler(s.deleteTopMessage))
+	e.POST("/push", api.ErrHandler(s.push))
+	e.DELETE("/push/:id", api.ErrHandler(s.deleteTopMessage))
 
-	e.POST("/red-envelope", http.Handler(s.giveRedEnvelope))
+	e.POST("/red-envelope", api.ErrHandler(s.giveRedEnvelope))
 }

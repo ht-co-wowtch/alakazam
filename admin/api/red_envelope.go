@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (s *Server) giveRedEnvelope(c *gin.Context) error {
+func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	c.JSON(http.StatusOK, gin.H{
 		"id":           "6aa077f3db794f14becc653aa788f3aa",
 		"uid":          "15c3c61f900a433fb8f1a9b3114cf72c",

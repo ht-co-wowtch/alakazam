@@ -2,12 +2,8 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/grpc"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"os"
@@ -27,7 +23,7 @@ func main() {
 	if err := conf.Read(confPath); err != nil {
 		panic(err)
 	}
-	fmt.Println("Using config file:", confPath)
+	log.Infof("Using config file: [%s]", confPath)
 
 	if migrate {
 		if err := models.Migrate(conf.Conf.DB); err != nil {
@@ -36,12 +32,7 @@ func main() {
 		return
 	}
 
-	// new srever
 	srv := logic.New(conf.Conf)
-	httpSrv := http.New(conf.Conf.HTTPServer, http.NewContext(srv, client.New(conf.Conf.Api)))
-	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
-
-	fmt.Printf("logic start success | RpcServer: %s\n", conf.Conf.RPCServer.Addr)
 
 	// 接收到close signal的處理
 	c := make(chan os.Signal, 1)
@@ -52,8 +43,6 @@ func main() {
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			srv.Close()
-			httpSrv.Close()
-			rpcSrv.GracefulStop()
 			log.Sync()
 			return
 		case syscall.SIGHUP:
