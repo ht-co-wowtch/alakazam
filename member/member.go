@@ -80,7 +80,7 @@ func (m *Member) Login(token, roomId, server string) (*models.Member, string, er
 	key := uuid.New().String()
 
 	// 儲存user資料至redis
-	if err := m.c.SetUser(u, key, roomId, server); err != nil {
+	if err := m.c.set(u, key, roomId, server); err != nil {
 		return nil, "", err
 	} else {
 		log.Info(
@@ -95,13 +95,13 @@ func (m *Member) Login(token, roomId, server string) (*models.Member, string, er
 }
 
 func (m *Member) Logout(uid, key string) (bool, error) {
-	return m.c.DeleteUser(uid, key)
+	return m.c.deleteUser(uid, key)
 }
 
 // 會員在線認證
 func (m *Member) Auth(u *User) error {
 	var err error
-	u.RoomId, u.Name, u.Status, err = m.c.GetUser(u.Uid, u.Key)
+	u.RoomId, u.Name, u.Status, err = m.c.get(u.Uid, u.Key)
 	if err != nil {
 		return err
 	}
@@ -112,7 +112,7 @@ func (m *Member) Auth(u *User) error {
 }
 
 func (m *Member) GetUserName(uid []string) ([]string, error) {
-	name, err := m.c.GetUserName(uid)
+	name, err := m.c.getName(uid)
 	if err == redis.Nil {
 		return nil, errors.ErrNoRows
 	}
@@ -120,7 +120,7 @@ func (m *Member) GetUserName(uid []string) ([]string, error) {
 }
 
 func (m *Member) Heartbeat(uid string) error {
-	_, err := m.c.RefreshUserExpire(uid)
+	_, err := m.c.refreshUserExpire(uid)
 	if err != nil {
 		return err
 	}
@@ -128,5 +128,5 @@ func (m *Member) Heartbeat(uid string) error {
 }
 
 func (m *Member) ChangeRoom(uid, key, roomId string) error {
-	return m.c.ChangeRoom(uid, key, roomId)
+	return m.c.changeRoom(uid, key, roomId)
 }

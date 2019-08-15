@@ -55,7 +55,7 @@ var (
 )
 
 func TestSetRoom(t *testing.T) {
-	err := c.SetRoom(room)
+	err := c.set(room)
 
 	assert.Nil(t, err)
 
@@ -74,9 +74,9 @@ func TestSetRoom(t *testing.T) {
 }
 
 func TestGetRoomByMoney(t *testing.T) {
-	_ = c.SetRoom(room)
+	_ = c.set(room)
 
-	dy, dl, a, err := c.GetRoomByMoney(room.Id)
+	dy, dl, a, err := c.getMoney(room.Id)
 
 	assert.Nil(t, err)
 	assert.Equal(t, day, dy)
@@ -85,9 +85,9 @@ func TestGetRoomByMoney(t *testing.T) {
 }
 
 func TestGetRoom(t *testing.T) {
-	_ = c.SetRoom(room)
+	_ = c.set(room)
 
-	s, err := c.GetRoom(room.Id)
+	s, err := c.get(room.Id)
 
 	assert.Nil(t, err)
 	assert.Equal(t, s, s)
@@ -100,11 +100,11 @@ func TestAddServerOnline(t *testing.T) {
 		RoomCount: map[string]int32{"1": 1, "2": 2},
 		Updated:   unix,
 	}
-	err := c.AddServerOnline("123", server)
+	err := c.addOnline("123", server)
 
 	assert.Nil(t, err)
 
-	o, err := c.ServerOnline("123")
+	o, err := c.getOnline("123")
 
 	assert.Equal(t, server, o)
 }

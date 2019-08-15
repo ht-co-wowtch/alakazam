@@ -56,7 +56,7 @@ type Limit struct {
 	Dml int `json:"dml"`
 }
 
-func (l *Room) CreateRoom(r Status) (string, error) {
+func (l *Room) Create(r Status) (string, error) {
 	room := models.Room{
 		Id:           r.Id,
 		IsMessage:    r.IsMessage,
@@ -65,7 +65,7 @@ func (l *Room) CreateRoom(r Status) (string, error) {
 		DmlLimit:     r.Limit.Dml,
 		Status:       true,
 	}
-	dbRoom, err := l.GetRoom(r.Id)
+	dbRoom, err := l.Get(r.Id)
 	if err == errors.ErrNoRows {
 		_, err = l.db.CreateRoom(room)
 	}
@@ -73,12 +73,12 @@ func (l *Room) CreateRoom(r Status) (string, error) {
 		return "", err
 	}
 	if dbRoom.Id != "" {
-		return room.Id, l.updateRoom(room)
+		return room.Id, l.update(room)
 	}
-	return r.Id, l.c.SetRoom(room)
+	return r.Id, l.c.set(room)
 }
 
-func (l *Room) UpdateRoom(r Status) error {
+func (l *Room) Update(r Status) error {
 	room := models.Room{
 		Id:           r.Id,
 		IsMessage:    r.IsMessage,
@@ -86,11 +86,11 @@ func (l *Room) UpdateRoom(r Status) error {
 		DepositLimit: r.Limit.Deposit,
 		DmlLimit:     r.Limit.Dml,
 	}
-	return l.updateRoom(room)
+	return l.update(room)
 }
 
-func (l *Room) DeleteRoom(roomId string) error {
-	r, err := l.GetRoom(roomId)
+func (l *Room) Delete(roomId string) error {
+	r, err := l.Get(roomId)
 	if err != nil {
 		return err
 	}
@@ -107,7 +107,7 @@ func (l *Room) DeleteRoom(roomId string) error {
 	return nil
 }
 
-func (l *Room) GetRoom(roomId string) (models.Room, error) {
+func (l *Room) Get(roomId string) (models.Room, error) {
 	r, ok, err := l.db.GetRoom(roomId)
 	if err != nil {
 		return models.Room{}, err
@@ -118,12 +118,12 @@ func (l *Room) GetRoom(roomId string) (models.Room, error) {
 	return r, nil
 }
 
-func (l *Room) updateRoom(room models.Room) error {
+func (l *Room) update(room models.Room) error {
 	_, err := l.db.UpdateRoom(room)
 	if err != nil {
 		return err
 	}
-	if err := l.c.SetRoom(room); err != nil {
+	if err := l.c.set(room); err != nil {
 		return err
 	}
 	return nil
@@ -133,7 +133,7 @@ func (l *Room) IsMessage(rid string, status int, uid, token string) error {
 	if !models.IsMoney(status) {
 		return nil
 	}
-	day, dml, deposit, err := l.c.GetRoomByMoney(rid)
+	day, dml, deposit, err := l.c.getMoney(rid)
 	if err != nil {
 		return err
 	}
@@ -228,12 +228,12 @@ func (l *Room) RenewOnline(server string, roomCount map[string]int32) (map[strin
 		RoomCount: roomCount,
 		Updated:   time.Now().Unix(),
 	}
-	if err := l.c.AddServerOnline(server, online); err != nil {
+	if err := l.c.addOnline(server, online); err != nil {
 		return nil, err
 	}
 	return roomCount, nil
 }
 
 func (r *Room) GetOnline(server string) (*Online, error) {
-	return r.c.ServerOnline(server)
+	return r.c.getOnline(server)
 }

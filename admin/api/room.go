@@ -12,7 +12,7 @@ func (s *httpServer) CreateRoom(c *gin.Context) error {
 	if err := c.ShouldBindJSON(&params); err != nil {
 		return err
 	}
-	roomId, err := s.room.CreateRoom(params)
+	roomId, err := s.room.Create(params)
 	if err != nil {
 		return err
 	}
@@ -28,7 +28,7 @@ func (s *httpServer) UpdateRoom(c *gin.Context) error {
 	if err := c.ShouldBindJSON(&params); err != nil {
 		return err
 	}
-	if err := s.room.UpdateRoom(params); err != nil {
+	if err := s.room.Update(params); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)
@@ -46,7 +46,7 @@ func (s *httpServer) GetRoom(c *gin.Context) error {
 	if err := binding.Validator.ValidateStruct(&rid.Id); err != nil {
 		return err
 	}
-	r, err := s.room.GetRoom(rid.Id)
+	r, err := s.room.Get(rid.Id)
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (s *httpServer) DeleteRoom(c *gin.Context) error {
 	if err := binding.Validator.ValidateStruct(&room.Id); err != nil {
 		return err
 	}
-	err := s.room.DeleteRoom(room.Id)
+	err := s.room.Delete(room.Id)
 	if err != nil {
 		return err
 	}

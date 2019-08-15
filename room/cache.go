@@ -22,18 +22,18 @@ func newCache(client *redis.Client) *Cache {
 
 const (
 	// 房間的前綴詞，用於存儲在redis當key
-	prefixRoom = "room_%s"
+	roomKey = "room_%s"
 
 	// server name的前綴詞，用於存儲在redis當key
-	prefixServerOnline = "server_%s"
+	onlineKey = "server_%s"
 )
 
 func keyRoom(key string) string {
-	return fmt.Sprintf(prefixRoom, key)
+	return fmt.Sprintf(roomKey, key)
 }
 
 func keyServerOnline(key string) string {
-	return fmt.Sprintf(prefixServerOnline, key)
+	return fmt.Sprintf(onlineKey, key)
 }
 
 const (
@@ -50,11 +50,11 @@ var (
 	roomExpired = time.Hour
 )
 
-func (c *Cache) GetRoom(id string) (int, error) {
+func (c *Cache) get(id string) (int, error) {
 	return c.c.HGet(keyRoom(id), hashPermissionKey).Int()
 }
 
-func (c *Cache) GetRoomByMoney(id string) (day, dml, deposit int, err error) {
+func (c *Cache) getMoney(id string) (day, dml, deposit int, err error) {
 	r, err := c.c.HMGet(keyRoom(id), hashLimitDayKey, hashLimitDmlKey, hashLimitAmountKey).Result()
 	if err != nil {
 		return 0, 0, 0, err
@@ -76,7 +76,7 @@ func (c *Cache) GetRoomByMoney(id string) (day, dml, deposit int, err error) {
 	return day, dml, deposit, nil
 }
 
-func (c *Cache) SetRoom(room models.Room) error {
+func (c *Cache) set(room models.Room) error {
 	f := map[string]interface{}{
 		hashPermissionKey:  room.Permission(),
 		hashLimitDayKey:    room.DayLimit,
@@ -102,7 +102,7 @@ type Online struct {
 // Key用server name
 // hashKey則是將room name以City Hash32做hash後得出一個數字，以這個數字當hashKey
 // TODO 需要在思考是否需要這樣的機制
-func (c *Cache) AddServerOnline(server string, online *Online) error {
+func (c *Cache) addOnline(server string, online *Online) error {
 	roomsMap := map[uint32]map[string]int32{}
 	for room, count := range online.RoomCount {
 		rMap := roomsMap[cityhash.CityHash32([]byte(room), uint32(len(room)))%8]
@@ -140,7 +140,7 @@ func (c *Cache) addServerOnline(key string, hashKey string, online *Online) erro
 
 // 根據server name取線上各房間總人數
 // TODO 需要在思考需不需要比對Updated
-func (c *Cache) ServerOnline(server string) (*Online, error) {
+func (c *Cache) getOnline(server string) (*Online, error) {
 	online := &Online{RoomCount: map[string]int32{}}
 	// server name
 	key := keyServerOnline(server)
@@ -183,6 +183,6 @@ func (c *Cache) serverOnline(key string, hashKey string) (*Online, error) {
 }
 
 // 根據server name 刪除線上各房間總人數
-func (c *Cache) DelServerOnline(server string) error {
+func (c *Cache) delOnline(server string) error {
 	return c.c.Del(keyServerOnline(server)).Err()
 }

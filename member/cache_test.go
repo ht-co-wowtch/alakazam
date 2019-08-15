@@ -46,7 +46,7 @@ func TestSetBanned(t *testing.T) {
 	uid := id.UUid32()
 	r.HSet(keyUidInfo(uid), hashStatusKey, 0)
 
-	err := c.SetBanned(uid, time.Duration(10)*time.Second)
+	err := c.setBanned(uid, time.Duration(10)*time.Second)
 	assert.Nil(t, err)
 
 	unix, err := r.Get(keyBannedInfo(uid)).Int64()
@@ -63,8 +63,8 @@ func TestSetBannedByExist(t *testing.T) {
 	uid := id.UUid32()
 	r.HSet(keyUidInfo(uid), hashStatusKey, 0)
 
-	c.SetBanned(uid, time.Duration(10)*time.Second)
-	err := c.SetBanned(uid, time.Duration(10)*time.Second)
+	c.setBanned(uid, time.Duration(10)*time.Second)
+	err := c.setBanned(uid, time.Duration(10)*time.Second)
 	assert.Nil(t, err)
 
 	unix, err := r.Get(keyBannedInfo(uid)).Int64()
@@ -82,7 +82,7 @@ func TestGetBanned(t *testing.T) {
 	unix := time.Now().Unix()
 	r.Set(keyBannedInfo(uid), unix, 10*time.Second)
 
-	ex, ok, err := c.GetBanned(uid)
+	ex, ok, err := c.getBanned(uid)
 
 	assert.Nil(t, err)
 	assert.True(t, ok)
@@ -90,7 +90,7 @@ func TestGetBanned(t *testing.T) {
 }
 
 func TestGetBannedEmpty(t *testing.T) {
-	ex, ok, err := c.GetBanned(id.UUid32())
+	ex, ok, err := c.getBanned(id.UUid32())
 
 	assert.Nil(t, err)
 	assert.False(t, ok)
@@ -100,8 +100,8 @@ func TestGetBannedEmpty(t *testing.T) {
 func TestDelBanned(t *testing.T) {
 	uid := id.UUid32()
 	r.HSet(keyUidInfo(uid), hashStatusKey, 2)
-	c.SetBanned(uid, time.Duration(10)*time.Second)
-	err := c.DelBanned(uid)
+	c.setBanned(uid, time.Duration(10)*time.Second)
+	err := c.delBanned(uid)
 
 	assert.Nil(t, err)
 
@@ -120,7 +120,7 @@ func TestSetUser(t *testing.T) {
 	name := "test"
 	server := "server"
 	member := &models.Member{Uid: uid, Name: name, Type: models.Player}
-	err := c.SetUser(member, key, roomId, server)
+	err := c.set(member, key, roomId, server)
 
 	u := r.HGetAll(keyUidInfo(uid)).Val()
 
@@ -141,7 +141,7 @@ func TestRefreshUserExpire(t *testing.T) {
 	uid := id.UUid32()
 	r.Set(keyUidInfo(uid), 1, time.Hour)
 
-	ok, err := c.RefreshUserExpire(uid)
+	ok, err := c.refreshUserExpire(uid)
 
 	assert.True(t, ok)
 	assert.Nil(t, err)
@@ -155,7 +155,7 @@ func TestDeleteUser(t *testing.T) {
 	uid := id.UUid32()
 	r.HSet(keyUidInfo(uid), "key", "test")
 
-	ok, err := c.DeleteUser(uid, "key")
+	ok, err := c.deleteUser(uid, "key")
 
 	assert.Nil(t, err)
 	assert.True(t, ok)
@@ -168,9 +168,9 @@ func TestGetUser(t *testing.T) {
 	name := "test"
 	member := &models.Member{Uid: uid, Name: name, Type: models.Player}
 
-	_ = c.SetUser(member, key, roomId, "test")
+	_ = c.set(member, key, roomId, "test")
 
-	r, n, s, err := c.GetUser(uid, key)
+	r, n, s, err := c.get(uid, key)
 
 	assert.Nil(t, err)
 	assert.Equal(t, roomId, r)
@@ -185,9 +185,9 @@ func TestGetUserBuNil(t *testing.T) {
 	name := "test"
 	member := &models.Member{Uid: uid, Name: name, Type: models.Player}
 
-	_ = c.SetUser(member, key, roomId, "test")
+	_ = c.set(member, key, roomId, "test")
 
-	_, _, _, err := c.GetUser(uid, "123")
+	_, _, _, err := c.get(uid, "123")
 
 	assert.Equal(t, errdefs.InvalidParameter(errUserNil, 1), err)
 }
@@ -200,7 +200,7 @@ func TestGetUserName(t *testing.T) {
 		}
 	}
 
-	name, err := c.GetUserName(uid)
+	name, err := c.getName(uid)
 
 	assert.Nil(t, err)
 	assert.Equal(t, uid, name)
@@ -211,7 +211,7 @@ func TestChangeRoom(t *testing.T) {
 	key := id.UUid32()
 	roomId := id.UUid32()
 
-	err := c.ChangeRoom(uid, key, roomId)
+	err := c.changeRoom(uid, key, roomId)
 
 	assert.Nil(t, err)
 
@@ -231,6 +231,6 @@ func BenchmarkGetUserName(b *testing.B) {
 		r.HSet(keyUidInfo(v), hashNameKey, v)
 	}
 	for i := 0; i < b.N; i++ {
-		c.GetUserName(uid)
+		c.getName(uid)
 	}
 }

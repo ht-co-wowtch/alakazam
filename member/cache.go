@@ -12,10 +12,10 @@ import (
 
 const (
 	// user id的前綴詞，用於存儲在redis當key
-	prefixUidInfo = "uid_%s"
+	uidKey = "uid_%s"
 
 	// user 禁言key的前綴詞
-	prefixBannedInfo = "b_%s"
+	bannedKey = "b_%s"
 )
 
 type Cache struct {
@@ -32,11 +32,11 @@ func newCache(client *redis.Client) *Cache {
 }
 
 func keyUidInfo(uid string) string {
-	return fmt.Sprintf(prefixUidInfo, uid)
+	return fmt.Sprintf(uidKey, uid)
 }
 
 func keyBannedInfo(uid string) string {
-	return fmt.Sprintf(prefixBannedInfo, uid)
+	return fmt.Sprintf(bannedKey, uid)
 }
 
 const (
@@ -51,7 +51,7 @@ const (
 )
 
 // 設定禁言
-func (c *Cache) SetBanned(uid string, expired time.Duration) error {
+func (c *Cache) setBanned(uid string, expired time.Duration) error {
 	key := keyBannedInfo(uid)
 	i, err := c.c.Exists(key).Result()
 	if err != nil {
@@ -67,7 +67,7 @@ func (c *Cache) SetBanned(uid string, expired time.Duration) error {
 }
 
 // 取得禁言時效
-func (c *Cache) GetBanned(uid string) (time.Time, bool, error) {
+func (c *Cache) getBanned(uid string) (time.Time, bool, error) {
 	sec, err := c.c.Get(keyBannedInfo(uid)).Int64()
 	if err != nil {
 		if err == redis.Nil {
@@ -79,7 +79,7 @@ func (c *Cache) GetBanned(uid string) (time.Time, bool, error) {
 }
 
 // 解除禁言
-func (c *Cache) DelBanned(uid string) error {
+func (c *Cache) delBanned(uid string) error {
 	tx := c.c.Pipeline()
 	tx.Del(keyBannedInfo(uid))
 	tx.HIncrBy(keyUidInfo(uid), hashStatusKey, models.Message)
@@ -88,7 +88,7 @@ func (c *Cache) DelBanned(uid string) error {
 }
 
 // 儲存user資訊
-func (c *Cache) SetUser(member *models.Member, key, roomId, server string) error {
+func (c *Cache) set(member *models.Member, key, roomId, server string) error {
 	keyI := keyUidInfo(member.Uid)
 	tx := c.c.Pipeline()
 	f := map[string]interface{}{
@@ -105,20 +105,20 @@ func (c *Cache) SetUser(member *models.Member, key, roomId, server string) error
 
 // restart user資料的過期時間
 // EXPIRE : uid_{user id}  (HSET)
-func (c *Cache) RefreshUserExpire(uid string) (bool, error) {
+func (c *Cache) refreshUserExpire(uid string) (bool, error) {
 	return c.c.Expire(keyUidInfo(uid), c.expire).Result()
 }
 
 // 移除user資訊
 // DEL : uid_{user id}
-func (c *Cache) DeleteUser(uid, key string) (bool, error) {
+func (c *Cache) deleteUser(uid, key string) (bool, error) {
 	aff, err := c.c.HDel(keyUidInfo(uid), key).Result()
 	return aff >= 1, err
 }
 
 var errUserNil = errors.New("get user cache data has nil")
 
-func (c *Cache) GetUser(uid string, key string) (roomId, name string, status int, err error) {
+func (c *Cache) get(uid string, key string) (roomId, name string, status int, err error) {
 	res, err := c.c.HMGet(keyUidInfo(uid), key, hashNameKey, hashStatusKey).Result()
 	if err != nil {
 		return "", "", 0, err
@@ -136,7 +136,7 @@ func (c *Cache) GetUser(uid string, key string) (roomId, name string, status int
 
 // 取會員名稱
 // TODO user name 資料結構需要優化，不然這樣 redis O(n)
-func (c *Cache) GetUserName(uid []string) ([]string, error) {
+func (c *Cache) getName(uid []string) ([]string, error) {
 	tx := c.c.Pipeline()
 	cmd := make([]*redis.StringCmd, len(uid))
 	for i, id := range uid {
@@ -154,7 +154,7 @@ func (c *Cache) GetUserName(uid []string) ([]string, error) {
 }
 
 // 更換房間
-func (c *Cache) ChangeRoom(uid, key, roomId string) error {
+func (c *Cache) changeRoom(uid, key, roomId string) error {
 	tx := c.c.Pipeline()
 	tx.HSet(keyUidInfo(uid), key, roomId)
 	tx.Expire(keyUidInfo(uid), c.expire)

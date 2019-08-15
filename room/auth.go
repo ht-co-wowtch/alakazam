@@ -9,7 +9,7 @@ import (
 
 func (r *Room) Auth(u *member.User) error {
 	var err error
-	u.RoomStatus, err = r.c.GetRoom(u.RoomId)
+	u.RoomStatus, err = r.c.get(u.RoomId)
 	if err != nil && err != redis.Nil {
 		return err
 	}
@@ -19,7 +19,7 @@ func (r *Room) Auth(u *member.User) error {
 			return err
 		}
 		u.RoomStatus = room.Permission()
-		if err := r.c.SetRoom(room); err != nil {
+		if err := r.c.set(room); err != nil {
 			return err
 		}
 	}
