@@ -17,7 +17,7 @@ func (s *Server) setBanned(c *gin.Context) error {
 	if err := c.ShouldBindJSON(&params); err != nil {
 		return err
 	}
-	if err := s.logic.SetBanned(params.Uid, params.Expired); err != nil {
+	if err := s.member.SetBanned(params.Uid, params.Expired); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)
@@ -34,7 +34,7 @@ func (s *Server) removeBanned(c *gin.Context) error {
 	if err := binding.Validator.ValidateStruct(&params); err != nil {
 		return err
 	}
-	if err := s.logic.RemoveBanned(params.Uid); err != nil {
+	if err := s.member.RemoveBanned(params.Uid); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)

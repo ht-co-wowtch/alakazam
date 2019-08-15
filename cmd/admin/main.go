@@ -3,10 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/admin/conf"
 	admin "gitlab.com/jetfueltw/cpw/alakazam/admin/api"
+	"gitlab.com/jetfueltw/cpw/alakazam/admin/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"os"
 	"os/signal"
@@ -26,7 +29,10 @@ func main() {
 	fmt.Println("Using config file:", confPath)
 
 	srv := logic.NewAdmin(conf.Conf.DB, conf.Conf.Redis, conf.Conf.Kafka)
-	httpAdminSrv := http.New(conf.Conf.HTTPServer, admin.New(srv))
+
+	m := member.New(models.NewStore(conf.Conf.DB), cache.NewRedis(conf.Conf.Redis))
+
+	httpAdminSrv := http.New(conf.Conf.HTTPServer, admin.New(srv, m))
 
 	fmt.Printf("admin start success")
 

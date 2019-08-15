@@ -4,15 +4,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/member"
 )
 
 type Server struct {
-	logic *logic.Logic
+	member *member.Member
+	logic  *logic.Logic
 }
 
-func New(l *logic.Logic) *Server {
+func New(l *logic.Logic, member *member.Member) *Server {
 	return &Server{
-		logic: l,
+		member: member,
+		logic:  l,
 	}
 }
 
