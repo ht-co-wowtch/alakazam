@@ -22,11 +22,11 @@ grpc:
 api:
   host: http://127.0.0.1:3005
   # 最大連接數量
-  maxConns: 30
+  maxConns: 8
   # 最大空閒連接數
-  maxIdleConns: 10
+  maxIdleConns: 4
   # 單一連線最多閒置多久
-  idleConnTimeout: 2m
+  idleConnTimeout: 5m
 
 # redis server
 redis:
@@ -35,9 +35,9 @@ redis:
   # redis password
   password: ""
   # pool內最大連線總數
-  maxConns: 50
+  maxConns: 8
   # 最大保留的閒置連線數
-  minIdleConns: 30
+  minIdleConns: 4
   # 建立連線超時多久(秒)後放棄
   dialTimeout: 2s
   # read多久(秒)沒回覆則放棄
@@ -62,19 +62,19 @@ database:
   charset: utf8mb4
   collation: utf8mb4_unicode_ci
   # 最大連線總數
-  active: 30
+  active: 8
   # 最大保留的閒置連線數
-  idle: 10
+  idle: 4
   # 空閒連線多久(秒)沒做事就close
-  idleTimeout: 2m
+  idleTimeout: 5m
   slave:
     host: 127.0.0.1
     port: 3306
     user: root
     password: root
-    active: 30
-    idle: 10
-    idleTimeout: 2m
+    active: 8
+    idle: 4
+    idleTimeout: 5m
 
 # comet連線用戶心跳(秒)，timeout logic會清除在線紀錄
 # 一定要比redis.expire還小
@@ -97,13 +97,3 @@ log:
   # Error Level(包含) 以上的log是否單獨輸出
   # 不跟Info Level(包含) 以下的log輸出在同一個位置
   errorAloneOutput: true
-  # log位置
-  # 如果errorAloneOutput = true 則只會有Info Level(包含) 以下 log
-  # 反之則不限定Level
-  outputPaths:
-    - stderr
-  # error log位置
-  # 如果errorAloneOutput = true 則只會有Error Level(包含) 以上 log
-  # 反之則只會有log處理流程中如果有發生錯誤的log
-  errorOutputPaths:
-    - stderr
