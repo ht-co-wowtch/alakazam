@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/Shopify/sarama"
 	"github.com/gogo/protobuf/proto"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"net"

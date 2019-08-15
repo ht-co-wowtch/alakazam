@@ -3,9 +3,9 @@ package job
 import (
 	"context"
 	"fmt"
-	cometpb "gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
-	logicpb "gitlab.com/jetfueltw/cpw/alakazam/logic/pb"
+	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
+	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"

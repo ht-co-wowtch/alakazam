@@ -1,7 +1,7 @@
 package comet
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
 )

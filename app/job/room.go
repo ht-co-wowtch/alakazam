@@ -2,9 +2,9 @@ package job
 
 import (
 	"errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
-	comet "gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
+	comet "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"time"

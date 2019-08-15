@@ -3,8 +3,8 @@ package comet
 import (
 	"context"
 	"encoding/json"
-	cometpb "gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
-	logicpb "gitlab.com/jetfueltw/cpw/alakazam/logic/pb"
+	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
+	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"

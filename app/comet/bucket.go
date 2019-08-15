@@ -4,8 +4,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 )
 
 // 用於管理Room與Channel關於推送的邏輯

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/zhenjl/cityhash"
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/conf"
-	 "gitlab.com/jetfueltw/cpw/alakazam/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
+	 "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/grpc"
 )
 

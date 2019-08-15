@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"context"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"

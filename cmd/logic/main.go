@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"os"

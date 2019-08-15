@@ -1,8 +1,8 @@
 package comet
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/errors"
 )
 
 // 用於控制讀寫異步grpc.Proto的環型Pool

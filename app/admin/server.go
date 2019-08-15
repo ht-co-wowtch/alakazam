@@ -3,8 +3,8 @@ package admin
 import (
 	"context"
 	goRedis "github.com/go-redis/redis"
-	"gitlab.com/jetfueltw/cpw/alakazam/admin/api"
-	"gitlab.com/jetfueltw/cpw/alakazam/admin/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/admin/api"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/admin/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"

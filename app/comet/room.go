@@ -3,8 +3,8 @@ package comet
 import (
 	"sync"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 )
 
 // 房間結構，紀錄Channel採用雙向鏈結串列結構，房間內有A,B,C 三人結構如下，此三人都是Channel

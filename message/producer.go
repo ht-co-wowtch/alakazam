@@ -3,8 +3,8 @@ package message
 import (
 	kafka "github.com/Shopify/sarama"
 	"github.com/gogo/protobuf/proto"
-	cometpb "gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
-	logicpb "gitlab.com/jetfueltw/cpw/alakazam/logic/pb"
+	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
+	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"strconv"
 )
 

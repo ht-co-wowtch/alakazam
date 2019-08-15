@@ -2,7 +2,7 @@ package job
 
 import (
 	"context"
-	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 )
 

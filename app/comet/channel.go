@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 )
 
 // 用於推送消息給user，可以把這個識別user在聊天室內的地址

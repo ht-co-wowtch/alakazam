@@ -2,7 +2,7 @@ package message
 
 import (
 	"encoding/json"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"time"
 )
 

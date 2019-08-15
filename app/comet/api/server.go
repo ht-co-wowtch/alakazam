@@ -5,9 +5,9 @@ import (
 	"net"
 	"time"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/comet"
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/comet/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
 
 	"google.golang.org/grpc"
