@@ -21,7 +21,7 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 	if err := s.room.IsMessage(p.RoomId, p.RoomStatus, p.Uid, c.GetString("token")); err != nil {
 		return err
 	}
-	if err := s.message.PushRoom(c, p); err != nil {
+	if err := s.message.PushRoom(p); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)

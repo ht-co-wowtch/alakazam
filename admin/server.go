@@ -27,7 +27,7 @@ func New(conf *conf.Config) *Server {
 	cache := redis.New(conf.Redis)
 	db := models.NewStore(conf.DB)
 	cli := client.New(conf.Nidoran)
-	messageProducer := message.NewProducer(conf.Kafka)
+	messageProducer := message.NewProducer(conf.Kafka.Brokers, conf.Kafka.Topic)
 	memberCli := member.New(db, cache, cli)
 	roomCli := room.New(db, cache, memberCli, cli, 0)
 	httpServer := api.NewServer(conf.HTTPServer, memberCli, messageProducer, roomCli, cli)

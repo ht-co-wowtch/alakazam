@@ -44,7 +44,7 @@ func New(c *conf.Config) *Server {
 	cache := redis.New(c.Redis)
 	db := models.NewStore(c.DB)
 	cli := client.New(c.Api)
-	messageProducer := message.NewProducer(c.Kafka)
+	messageProducer := message.NewProducer(c.Kafka.Brokers, c.Kafka.Topic)
 	memberCli := member.New(db, cache, cli)
 	roomCli := room.New(db, cache, memberCli, cli, c.Heartbeat)
 	httpServer := api.NewServer(c.HTTPServer, memberCli, messageProducer, roomCli, cli)

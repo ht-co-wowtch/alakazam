@@ -2,10 +2,9 @@ package message
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
-	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"time"
 )
 
@@ -25,7 +24,7 @@ type PushRoom struct {
 }
 
 // 單一房間推送
-func (l *Producer) PushRoom(c *gin.Context, p *PushRoom) error {
+func (l *Producer) PushRoom(p *PushRoom) error {
 	msg, err := json.Marshal(Message{
 		Uid:     p.Uid,
 		Name:    p.Name,
