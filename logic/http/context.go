@@ -6,19 +6,27 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/message"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/room"
 	"time"
 )
 
 type Context struct {
-	logic *logic.Logic
-
-	client *client.Client
+	logic   *logic.Logic
+	room    *room.Room
+	member  *member.Member
+	message *message.Producer
+	client  *client.Client
 }
 
 func NewContext(l *logic.Logic, client *client.Client) *Context {
 	return &Context{
-		logic:  l,
-		client: client,
+		logic:   l,
+		room:    l.RoomService(),
+		member:  l.MemberService(),
+		message: l.MessageService(),
+		client:  client,
 	}
 }
 

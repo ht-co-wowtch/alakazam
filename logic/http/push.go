@@ -2,17 +2,23 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/message"
 	"net/http"
 )
 
 // 單一房間推送訊息
 func (s *Context) pushRoom(c *gin.Context) error {
-	arg := new(logic.PushRoom)
-	if err := c.ShouldBindJSON(arg); err != nil {
+	p := new(message.PushRoom)
+	if err := c.ShouldBindJSON(p); err != nil {
 		return err
 	}
-	if err := s.logic.PushRoom(c, arg); err != nil {
+	if err := s.member.Auth(&p.User); err != nil {
+		return err
+	}
+	if err := s.room.IsMessage(p.RoomId, p.RoomStatus, p.Uid, c.GetString("token")); err != nil {
+		return err
+	}
+	if err := s.message.PushRoom(c, p); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)

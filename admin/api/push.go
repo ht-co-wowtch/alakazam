@@ -2,17 +2,17 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/message"
 	"net/http"
 )
 
 // 多房間推送
 func (s *Server) push(c *gin.Context) error {
-	p := new(logic.PushRoomForm)
+	p := new(message.PushRoomForm)
 	if err := c.ShouldBindJSON(p); err != nil {
 		return err
 	}
-	id, err := s.logic.PushMessage(p)
+	id, err := s.message.PushMessage(p)
 	if err != nil {
 		return err
 	}

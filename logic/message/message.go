@@ -1,4 +1,4 @@
-package logic
+package message
 
 import (
 	"encoding/json"
@@ -24,25 +24,8 @@ type PushRoom struct {
 	Message string `json:"message" binding:"required,max=100"`
 }
 
-func (l *Logic) Auth(u *member.User) error {
-	if err := l.member.Auth(u); err != nil {
-		return err
-	}
-	if err := l.room.Auth(u); err != nil {
-		return err
-	}
-	return nil
-}
-
 // 單一房間推送
-func (l *Logic) PushRoom(c *gin.Context, p *PushRoom) error {
-	if err := l.Auth(&p.User); err != nil {
-		return err
-	}
-	if err := l.isMessage(p.RoomId, p.RoomStatus, p.Uid, c.GetString("token")); err != nil {
-		return err
-	}
-
+func (l *Producer) PushRoom(c *gin.Context, p *PushRoom) error {
 	msg, err := json.Marshal(Message{
 		Uid:     p.Uid,
 		Name:    p.Name,
@@ -53,7 +36,7 @@ func (l *Logic) PushRoom(c *gin.Context, p *PushRoom) error {
 	if err != nil {
 		return err
 	}
-	if err := l.stream.BroadcastRoomMsg(p.RoomId, msg, pb.PushMsg_ROOM); err != nil {
+	if err := l.BroadcastRoom(p.RoomId, msg, pb.PushMsg_ROOM); err != nil {
 		return err
 	}
 	return nil
@@ -72,7 +55,7 @@ type Money struct {
 	Expired int64 `json:"expired"`
 }
 
-func (l *Logic) PushRedEnvelope(give client.RedEnvelopeReply, user member.User) error {
+func (l *Producer) PushRedEnvelope(give client.RedEnvelopeReply, user member.User) error {
 	msg, err := json.Marshal(Money{
 		Message: Message{
 			Uid:     user.Uid,
@@ -88,7 +71,7 @@ func (l *Logic) PushRedEnvelope(give client.RedEnvelopeReply, user member.User) 
 	if err != nil {
 		return err
 	}
-	if err := l.stream.BroadcastRoomMsg(user.RoomId, msg, pb.PushMsg_MONEY); err != nil {
+	if err := l.BroadcastRoom(user.RoomId, msg, pb.PushMsg_MONEY); err != nil {
 		return err
 	}
 	return nil
@@ -107,7 +90,7 @@ type PushRoomForm struct {
 
 // 所有房間推送
 // TODO 需實作訊息是否頂置
-func (l *Logic) PushMessage(p *PushRoomForm) (int64, error) {
+func (l *Producer) PushMessage(p *PushRoomForm) (int64, error) {
 	msg, err := json.Marshal(Message{
 		Name:    "管理员",
 		Avatar:  "",
@@ -123,7 +106,7 @@ func (l *Logic) PushMessage(p *PushRoomForm) (int64, error) {
 	} else {
 		t = pb.PushMsg_ROOM
 	}
-	_, id, err := l.stream.BroadcastMsg(p.RoomId, msg, t)
+	_, id, err := l.Broadcast(p.RoomId, msg, t)
 	if err != nil {
 		return 0, err
 	}

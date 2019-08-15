@@ -5,8 +5,8 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/cache"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/room"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/stream"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/database"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -27,7 +27,7 @@ type Logic struct {
 
 	cache *cache.Cache
 
-	stream *stream.Stream
+	stream *message.Producer
 
 	client *client.Client
 
@@ -45,21 +45,33 @@ func New(c *conf.Config) (l *Logic) {
 		c:      c,
 		db:     models.NewStore(c.DB),
 		cache:  cache.NewRedis(c.Redis),
-		stream: stream.NewKafkaPub(c.Kafka),
+		stream: message.NewProducer(c.Kafka),
 		client: client.New(c.Api),
 	}
-	l.member = member.New(l.db, l.cache)
-	l.room = room.New(l.db, l.cache, l.member)
+	l.member = member.New(l.db, l.cache, l.client)
+	l.room = room.New(l.db, l.cache, l.member, l.client, l.c.Heartbeat)
 	_ = l.loadOnline()
 	go l.onlineproc()
 	return l
+}
+
+func (l *Logic) RoomService() *room.Room {
+	return l.room
+}
+
+func (l *Logic) MemberService() *member.Member {
+	return l.member
+}
+
+func (l *Logic) MessageService() *message.Producer {
+	return l.stream
 }
 
 func NewAdmin(c1 *database.Conf, c2 *redis.Conf, c3 *conf.Kafka) (*Logic) {
 	return &Logic{
 		db:     models.NewStore(c1),
 		cache:  cache.NewRedis(c2),
-		stream: stream.NewKafkaPub(c3),
+		stream: message.NewProducer(c3),
 	}
 }
 

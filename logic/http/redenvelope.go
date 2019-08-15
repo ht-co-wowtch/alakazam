@@ -30,7 +30,7 @@ func (s *Context) giveRedEnvelope(c *gin.Context) error {
 	if err := c.ShouldBindJSON(arg); err != nil {
 		return err
 	}
-	if err := s.logic.Auth(&arg.User); err != nil {
+	if err := s.member.Auth(&arg.User); err != nil {
 		return err
 	}
 	if !models.IsRedEnvelope(int(arg.Status)) {
@@ -48,7 +48,7 @@ func (s *Context) giveRedEnvelope(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := s.logic.PushRedEnvelope(reply, arg.User); err != nil {
+	if err := s.message.PushRedEnvelope(reply, arg.User); err != nil {
 		return err
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -69,7 +69,7 @@ func (s *Context) takeRedEnvelope(c *gin.Context) error {
 	if err := c.ShouldBindJSON(arg); err != nil {
 		return err
 	}
-	if err := s.logic.Auth(&arg.User); err != nil {
+	if err := s.member.Auth(&arg.User); err != nil {
 		return err
 	}
 	if !models.IsRedEnvelope(int(arg.Status)) {
@@ -81,7 +81,7 @@ func (s *Context) takeRedEnvelope(c *gin.Context) error {
 	}
 
 	if reply.Uid != "" {
-		name, err := s.logic.GetUserName([]string{reply.Uid})
+		name, err := s.member.GetUserName([]string{reply.Uid})
 		if err != nil {
 			return err
 		}
@@ -114,7 +114,7 @@ func (s *Context) getRedEnvelopeDetail(c *gin.Context) error {
 	for i, v := range reply.Members {
 		name[i+1] = v.Uid
 	}
-	n, err := s.logic.GetUserName(name)
+	n, err := s.member.GetUserName(name)
 	if err != nil {
 		return err
 	}
@@ -132,7 +132,7 @@ func (s *Context) getRedEnvelope(c *gin.Context) error {
 		return err
 	}
 	if reply.Amount != 0 {
-		name, err := s.logic.GetUserName([]string{reply.Uid})
+		name, err := s.member.GetUserName([]string{reply.Uid})
 		if err != nil {
 			return err
 		}

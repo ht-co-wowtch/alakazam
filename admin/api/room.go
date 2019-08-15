@@ -3,16 +3,16 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/room"
 	"net/http"
 )
 
 func (s *Server) CreateRoom(c *gin.Context) error {
-	var params logic.Room
+	var params room.Status
 	if err := c.ShouldBindJSON(&params); err != nil {
 		return err
 	}
-	roomId, err := s.logic.CreateRoom(params)
+	roomId, err := s.room.CreateRoom(params)
 	if err != nil {
 		return err
 	}
@@ -23,12 +23,12 @@ func (s *Server) CreateRoom(c *gin.Context) error {
 }
 
 func (s *Server) UpdateRoom(c *gin.Context) error {
-	var params logic.Room
+	var params room.Status
 	params.Id = c.Param("id")
 	if err := c.ShouldBindJSON(&params); err != nil {
 		return err
 	}
-	if err := s.logic.UpdateRoom(params); err != nil {
+	if err := s.room.UpdateRoom(params); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)
@@ -40,13 +40,13 @@ type Rid struct {
 }
 
 func (s *Server) GetRoom(c *gin.Context) error {
-	room := Rid{
+	rid := Rid{
 		Id: c.Param("id"),
 	}
-	if err := binding.Validator.ValidateStruct(&room.Id); err != nil {
+	if err := binding.Validator.ValidateStruct(&rid.Id); err != nil {
 		return err
 	}
-	r, err := s.logic.GetRoom(room.Id)
+	r, err := s.room.GetRoom(rid.Id)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (s *Server) GetRoom(c *gin.Context) error {
 	c.JSON(http.StatusOK, gin.H{
 		"id":         r.Id,
 		"is_message": r.IsMessage,
-		"limit": logic.Limit{
+		"limit": room.Limit{
 			Day:     r.DayLimit,
 			Deposit: r.DepositLimit,
 			Dml:     r.DmlLimit,
@@ -73,7 +73,7 @@ func (s *Server) DeleteRoom(c *gin.Context) error {
 	if err := binding.Validator.ValidateStruct(&room.Id); err != nil {
 		return err
 	}
-	err := s.logic.DeleteRoom(room.Id)
+	err := s.room.DeleteRoom(room.Id)
 	if err != nil {
 		return err
 	}

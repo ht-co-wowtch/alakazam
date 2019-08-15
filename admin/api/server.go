@@ -5,17 +5,23 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
 	"gitlab.com/jetfueltw/cpw/alakazam/logic/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/message"
+	"gitlab.com/jetfueltw/cpw/alakazam/logic/room"
 )
 
 type Server struct {
-	member *member.Member
-	logic  *logic.Logic
+	member  *member.Member
+	message *message.Producer
+	room    *room.Room
+	logic   *logic.Logic
 }
 
-func New(l *logic.Logic, member *member.Member) *Server {
+func New(l *logic.Logic, member *member.Member, room *room.Room, message *message.Producer) *Server {
 	return &Server{
-		member: member,
-		logic:  l,
+		member:  member,
+		room:    room,
+		logic:   l,
+		message: message,
 	}
 }
 
