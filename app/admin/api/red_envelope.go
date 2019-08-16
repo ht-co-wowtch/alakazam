@@ -2,20 +2,53 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"net/http"
+	"time"
 )
 
+type redEnvelope struct {
+	// 房間id
+	RoomId string `json:"room_id" binding:"required"`
+
+	// 紅包訊息
+	Message string `json:"message" binding:"required,max=20"`
+
+	// 紅包種類
+	Type string `json:"type" binding:"required"`
+
+	// 紅包金額 看種類決定
+	Amount int `json:"amount" binding:"required,min=1"`
+
+	// 紅包數量
+	Count int `json:"count" binding:"required,min=1,max=100"`
+
+	// 紅包多久過期(分鐘)
+	ExpireMin int `json:"expire_min" binding:"required,min=1,max=120"`
+
+	// 什麼時候發佈
+	PublishAt time.Time `json:"publish_at"`
+}
+
 func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
-	c.JSON(http.StatusOK, gin.H{
-		"id":           "6aa077f3db794f14becc653aa788f3aa",
-		"uid":          "15c3c61f900a433fb8f1a9b3114cf72c",
-		"type":         "equally",
-		"message":      "恭喜發財，大吉大利",
-		"total_amount": 10,
-		"count":        10,
-		"publish_at":   "2019-07-02T17:40:50+08:00",
-		"expire_at":    "2019-07-02T17:40:50+08:00",
-		"token":        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjIwNjc2NTAsImlkIjoiNmFhMDc3ZjNkYjc5NGYxNGJlY2M2NTNhYTc4OGYzYWEiLCJtZXNzYWdlIjoi5oGt5Zac55m86LKh77yM5aSn5ZCJ5aSn5YipIiwidWlkIjoiMTVjM2M2MWY5MDBhNDMzZmI4ZjFhOWIzMTE0Y2Y3MmMifQ.Q-NDcZ7qA0ftCamCDthp9kQR0rhjX2fZ3Ki-zLEfWR0",
+	var o redEnvelope
+	if err := c.ShouldBindJSON(&o); err != nil {
+		return err
+	}
+	result, err := s.nidoran.GiveRedEnvelopeForAdmin(client.RedEnvelopeAdmin{
+		RedEnvelope: client.RedEnvelope{
+			RoomId:    o.RoomId,
+			Message:   o.Message,
+			Type:      o.Type,
+			Amount:    o.Amount,
+			Count:     o.Count,
+			ExpireMin: o.ExpireMin,
+		},
+		PublishAt: o.PublishAt,
 	})
+	if err != nil {
+		return err
+	}
+	c.JSON(http.StatusOK, result)
 	return nil
 }

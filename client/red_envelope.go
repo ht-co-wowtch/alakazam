@@ -27,6 +27,13 @@ type RedEnvelope struct {
 	ExpireMin int `json:"expire_min"`
 }
 
+type RedEnvelopeAdmin struct {
+	RedEnvelope
+
+	// 什麼時候發佈
+	PublishAt time.Time `json:"publish_at"`
+}
+
 type RedEnvelopeReply struct {
 	// 訂單id
 	Order string `json:"id"`
@@ -58,6 +65,22 @@ type RedEnvelopeReply struct {
 
 func (c *Client) GiveRedEnvelope(envelope RedEnvelope, token string) (RedEnvelopeReply, error) {
 	resp, err := c.c.PostJson("/red-envelope", nil, envelope, bearer(token))
+	if err != nil {
+		return RedEnvelopeReply{}, err
+	}
+	defer resp.Body.Close()
+	if err := checkResponse(resp); err != nil {
+		return RedEnvelopeReply{}, err
+	}
+	var u RedEnvelopeReply
+	if err := json.NewDecoder(resp.Body).Decode(&u); err != nil {
+		return RedEnvelopeReply{}, err
+	}
+	return u, nil
+}
+
+func (c *Client) GiveRedEnvelopeForAdmin(envelope RedEnvelopeAdmin) (RedEnvelopeReply, error) {
+	resp, err := c.c.PostJson("/admin/red-envelope", nil, envelope, nil)
 	if err != nil {
 		return RedEnvelopeReply{}, err
 	}

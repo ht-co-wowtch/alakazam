@@ -37,6 +37,9 @@ const (
 
 	// 餘額不足
 	BalanceCode = 12024020
+
+	// 房間不存在
+	RoomNotFoundCode = 15024042
 )
 
 func init() {
@@ -78,6 +81,9 @@ func (m output) Error(e *errdefs.Error) interface{} {
 	case EnvelopeNotFoundCode:
 		e.Status = http.StatusNotFound
 		return "红包不存在"
+	case RoomNotFoundCode:
+		e.Status = http.StatusNotFound
+		return "房间不存在"
 	}
 	return "操作失败"
 }
