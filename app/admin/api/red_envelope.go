@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
+	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"net/http"
 	"time"
 )
@@ -48,6 +49,25 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	})
 	if err != nil {
 		return err
+	}
+	msg := message.Message{
+		Name:    "管理员",
+		Message: o.Message,
+		Time:    time.Now().Format("15:04:05"),
+	}
+	redEnvelope := message.RedEnvelope{
+		Id:      result.Uid,
+		Token:   result.Token,
+		Expired: result.ExpireAt.Unix(),
+	}
+	if o.PublishAt.IsZero() {
+		if err := s.message.SendRedEnvelope(o.RoomId, msg, redEnvelope); err != nil {
+			return err
+		}
+	} else if result.PublishAt.After(time.Now()) {
+		if err := s.message.SendDelayRedEnvelope(o.RoomId, msg, redEnvelope, result.PublishAt); err != nil {
+			return err
+		}
 	}
 	c.JSON(http.StatusOK, result)
 	return nil

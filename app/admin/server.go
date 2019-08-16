@@ -19,6 +19,7 @@ type Server struct {
 	ctx        context.Context
 	cancel     context.CancelFunc
 	cache      *goRedis.Client
+	message    *message.Producer
 	httpServer *http.Server
 }
 
@@ -28,6 +29,7 @@ func New(conf *conf.Config) *Server {
 	db := models.NewStore(conf.DB)
 	cli := client.New(conf.Nidoran)
 	messageProducer := message.NewProducer(conf.Kafka.Brokers, conf.Kafka.Topic)
+	messageProducer.StartDelay()
 	memberCli := member.New(db, cache, cli)
 	roomCli := room.New(db, cache, memberCli, cli, 0)
 	httpServer := api.NewServer(conf.HTTPServer, memberCli, messageProducer, roomCli, cli)
@@ -42,6 +44,7 @@ func New(conf *conf.Config) *Server {
 		ctx:        ctx,
 		cancel:     cancel,
 		cache:      cache,
+		message:    messageProducer,
 		httpServer: httpServer,
 	}
 }
@@ -49,6 +52,9 @@ func New(conf *conf.Config) *Server {
 func (s *Server) Close() {
 	if err := s.cache.Close(); err != nil {
 		log.Errorf("redis close error(%v)", err)
+	}
+	if err := s.message.Close(); err != nil {
+		log.Errorf("message producer close error(%v)", err)
 	}
 	if err := s.httpServer.Shutdown(s.ctx); err != nil {
 		log.Errorf("http server close error(%v)", err)

@@ -5,15 +5,18 @@ import (
 	"github.com/gogo/protobuf/proto"
 	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 	"strconv"
+	"time"
 )
 
 type Producer struct {
-	topic string
-
-	brokers []string
-
+	topic    string
+	brokers  []string
 	producer kafka.SyncProducer
+	cron     *cron
+	stop     chan struct{}
 }
 
 func NewProducer(brokers []string, topic string) *Producer {
@@ -31,8 +34,43 @@ func NewProducer(brokers []string, topic string) *Producer {
 	}
 }
 
-func (p *Producer) Close() {
-	p.Close()
+func (p *Producer) StartDelay() {
+	cron := newCron(time.Second * 5)
+	cron.start()
+	p.cron = cron
+	p.stop = make(chan struct{})
+
+	go func() {
+		for {
+			select {
+			case <-p.stop:
+				return
+			case m := <-p.cron.Message():
+				for _, v := range m {
+					var err error
+					if v.redEnvelope.Id == "" {
+						err = p.SendRedEnvelope(v.room[0], v.message, v.redEnvelope)
+					} else {
+						err = p.Send(v.room[0], v.message)
+					}
+					if err != nil {
+						log.Error("delay send message", zap.Int64("id", v.message.Id))
+					} else {
+						log.Info("delay send message", zap.Int64("id", v.message.Id))
+					}
+				}
+			}
+		}
+	}()
+}
+
+func (p *Producer) Close() error {
+	err := p.producer.Close()
+	if p.cron != nil {
+		p.cron.close()
+		p.stop <- struct{}{}
+	}
+	return err
 }
 
 // 房間推送，以下為條件

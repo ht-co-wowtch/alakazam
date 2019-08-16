@@ -3,10 +3,10 @@ package logic
 import (
 	"context"
 	goRedis "github.com/go-redis/redis"
-	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	api "gitlab.com/jetfueltw/cpw/alakazam/app/logic/api/http"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/api/rpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
@@ -88,6 +88,9 @@ func New(c *conf.Config) *Server {
 func (s *Server) Close() {
 	if err := s.cache.Close(); err != nil {
 		log.Errorf("redis close error(%v)", err)
+	}
+	if err := s.message.Close(); err != nil {
+		log.Errorf("message producer close error(%v)", err)
 	}
 	if err := s.httpServer.Shutdown(s.ctx); err != nil {
 		log.Errorf("http server close error(%v)", err)
