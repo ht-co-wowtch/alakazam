@@ -53,7 +53,7 @@ func TestSeqSync(t *testing.T) {
 	seq, dao := mockSeq()
 
 	dao.On("Sync", mock.MatchedBy(func(m *models.Seq) bool {
-		return m.Max == (10 + m.Batch)
+		return int(m.Max) == (10 + m.Batch)
 	})).Once().Return(true, nil)
 
 	_, err := seq.Ids(context.TODO(), &pb.Arg{Code: 1, Count: 10})
@@ -77,7 +77,7 @@ type mockDao struct {
 	mock.Mock
 }
 
-func (m mockDao) Sync(business *models.Seq) (bool, error) {
+func (m mockDao) SyncSeq(business *models.Seq) (bool, error) {
 	arg := m.Called(business)
 	return arg.Bool(0), arg.Error(1)
 }
@@ -86,7 +86,7 @@ func (m mockDao) LoadSeq() ([]models.Seq, error) {
 	return fakeSeq, nil
 }
 
-func (m mockDao) Create(code, batch int64) error {
+func (m mockDao) CreateSeq(code, batch int) error {
 	arg := m.Called(code, batch)
 	return arg.Error(0)
 }

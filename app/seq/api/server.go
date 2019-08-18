@@ -51,7 +51,7 @@ func (s *rpcServer) Ids(ctx context.Context, arg *pb.Arg) (*pb.SeqId, error) {
 	defer b.L.Unlock()
 	if seq = b.Cur + arg.Count; seq >= b.Max {
 		b.Max += b.Batch
-		ok, err := s.db.Sync(b)
+		ok, err := s.db.SyncSeq(b)
 		if err != nil {
 			log.Error("grpc Ids", zap.Error(err), zap.Int64("code", arg.Code), zap.Int64("count", arg.Count))
 			return nil, err
@@ -65,7 +65,7 @@ func (s *rpcServer) Ids(ctx context.Context, arg *pb.Arg) (*pb.SeqId, error) {
 }
 
 func (s *rpcServer) Create(ctx context.Context, info *pb.Info) (*pb.Empty, error) {
-	if err := s.db.Create(info.Code, info.Batch); err != nil {
+	if err := s.db.CreateSeq(info.Code, info.Batch); err != nil {
 		log.Error("grpc create", zap.Error(err), zap.Int64("code", info.Code))
 		return &pb.Empty{}, err
 	}
