@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gopkg.in/go-playground/validator.v8"
 	"net/http"
 	"time"
 )
@@ -64,10 +65,10 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		if err := s.message.SendRedEnvelope(o.RoomId, msg, redEnvelope); err != nil {
 			return err
 		}
-	} else if result.PublishAt.After(time.Now()) {
-		if err := s.message.SendDelayRedEnvelope(o.RoomId, msg, redEnvelope, result.PublishAt); err != nil {
-			return err
-		}
+	} else if result.PublishAt.Before(time.Now()) {
+		return validator.ValidationErrors{}
+	} else if err := s.delayMessage.SendDelayRedEnvelope(o.RoomId, msg, redEnvelope, result.PublishAt); err != nil {
+		return err
 	}
 	c.JSON(http.StatusOK, result)
 	return nil

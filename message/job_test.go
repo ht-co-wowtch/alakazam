@@ -99,8 +99,8 @@ func TestStart(t *testing.T) {
 	cron.add(messageSet{message: Message{Id: 1}}, time.Now().Add(time.Second))
 	cron.add(messageSet{message: Message{Id: 2}}, time.Now().Add(time.Second*2))
 	cron.add(messageSet{message: Message{Id: 3}}, time.Now().Add(time.Second*3))
+	go cron.run()
 
-	cron.start()
 	var msg []messageSet
 	tc := time.After(time.Second * 4)
 

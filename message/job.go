@@ -9,12 +9,13 @@ import (
 
 // 一個單向 Linked List結構
 type cron struct {
-	len  int
-	head *messageTask
-	msg  chan []messageSet
-	stop chan struct{}
-	rate time.Duration
-	lock sync.Mutex
+	len   int
+	head  *messageTask
+	msg   chan []messageSet
+	stop  chan struct{}
+	rate  time.Duration
+	lock  sync.Mutex
+	isRun bool
 }
 
 func newCron(rate time.Duration) *cron {
@@ -25,15 +26,13 @@ func newCron(rate time.Duration) *cron {
 	}
 }
 
-func (c *cron) start() {
-	go c.run()
-}
-
 func (c *cron) close() {
 	c.stop <- struct{}{}
+	c.isRun = false
 }
 
 func (c *cron) run() {
+	c.isRun = true
 	t := time.NewTicker(c.rate)
 	for {
 		select {
@@ -146,8 +145,14 @@ func (m *messageTask) Ids() []int64 {
 	return id
 }
 
+const (
+	message_category             = 1
+	redenvelope_message_category = 2
+)
+
 type messageSet struct {
 	room        []string
 	message     Message
 	redEnvelope RedEnvelope
+	category    int
 }

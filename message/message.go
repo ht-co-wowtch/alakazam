@@ -3,8 +3,6 @@ package message
 import (
 	"encoding/json"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
-	"gitlab.com/jetfueltw/cpw/micro/log"
-	"go.uber.org/zap"
 	"time"
 )
 
@@ -56,16 +54,6 @@ func (l *Producer) SendRedEnvelope(roomId string, message Message, envelope RedE
 	if err := l.BroadcastRoom(roomId, msg, pb.PushMsg_MONEY); err != nil {
 		return err
 	}
-	return nil
-}
-
-func (l *Producer) SendDelayRedEnvelope(roomId string, message Message, envelope RedEnvelope, publishAt time.Time) error {
-	l.cron.add(messageSet{
-		room:        []string{roomId},
-		message:     message,
-		redEnvelope: envelope,
-	}, publishAt)
-	log.Info("add delay message for red envelope", zap.Int64("id", message.Id))
 	return nil
 }
 
