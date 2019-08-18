@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package pb;
+
+message Empty{}
+
+message Arg {
+    int64 code = 1;
+    int64 count = 2;
+}
+
+message SeqId {
+    int64 id = 1;
+}
+
+message Info {
+    int64 code = 1;
+    int64 batch = 2;
+}
+
+service Seq {
+    rpc Ping(Empty) returns(Empty);
+    rpc Id(Arg) returns(SeqId);
+    rpc Ids(Arg) returns(SeqId);
+    rpc Create(Info) returns(Empty);
+}
