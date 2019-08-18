@@ -21,7 +21,7 @@ func (l *Producer) Send(roomId string, message Message) error {
 	if err != nil {
 		return err
 	}
-	if err := l.BroadcastRoom(roomId, msg, pb.PushMsg_ROOM); err != nil {
+	if err := l.broadcastRoom(roomId, msg, pb.PushMsg_ROOM); err != nil {
 		return err
 	}
 	return nil
@@ -51,7 +51,7 @@ func (l *Producer) SendRedEnvelope(roomId string, message Message, envelope RedE
 	if err != nil {
 		return err
 	}
-	if err := l.BroadcastRoom(roomId, msg, pb.PushMsg_MONEY); err != nil {
+	if err := l.broadcastRoom(roomId, msg, pb.PushMsg_MONEY); err != nil {
 		return err
 	}
 	return nil
@@ -74,7 +74,7 @@ func (l *Producer) SendForAdmin(roomId []string, message string, isTop bool) (in
 	} else {
 		t = pb.PushMsg_ROOM
 	}
-	_, id, err := l.Broadcast(roomId, msg, t)
+	_, id, err := l.broadcast(roomId, msg, t)
 	if err != nil {
 		return 0, err
 	}

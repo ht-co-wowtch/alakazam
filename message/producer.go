@@ -35,7 +35,7 @@ func (p *Producer) Close() error {
 
 // 房間推送，以下為條件
 // 1. room id
-func (d *Producer) BroadcastRoom(room string, msg []byte, model logicpb.PushMsg_Type) error {
+func (d *Producer) broadcastRoom(room string, msg []byte, model logicpb.PushMsg_Type) error {
 	pushMsg := &logicpb.PushMsg{
 		Type: model,
 		Room: []string{room},
@@ -57,7 +57,7 @@ func (d *Producer) BroadcastRoom(room string, msg []byte, model logicpb.PushMsg_
 }
 
 // 多房間推送，以下為條件
-func (d *Producer) Broadcast(roomIds []string, msg []byte, model logicpb.PushMsg_Type) (int32, int64, error) {
+func (d *Producer) broadcast(roomIds []string, msg []byte, model logicpb.PushMsg_Type) (int32, int64, error) {
 	pushMsg := &logicpb.PushMsg{
 		Type: model,
 		Msg:  msg,
