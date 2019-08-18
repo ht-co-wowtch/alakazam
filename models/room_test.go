@@ -15,7 +15,7 @@ func TestRoomTableName(t *testing.T) {
 
 func TestCreateRoom(t *testing.T) {
 	room := Room{
-		Id:           id.UUid32(),
+		Uuid:         id.UUid32(),
 		IsMessage:    true,
 		IsFollow:     true,
 		DayLimit:     1,
@@ -29,7 +29,7 @@ func TestCreateRoom(t *testing.T) {
 	assert.Equal(t, int64(1), aff)
 
 	r := new(Room)
-	ok, err := x.Where("id = ?", room.Id).Get(r)
+	ok, err := x.Where("uuid = ?", room.Uuid).Get(r)
 
 	assert.Nil(t, err)
 	assert.True(t, ok)
@@ -44,7 +44,7 @@ func TestUpdateRoom(t *testing.T) {
 	assert.NoError(t, prepareTestDatabase())
 
 	room := Room{
-		Id:           roomIdA,
+		Uuid:         roomIdA,
 		IsMessage:    false,
 		IsFollow:     false,
 		DayLimit:     2,
@@ -78,7 +78,7 @@ func TestGetRoom(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, ok)
 	assert.Equal(t, Room{
-		Id:           roomIdA,
+		Uuid:         roomIdA,
 		IsMessage:    true,
 		IsFollow:     true,
 		DayLimit:     1,

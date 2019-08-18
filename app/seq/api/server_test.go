@@ -86,7 +86,7 @@ func (m mockDao) LoadSeq() ([]models.Seq, error) {
 	return fakeSeq, nil
 }
 
-func (m mockDao) CreateSeq(code, batch int) error {
+func (m mockDao) CreateSeq(code, batch int64) error {
 	arg := m.Called(code, batch)
 	return arg.Error(0)
 }

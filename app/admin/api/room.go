@@ -52,7 +52,7 @@ func (s *httpServer) GetRoom(c *gin.Context) error {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"id":         r.Id,
+		"id":         r.Uuid,
 		"is_message": r.IsMessage,
 		"limit": room.Limit{
 			Day:     r.DayLimit,

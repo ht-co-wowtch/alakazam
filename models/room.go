@@ -16,7 +16,9 @@ func IsMoney(status int) bool {
 
 type Room struct {
 	// 要設定的房間id
-	Id string `xorm:"pk"`
+	Id int `xorm:"pk autoincr"`
+
+	Uuid string
 
 	// 是否禁言
 	IsMessage bool `xorm:"default(0) not null"`
@@ -44,7 +46,7 @@ type Room struct {
 }
 
 func (r *Room) Permission() int {
-	if r.Id == "" {
+	if r.Uuid == "" {
 		return Message
 	}
 	var permission int
@@ -65,7 +67,22 @@ func (s *Store) CreateRoom(room Room) (int64, error) {
 	room.UpdateAt = time.Now()
 	room.CreateAt = time.Now()
 	room.Status = true
-	return s.d.InsertOne(&room)
+	tx := s.d.Master().Prepare()
+	defer tx.Rollback()
+
+	aff, err := tx.InsertOne(&room)
+	if err != nil || aff != 1 {
+		return aff, err
+	}
+
+	aff, err = tx.InsertOne(&Seq{
+		RoomId: room.Id,
+		Batch:  200,
+	})
+	if err != nil || aff != 1 {
+		return aff, err
+	}
+	return 1, tx.Commit()
 }
 
 func (s *Store) UpdateRoom(room Room) (int64, error) {
@@ -75,7 +92,7 @@ func (s *Store) UpdateRoom(room Room) (int64, error) {
 	} else {
 		u = s.d.Cols("is_message", "day_limit", "deposit_limit", "dml_limit")
 	}
-	return u.Where("id = ?", room.Id).
+	return u.Where("uuid = ?", room.Uuid).
 		Update(&room)
 }
 

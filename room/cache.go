@@ -83,7 +83,7 @@ func (c *Cache) set(room models.Room) error {
 		hashLimitDmlKey:    room.DmlLimit,
 		hashLimitAmountKey: room.DepositLimit,
 	}
-	key := keyRoom(room.Id)
+	key := keyRoom(room.Uuid)
 	tx := c.c.Pipeline()
 	tx.HMSet(key, f)
 	tx.Expire(key, roomExpired)

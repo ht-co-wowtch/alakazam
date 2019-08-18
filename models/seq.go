@@ -10,14 +10,14 @@ type Seq struct {
 	RoomId int
 	Max    int64
 	Cur    int64 `xorm:"-"`
-	Batch  int
+	Batch  int64
 	L      sync.Mutex `xorm:"-"`
 }
 
 type ISeq interface {
 	SyncSeq(seq *Seq) (bool, error)
 	LoadSeq() ([]Seq, error)
-	CreateSeq(code, batch int) error
+	CreateSeq(code, batch int64) error
 }
 
 func (r *Seq) TableName() string {
@@ -37,9 +37,9 @@ func (d *Store) LoadSeq() ([]Seq, error) {
 	return seq, err
 }
 
-func (d *Store) CreateSeq(code, batch int) error {
+func (d *Store) CreateSeq(code, batch int64) error {
 	s := Seq{
-		RoomId: code,
+		RoomId: int(code),
 		Batch:  batch,
 	}
 	aff, err := d.d.InsertOne(&s)

@@ -58,7 +58,7 @@ type Limit struct {
 
 func (l *Room) Create(r Status) (string, error) {
 	room := models.Room{
-		Id:           r.Id,
+		Uuid:         r.Id,
 		IsMessage:    r.IsMessage,
 		DayLimit:     r.Limit.Day,
 		DepositLimit: r.Limit.Deposit,
@@ -72,15 +72,15 @@ func (l *Room) Create(r Status) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if dbRoom.Id != "" {
-		return room.Id, l.update(room)
+	if dbRoom.Uuid != "" {
+		return room.Uuid, l.update(room)
 	}
 	return r.Id, l.c.set(room)
 }
 
 func (l *Room) Update(r Status) error {
 	room := models.Room{
-		Id:           r.Id,
+		Uuid:         r.Id,
 		IsMessage:    r.IsMessage,
 		DayLimit:     r.Limit.Day,
 		DepositLimit: r.Limit.Deposit,
