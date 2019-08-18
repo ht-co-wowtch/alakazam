@@ -3,8 +3,8 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
-	"gopkg.in/go-playground/validator.v8"
 	"net/http"
 	"time"
 )
@@ -66,7 +66,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 			return err
 		}
 	} else if result.PublishAt.Before(time.Now()) {
-		return validator.ValidationErrors{}
+		return errors.ErrPublishAt
 	} else if err := s.delayMessage.SendDelayRedEnvelope(o.RoomId, msg, redEnvelope, result.PublishAt); err != nil {
 		return err
 	}

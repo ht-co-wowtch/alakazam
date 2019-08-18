@@ -9,6 +9,8 @@ import (
 )
 
 var (
+	ErrPublishAt = errdefs.InvalidParameter(New("预定发送时间不能大于现在"), 0)
+
 	ErrLogin         = errdefs.Unauthorized(New("请先登入会员"))
 	ErrRoomBanned    = errdefs.Unauthorized(New("聊天室目前禁言状态，无法发言"), 1)
 	ErrBanned        = errdefs.Unauthorized(New("您在禁言状态，无法发言"), 2)
@@ -40,6 +42,9 @@ const (
 
 	// 房間不存在
 	RoomNotFoundCode = 15024042
+
+	// 預定發送時間過期
+	PublishAtCode = 15024002
 )
 
 func init() {
@@ -84,6 +89,9 @@ func (m output) Error(e *errdefs.Error) interface{} {
 	case RoomNotFoundCode:
 		e.Status = http.StatusNotFound
 		return "房间不存在"
+	case PublishAtCode:
+		e.Status = http.StatusNotFound
+		return "预定发送时间不能大于现在"
 	}
 	return "操作失败"
 }
