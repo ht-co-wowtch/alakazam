@@ -39,12 +39,22 @@ stop:
 migrate:
 	bin/logic -c logic.yml -migrate=true
 
-proto-build:
-	cd protocol/proto && protoc \
+proto-build: proto-logic proto-comet
+
+proto-logic:
+	cd app/logic/pb && protoc \
 	--proto_path=${GOPATH}/src \
 	--proto_path=${GOPATH}/src/github.com/gogo/protobuf/protobuf \
 	--proto_path=. \
-	--gofast_out=plugins=grpc:../grpc *.proto \
+	--gofast_out=plugins=grpc:. *.proto \
+	*.proto
+
+proto-comet:
+	cd app/comet/pb && protoc \
+	--proto_path=${GOPATH}/src \
+	--proto_path=${GOPATH}/src/github.com/gogo/protobuf/protobuf \
+	--proto_path=. \
+	--gofast_out=plugins=grpc:. *.proto \
 	*.proto
 
 test:
