@@ -26,30 +26,33 @@ type Messages struct {
 	Message string
 }
 
-func (p *Producer) Send(message Messages) (int64, error) {
+func (p *Producer) Send(msg Messages) (int64, error) {
 	seq, err := p.seq.Id(context.Background(), &seqpb.Arg{
-		Code: message.Rids[0], Count: 1,
+		Code: msg.Rids[0], Count: 1,
 	})
 	if err != nil {
 		return 0, err
 	}
-
+	now := time.Now()
 	bm, err := json.Marshal(Message{
 		Id:      seq.Id,
-		Uid:     message.Uid,
-		Name:    message.Name,
-		Message: message.Message,
-		Time:    time.Now().Format(time.RFC3339),
+		Uid:     msg.Uid,
+		Name:    msg.Name,
+		Message: msg.Message,
+		Time:    now.Format(time.RFC3339),
 	})
 	if err != nil {
 		return 0, err
 	}
 	pushMsg := &pb.PushMsg{
-		Type: pb.PushMsg_ROOM,
-		Room: message.Rooms,
-		Mid:  message.Mid,
-		Rids: message.Rids,
-		Msg:  bm,
+		Seq:     seq.Id,
+		Type:    pb.PushMsg_ROOM,
+		Room:    msg.Rooms,
+		Mid:     msg.Mid,
+		Rids:    msg.Rids,
+		Msg:     bm,
+		Message: msg.Message,
+		SendAt:  now.Unix(),
 	}
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
@@ -75,29 +78,32 @@ type RedEnvelope struct {
 	Expired int64  `json:"expired"`
 }
 
-func (p *Producer) SendRedEnvelope(message RedEnvelopeMessage) error {
+func (p *Producer) SendRedEnvelope(msg RedEnvelopeMessage) error {
+	now := time.Now()
 	bm, err := json.Marshal(money{
 		Message: Message{
-			Uid:     message.Uid,
-			Name:    message.Name,
-			Message: message.Message,
-			Time:    time.Now().Format(time.RFC3339),
+			Uid:     msg.Uid,
+			Name:    msg.Name,
+			Message: msg.Message,
+			Time:    now.Format(time.RFC3339),
 		},
 		RedEnvelope: RedEnvelope{
-			Id:      message.RedEnvelopeId,
-			Token:   message.Token,
-			Expired: message.Expired,
+			Id:      msg.RedEnvelopeId,
+			Token:   msg.Token,
+			Expired: msg.Expired,
 		},
 	})
 	if err != nil {
 		return err
 	}
 	pushMsg := &pb.PushMsg{
-		Type: pb.PushMsg_MONEY,
-		Room: message.Rooms,
-		Mid:  message.Mid,
-		Rids: message.Rids,
-		Msg:  bm,
+		Type:    pb.PushMsg_MONEY,
+		Room:    msg.Rooms,
+		Mid:     msg.Mid,
+		Rids:    msg.Rids,
+		Msg:     bm,
+		SendAt:  now.Unix(),
+		Message: msg.Message,
 	}
 	if err := p.send(pushMsg); err != nil {
 		return err
@@ -114,28 +120,31 @@ type AdminMessage struct {
 
 // 所有房間推送
 // TODO 需實作訊息是否頂置
-func (p *Producer) SendForAdmin(message AdminMessage) (int64, error) {
-	msg, err := json.Marshal(Message{
+func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
+	now := time.Now()
+	b, err := json.Marshal(Message{
 		Name:    "管理员",
-		Message: message.Message,
-		Time:    time.Now().Format(time.RFC3339),
+		Message: msg.Message,
+		Time:    now.Format(time.RFC3339),
 	})
 	if err != nil {
 		return 0, err
 	}
 
 	var t pb.PushMsg_Type
-	if message.IsTop {
+	if msg.IsTop {
 		t = pb.PushMsg_TOP
 	} else {
 		t = pb.PushMsg_ROOM
 	}
 
 	pushMsg := &pb.PushMsg{
-		Type: t,
-		Room: message.Rooms,
-		Rids: message.Rids,
-		Msg:  msg,
+		Type:    t,
+		Room:    msg.Rooms,
+		Rids:    msg.Rids,
+		Msg:     b,
+		SendAt:  now.Unix(),
+		Message: msg.Message,
 	}
 	err = p.send(pushMsg)
 	if err != nil {

@@ -13,7 +13,8 @@ build: clean
 	$(GOBUILD) -o bin/logic cmd/logic/main.go
 	$(GOBUILD) -o bin/job cmd/job/main.go
 	$(GOBUILD) -o bin/admin cmd/admin/main.go
-	$(GOBUILD) -o bin/admin cmd/seq/main.go
+	$(GOBUILD) -o bin/seq cmd/seq/main.go
+	$(GOBUILD) -o bin/message cmd/message/main.go
 
 build-debug: clean
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/comet cmd/comet/main.go
@@ -21,6 +22,7 @@ build-debug: clean
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/job cmd/job/main.go
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/admin cmd/admin/main.go
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/seq cmd/seq/main.go
+	$(GOBUILD) -gcflags "all=-N -l" -o bin/message cmd/message/main.go
 
 clean:
 	rm -rf bin/
@@ -32,6 +34,7 @@ run:
 	nohup bin/job -c job.yml 2>&1 > bin/job.log &
 	nohup bin/admin -c admin.yml 2>&1 > bin/admin.log &
 	nohup bin/seq -c seq.yml 2>&1 > bin/seq.log &
+	nohup bin/message -c message.yml 2>&1 > bin/message.log &
 
 stop:
 	pkill -f bin/comet
@@ -39,6 +42,7 @@ stop:
 	pkill -f bin/logic
 	pkill -f bin/job
 	pkill -f bin/seq
+	pkill -f bin/message
 
 migrate:
 	bin/logic -c logic.yml -migrate=true

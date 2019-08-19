@@ -19,7 +19,9 @@ message PushMsg {
     bytes msg = 6;
     int64 mid = 7;
     repeated int64 rids = 8;
-    int64 msgId = 9;
+    int64 seq = 9;
+    int64 sendAt = 10;
+    string message = 11;
 }
 
 message PingReply {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/seq/api/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/seq/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -22,7 +23,7 @@ func NewServer(c *conf.Config) (*grpc.Server, error) {
 	}
 	for _, v := range seqs {
 		v.Cur = v.Max
-		bs[int64(v.Id)] = &v
+		bs[int64(v.RoomId)] = &v
 	}
 	pb.RegisterSeqServer(srv, &rpcServer{
 		bs: bs,
@@ -46,7 +47,10 @@ func (s *rpcServer) Id(ctx context.Context, arg *pb.Arg) (*pb.SeqId, error) {
 }
 
 func (s *rpcServer) Ids(ctx context.Context, arg *pb.Arg) (*pb.SeqId, error) {
-	b := s.bs[arg.Code]
+	b, ok := s.bs[arg.Code]
+	if !ok {
+		return nil, errors.New("not seq code")
+	}
 	var seq int64
 	b.L.Lock()
 	defer b.L.Unlock()
