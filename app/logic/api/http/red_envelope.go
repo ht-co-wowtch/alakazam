@@ -69,12 +69,15 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		Expired:       reply.ExpireAt.Unix(),
 	}
 
-	if err := s.message.SendRedEnvelope(msg); err != nil {
+	msgId, err := s.message.SendRedEnvelope(msg)
+
+	if err != nil {
 		return err
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"id":    reply.Order,
-		"token": reply.Token,
+		"id":         reply.Order,
+		"token":      reply.Token,
+		"message_id": msgId,
 	})
 	return nil
 }

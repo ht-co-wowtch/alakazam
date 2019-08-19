@@ -80,10 +80,17 @@ type RedEnvelope struct {
 	Expired int64  `json:"expired"`
 }
 
-func (p *Producer) SendRedEnvelope(msg RedEnvelopeMessage) error {
+func (p *Producer) SendRedEnvelope(msg RedEnvelopeMessage) (int64, error) {
+	seq, err := p.seq.Id(context.Background(), &seqpb.Arg{
+		Code: msg.Rids[0], Count: 1,
+	})
+	if err != nil {
+		return 0, err
+	}
 	now := time.Now()
 	bm, err := json.Marshal(money{
 		Message: Message{
+			Id:      seq.Id,
 			Type:    pb.PushMsg_MONEY,
 			Uid:     msg.Uid,
 			Name:    msg.Name,
@@ -97,9 +104,10 @@ func (p *Producer) SendRedEnvelope(msg RedEnvelopeMessage) error {
 		},
 	})
 	if err != nil {
-		return err
+		return 0, err
 	}
 	pushMsg := &pb.PushMsg{
+		Seq:     seq.Id,
 		Type:    pb.PushMsg_MONEY,
 		Room:    msg.Rooms,
 		Mid:     msg.Mid,
@@ -109,9 +117,9 @@ func (p *Producer) SendRedEnvelope(msg RedEnvelopeMessage) error {
 		Message: msg.Message,
 	}
 	if err := p.send(pushMsg); err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return seq.Id, nil
 }
 
 type AdminMessage struct {
