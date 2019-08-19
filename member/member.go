@@ -26,23 +26,10 @@ func New(db *models.Store, cache *redis.Client, cli *client.Client) *Member {
 
 // 一個聊天室會員的基本資料
 type User struct {
-	// user uid
-	Uid string `json:"uid" binding:"required,len=32"`
-
-	// user connection key
-	Key string `json:"key" binding:"required,len=36"`
-
-	// 房間id
-	RoomId string `json:"-"`
-
-	// 名稱
-	Name string `json:"-"`
-
-	// 權限狀態
-	Status int `json:"-"`
-
-	// 房間權限狀態
-	RoomStatus int `json:"-"`
+	Uid        string  `json:"uid" binding:"required,len=32"`
+	Key        string  `json:"key" binding:"required,len=36"`
+	RoomStatus int     `json:"-"`
+	H          HMember `json:"-"`
 }
 
 func (m *Member) Login(token, roomId, server string) (*models.Member, string, error) {
@@ -100,14 +87,14 @@ func (m *Member) Logout(uid, key string) (bool, error) {
 
 // 會員在線認證
 func (m *Member) Auth(u *User) error {
-	var err error
-	u.RoomId, u.Name, u.Status, err = m.c.get(u.Uid, u.Key)
+	hash, err := m.c.get(u.Uid, u.Key)
 	if err != nil {
 		return err
 	}
-	if u.Name == "" {
+	if hash.Name == "" {
 		return errors.ErrLogin
 	}
+	u.H = hash
 	return nil
 }
 

@@ -24,6 +24,7 @@ type Config struct {
 	Kafka      *Kafka
 	Redis      *redis.Conf
 	Api        *client.Conf
+	Seq        *grpc.Conf
 	// comet連線用戶心跳，server會清除在線紀錄
 	Heartbeat int64
 }
@@ -66,6 +67,10 @@ func Read(path string) error {
 		return err
 	}
 	Conf.DB, err = database.ReadViper(v.Sub("database"))
+	if err != nil {
+		return err
+	}
+	Conf.Seq, err = grpc.ReadViper(v.Sub("grpc.seq"))
 	if err != nil {
 		return err
 	}

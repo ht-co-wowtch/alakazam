@@ -5,6 +5,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/client"
 	"gitlab.com/jetfueltw/cpw/micro/config"
 	"gitlab.com/jetfueltw/cpw/micro/database"
+	"gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/http"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
@@ -20,6 +21,7 @@ type Config struct {
 	Kafka      *conf.Kafka
 	Redis      *redis.Conf
 	Nidoran    *client.Conf
+	Seq        *grpc.Conf
 }
 
 func init() {
@@ -47,6 +49,10 @@ func Read(path string) error {
 		return err
 	}
 	Conf.DB, err = database.ReadViper(v.Sub("database"))
+	if err != nil {
+		return err
+	}
+	Conf.Seq, err = grpc.ReadViper(v.Sub("grpc.seq"))
 	if err != nil {
 		return err
 	}

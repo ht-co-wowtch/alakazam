@@ -5,7 +5,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"net/http"
-	"time"
 )
 
 type PushRoom struct {
@@ -27,19 +26,28 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 	if err := s.room.Auth(&p.User); err != nil {
 		return err
 	}
-	if err := s.room.IsMessage(p.RoomId, p.RoomStatus, p.Uid, c.GetString("token")); err != nil {
+	if err := s.room.IsMessage(p.H.Room, p.RoomStatus, p.Uid, c.GetString("token")); err != nil {
 		return err
 	}
-	msg := message.Message{
+	r, err := s.room.Get(p.H.Room)
+	if err != nil {
+		return err
+	}
+
+	msg := message.Messages{
+		Rooms:   []string{p.H.Room},
+		Rids:    []int64{int64(r.Id)},
+		Mid:     int64(p.H.Mid),
 		Uid:     p.Uid,
-		Name:    p.Name,
-		Avatar:  "",
+		Name:    p.H.Name,
 		Message: p.Message,
-		Time:    time.Now().Format("15:04:05"),
 	}
-	if err := s.message.Send(p.RoomId, msg); err != nil {
+	id, err := s.message.Send(msg)
+	if err != nil {
 		return err
 	}
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, gin.H{
+		"id": id,
+	})
 	return nil
 }

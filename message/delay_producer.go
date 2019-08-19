@@ -46,9 +46,9 @@ func (p *DelayProducer) run() {
 				var err error
 				switch v.category {
 				case message_category:
-					err = p.producer.Send(v.room[0], v.message)
+					//err = p.producer.Send(v.room[0])
 				case redenvelope_message_category:
-					err = p.producer.SendRedEnvelope(v.room[0], v.message, v.redEnvelope)
+					//err = p.producer.SendRedEnvelope(v.room[0], v.message, v.redEnvelope)
 				}
 				if err != nil {
 					log.Error("delay send message", zap.Int64("id", v.message.Id))

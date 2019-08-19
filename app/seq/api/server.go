@@ -21,6 +21,7 @@ func NewServer(c *conf.Config) (*grpc.Server, error) {
 		return nil, err
 	}
 	for _, v := range seqs {
+		v.Cur = v.Max
 		bs[int64(v.Id)] = &v
 	}
 	pb.RegisterSeqServer(srv, &rpcServer{

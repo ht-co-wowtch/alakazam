@@ -8,7 +8,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"net/http"
-	"time"
 )
 
 type GiveRedEnvelope struct {
@@ -35,11 +34,11 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	if err := s.member.Auth(&arg.User); err != nil {
 		return err
 	}
-	if !models.IsRedEnvelope(int(arg.Status)) {
+	if !models.IsRedEnvelope(arg.H.Status) {
 		return errors.ErrLogin
 	}
 	give := client.RedEnvelope{
-		RoomId:    arg.RoomId,
+		RoomId:    arg.H.Room,
 		Message:   arg.Message,
 		Type:      arg.Type,
 		Amount:    arg.Amount,
@@ -50,19 +49,27 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	msg := message.Message{
-		Uid:     arg.User.Uid,
-		Name:    arg.User.Name,
-		Avatar:  "",
-		Message: give.Message,
-		Time:    time.Now().Format("15:04:05"),
+
+	r, err := s.room.Get(arg.H.Room)
+	if err != nil {
+		return err
 	}
-	red := message.RedEnvelope{
-		Id:      reply.Uid,
-		Token:   reply.Token,
-		Expired: reply.ExpireAt.Unix(),
+
+	msg := message.RedEnvelopeMessage{
+		Messages: message.Messages{
+			Rooms:   []string{arg.H.Room},
+			Rids:    []int64{int64(r.Id)},
+			Mid:     int64(arg.H.Mid),
+			Uid:     arg.Uid,
+			Name:    arg.H.Name,
+			Message: arg.Message,
+		},
+		RedEnvelopeId: reply.Uid,
+		Token:         reply.Token,
+		Expired:       reply.ExpireAt.Unix(),
 	}
-	if err := s.message.SendRedEnvelope(arg.User.RoomId, msg, red); err != nil {
+
+	if err := s.message.SendRedEnvelope(msg); err != nil {
 		return err
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -86,7 +93,7 @@ func (s *httpServer) takeRedEnvelope(c *gin.Context) error {
 	if err := s.member.Auth(&arg.User); err != nil {
 		return err
 	}
-	if !models.IsRedEnvelope(int(arg.Status)) {
+	if !models.IsRedEnvelope(arg.H.Status) {
 		return errors.ErrLogin
 	}
 	reply, err := s.client.TakeRedEnvelope(arg.Token, c.GetString("token"))

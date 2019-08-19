@@ -3,18 +3,26 @@ package message
 import (
 	kafka "github.com/Shopify/sarama"
 	"github.com/gogo/protobuf/proto"
-	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
-	"strconv"
+	seqpb "gitlab.com/jetfueltw/cpw/alakazam/app/seq/api/pb"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 )
 
 type Producer struct {
 	topic    string
 	brokers  []string
 	producer kafka.SyncProducer
+	seq      seqpb.SeqClient
+	bs       map[int64]*seq
 }
 
-func NewProducer(brokers []string, topic string) *Producer {
+type seq struct {
+	cur int64
+	max int64
+}
+
+func NewProducer(brokers []string, topic string, seq seqpb.SeqClient) *Producer {
 	kc := kafka.NewConfig()
 	kc.Version = kafka.V2_3_0_0
 	kc.Producer.Return.Successes = true
@@ -26,6 +34,7 @@ func NewProducer(brokers []string, topic string) *Producer {
 		brokers:  brokers,
 		topic:    topic,
 		producer: pub,
+		seq:      seq,
 	}
 }
 
@@ -35,47 +44,30 @@ func (p *Producer) Close() error {
 
 // 房間推送，以下為條件
 // 1. room id
-func (d *Producer) broadcastRoom(room string, msg []byte, model logicpb.PushMsg_Type) error {
-	pushMsg := &logicpb.PushMsg{
-		Type: model,
-		Room: []string{room},
-		Msg:  msg,
-	}
+func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 	b, err := proto.Marshal(pushMsg)
 	if err != nil {
 		return err
 	}
+	var key kafka.StringEncoder
+	switch pushMsg.Type {
+	case logicpb.PushMsg_ROOM:
+		key = kafka.StringEncoder(pushMsg.Room[0])
+	case logicpb.PushMsg_MONEY:
+		key = "red_envelope"
+	case logicpb.PushMsg_BROADCAST:
+		key = "all"
+	case logicpb.PushMsg_TOP:
+		key = "top"
+	}
 	m := &kafka.ProducerMessage{
-		Key:   kafka.StringEncoder(room),
-		Topic: d.topic,
+		Key:   key,
+		Topic: p.topic,
 		Value: kafka.ByteEncoder(b),
 	}
-	if _, _, err = d.producer.SendMessage(m); err != nil {
-		return err
-	}
-	return nil
-}
-
-// 多房間推送，以下為條件
-func (d *Producer) broadcast(roomIds []string, msg []byte, model logicpb.PushMsg_Type) (int32, int64, error) {
-	pushMsg := &logicpb.PushMsg{
-		Type: model,
-		Msg:  msg,
-		Room: roomIds,
-	}
-	b, err := proto.Marshal(pushMsg)
+	partition, offset, err := p.producer.SendMessage(m)
 	if err != nil {
-		return 0, 0, err
+		log.Error("message producer send message", zap.Error(err), zap.Int32("partition", partition), zap.Int64("offset", offset))
 	}
-	// TODO Key
-	m := &kafka.ProducerMessage{
-		Key:   kafka.StringEncoder(strconv.FormatInt(int64(cometpb.OpRaw), 10)),
-		Topic: d.topic,
-		Value: kafka.ByteEncoder(b),
-	}
-	partition, offset, err := d.producer.SendMessage(m)
-	if err != nil {
-		return 0, 0, err
-	}
-	return partition, offset, nil
+	return err
 }

@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"net/http"
 )
 
@@ -22,7 +23,23 @@ func (s *httpServer) push(c *gin.Context) error {
 	if err := c.ShouldBindJSON(p); err != nil {
 		return err
 	}
-	id, err := s.message.SendForAdmin(p.RoomId, p.Message, p.Top)
+
+	var rid []int64
+	for _, v := range p.RoomId {
+		r, err := s.room.Get(v)
+		if err != nil {
+			return err
+		}
+		rid = append(rid, int64(r.Id))
+	}
+
+	msg := message.AdminMessage{
+		Rooms:   p.RoomId,
+		Rids:    rid,
+		Message: p.Message,
+		IsTop:   p.Top,
+	}
+	id, err := s.message.SendForAdmin(msg)
 	if err != nil {
 		return err
 	}

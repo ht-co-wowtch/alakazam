@@ -17,6 +17,9 @@ message PushMsg {
     repeated string room = 4;
     repeated string keys = 5;
     bytes msg = 6;
+    int64 mid = 7;
+    repeated int64 rids = 8;
+    int64 msgId = 9;
 }
 
 message PingReply {

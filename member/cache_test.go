@@ -112,14 +112,13 @@ func TestDelBanned(t *testing.T) {
 	assert.Equal(t, 2, status)
 }
 
-
 func TestSetUser(t *testing.T) {
 	uid := id.UUid32()
 	key := id.UUid32()
 	roomId := id.UUid32()
 	name := "test"
 	server := "server"
-	member := &models.Member{Uid: uid, Name: name, Type: models.Player}
+	member := &models.Member{Id: 1, Uid: uid, Name: name, Type: models.Player}
 	err := c.set(member, key, roomId, server)
 
 	u := r.HGetAll(keyUidInfo(uid)).Val()
@@ -127,6 +126,7 @@ func TestSetUser(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, map[string]string{
 		key:           roomId,
+		hMidKey:       "1",
 		hashNameKey:   name,
 		hashStatusKey: strconv.Itoa(models.PlayStatus),
 		hashServerKey: server,
@@ -166,16 +166,17 @@ func TestGetUser(t *testing.T) {
 	key := id.UUid32()
 	roomId := id.UUid32()
 	name := "test"
-	member := &models.Member{Uid: uid, Name: name, Type: models.Player}
+	member := &models.Member{Id: 1, Uid: uid, Name: name, Type: models.Player}
 
 	_ = c.set(member, key, roomId, "test")
 
-	r, n, s, err := c.get(uid, key)
+	h, err := c.get(uid, key)
 
 	assert.Nil(t, err)
-	assert.Equal(t, roomId, r)
-	assert.Equal(t, name, n)
-	assert.Equal(t, models.PlayStatus, s)
+	assert.Equal(t, roomId, h.Room)
+	assert.Equal(t, name, h.Name)
+	assert.Equal(t, models.PlayStatus, h.Status)
+	assert.Equal(t, 1, h.Mid)
 }
 
 func TestGetUserBuNil(t *testing.T) {
@@ -187,7 +188,7 @@ func TestGetUserBuNil(t *testing.T) {
 
 	_ = c.set(member, key, roomId, "test")
 
-	_, _, _, err := c.get(uid, "123")
+	_, err := c.get(uid, "123")
 
 	assert.Equal(t, errdefs.InvalidParameter(errUserNil, 1), err)
 }

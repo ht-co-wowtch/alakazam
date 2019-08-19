@@ -13,12 +13,14 @@ build: clean
 	$(GOBUILD) -o bin/logic cmd/logic/main.go
 	$(GOBUILD) -o bin/job cmd/job/main.go
 	$(GOBUILD) -o bin/admin cmd/admin/main.go
+	$(GOBUILD) -o bin/admin cmd/seq/main.go
 
 build-debug: clean
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/comet cmd/comet/main.go
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/logic cmd/logic/main.go
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/job cmd/job/main.go
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/admin cmd/admin/main.go
+	$(GOBUILD) -gcflags "all=-N -l" -o bin/seq cmd/seq/main.go
 
 clean:
 	rm -rf bin/
@@ -29,12 +31,14 @@ run:
 	nohup bin/comet -c comet.yml 2>&1 > bin/comet.log &
 	nohup bin/job -c job.yml 2>&1 > bin/job.log &
 	nohup bin/admin -c admin.yml 2>&1 > bin/admin.log &
+	nohup bin/seq -c seq.yml 2>&1 > bin/seq.log &
 
 stop:
 	pkill -f bin/comet
 	pkill -f bin/admin
 	pkill -f bin/logic
 	pkill -f bin/job
+	pkill -f bin/seq
 
 migrate:
 	bin/logic -c logic.yml -migrate=true

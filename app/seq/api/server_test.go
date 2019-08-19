@@ -52,8 +52,8 @@ func TestGenerateIds(t *testing.T) {
 func TestSeqSync(t *testing.T) {
 	seq, dao := mockSeq()
 
-	dao.On("Sync", mock.MatchedBy(func(m *models.Seq) bool {
-		return int(m.Max) == (10 + m.Batch)
+	dao.On("SyncSeq", mock.MatchedBy(func(m *models.Seq) bool {
+		return m.Max == (10 + m.Batch)
 	})).Once().Return(true, nil)
 
 	_, err := seq.Ids(context.TODO(), &pb.Arg{Code: 1, Count: 10})

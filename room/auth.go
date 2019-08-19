@@ -9,12 +9,12 @@ import (
 
 func (r *Room) Auth(u *member.User) error {
 	var err error
-	u.RoomStatus, err = r.c.get(u.RoomId)
+	u.RoomStatus, err = r.c.get(u.H.Room)
 	if err != nil && err != redis.Nil {
 		return err
 	}
 	if u.RoomStatus == 0 {
-		room, _, err := r.db.GetRoom(u.RoomId)
+		room, _, err := r.db.GetRoom(u.H.Room)
 		if err != nil {
 			return err
 		}
@@ -26,7 +26,7 @@ func (r *Room) Auth(u *member.User) error {
 	if models.IsBanned(u.RoomStatus) {
 		return errors.ErrRoomBanned
 	}
-	is, err := r.member.IsUserBanned(u.Uid, u.Status)
+	is, err := r.member.IsUserBanned(u.Uid, u.H.Status)
 	if err != nil {
 		return err
 	}

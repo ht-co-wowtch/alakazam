@@ -17,6 +17,8 @@ http:
 grpc:
   server:
     addr: :3119
+  seq:
+    addr: :3120
 
 # 三方應用接口 config
 api:

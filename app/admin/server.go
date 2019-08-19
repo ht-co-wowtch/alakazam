@@ -5,11 +5,13 @@ import (
 	goRedis "github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/admin/api"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/admin/conf"
+	seqpb "gitlab.com/jetfueltw/cpw/alakazam/app/seq/api/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
+	rpccli "gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"net/http"
@@ -29,7 +31,11 @@ func New(conf *conf.Config) *Server {
 	cache := redis.New(conf.Redis)
 	db := models.NewStore(conf.DB)
 	cli := client.New(conf.Nidoran)
-	messageProducer := message.NewProducer(conf.Kafka.Brokers, conf.Kafka.Topic)
+	seqCli, err := rpccli.NewClient(conf.Seq)
+	if err != nil {
+		panic(err)
+	}
+	messageProducer := message.NewProducer(conf.Kafka.Brokers, conf.Kafka.Topic, seqpb.NewSeqClient(seqCli))
 	memberCli := member.New(db, cache, cli)
 	roomCli := room.New(db, cache, memberCli, cli, 0)
 	httpServer := api.NewServer(conf.HTTPServer, memberCli, messageProducer, roomCli, cli)

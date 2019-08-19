@@ -98,7 +98,7 @@ func (s *Store) UpdateRoom(room Room) (int64, error) {
 
 func (s *Store) GetRoom(roomId string) (Room, bool, error) {
 	r := Room{}
-	ok, err := s.d.Where("id = ?", roomId).Get(&r)
+	ok, err := s.d.Where("uuid = ?", roomId).Get(&r)
 	return r, ok, err
 }
 
@@ -107,6 +107,6 @@ func (s *Store) DeleteRoom(roomId string) (int64, error) {
 		Status: false,
 	}
 	return s.d.Cols("status").
-		Where("id = ?", roomId).
+		Where("uuid = ?", roomId).
 		Update(&r)
 }

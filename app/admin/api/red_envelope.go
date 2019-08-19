@@ -62,7 +62,26 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		Expired: result.ExpireAt.Unix(),
 	}
 	if o.PublishAt.IsZero() {
-		if err := s.message.SendRedEnvelope(o.RoomId, msg, redEnvelope); err != nil {
+		r, err := s.room.Get(o.RoomId)
+		if err != nil {
+			return err
+		}
+
+		msg := message.RedEnvelopeMessage{
+			Messages: message.Messages{
+				Rooms: []string{o.RoomId},
+				Rids:  []int64{int64(r.Id)},
+				//Mid:     int64(arg.H.Mid),
+				//Uid:     arg.Uid,
+				Name:    "管理员",
+				Message: o.Message,
+			},
+			RedEnvelopeId: result.Uid,
+			Token:         result.Token,
+			Expired:       result.ExpireAt.Unix(),
+		}
+
+		if err := s.message.SendRedEnvelope(msg); err != nil {
 			return err
 		}
 	} else if result.PublishAt.Before(time.Now()) {

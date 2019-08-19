@@ -48,7 +48,62 @@ const (
 
 	// user hash table server key
 	hashServerKey = "server"
+
+	hMidKey = "mid"
 )
+
+// 儲存user資訊
+func (c *Cache) set(member *models.Member, key, roomId, server string) error {
+	keyI := keyUidInfo(member.Uid)
+	tx := c.c.Pipeline()
+	f := map[string]interface{}{
+		key:           roomId,
+		hMidKey:       member.Id,
+		hashNameKey:   member.Name,
+		hashStatusKey: member.Status(),
+		hashServerKey: server,
+	}
+	tx.HMSet(keyI, f)
+	tx.Expire(keyI, c.expire)
+	_, err := tx.Exec()
+	return err
+}
+
+var errUserNil = errors.New("get user cache data has nil")
+
+type HMember struct {
+	Mid    int
+	Room   string
+	Name   string
+	Status int
+}
+
+func (c *Cache) get(uid string, key string) (HMember, error) {
+	res, err := c.c.HMGet(keyUidInfo(uid), key, hashNameKey, hashStatusKey, hMidKey).Result()
+	if err != nil {
+		return HMember{}, err
+	}
+	for _, v := range res {
+		if v == nil {
+			return HMember{}, errdefs.InvalidParameter(errUserNil, 1)
+		}
+	}
+
+	status, err := strconv.Atoi(res[2].(string))
+	if err != nil {
+		return HMember{}, err
+	}
+	mid, err := strconv.Atoi(res[3].(string))
+	if err != nil {
+		return HMember{}, err
+	}
+	return HMember{
+		Mid:    mid,
+		Room:   res[0].(string),
+		Name:   res[1].(string),
+		Status: status,
+	}, nil
+}
 
 // 設定禁言
 func (c *Cache) setBanned(uid string, expired time.Duration) error {
@@ -87,22 +142,6 @@ func (c *Cache) delBanned(uid string) error {
 	return err
 }
 
-// 儲存user資訊
-func (c *Cache) set(member *models.Member, key, roomId, server string) error {
-	keyI := keyUidInfo(member.Uid)
-	tx := c.c.Pipeline()
-	f := map[string]interface{}{
-		key:           roomId,
-		hashNameKey:   member.Name,
-		hashStatusKey: member.Status(),
-		hashServerKey: server,
-	}
-	tx.HMSet(keyI, f)
-	tx.Expire(keyI, c.expire)
-	_, err := tx.Exec()
-	return err
-}
-
 // restart user資料的過期時間
 // EXPIRE : uid_{user id}  (HSET)
 func (c *Cache) refreshUserExpire(uid string) (bool, error) {
@@ -114,24 +153,6 @@ func (c *Cache) refreshUserExpire(uid string) (bool, error) {
 func (c *Cache) deleteUser(uid, key string) (bool, error) {
 	aff, err := c.c.HDel(keyUidInfo(uid), key).Result()
 	return aff >= 1, err
-}
-
-var errUserNil = errors.New("get user cache data has nil")
-
-func (c *Cache) get(uid string, key string) (roomId, name string, status int, err error) {
-	res, err := c.c.HMGet(keyUidInfo(uid), key, hashNameKey, hashStatusKey).Result()
-	if err != nil {
-		return "", "", 0, err
-	}
-	for _, v := range res {
-		if v == nil {
-			return "", "", 0, errdefs.InvalidParameter(errUserNil, 1)
-		}
-	}
-	if status, err = strconv.Atoi(res[2].(string)); err != nil {
-		return "", "", 0, err
-	}
-	return res[0].(string), res[1].(string), status, err
 }
 
 // 取會員名稱

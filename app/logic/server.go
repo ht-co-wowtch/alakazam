@@ -6,11 +6,13 @@ import (
 	api "gitlab.com/jetfueltw/cpw/alakazam/app/logic/api/http"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/api/rpc"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/conf"
+	seqpb "gitlab.com/jetfueltw/cpw/alakazam/app/seq/api/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
+	rpccli "gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"google.golang.org/grpc"
@@ -44,7 +46,11 @@ func New(c *conf.Config) *Server {
 	cache := redis.New(c.Redis)
 	db := models.NewStore(c.DB)
 	cli := client.New(c.Api)
-	messageProducer := message.NewProducer(c.Kafka.Brokers, c.Kafka.Topic)
+	seqCli, err := rpccli.NewClient(c.Seq)
+	if err != nil {
+		panic(err)
+	}
+	messageProducer := message.NewProducer(c.Kafka.Brokers, c.Kafka.Topic, seqpb.NewSeqClient(seqCli))
 	memberCli := member.New(db, cache, cli)
 	roomCli := room.New(db, cache, memberCli, cli, c.Heartbeat)
 	httpServer := api.NewServer(c.HTTPServer, memberCli, messageProducer, roomCli, cli)
