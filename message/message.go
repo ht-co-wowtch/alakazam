@@ -14,16 +14,6 @@ const (
 	RootName = "管理员"
 )
 
-type Message struct {
-	Id      int64           `json:"id"`
-	Uid     string          `json:"uid"`
-	Type    pb.PushMsg_Type `json:"type"`
-	Name    string          `json:"name"`
-	Avatar  string          `json:"avatar"`
-	Message string          `json:"message"`
-	Time    string          `json:"time"`
-}
-
 type Messages struct {
 	Rooms   []string
 	Rids    []int64
@@ -111,17 +101,6 @@ type RedEnvelopeMessage struct {
 	RedEnvelopeId string
 	Token         string
 	Expired       int64
-}
-
-type money struct {
-	Message
-	RedEnvelope
-}
-
-type RedEnvelope struct {
-	Id      string `json:"id"`
-	Token   string `json:"token"`
-	Expired int64  `json:"expired"`
 }
 
 func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*pb.PushMsg, error) {
