@@ -83,7 +83,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		}
 	} else if result.PublishAt.Before(time.Now()) {
 		return errors.ErrPublishAt
-	} else if err := s.delayMessage.SendDelayRedEnvelope(o.RoomId, msg, redEnvelope, result.PublishAt); err != nil {
+	} else if err := s.delayMessage.SendDelayRedEnvelopeForAdmin(o.RoomId, msg, redEnvelope, result.PublishAt); err != nil {
 		return err
 	}
 	c.JSON(http.StatusOK, result)

@@ -1,8 +1,8 @@
 package message
 
 import (
+	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
-	"go.uber.org/zap"
 	"sync"
 	"time"
 )
@@ -11,7 +11,7 @@ import (
 type cron struct {
 	len   int
 	head  *messageTask
-	msg   chan []messageSet
+	msg   chan []*pb.PushMsg
 	stop  chan struct{}
 	rate  time.Duration
 	lock  sync.Mutex
@@ -21,7 +21,7 @@ type cron struct {
 func newCron(rate time.Duration) *cron {
 	return &cron{
 		stop: make(chan struct{}),
-		msg:  make(chan []messageSet, 100),
+		msg:  make(chan []*pb.PushMsg, 100),
 		rate: rate,
 	}
 }
@@ -44,7 +44,7 @@ func (c *cron) run() {
 				select {
 				case c.msg <- c.head.message:
 				default:
-					log.Warnf("message miss for cron", zap.Int64s("id", c.head.Ids()))
+					log.Warn("message miss for cron")
 				}
 				c.pop()
 			}
@@ -54,17 +54,17 @@ func (c *cron) run() {
 	}
 }
 
-func (c *cron) Message() <-chan []messageSet {
+func (c *cron) Message() <-chan []*pb.PushMsg {
 	return c.msg
 }
 
 // 新增一個task至一個Linked List，排序方式以最小時間
 // 時間越小則Linked List越前面，反之則最後面
-func (c *cron) add(message messageSet, time time.Time) {
+func (c *cron) add(message *pb.PushMsg, time time.Time) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	task := newMessageTask([]messageSet{message}, time)
+	task := newMessageTask([]*pb.PushMsg{message}, time)
 	// Linked 沒有資料時
 	if c.head == nil {
 		c.head = task
@@ -118,14 +118,14 @@ func (c *cron) pop() {
 }
 
 type messageTask struct {
-	message []messageSet
+	message []*pb.PushMsg
 	time    time.Time
 	unix    int64
 	prev    *messageTask
 	next    *messageTask
 }
 
-func newMessageTask(message []messageSet, time time.Time) *messageTask {
+func newMessageTask(message []*pb.PushMsg, time time.Time) *messageTask {
 	return &messageTask{
 		message: message,
 		time:    time,
@@ -133,26 +133,6 @@ func newMessageTask(message []messageSet, time time.Time) *messageTask {
 	}
 }
 
-func (m *messageTask) add(message messageSet) {
+func (m *messageTask) add(message *pb.PushMsg) {
 	m.message = append(m.message, message)
-}
-
-func (m *messageTask) Ids() []int64 {
-	id := make([]int64, 0, len(m.message))
-	for _, v := range m.message {
-		id = append(id, v.message.Id)
-	}
-	return id
-}
-
-const (
-	message_category             = 1
-	redenvelope_message_category = 2
-)
-
-type messageSet struct {
-	room        []string
-	message     Message
-	redEnvelope RedEnvelope
-	category    int
 }

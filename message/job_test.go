@@ -2,6 +2,7 @@ package message
 
 import (
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"testing"
 	"time"
 )
@@ -41,7 +42,7 @@ func TestLinkedTaskByMinTime(t *testing.T) {
 		now := time.Now()
 
 		for _, duration := range v.time {
-			cron.add(messageSet{}, now.Add(duration))
+			cron.add(&pb.PushMsg{}, now.Add(duration))
 		}
 
 		total := 0
@@ -62,15 +63,15 @@ func TestLinkedTaskByMinTime(t *testing.T) {
 func TestAddTheSameNode(t *testing.T) {
 	cron := newCron(time.Second)
 	now := time.Now()
-	cron.add(messageSet{message: Message{Id: 1}}, now)
-	cron.add(messageSet{message: Message{Id: 2}}, now.Add(time.Second))
-	cron.add(messageSet{message: Message{Id: 3}}, now)
-	cron.add(messageSet{message: Message{Id: 4}}, now.Add(time.Second))
+	cron.add(&pb.PushMsg{Seq: 1}, now)
+	cron.add(&pb.PushMsg{Seq: 2}, now.Add(time.Second))
+	cron.add(&pb.PushMsg{Seq: 3}, now)
+	cron.add(&pb.PushMsg{Seq: 4}, now.Add(time.Second))
 
 	var id []int64
 	for node := cron.head; node != nil; node = node.next {
 		for _, v := range node.message {
-			id = append(id, v.message.Id)
+			id = append(id, v.Seq)
 		}
 	}
 
@@ -80,8 +81,8 @@ func TestAddTheSameNode(t *testing.T) {
 func TestPop(t *testing.T) {
 	cron := newCron(time.Second)
 	now := time.Now()
-	cron.add(messageSet{}, now)
-	cron.add(messageSet{}, now.Add(time.Second))
+	cron.add(&pb.PushMsg{}, now)
+	cron.add(&pb.PushMsg{}, now.Add(time.Second))
 	cron.pop()
 
 	assert.Equal(t, now.Add(time.Second), cron.head.time)
@@ -96,13 +97,13 @@ func TestPop(t *testing.T) {
 func TestStart(t *testing.T) {
 	cron := newCron(time.Second)
 
-	cron.add(messageSet{message: Message{Id: 1}}, time.Now().Add(time.Second))
-	cron.add(messageSet{message: Message{Id: 2}}, time.Now().Add(time.Second*2))
-	cron.add(messageSet{message: Message{Id: 3}}, time.Now().Add(time.Second*3))
+	cron.add(&pb.PushMsg{Seq: 1}, time.Now().Add(time.Second))
+	cron.add(&pb.PushMsg{Seq: 2}, time.Now().Add(time.Second*2))
+	cron.add(&pb.PushMsg{Seq: 3}, time.Now().Add(time.Second*3))
 	go cron.run()
 
-	var msg []messageSet
-	tc := time.After(time.Second * 4)
+	var msg []*pb.PushMsg
+	tc := time.After(time.Second * 3)
 
 	go func() {
 		for {
@@ -118,8 +119,8 @@ func TestStart(t *testing.T) {
 	<-tc
 
 	assert.Equal(t, 1, cron.len)
-	assert.Equal(t, []messageSet{
-		messageSet{message: Message{Id: 1}},
-		messageSet{message: Message{Id: 2}},
+	assert.Equal(t, []*pb.PushMsg{
+		&pb.PushMsg{Seq: 1},
+		&pb.PushMsg{Seq: 2},
 	}, msg)
 }

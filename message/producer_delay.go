@@ -43,30 +43,34 @@ func (p *DelayProducer) run() {
 			return
 		case m := <-p.cron.Message():
 			for _, v := range m {
-				var err error
-				switch v.category {
-				case message_category:
-					//err = p.producer.Send()
-				case redenvelope_message_category:
-					//err = p.producer.SendRedEnvelope(v.room[0], v.message, v.redEnvelope)
-				}
-				if err != nil {
-					log.Error("delay send message", zap.Int64("id", v.message.Id))
+				if err := p.producer.send(v); err != nil {
+					log.Error("delay send message", zap.Int64("id", v.Seq))
 				} else {
-					log.Info("delay send message", zap.Int64("id", v.message.Id))
+					log.Info("delay send message", zap.Int64("id", v.Seq))
 				}
 			}
 		}
 	}
 }
 
-func (p *DelayProducer) SendDelayRedEnvelope(roomId string, message Message, envelope RedEnvelope, publishAt time.Time) error {
-	p.cron.add(messageSet{
-		room:        []string{roomId},
-		message:     message,
-		redEnvelope: envelope,
-		category:    redenvelope_message_category,
-	}, publishAt)
-	log.Info("add delay message for red envelope", zap.Int64("id", message.Id))
+func (p *DelayProducer) SendDelayRedEnvelopeForAdmin(msg AdminRedEnvelopeMessage, publishAt time.Time) error {
+	pushMsg, err := p.producer.toRedEnvelopePb(RedEnvelopeMessage{
+		Messages: Messages{
+			Rooms:   msg.Rooms,
+			Rids:    msg.Rids,
+			Mid:     RootMid,
+			Uid:     RootUid,
+			Name:    RootName,
+			Message: msg.Message,
+		},
+		RedEnvelopeId: msg.RedEnvelopeId,
+		Token:         msg.Token,
+		Expired:       msg.Expired,
+	})
+	if err != nil {
+		return err
+	}
+	p.cron.add(pushMsg, publishAt)
+	log.Info("add delay message for red envelope", zap.Int64("id", pushMsg.Seq))
 	return nil
 }
