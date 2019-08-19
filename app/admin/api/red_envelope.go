@@ -67,13 +67,10 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 			return err
 		}
 
-		msg := message.RedEnvelopeMessage{
-			Messages: message.Messages{
+		msg := message.AdminRedEnvelopeMessage{
+			AdminMessage: message.AdminMessage{
 				Rooms:   []string{o.RoomId},
 				Rids:    []int64{int64(r.Id)},
-				Mid:     message.RootMid,
-				Uid:     message.RootUid,
-				Name:    message.RootName,
 				Message: o.Message,
 			},
 			RedEnvelopeId: result.Uid,
@@ -81,9 +78,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 			Expired:       result.ExpireAt.Unix(),
 		}
 
-		_, err = s.message.SendRedEnvelope(msg)
-
-		if err != nil {
+		if err = s.message.SendRedEnvelopeForAdmin(msg); err != nil {
 			return err
 		}
 	} else if result.PublishAt.Before(time.Now()) {

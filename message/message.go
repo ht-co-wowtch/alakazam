@@ -8,6 +8,12 @@ import (
 	"time"
 )
 
+const (
+	RootMid  = 1
+	RootUid  = "root"
+	RootName = "管理员"
+)
+
 type Message struct {
 	Id      int64           `json:"id"`
 	Uid     string          `json:"uid"`
@@ -25,14 +31,15 @@ type Messages struct {
 	Uid     string
 	Name    string
 	Message string
+	IsTop   bool
 }
 
-func (p *Producer) Send(msg Messages) (int64, error) {
+func (p *Producer) toPb(msg Messages) (*pb.PushMsg, error) {
 	seq, err := p.seq.Id(context.Background(), &seqpb.Arg{
 		Code: msg.Rids[0], Count: 1,
 	})
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	now := time.Now()
 	bm, err := json.Marshal(Message{
@@ -44,9 +51,9 @@ func (p *Producer) Send(msg Messages) (int64, error) {
 		Time:    now.Format(time.RFC3339),
 	})
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	pushMsg := &pb.PushMsg{
+	return &pb.PushMsg{
 		Seq:     seq.Id,
 		Type:    pb.PushMsg_ROOM,
 		Room:    msg.Rooms,
@@ -55,11 +62,48 @@ func (p *Producer) Send(msg Messages) (int64, error) {
 		Msg:     bm,
 		Message: msg.Message,
 		SendAt:  now.Unix(),
+	}, nil
+}
+
+func (p *Producer) Send(msg Messages) (int64, error) {
+	pushMsg, err := p.toPb(msg)
+	if err != nil {
+		return 0, err
 	}
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
 	}
-	return seq.Id, nil
+	return pushMsg.Seq, nil
+}
+
+type AdminMessage struct {
+	Rooms   []string
+	Rids    []int64
+	Message string
+	IsTop   bool
+}
+
+// 所有房間推送
+// TODO 需實作訊息是否頂置
+func (p *Producer) SendForAdmin(msg AdminMessage) error {
+	pushMsg, err := p.toPb(Messages{
+		Rooms:   msg.Rooms,
+		Rids:    msg.Rids,
+		Mid:     RootMid,
+		Uid:     RootUid,
+		Name:    RootName,
+		Message: msg.Message,
+	})
+	if err != nil {
+		return err
+	}
+	if msg.IsTop {
+		pushMsg.Type = pb.PushMsg_TOP
+	}
+	if err := p.send(pushMsg); err != nil {
+		return err
+	}
+	return nil
 }
 
 type RedEnvelopeMessage struct {
@@ -80,12 +124,12 @@ type RedEnvelope struct {
 	Expired int64  `json:"expired"`
 }
 
-func (p *Producer) SendRedEnvelope(msg RedEnvelopeMessage) (int64, error) {
+func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*pb.PushMsg, error) {
 	seq, err := p.seq.Id(context.Background(), &seqpb.Arg{
 		Code: msg.Rids[0], Count: 1,
 	})
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	now := time.Now()
 	bm, err := json.Marshal(money{
@@ -104,9 +148,9 @@ func (p *Producer) SendRedEnvelope(msg RedEnvelopeMessage) (int64, error) {
 		},
 	})
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	pushMsg := &pb.PushMsg{
+	return &pb.PushMsg{
 		Seq:     seq.Id,
 		Type:    pb.PushMsg_MONEY,
 		Room:    msg.Rooms,
@@ -115,67 +159,45 @@ func (p *Producer) SendRedEnvelope(msg RedEnvelopeMessage) (int64, error) {
 		Msg:     bm,
 		SendAt:  now.Unix(),
 		Message: msg.Message,
+	}, nil
+}
+
+func (p *Producer) SendRedEnvelope(msg RedEnvelopeMessage) (int64, error) {
+	pushMsg, err := p.toRedEnvelopePb(msg)
+	if err != nil {
+		return 0, err
 	}
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
 	}
-	return seq.Id, nil
+	return pushMsg.Seq, nil
 }
 
-type AdminMessage struct {
-	Rooms   []string
-	Rids    []int64
-	Message string
-	IsTop   bool
+type AdminRedEnvelopeMessage struct {
+	AdminMessage
+	RedEnvelopeId string
+	Token         string
+	Expired       int64
 }
 
-const (
-	RootMid  = 1
-	RootUid  = "root"
-	RootName = "管理员"
-)
-
-// 所有房間推送
-// TODO 需實作訊息是否頂置
-func (p *Producer) SendForAdmin(msg AdminMessage) error {
-	seq, err := p.seq.Id(context.Background(), &seqpb.Arg{
-		Code: msg.Rids[0], Count: 1,
+func (p *Producer) SendRedEnvelopeForAdmin(msg AdminRedEnvelopeMessage) error {
+	pushMsg, err := p.toRedEnvelopePb(RedEnvelopeMessage{
+		Messages: Messages{
+			Rooms:   msg.Rooms,
+			Rids:    msg.Rids,
+			Mid:     RootMid,
+			Uid:     RootUid,
+			Name:    RootName,
+			Message: msg.Message,
+		},
+		RedEnvelopeId: msg.RedEnvelopeId,
+		Token:         msg.Token,
+		Expired:       msg.Expired,
 	})
 	if err != nil {
 		return err
 	}
-	var t pb.PushMsg_Type
-	if msg.IsTop {
-		t = pb.PushMsg_TOP
-	} else {
-		t = pb.PushMsg_ROOM
-	}
-
-	now := time.Now()
-	b, err := json.Marshal(Message{
-		Id:      seq.Id,
-		Type:    t,
-		Uid:     RootUid,
-		Name:    RootName,
-		Message: msg.Message,
-		Time:    now.Format(time.RFC3339),
-	})
-	if err != nil {
-		return err
-	}
-
-	pushMsg := &pb.PushMsg{
-		Seq:     seq.Id,
-		Type:    t,
-		Mid:     RootMid,
-		Room:    msg.Rooms,
-		Rids:    msg.Rids,
-		Msg:     b,
-		SendAt:  now.Unix(),
-		Message: msg.Message,
-	}
-	err = p.send(pushMsg)
-	if err != nil {
+	if err := p.send(pushMsg); err != nil {
 		return err
 	}
 	return nil
