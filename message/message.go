@@ -75,7 +75,7 @@ type AdminMessage struct {
 
 // 所有房間推送
 // TODO 需實作訊息是否頂置
-func (p *Producer) SendForAdmin(msg AdminMessage) error {
+func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
 	pushMsg, err := p.toPb(Messages{
 		Rooms:   msg.Rooms,
 		Rids:    msg.Rids,
@@ -85,15 +85,15 @@ func (p *Producer) SendForAdmin(msg AdminMessage) error {
 		Message: msg.Message,
 	})
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if msg.IsTop {
 		pushMsg.Type = pb.PushMsg_TOP
 	}
 	if err := p.send(pushMsg); err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return pushMsg.Seq, nil
 }
 
 type RedEnvelopeMessage struct {
@@ -159,7 +159,7 @@ type AdminRedEnvelopeMessage struct {
 	Expired       int64
 }
 
-func (p *Producer) SendRedEnvelopeForAdmin(msg AdminRedEnvelopeMessage) error {
+func (p *Producer) SendRedEnvelopeForAdmin(msg AdminRedEnvelopeMessage) (int64, error) {
 	pushMsg, err := p.toRedEnvelopePb(RedEnvelopeMessage{
 		Messages: Messages{
 			Rooms:   msg.Rooms,
@@ -174,10 +174,10 @@ func (p *Producer) SendRedEnvelopeForAdmin(msg AdminRedEnvelopeMessage) error {
 		Expired:       msg.Expired,
 	})
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if err := p.send(pushMsg); err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return pushMsg.Seq, nil
 }

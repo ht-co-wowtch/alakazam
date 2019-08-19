@@ -78,7 +78,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 			Expired:       result.ExpireAt.Unix(),
 		}
 
-		if err = s.message.SendRedEnvelopeForAdmin(msg); err != nil {
+		if _, err = s.message.SendRedEnvelopeForAdmin(msg); err != nil {
 			return err
 		}
 	} else if result.PublishAt.Before(time.Now()) {
