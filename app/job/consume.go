@@ -6,7 +6,6 @@ import (
 	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"sync"
@@ -30,56 +29,27 @@ type consume struct {
 
 // 訊息推送至comet server
 func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
+	var model int32
 	switch pushMsg.Type {
 	// 單一/多房間推送
 	case logicpb.PushMsg_ROOM:
-		for _, r := range pushMsg.Room {
-			if err := c.getRoom(r).Push(pushMsg.Msg, cometpb.OpRaw); err != nil {
-				return err
-			}
-		}
+		model = cometpb.OpRaw
 	// 訊息頂置
 	case logicpb.PushMsg_TOP:
-		for _, r := range pushMsg.Room {
-			if err := c.getRoom(r).Push(pushMsg.Msg, cometpb.OpTopRaw); err != nil {
-				return err
-			}
-		}
-	// 所有房間推送
-	case logicpb.PushMsg_BROADCAST:
-		c.broadcast(pushMsg.Msg, pushMsg.Speed)
+		model = cometpb.OpTopRaw
+	// 紅包
 	case logicpb.PushMsg_MONEY:
-		if len(pushMsg.Room) == 1 && pushMsg.Room[0] != "" {
-			return c.getRoom(pushMsg.Room[0]).Push(pushMsg.Msg, cometpb.OpMoney)
-		} else {
-			return fmt.Errorf("money can only be pushed to a single room: %s", pushMsg.Msg)
-		}
+		model = cometpb.OpMoney
 	// 異常資料
 	default:
 		return fmt.Errorf("no match push type: %s", pushMsg.Type)
 	}
+	for _, r := range pushMsg.Room {
+		if err := c.getRoom(r).Push(pushMsg.Msg, model); err != nil {
+			return err
+		}
+	}
 	return nil
-}
-
-// 多房間訊息推送給comet
-func (c *consume) broadcast(body []byte, speed int32) {
-	buf := bytes.NewWriterSize(len(body) + 64)
-	p := &cometpb.Proto{
-		Op:   cometpb.OpRaw,
-		Body: body,
-	}
-	p.WriteTo(buf)
-	p.Body = buf.Buffer()
-	p.Op = cometpb.OpBatchRaw
-	comets := c.servers
-	speed /= int32(len(comets))
-	var args = cometpb.BroadcastReq{
-		Proto: p,
-		Speed: speed,
-	}
-	for _, c := range comets {
-		c.Broadcast(&args)
-	}
 }
 
 // 房間訊息推送給comet

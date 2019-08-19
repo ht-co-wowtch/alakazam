@@ -55,8 +55,6 @@ func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 		key = kafka.StringEncoder(pushMsg.Room[0])
 	case logicpb.PushMsg_MONEY:
 		key = "red_envelope"
-	case logicpb.PushMsg_BROADCAST:
-		key = "all"
 	case logicpb.PushMsg_TOP:
 		key = "top"
 	}

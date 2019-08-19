@@ -6,8 +6,8 @@ import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 message PushMsg {
     enum Type {
-        ROOM = 0;
-        BROADCAST = 1;
+        Empty = 0;
+        ROOM = 1;
         MONEY = 2;
         TOP = 3;
     }
