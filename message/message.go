@@ -9,12 +9,13 @@ import (
 )
 
 type Message struct {
-	Id      int64  `json:"id"`
-	Uid     string `json:"uid"`
-	Name    string `json:"name"`
-	Avatar  string `json:"avatar"`
-	Message string `json:"message"`
-	Time    string `json:"time"`
+	Id      int64           `json:"id"`
+	Uid     string          `json:"uid"`
+	Type    pb.PushMsg_Type `json:"type"`
+	Name    string          `json:"name"`
+	Avatar  string          `json:"avatar"`
+	Message string          `json:"message"`
+	Time    string          `json:"time"`
 }
 
 type Messages struct {
@@ -36,6 +37,7 @@ func (p *Producer) Send(msg Messages) (int64, error) {
 	now := time.Now()
 	bm, err := json.Marshal(Message{
 		Id:      seq.Id,
+		Type:    pb.PushMsg_ROOM,
 		Uid:     msg.Uid,
 		Name:    msg.Name,
 		Message: msg.Message,
@@ -82,6 +84,7 @@ func (p *Producer) SendRedEnvelope(msg RedEnvelopeMessage) error {
 	now := time.Now()
 	bm, err := json.Marshal(money{
 		Message: Message{
+			Type:    pb.PushMsg_MONEY,
 			Uid:     msg.Uid,
 			Name:    msg.Name,
 			Message: msg.Message,
@@ -121,21 +124,22 @@ type AdminMessage struct {
 // 所有房間推送
 // TODO 需實作訊息是否頂置
 func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
+	var t pb.PushMsg_Type
+	if msg.IsTop {
+		t = pb.PushMsg_TOP
+	} else {
+		t = pb.PushMsg_ROOM
+	}
+
 	now := time.Now()
 	b, err := json.Marshal(Message{
+		Type:    t,
 		Name:    "管理员",
 		Message: msg.Message,
 		Time:    now.Format(time.RFC3339),
 	})
 	if err != nil {
 		return 0, err
-	}
-
-	var t pb.PushMsg_Type
-	if msg.IsTop {
-		t = pb.PushMsg_TOP
-	} else {
-		t = pb.PushMsg_ROOM
 	}
 
 	pushMsg := &pb.PushMsg{
