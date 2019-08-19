@@ -39,13 +39,10 @@ func (s *httpServer) push(c *gin.Context) error {
 		Message: p.Message,
 		IsTop:   p.Top,
 	}
-	id, err := s.message.SendForAdmin(msg)
-	if err != nil {
+	if err := s.message.SendForAdmin(msg); err != nil {
 		return err
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"id": id,
-	})
+	c.Status(http.StatusNoContent)
 	return nil
 }
 

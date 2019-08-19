@@ -129,9 +129,21 @@ type AdminMessage struct {
 	IsTop   bool
 }
 
+const (
+	RootMid  = 1
+	RootUid  = "root"
+	RootName = "管理员"
+)
+
 // 所有房間推送
 // TODO 需實作訊息是否頂置
-func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
+func (p *Producer) SendForAdmin(msg AdminMessage) error {
+	seq, err := p.seq.Id(context.Background(), &seqpb.Arg{
+		Code: msg.Rids[0], Count: 1,
+	})
+	if err != nil {
+		return err
+	}
 	var t pb.PushMsg_Type
 	if msg.IsTop {
 		t = pb.PushMsg_TOP
@@ -141,17 +153,21 @@ func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
 
 	now := time.Now()
 	b, err := json.Marshal(Message{
+		Id:      seq.Id,
 		Type:    t,
-		Name:    "管理员",
+		Uid:     RootUid,
+		Name:    RootName,
 		Message: msg.Message,
 		Time:    now.Format(time.RFC3339),
 	})
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	pushMsg := &pb.PushMsg{
+		Seq:     seq.Id,
 		Type:    t,
+		Mid:     RootMid,
 		Room:    msg.Rooms,
 		Rids:    msg.Rids,
 		Msg:     b,
@@ -160,7 +176,7 @@ func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
 	}
 	err = p.send(pushMsg)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	return 0, nil
+	return nil
 }

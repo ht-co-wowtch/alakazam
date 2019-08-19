@@ -52,7 +52,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		return err
 	}
 	msg := message.Message{
-		Name:    "管理员",
+		Name:    message.RootName,
 		Message: o.Message,
 		Time:    time.Now().Format("15:04:05"),
 	}
@@ -69,11 +69,11 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 
 		msg := message.RedEnvelopeMessage{
 			Messages: message.Messages{
-				Rooms: []string{o.RoomId},
-				Rids:  []int64{int64(r.Id)},
-				//Mid:     int64(arg.H.Mid),
-				//Uid:     arg.Uid,
-				Name:    "管理员",
+				Rooms:   []string{o.RoomId},
+				Rids:    []int64{int64(r.Id)},
+				Mid:     message.RootMid,
+				Uid:     message.RootUid,
+				Name:    message.RootName,
 				Message: o.Message,
 			},
 			RedEnvelopeId: result.Uid,
@@ -81,7 +81,9 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 			Expired:       result.ExpireAt.Unix(),
 		}
 
-		if err := s.message.SendRedEnvelope(msg); err != nil {
+		_, err = s.message.SendRedEnvelope(msg)
+
+		if err != nil {
 			return err
 		}
 	} else if result.PublishAt.Before(time.Now()) {
