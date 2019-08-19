@@ -67,22 +67,7 @@ func (s *Store) CreateRoom(room Room) (int64, error) {
 	room.UpdateAt = time.Now()
 	room.CreateAt = time.Now()
 	room.Status = true
-	tx := s.d.Master().Prepare()
-	defer tx.Rollback()
-
-	aff, err := tx.InsertOne(&room)
-	if err != nil || aff != 1 {
-		return aff, err
-	}
-
-	aff, err = tx.InsertOne(&Seq{
-		RoomId: room.Id,
-		Batch:  200,
-	})
-	if err != nil || aff != 1 {
-		return aff, err
-	}
-	return 1, tx.Commit()
+	return s.d.Master().InsertOne(&room)
 }
 
 func (s *Store) UpdateRoom(room Room) (int64, error) {
