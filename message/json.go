@@ -18,7 +18,7 @@ type money struct {
 }
 
 type RedEnvelope struct {
-	Id      string `json:"id"`
+	Id      string `json:"red_envelope_id"`
 	Token   string `json:"token"`
 	Expired int64  `json:"expired"`
 }
