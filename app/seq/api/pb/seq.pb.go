@@ -53,162 +53,196 @@ func (m *Empty) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Empty proto.InternalMessageInfo
 
-type Arg struct {
-	Code                 int64    `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+type SeqReq struct {
+	Id                   int64    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Count                int64    `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Arg) Reset()         { *m = Arg{} }
-func (m *Arg) String() string { return proto.CompactTextString(m) }
-func (*Arg) ProtoMessage()    {}
-func (*Arg) Descriptor() ([]byte, []int) {
+func (m *SeqReq) Reset()         { *m = SeqReq{} }
+func (m *SeqReq) String() string { return proto.CompactTextString(m) }
+func (*SeqReq) ProtoMessage()    {}
+func (*SeqReq) Descriptor() ([]byte, []int) {
 	return fileDescriptor_b0df69c63ddc0f76, []int{1}
 }
 
-func (m *Arg) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Arg.Unmarshal(m, b)
+func (m *SeqReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SeqReq.Unmarshal(m, b)
 }
-func (m *Arg) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Arg.Marshal(b, m, deterministic)
+func (m *SeqReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SeqReq.Marshal(b, m, deterministic)
 }
-func (m *Arg) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Arg.Merge(m, src)
+func (m *SeqReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SeqReq.Merge(m, src)
 }
-func (m *Arg) XXX_Size() int {
-	return xxx_messageInfo_Arg.Size(m)
+func (m *SeqReq) XXX_Size() int {
+	return xxx_messageInfo_SeqReq.Size(m)
 }
-func (m *Arg) XXX_DiscardUnknown() {
-	xxx_messageInfo_Arg.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Arg proto.InternalMessageInfo
-
-func (m *Arg) GetCode() int64 {
-	if m != nil {
-		return m.Code
-	}
-	return 0
+func (m *SeqReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_SeqReq.DiscardUnknown(m)
 }
 
-func (m *Arg) GetCount() int64 {
-	if m != nil {
-		return m.Count
-	}
-	return 0
-}
+var xxx_messageInfo_SeqReq proto.InternalMessageInfo
 
-type SeqId struct {
-	Id                   int64    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *SeqId) Reset()         { *m = SeqId{} }
-func (m *SeqId) String() string { return proto.CompactTextString(m) }
-func (*SeqId) ProtoMessage()    {}
-func (*SeqId) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0df69c63ddc0f76, []int{2}
-}
-
-func (m *SeqId) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_SeqId.Unmarshal(m, b)
-}
-func (m *SeqId) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_SeqId.Marshal(b, m, deterministic)
-}
-func (m *SeqId) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SeqId.Merge(m, src)
-}
-func (m *SeqId) XXX_Size() int {
-	return xxx_messageInfo_SeqId.Size(m)
-}
-func (m *SeqId) XXX_DiscardUnknown() {
-	xxx_messageInfo_SeqId.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_SeqId proto.InternalMessageInfo
-
-func (m *SeqId) GetId() int64 {
+func (m *SeqReq) GetId() int64 {
 	if m != nil {
 		return m.Id
 	}
 	return 0
 }
 
-type Info struct {
-	Code                 int64    `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
-	Batch                int64    `protobuf:"varint,2,opt,name=batch,proto3" json:"batch,omitempty"`
+func (m *SeqReq) GetCount() int64 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
+type SeqResp struct {
+	Id                   int64    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Info) Reset()         { *m = Info{} }
-func (m *Info) String() string { return proto.CompactTextString(m) }
-func (*Info) ProtoMessage()    {}
-func (*Info) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0df69c63ddc0f76, []int{3}
+func (m *SeqResp) Reset()         { *m = SeqResp{} }
+func (m *SeqResp) String() string { return proto.CompactTextString(m) }
+func (*SeqResp) ProtoMessage()    {}
+func (*SeqResp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b0df69c63ddc0f76, []int{2}
 }
 
-func (m *Info) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Info.Unmarshal(m, b)
+func (m *SeqResp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SeqResp.Unmarshal(m, b)
 }
-func (m *Info) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Info.Marshal(b, m, deterministic)
+func (m *SeqResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SeqResp.Marshal(b, m, deterministic)
 }
-func (m *Info) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Info.Merge(m, src)
+func (m *SeqResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SeqResp.Merge(m, src)
 }
-func (m *Info) XXX_Size() int {
-	return xxx_messageInfo_Info.Size(m)
+func (m *SeqResp) XXX_Size() int {
+	return xxx_messageInfo_SeqResp.Size(m)
 }
-func (m *Info) XXX_DiscardUnknown() {
-	xxx_messageInfo_Info.DiscardUnknown(m)
+func (m *SeqResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_SeqResp.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Info proto.InternalMessageInfo
+var xxx_messageInfo_SeqResp proto.InternalMessageInfo
 
-func (m *Info) GetCode() int64 {
+func (m *SeqResp) GetId() int64 {
 	if m != nil {
-		return m.Code
+		return m.Id
 	}
 	return 0
 }
 
-func (m *Info) GetBatch() int64 {
+type SeqCreateReq struct {
+	Batch                int64    `protobuf:"varint,1,opt,name=batch,proto3" json:"batch,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SeqCreateReq) Reset()         { *m = SeqCreateReq{} }
+func (m *SeqCreateReq) String() string { return proto.CompactTextString(m) }
+func (*SeqCreateReq) ProtoMessage()    {}
+func (*SeqCreateReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b0df69c63ddc0f76, []int{3}
+}
+
+func (m *SeqCreateReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SeqCreateReq.Unmarshal(m, b)
+}
+func (m *SeqCreateReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SeqCreateReq.Marshal(b, m, deterministic)
+}
+func (m *SeqCreateReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SeqCreateReq.Merge(m, src)
+}
+func (m *SeqCreateReq) XXX_Size() int {
+	return xxx_messageInfo_SeqCreateReq.Size(m)
+}
+func (m *SeqCreateReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_SeqCreateReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SeqCreateReq proto.InternalMessageInfo
+
+func (m *SeqCreateReq) GetBatch() int64 {
 	if m != nil {
 		return m.Batch
 	}
 	return 0
 }
 
+type SeqCreateResp struct {
+	Id                   int64    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SeqCreateResp) Reset()         { *m = SeqCreateResp{} }
+func (m *SeqCreateResp) String() string { return proto.CompactTextString(m) }
+func (*SeqCreateResp) ProtoMessage()    {}
+func (*SeqCreateResp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b0df69c63ddc0f76, []int{4}
+}
+
+func (m *SeqCreateResp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SeqCreateResp.Unmarshal(m, b)
+}
+func (m *SeqCreateResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SeqCreateResp.Marshal(b, m, deterministic)
+}
+func (m *SeqCreateResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SeqCreateResp.Merge(m, src)
+}
+func (m *SeqCreateResp) XXX_Size() int {
+	return xxx_messageInfo_SeqCreateResp.Size(m)
+}
+func (m *SeqCreateResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_SeqCreateResp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SeqCreateResp proto.InternalMessageInfo
+
+func (m *SeqCreateResp) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
 func init() {
-	proto.RegisterType((*Empty)(nil), "Empty")
-	proto.RegisterType((*Arg)(nil), "Arg")
-	proto.RegisterType((*SeqId)(nil), "SeqId")
-	proto.RegisterType((*Info)(nil), "Info")
+	proto.RegisterType((*Empty)(nil), "pb.Empty")
+	proto.RegisterType((*SeqReq)(nil), "pb.SeqReq")
+	proto.RegisterType((*SeqResp)(nil), "pb.SeqResp")
+	proto.RegisterType((*SeqCreateReq)(nil), "pb.SeqCreateReq")
+	proto.RegisterType((*SeqCreateResp)(nil), "pb.SeqCreateResp")
 }
 
 func init() { proto.RegisterFile("seq.proto", fileDescriptor_b0df69c63ddc0f76) }
 
 var fileDescriptor_b0df69c63ddc0f76 = []byte{
-	// 191 bytes of a gzipped FileDescriptorProto
+	// 211 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2c, 0x4e, 0x2d, 0xd4,
-	0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x57, 0x62, 0xe7, 0x62, 0x75, 0xcd, 0x2d, 0x28, 0xa9, 0x54, 0xd2,
-	0xe7, 0x62, 0x76, 0x2c, 0x4a, 0x17, 0x12, 0xe2, 0x62, 0x49, 0xce, 0x4f, 0x49, 0x95, 0x60, 0x54,
-	0x60, 0xd4, 0x60, 0x0e, 0x02, 0xb3, 0x85, 0x44, 0xb8, 0x58, 0x93, 0xf3, 0x4b, 0xf3, 0x4a, 0x24,
-	0x98, 0xc0, 0x82, 0x10, 0x8e, 0x92, 0x38, 0x17, 0x6b, 0x70, 0x6a, 0xa1, 0x67, 0x8a, 0x10, 0x1f,
-	0x17, 0x53, 0x66, 0x0a, 0x54, 0x03, 0x53, 0x66, 0x8a, 0x92, 0x01, 0x17, 0x8b, 0x67, 0x5e, 0x5a,
-	0x3e, 0x2e, 0xa3, 0x92, 0x12, 0x4b, 0x92, 0x33, 0x60, 0x46, 0x81, 0x39, 0x46, 0xf1, 0x5c, 0xcc,
-	0xc1, 0xa9, 0x85, 0x42, 0x62, 0x5c, 0x2c, 0x01, 0x99, 0x79, 0xe9, 0x42, 0x6c, 0x7a, 0x60, 0x27,
-	0x49, 0x41, 0x69, 0x21, 0x21, 0x2e, 0x26, 0xcf, 0x14, 0x21, 0x16, 0x3d, 0xc7, 0xa2, 0x74, 0x29,
-	0x36, 0x3d, 0x88, 0xa5, 0xc2, 0x5c, 0xcc, 0x9e, 0x29, 0xc5, 0x68, 0x82, 0xe2, 0x5c, 0x6c, 0xce,
-	0x45, 0xa9, 0x89, 0x25, 0xa9, 0x42, 0xac, 0x7a, 0x20, 0x27, 0xc0, 0x4c, 0x48, 0x62, 0x03, 0x7b,
-	0xd6, 0x18, 0x10, 0x00, 0x00, 0xff, 0xff, 0xf0, 0x00, 0x36, 0x1d, 0xf9, 0x00, 0x00, 0x00,
+	0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2a, 0x48, 0x52, 0x62, 0xe7, 0x62, 0x75, 0xcd, 0x2d,
+	0x28, 0xa9, 0x54, 0xd2, 0xe3, 0x62, 0x0b, 0x4e, 0x2d, 0x0c, 0x4a, 0x2d, 0x14, 0xe2, 0xe3, 0x62,
+	0xca, 0x4c, 0x91, 0x60, 0x54, 0x60, 0xd4, 0x60, 0x0e, 0x62, 0xca, 0x4c, 0x11, 0x12, 0xe1, 0x62,
+	0x4d, 0xce, 0x2f, 0xcd, 0x2b, 0x91, 0x60, 0x02, 0x0b, 0x41, 0x38, 0x4a, 0x92, 0x5c, 0xec, 0x60,
+	0xf5, 0xc5, 0x05, 0xe8, 0x1a, 0x94, 0x54, 0xb8, 0x78, 0x82, 0x53, 0x0b, 0x9d, 0x8b, 0x52, 0x13,
+	0x4b, 0x52, 0x41, 0x06, 0x8a, 0x70, 0xb1, 0x26, 0x25, 0x96, 0x24, 0x67, 0x40, 0x95, 0x40, 0x38,
+	0x4a, 0xf2, 0x5c, 0xbc, 0x48, 0xaa, 0x30, 0x8d, 0x31, 0x9a, 0xc8, 0xc8, 0xc5, 0x1c, 0x9c, 0x5a,
+	0x28, 0x24, 0xc3, 0xc5, 0x12, 0x90, 0x99, 0x97, 0x2e, 0xc4, 0xa9, 0x57, 0x90, 0xa4, 0x07, 0x76,
+	0xac, 0x14, 0x82, 0x29, 0x24, 0xcb, 0xc5, 0xe4, 0x99, 0x22, 0xc4, 0x05, 0x12, 0x80, 0xb8, 0x5f,
+	0x8a, 0x1b, 0xce, 0x2e, 0x2e, 0x10, 0x92, 0xe3, 0x62, 0xf6, 0x4c, 0x29, 0xc6, 0x2d, 0xaf, 0xcb,
+	0xc5, 0x06, 0x71, 0x82, 0x90, 0x00, 0x54, 0x18, 0xee, 0x6e, 0x29, 0x41, 0x34, 0x91, 0xe2, 0x82,
+	0x24, 0x36, 0x70, 0xc8, 0x19, 0x03, 0x02, 0x00, 0x00, 0xff, 0xff, 0xfe, 0x60, 0xc0, 0x75, 0x46,
+	0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -224,9 +258,9 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type SeqClient interface {
 	Ping(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
-	Id(ctx context.Context, in *Arg, opts ...grpc.CallOption) (*SeqId, error)
-	Ids(ctx context.Context, in *Arg, opts ...grpc.CallOption) (*SeqId, error)
-	Create(ctx context.Context, in *Info, opts ...grpc.CallOption) (*Empty, error)
+	Id(ctx context.Context, in *SeqReq, opts ...grpc.CallOption) (*SeqResp, error)
+	Ids(ctx context.Context, in *SeqReq, opts ...grpc.CallOption) (*SeqResp, error)
+	Create(ctx context.Context, in *SeqCreateReq, opts ...grpc.CallOption) (*SeqCreateResp, error)
 }
 
 type seqClient struct {
@@ -239,34 +273,34 @@ func NewSeqClient(cc *grpc.ClientConn) SeqClient {
 
 func (c *seqClient) Ping(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/Seq/Ping", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/pb.Seq/Ping", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *seqClient) Id(ctx context.Context, in *Arg, opts ...grpc.CallOption) (*SeqId, error) {
-	out := new(SeqId)
-	err := c.cc.Invoke(ctx, "/Seq/Id", in, out, opts...)
+func (c *seqClient) Id(ctx context.Context, in *SeqReq, opts ...grpc.CallOption) (*SeqResp, error) {
+	out := new(SeqResp)
+	err := c.cc.Invoke(ctx, "/pb.Seq/Id", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *seqClient) Ids(ctx context.Context, in *Arg, opts ...grpc.CallOption) (*SeqId, error) {
-	out := new(SeqId)
-	err := c.cc.Invoke(ctx, "/Seq/Ids", in, out, opts...)
+func (c *seqClient) Ids(ctx context.Context, in *SeqReq, opts ...grpc.CallOption) (*SeqResp, error) {
+	out := new(SeqResp)
+	err := c.cc.Invoke(ctx, "/pb.Seq/Ids", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *seqClient) Create(ctx context.Context, in *Info, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/Seq/Create", in, out, opts...)
+func (c *seqClient) Create(ctx context.Context, in *SeqCreateReq, opts ...grpc.CallOption) (*SeqCreateResp, error) {
+	out := new(SeqCreateResp)
+	err := c.cc.Invoke(ctx, "/pb.Seq/Create", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -276,9 +310,9 @@ func (c *seqClient) Create(ctx context.Context, in *Info, opts ...grpc.CallOptio
 // SeqServer is the server API for Seq service.
 type SeqServer interface {
 	Ping(context.Context, *Empty) (*Empty, error)
-	Id(context.Context, *Arg) (*SeqId, error)
-	Ids(context.Context, *Arg) (*SeqId, error)
-	Create(context.Context, *Info) (*Empty, error)
+	Id(context.Context, *SeqReq) (*SeqResp, error)
+	Ids(context.Context, *SeqReq) (*SeqResp, error)
+	Create(context.Context, *SeqCreateReq) (*SeqCreateResp, error)
 }
 
 func RegisterSeqServer(s *grpc.Server, srv SeqServer) {
@@ -295,7 +329,7 @@ func _Seq_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Seq/Ping",
+		FullMethod: "/pb.Seq/Ping",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SeqServer).Ping(ctx, req.(*Empty))
@@ -304,7 +338,7 @@ func _Seq_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{
 }
 
 func _Seq_Id_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Arg)
+	in := new(SeqReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -313,16 +347,16 @@ func _Seq_Id_Handler(srv interface{}, ctx context.Context, dec func(interface{})
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Seq/Id",
+		FullMethod: "/pb.Seq/Id",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SeqServer).Id(ctx, req.(*Arg))
+		return srv.(SeqServer).Id(ctx, req.(*SeqReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Seq_Ids_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Arg)
+	in := new(SeqReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -331,16 +365,16 @@ func _Seq_Ids_Handler(srv interface{}, ctx context.Context, dec func(interface{}
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Seq/Ids",
+		FullMethod: "/pb.Seq/Ids",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SeqServer).Ids(ctx, req.(*Arg))
+		return srv.(SeqServer).Ids(ctx, req.(*SeqReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Seq_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Info)
+	in := new(SeqCreateReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -349,16 +383,16 @@ func _Seq_Create_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Seq/Create",
+		FullMethod: "/pb.Seq/Create",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SeqServer).Create(ctx, req.(*Info))
+		return srv.(SeqServer).Create(ctx, req.(*SeqCreateReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 var _Seq_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "Seq",
+	ServiceName: "pb.Seq",
 	HandlerType: (*SeqServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

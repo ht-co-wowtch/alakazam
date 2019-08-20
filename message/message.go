@@ -25,8 +25,8 @@ type Messages struct {
 }
 
 func (p *Producer) toPb(msg Messages) (*pb.PushMsg, error) {
-	seq, err := p.seq.Id(context.Background(), &seqpb.Arg{
-		Code: msg.Rids[0], Count: 1,
+	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
+		Id: 1, Count: 1,
 	})
 	if err != nil {
 		return nil, err
@@ -104,8 +104,8 @@ type RedEnvelopeMessage struct {
 }
 
 func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*pb.PushMsg, error) {
-	seq, err := p.seq.Id(context.Background(), &seqpb.Arg{
-		Code: msg.Rids[0], Count: 1,
+	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
+		Id: 1, Count: 1,
 	})
 	if err != nil {
 		return nil, err

@@ -4,23 +4,26 @@ package pb;
 
 message Empty{}
 
-message Arg {
-    int64 code = 1;
+message SeqReq {
+    int64 id = 1;
     int64 count = 2;
 }
 
-message SeqId {
+message SeqResp {
     int64 id = 1;
 }
 
-message Info {
-    int64 code = 1;
-    int64 batch = 2;
+message SeqCreateReq {
+    int64 batch = 1;
+}
+
+message SeqCreateResp {
+    int64 id = 1;
 }
 
 service Seq {
     rpc Ping(Empty) returns(Empty);
-    rpc Id(Arg) returns(SeqId);
-    rpc Ids(Arg) returns(SeqId);
-    rpc Create(Info) returns(Empty);
+    rpc Id(SeqReq) returns(SeqResp);
+    rpc Ids(SeqReq) returns(SeqResp);
+    rpc Create(SeqCreateReq) returns(SeqCreateResp);
 }

@@ -22,7 +22,7 @@ var (
 
 func TestGenerateId(t *testing.T) {
 	seq, _ := mockSeq()
-	id, err := seq.Id(context.TODO(), &pb.Arg{Code: 1})
+	id, err := seq.Id(context.TODO(), &pb.SeqReq{Id: 1})
 
 	assert.Nil(t, err)
 	assert.Equal(t, int64(1), id.Id)
@@ -31,8 +31,8 @@ func TestGenerateId(t *testing.T) {
 func TestGenerateIdByIncrement(t *testing.T) {
 	seq, _ := mockSeq()
 
-	i, err := seq.Id(context.TODO(), &pb.Arg{Code: 1})
-	ii, erri := seq.Id(context.TODO(), &pb.Arg{Code: 1})
+	i, err := seq.Id(context.TODO(), &pb.SeqReq{Id: 1})
+	ii, erri := seq.Id(context.TODO(), &pb.SeqReq{Id: 1})
 
 	assert.Nil(t, err)
 	assert.Nil(t, erri)
@@ -43,7 +43,7 @@ func TestGenerateIdByIncrement(t *testing.T) {
 func TestGenerateIds(t *testing.T) {
 	seq, _ := mockSeq()
 
-	id, err := seq.Ids(context.TODO(), &pb.Arg{Code: 1, Count: 2})
+	id, err := seq.Ids(context.TODO(), &pb.SeqReq{Id: 1, Count: 2})
 
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), id.Id)
@@ -56,7 +56,7 @@ func TestSeqSync(t *testing.T) {
 		return m.Max == (10 + m.Batch)
 	})).Once().Return(true, nil)
 
-	_, err := seq.Ids(context.TODO(), &pb.Arg{Code: 1, Count: 10})
+	_, err := seq.Ids(context.TODO(), &pb.SeqReq{Id: 1, Count: 10})
 
 	assert.Nil(t, err)
 }
@@ -86,7 +86,7 @@ func (m mockDao) LoadSeq() ([]models.Seq, error) {
 	return fakeSeq, nil
 }
 
-func (m mockDao) CreateSeq(code, batch int64) error {
-	arg := m.Called(code, batch)
-	return arg.Error(0)
+func (m mockDao) CreateSeq(batch int64) (int, error) {
+	arg := m.Called(batch)
+	return arg.Int(0), arg.Error(1)
 }

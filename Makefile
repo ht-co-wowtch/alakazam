@@ -47,7 +47,7 @@ stop:
 migrate:
 	bin/logic -c logic.yml -migrate=true
 
-proto-build: proto-logic proto-comet
+proto-build: proto-logic proto-comet proto-seq
 
 proto-logic:
 	cd app/logic/pb && protoc \
@@ -64,6 +64,10 @@ proto-comet:
 	--proto_path=. \
 	--gofast_out=plugins=grpc:. *.proto \
 	*.proto
+
+proto-seq:
+	cd app/seq/api/pb && protoc \
+	--go_out=plugins=grpc:. *.proto
 
 test:
 	sh test/unit

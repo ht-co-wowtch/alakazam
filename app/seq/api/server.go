@@ -23,7 +23,7 @@ func NewServer(c *conf.Config) (*grpc.Server, error) {
 	}
 	for _, v := range seqs {
 		v.Cur = v.Max
-		bs[int64(v.RoomId)] = &v
+		bs[int64(v.Id)] = &v
 	}
 	pb.RegisterSeqServer(srv, &rpcServer{
 		bs: bs,
@@ -41,13 +41,13 @@ func (s *rpcServer) Ping(context.Context, *pb.Empty) (*pb.Empty, error) {
 	return &pb.Empty{}, nil
 }
 
-func (s *rpcServer) Id(ctx context.Context, arg *pb.Arg) (*pb.SeqId, error) {
+func (s *rpcServer) Id(ctx context.Context, arg *pb.SeqReq) (*pb.SeqResp, error) {
 	arg.Count = 1
 	return s.Ids(ctx, arg)
 }
 
-func (s *rpcServer) Ids(ctx context.Context, arg *pb.Arg) (*pb.SeqId, error) {
-	b, ok := s.bs[arg.Code]
+func (s *rpcServer) Ids(ctx context.Context, arg *pb.SeqReq) (*pb.SeqResp, error) {
+	b, ok := s.bs[arg.Id]
 	if !ok {
 		return nil, errors.New("not seq code")
 	}
@@ -58,21 +58,22 @@ func (s *rpcServer) Ids(ctx context.Context, arg *pb.Arg) (*pb.SeqId, error) {
 		b.Max += b.Batch
 		ok, err := s.db.SyncSeq(b)
 		if err != nil {
-			log.Error("grpc Ids", zap.Error(err), zap.Int64("code", arg.Code), zap.Int64("count", arg.Count))
+			log.Error("grpc Ids", zap.Error(err), zap.Int64("id", arg.Id), zap.Int64("count", arg.Count))
 			return nil, err
 		}
 		if !ok {
-			return nil, fmt.Errorf("business model sync id: [%d] seq: [%d]", arg.Code, b.Cur)
+			return nil, fmt.Errorf("business model sync id: [%d] seq: [%d]", arg.Id, b.Cur)
 		}
 	}
 	b.Cur = seq
-	return &pb.SeqId{Id: b.Cur}, nil
+	return &pb.SeqResp{Id: b.Cur}, nil
 }
 
-func (s *rpcServer) Create(ctx context.Context, info *pb.Info) (*pb.Empty, error) {
-	if err := s.db.CreateSeq(info.Code, info.Batch); err != nil {
-		log.Error("grpc create", zap.Error(err), zap.Int64("code", info.Code))
-		return &pb.Empty{}, err
+func (s *rpcServer) Create(ctx context.Context, info *pb.SeqCreateReq) (*pb.SeqCreateResp, error) {
+	id, err := s.db.CreateSeq(info.Batch)
+	if err != nil {
+		log.Error("grpc create", zap.Error(err))
+		return &pb.SeqCreateResp{}, err
 	}
-	return &pb.Empty{}, nil
+	return &pb.SeqCreateResp{Id: int64(id)}, nil
 }
