@@ -41,10 +41,15 @@ func (r *RedEnvelopeMessage) TableName() string {
 }
 
 type Messages struct {
-	List               map[int64]pb.PushMsg_Type
+	List               []int64
+	Type               map[int64]pb.PushMsg_Type
 	Message            map[int64]Message
 	RedEnvelopeMessage map[int64]RedEnvelopeMessage
 }
+
+const (
+	messageLimit = 20
+)
 
 func (s *Store) GetRoomMessage(roomId, lastMsgId int) (*Messages, error) {
 	rms := make([]RoomMessage, 0)
@@ -56,7 +61,7 @@ func (s *Store) GetRoomMessage(roomId, lastMsgId int) (*Messages, error) {
 		query = query.Where("`msg_id` < ?", lastMsgId)
 	}
 
-	err := query.Limit(20).
+	err := query.Limit(messageLimit).
 		Find(&rms)
 	if err != nil {
 		return nil, err
@@ -64,10 +69,11 @@ func (s *Store) GetRoomMessage(roomId, lastMsgId int) (*Messages, error) {
 
 	var msgId []int64
 	var redMsgId []int64
+	msgIds := make([]int64, 0, messageLimit)
 	mapMsg := make(map[int64]pb.PushMsg_Type)
 	for _, v := range rms {
 		mapMsg[v.MsgId] = v.Type
-
+		msgIds = append(msgIds, v.MsgId)
 		switch v.Type {
 		case pb.PushMsg_MONEY:
 			redMsgId = append(redMsgId, v.MsgId)
@@ -96,7 +102,8 @@ func (s *Store) GetRoomMessage(roomId, lastMsgId int) (*Messages, error) {
 	}
 
 	return &Messages{
-		List:               mapMsg,
+		List:               msgIds,
+		Type:               mapMsg,
 		Message:            msgMap,
 		RedEnvelopeMessage: redMsgMap,
 	}, nil

@@ -45,35 +45,34 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 	}
 
 	data := make([]interface{}, 0)
-	for i, v := range msg.List {
-		switch v {
+	for _, msgId := range msg.List {
+		switch msg.Type[msgId] {
 		case pb.PushMsg_MONEY:
 			data = append(data, Money{
 				Message{
-					Id:      i,
-					Uid:     memberMap[msg.RedEnvelopeMessage[i].MemberId].Uid,
-					Name:    memberMap[msg.RedEnvelopeMessage[i].MemberId].Name,
+					Id:      msgId,
+					Uid:     memberMap[msg.RedEnvelopeMessage[msgId].MemberId].Uid,
+					Name:    memberMap[msg.RedEnvelopeMessage[msgId].MemberId].Name,
 					Type:    pb.PushMsg_MONEY,
-					Message: msg.RedEnvelopeMessage[i].Message,
-					Time:    msg.RedEnvelopeMessage[i].SendAt.Format(time.RFC3339),
+					Message: msg.RedEnvelopeMessage[msgId].Message,
+					Time:    msg.RedEnvelopeMessage[msgId].SendAt.Format(time.RFC3339),
 				},
 				RedEnvelope{
-					Id:      msg.RedEnvelopeMessage[i].RedEnvelopesId,
-					Token:   msg.RedEnvelopeMessage[i].Token,
-					Expired: msg.RedEnvelopeMessage[i].ExpireAt.Unix(),
+					Id:      msg.RedEnvelopeMessage[msgId].RedEnvelopesId,
+					Token:   msg.RedEnvelopeMessage[msgId].Token,
+					Expired: msg.RedEnvelopeMessage[msgId].ExpireAt.Unix(),
 				},
 			})
 		default:
 			data = append(data, Message{
-				Id:      i,
-				Uid:     memberMap[msg.Message[i].MemberId].Uid,
-				Name:    memberMap[msg.Message[i].MemberId].Name,
+				Id:      msgId,
+				Uid:     memberMap[msg.Message[msgId].MemberId].Uid,
+				Name:    memberMap[msg.Message[msgId].MemberId].Name,
 				Type:    pb.PushMsg_ROOM,
-				Message: msg.Message[i].Message,
-				Time:    msg.Message[i].SendAt.Format(time.RFC3339),
+				Message: msg.Message[msgId].Message,
+				Time:    msg.Message[msgId].SendAt.Format(time.RFC3339),
 			})
 		}
 	}
-
 	return data, nil
 }
