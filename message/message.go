@@ -19,8 +19,8 @@ func NewHistory(db *models.Store, member *member.Member) *History {
 	}
 }
 
-func (h *History) Get(roomId int) ([]interface{}, error) {
-	msg, err := h.db.GetRoomMessage(roomId)
+func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
+	msg, err := h.db.GetRoomMessage(roomId, lastMsgId)
 	if err != nil {
 		return nil, err
 	}

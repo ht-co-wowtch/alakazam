@@ -46,9 +46,18 @@ type Messages struct {
 	RedEnvelopeMessage map[int64]RedEnvelopeMessage
 }
 
-func (s *Store) GetRoomMessage(roomId int) (*Messages, error) {
+func (s *Store) GetRoomMessage(roomId, lastMsgId int) (*Messages, error) {
 	rms := make([]RoomMessage, 0)
-	err := s.d.Table(&RoomMessage{}).Where("`room_id` = ?", roomId).Find(&rms)
+
+	query := s.d.Table(&RoomMessage{}).
+		Where("`room_id` = ?", roomId)
+
+	if lastMsgId > 0 {
+		query = query.Where("`msg_id` < ?", lastMsgId)
+	}
+
+	err := query.Limit(20).
+		Find(&rms)
 	if err != nil {
 		return nil, err
 	}
