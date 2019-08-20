@@ -22,11 +22,12 @@ import (
 type httpServer struct {
 	member  *member.Member
 	message *message.Producer
+	history *message.History
 	room    *room.Room
 	client  *client.Client
 }
 
-func NewServer(conf *web.Conf, member *member.Member, message *message.Producer, room *room.Room, client *client.Client) *http.Server {
+func NewServer(conf *web.Conf, member *member.Member, message *message.Producer, room *room.Room, client *client.Client, history *message.History) *http.Server {
 	if conf.Debug {
 		gin.SetMode(gin.DebugMode)
 	} else {
@@ -38,6 +39,7 @@ func NewServer(conf *web.Conf, member *member.Member, message *message.Producer,
 	srv := httpServer{
 		member:  member,
 		message: message,
+		history: history,
 		room:    room,
 		client:  client,
 	}

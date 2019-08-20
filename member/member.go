@@ -106,6 +106,10 @@ func (m *Member) GetUserName(uid []string) ([]string, error) {
 	return name, nil
 }
 
+func (m *Member) GetMembers(id []int) ([]models.Member, error) {
+	return m.db.GetMembers(id)
+}
+
 func (m *Member) Heartbeat(uid string) error {
 	_, err := m.c.refreshUserExpire(uid)
 	if err != nil {

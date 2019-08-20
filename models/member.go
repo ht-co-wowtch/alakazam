@@ -91,3 +91,9 @@ func (s *Store) Find(uid string) (*Member, bool, error) {
 		Get(m)
 	return m, ok, err
 }
+
+func (s *Store) GetMembers(ids []int) ([]Member, error) {
+	m := make([]Member, 0)
+	err := s.d.Table(&Member{}).Find(&m)
+	return m, err
+}

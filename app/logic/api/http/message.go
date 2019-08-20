@@ -7,7 +7,11 @@ import (
 
 func (s *httpServer) getMessage(c *gin.Context) error {
 	room := c.Param("room")
-	msg, err := s.room.GetMessage(room)
+	r, err := s.room.Get(room)
+	if err != nil {
+		return err
+	}
+	msg, err := s.history.Get(r.Id)
 	if err != nil {
 		return err
 	}
