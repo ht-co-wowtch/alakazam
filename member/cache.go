@@ -115,7 +115,7 @@ func (c *Cache) setBanned(uid string, expired time.Duration) error {
 	tx := c.c.Pipeline()
 	tx.Set(key, time.Now().Add(expired).Unix(), expired)
 	if i <= 0 {
-		tx.HIncrBy(keyUidInfo(uid), hashStatusKey, -models.Message)
+		tx.HIncrBy(keyUidInfo(uid), hashStatusKey, -models.MessageStatus)
 	}
 	_, err = tx.Exec()
 	return err
@@ -137,7 +137,7 @@ func (c *Cache) getBanned(uid string) (time.Time, bool, error) {
 func (c *Cache) delBanned(uid string) error {
 	tx := c.c.Pipeline()
 	tx.Del(keyBannedInfo(uid))
-	tx.HIncrBy(keyUidInfo(uid), hashStatusKey, models.Message)
+	tx.HIncrBy(keyUidInfo(uid), hashStatusKey, models.MessageStatus)
 	_, err := tx.Exec()
 	return err
 }

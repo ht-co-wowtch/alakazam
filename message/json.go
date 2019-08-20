@@ -12,7 +12,7 @@ type Message struct {
 	Time    string          `json:"time"`
 }
 
-type money struct {
+type Money struct {
 	Message
 	RedEnvelope
 }

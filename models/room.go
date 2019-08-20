@@ -47,11 +47,11 @@ type Room struct {
 
 func (r *Room) Permission() int {
 	if r.Uuid == "" {
-		return Message
+		return MessageStatus
 	}
 	var permission int
 	if r.IsMessage {
-		permission += Message
+		permission += MessageStatus
 	}
 	if r.DayLimit > 0 && r.DmlLimit+r.DepositLimit > 0 {
 		permission += money

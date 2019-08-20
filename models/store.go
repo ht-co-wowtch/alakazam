@@ -13,6 +13,9 @@ func init() {
 	tables = append(tables,
 		new(Member),
 		new(Room),
+		new(RedEnvelopeMessage),
+		new(Message),
+		new(RoomMessage),
 	)
 }
 

@@ -33,7 +33,7 @@ func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
 
 	switch msg.Type {
 	case pb.PushMsg_MONEY:
-		m := new(money)
+		m := new(Money)
 		if err := json.Unmarshal(msg.Msg, m); err != nil {
 			return err
 		}

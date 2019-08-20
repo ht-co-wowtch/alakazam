@@ -51,16 +51,6 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	msg := message.Message{
-		Name:    message.RootName,
-		Message: o.Message,
-		Time:    time.Now().Format("15:04:05"),
-	}
-	redEnvelope := message.RedEnvelope{
-		Id:      result.Uid,
-		Token:   result.Token,
-		Expired: result.ExpireAt.Unix(),
-	}
 	if o.PublishAt.IsZero() {
 		r, err := s.room.Get(o.RoomId)
 		if err != nil {
@@ -83,9 +73,10 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		}
 	} else if result.PublishAt.Before(time.Now()) {
 		return errors.ErrPublishAt
-	} else if err := s.delayMessage.SendDelayRedEnvelopeForAdmin(o.RoomId, msg, redEnvelope, result.PublishAt); err != nil {
-		return err
 	}
+	//} else if err := s.delayMessage.SendDelayRedEnvelopeForAdmin(o.RoomId, msg, redEnvelope, result.PublishAt); err != nil {
+	//	return err
+	//}
 	c.JSON(http.StatusOK, result)
 	return nil
 }

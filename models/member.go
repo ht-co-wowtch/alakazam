@@ -7,17 +7,17 @@ const (
 	Blockade = 0
 
 	// 聊天
-	Message = 1
+	MessageStatus = 1
 
 	// 搶紅包
 	redEnvelope = 2
 
-	PlayStatus = Message + redEnvelope
+	PlayStatus = MessageStatus + redEnvelope
 )
 
 // 是否禁言
 func IsBanned(status int) bool {
-	return (Message & status) != Message
+	return (MessageStatus & status) != MessageStatus
 }
 
 // 是否可搶/發紅包
@@ -61,7 +61,7 @@ func (r *Member) Status() int {
 	var status int
 	switch r.Type {
 	case Guest:
-		status = Message
+		status = MessageStatus
 	case Player, Marketing:
 		status = PlayStatus
 	}

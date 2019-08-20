@@ -111,7 +111,7 @@ func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*pb.PushMsg, error) 
 		return nil, err
 	}
 	now := time.Now()
-	bm, err := json.Marshal(money{
+	bm, err := json.Marshal(Money{
 		Message: Message{
 			Id:      seq.Id,
 			Type:    pb.PushMsg_MONEY,

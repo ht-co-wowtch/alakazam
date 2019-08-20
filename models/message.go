@@ -1,0 +1,94 @@
+package models
+
+import (
+	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	"time"
+)
+
+type RoomMessage struct {
+	MsgId  int64
+	RoomId int
+	Type   pb.PushMsg_Type
+}
+
+func (r *RoomMessage) TableName() string {
+	return "room_messages"
+}
+
+type Message struct {
+	MsgId    int64
+	MemberId int
+	Message  string
+	SendAt   time.Time
+}
+
+func (r *Message) TableName() string {
+	return "messages"
+}
+
+type RedEnvelopeMessage struct {
+	MsgId          int64
+	MemberId       int
+	Message        string
+	RedEnvelopesId string
+	Token          string
+	ExpireAt       time.Time
+	SendAt         time.Time
+}
+
+func (r *RedEnvelopeMessage) TableName() string {
+	return "red_envelope_messages"
+}
+
+type Messages struct {
+	List               map[int64]pb.PushMsg_Type
+	Message            map[int64]Message
+	RedEnvelopeMessage map[int64]RedEnvelopeMessage
+}
+
+func (s *Store) GetRoomMessage(roomId int) (*Messages, error) {
+	rms := make([]RoomMessage, 0)
+	err := s.d.Table(&RoomMessage{}).Where("`room_id` = ?", roomId).Find(&rms)
+	if err != nil {
+		return nil, err
+	}
+
+	var msgId []int64
+	var redMsgId []int64
+	mapMsg := make(map[int64]pb.PushMsg_Type)
+	for _, v := range rms {
+		mapMsg[v.MsgId] = v.Type
+
+		switch v.Type {
+		case pb.PushMsg_MONEY:
+			redMsgId = append(redMsgId, v.MsgId)
+		default:
+			msgId = append(msgId, v.MsgId)
+		}
+	}
+
+	msgs := make([]Message, 0)
+	redMsgs := make([]RedEnvelopeMessage, 0)
+	if err := s.d.In("msg_id", msgId).Find(&msgs); err != nil {
+		return nil, err
+	}
+	if err := s.d.In("msg_id", redMsgId).Find(&redMsgs); err != nil {
+		return nil, err
+	}
+
+	msgMap := make(map[int64]Message, 0)
+	redMsgMap := make(map[int64]RedEnvelopeMessage, 0)
+
+	for _, v := range msgs {
+		msgMap[v.MsgId] = v
+	}
+	for _, v := range redMsgs {
+		redMsgMap[v.MsgId] = v
+	}
+
+	return &Messages{
+		List:               mapMsg,
+		Message:            msgMap,
+		RedEnvelopeMessage: redMsgMap,
+	}, nil
+}
