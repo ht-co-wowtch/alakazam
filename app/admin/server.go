@@ -35,7 +35,7 @@ func New(conf *conf.Config) *Server {
 	if err != nil {
 		panic(err)
 	}
-	messageProducer := message.NewProducer(conf.Kafka.Brokers, conf.Kafka.Topic, seqpb.NewSeqClient(seqCli))
+	messageProducer := message.NewProducer(conf.Kafka.Brokers, conf.Kafka.Topic, seqpb.NewSeqClient(seqCli), nil)
 	memberCli := member.New(db, cache, cli)
 	roomCli := room.New(db, cache, memberCli, cli, 0)
 	httpServer := api.NewServer(conf.HTTPServer, memberCli, messageProducer, roomCli, cli)

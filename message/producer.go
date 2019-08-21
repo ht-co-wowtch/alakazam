@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	kafka "github.com/Shopify/sarama"
+	"github.com/go-redis/redis"
 	"github.com/gogo/protobuf/proto"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	seqpb "gitlab.com/jetfueltw/cpw/alakazam/app/seq/api/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"time"
@@ -17,6 +19,7 @@ type Producer struct {
 	brokers  []string
 	producer kafka.SyncProducer
 	seq      seqpb.SeqClient
+	rate     *rateLimit
 	bs       map[int64]*seq
 }
 
@@ -25,7 +28,7 @@ type seq struct {
 	max int64
 }
 
-func NewProducer(brokers []string, topic string, seq seqpb.SeqClient) *Producer {
+func NewProducer(brokers []string, topic string, seq seqpb.SeqClient, cache *redis.Client) *Producer {
 	kc := kafka.NewConfig()
 	kc.Version = kafka.V2_3_0_0
 	kc.Producer.Return.Successes = true
@@ -38,6 +41,7 @@ func NewProducer(brokers []string, topic string, seq seqpb.SeqClient) *Producer 
 		topic:    topic,
 		producer: pub,
 		seq:      seq,
+		rate:     newRateLimit(cache),
 	}
 }
 
@@ -91,6 +95,17 @@ func (p *Producer) toPb(msg Messages) (*logicpb.PushMsg, error) {
 }
 
 func (p *Producer) Send(msg Messages) (int64, error) {
+	if err := p.rate.perSec(msg.Mid); err != nil {
+		return 0, err
+	}
+	same, err := p.rate.IsSameMsg(msg)
+	if err != nil {
+		return 0, err
+	}
+	if same {
+		return 0, errors.ErrRateSameMsg
+	}
+
 	pushMsg, err := p.toPb(msg)
 	if err != nil {
 		return 0, err

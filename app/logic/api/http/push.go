@@ -2,8 +2,11 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -39,6 +42,11 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 	}
 	id, err := s.message.Send(msg)
 	if err != nil {
+		if err == errors.ErrRateSameMsg {
+			if err := s.member.SetBanned(p.Uid, 10*60); err != nil {
+				log.Error("set banned for rate same message", zap.Error(err), zap.String("uid", p.Uid))
+			}
+		}
 		return err
 	}
 	c.JSON(http.StatusOK, gin.H{
