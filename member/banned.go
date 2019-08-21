@@ -2,34 +2,44 @@ package member
 
 import (
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 	"time"
 )
 
-func (l *Member) SetBanned(uid string, expired int) error {
-	_, ok, err := l.db.Find(uid)
+func (m *Member) SetBanned(uid string, expired int) error {
+	me, ok, err := m.db.Find(uid)
 	if err != nil {
 		return err
 	}
 	if !ok {
 		return errors.ErrNoRows
 	}
-	return l.c.setBanned(uid, time.Duration(expired)*time.Second)
+	expire := time.Duration(expired) * time.Second
+	if err := m.c.setBanned(uid, expire); err != nil {
+		return err
+	}
+	aff, err := m.db.SetBannedLog(me.Id, expire, false)
+	if err != nil || aff == 0 {
+		log.Error("set banned log", zap.Error(err), zap.Int64("affected", aff))
+	}
+	return nil
 }
 
-func (l *Member) IsBanned(uid string) (bool, error) {
-	ok, err := l.c.isBanned(uid)
+func (m *Member) IsBanned(uid string) (bool, error) {
+	ok, err := m.c.isBanned(uid)
 	if err != nil {
 		return false, err
 	}
 	if ok {
 		return true, nil
 	}
-	if err := l.c.delBanned(uid); err != nil {
+	if err := m.c.delBanned(uid); err != nil {
 		return true, err
 	}
 	return false, nil
 }
 
-func (l *Member) RemoveBanned(uid string) error {
-	return l.c.delBanned(uid)
+func (m *Member) RemoveBanned(uid string) error {
+	return m.c.delBanned(uid)
 }
