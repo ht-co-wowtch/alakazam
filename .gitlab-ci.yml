@@ -6,7 +6,7 @@ services:
 stages:
   - build
   - build_service
-  - deploy_develop
+  - deploy
 
 variables:
   REGISTRY_IMAGE: $CI_REGISTRY_IMAGE:latest
