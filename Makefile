@@ -13,12 +13,16 @@ build: clean
 	$(GOBUILD) -o bin/logic cmd/logic/main.go
 	$(GOBUILD) -o bin/job cmd/job/main.go
 	$(GOBUILD) -o bin/admin cmd/admin/main.go
+	$(GOBUILD) -o bin/seq cmd/seq/main.go
+	$(GOBUILD) -o bin/message cmd/message/main.go
 
 build-debug: clean
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/comet cmd/comet/main.go
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/logic cmd/logic/main.go
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/job cmd/job/main.go
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/admin cmd/admin/main.go
+	$(GOBUILD) -gcflags "all=-N -l" -o bin/seq cmd/seq/main.go
+	$(GOBUILD) -gcflags "all=-N -l" -o bin/message cmd/message/main.go
 
 clean:
 	rm -rf bin/
@@ -29,23 +33,41 @@ run:
 	nohup bin/comet -c comet.yml 2>&1 > bin/comet.log &
 	nohup bin/job -c job.yml 2>&1 > bin/job.log &
 	nohup bin/admin -c admin.yml 2>&1 > bin/admin.log &
+	nohup bin/seq -c seq.yml 2>&1 > bin/seq.log &
+	nohup bin/message -c message.yml 2>&1 > bin/message.log &
 
 stop:
-	pkill -f bin/logic
-	pkill -f bin/job
 	pkill -f bin/comet
 	pkill -f bin/admin
+	pkill -f bin/logic
+	pkill -f bin/job
+	pkill -f bin/seq
+	pkill -f bin/message
 
 migrate:
 	bin/logic -c logic.yml -migrate=true
 
-proto-build:
-	cd protocol/proto && protoc \
+proto-build: proto-logic proto-comet proto-seq
+
+proto-logic:
+	cd app/logic/pb && protoc \
 	--proto_path=${GOPATH}/src \
 	--proto_path=${GOPATH}/src/github.com/gogo/protobuf/protobuf \
 	--proto_path=. \
-	--gofast_out=plugins=grpc:../grpc *.proto \
+	--gofast_out=plugins=grpc:. *.proto \
 	*.proto
+
+proto-comet:
+	cd app/comet/pb && protoc \
+	--proto_path=${GOPATH}/src \
+	--proto_path=${GOPATH}/src/github.com/gogo/protobuf/protobuf \
+	--proto_path=. \
+	--gofast_out=plugins=grpc:. *.proto \
+	*.proto
+
+proto-seq:
+	cd app/seq/api/pb && protoc \
+	--go_out=plugins=grpc:. *.proto
 
 test:
 	sh test/unit

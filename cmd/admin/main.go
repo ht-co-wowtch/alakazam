@@ -2,11 +2,8 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/admin/conf"
-	admin "gitlab.com/jetfueltw/cpw/alakazam/admin/http"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic"
-	"gitlab.com/jetfueltw/cpw/alakazam/logic/http"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/admin"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/admin/conf"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"os"
 	"os/signal"
@@ -23,12 +20,9 @@ func main() {
 	if err := conf.Read(confPath); err != nil {
 		panic(err)
 	}
-	fmt.Println("Using config file:", confPath)
+	log.Infof("Using config file: [%s]", confPath)
 
-	srv := logic.NewAdmin(conf.Conf.DB, conf.Conf.Redis, conf.Conf.Kafka)
-	httpAdminSrv := http.New(conf.Conf.HTTPServer, admin.New(srv))
-
-	fmt.Printf("admin start success")
+	srv := admin.New(conf.Conf)
 
 	// 接收到close signal的處理
 	c := make(chan os.Signal, 1)
@@ -39,7 +33,6 @@ func main() {
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			srv.Close()
-			httpAdminSrv.Close()
 			log.Sync()
 			return
 		case syscall.SIGHUP:

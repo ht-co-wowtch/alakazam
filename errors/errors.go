@@ -5,9 +5,12 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/validation"
 	"gopkg.in/go-playground/validator.v8"
+	"net/http"
 )
 
 var (
+	ErrPublishAt = errdefs.InvalidParameter(New("预定发送时间不能大于现在"), 0)
+
 	ErrLogin         = errdefs.Unauthorized(New("请先登入会员"))
 	ErrRoomBanned    = errdefs.Unauthorized(New("聊天室目前禁言状态，无法发言"), 1)
 	ErrBanned        = errdefs.Unauthorized(New("您在禁言状态，无法发言"), 2)
@@ -25,6 +28,23 @@ var (
 	//BalanceError = eNew(http.StatusPaymentRequired, 10024020, "您的余额不足发红包")
 	//AmountError  = eNew(http.StatusPaymentRequired, 10024021, "金额错误")
 	//DataError    = eNew(http.StatusUnprocessableEntity, 10024220, "资料验证错误")
+)
+
+const (
+	// 紅包已過期
+	TakeEnvelopeExpiredCode = 15024011
+
+	// 紅包不存在
+	EnvelopeNotFoundCode = 15024041
+
+	// 餘額不足
+	BalanceCode = 12024020
+
+	// 房間不存在
+	RoomNotFoundCode = 15024042
+
+	// 預定發送時間過期
+	PublishAtCode = 15024002
 )
 
 func init() {
@@ -61,8 +81,17 @@ func (m output) InternalServer(e error) string {
 
 func (m output) Error(e *errdefs.Error) interface{} {
 	switch e.Code {
-	case 12024020:
+	case BalanceCode:
 		return "您的余额不足发红包"
+	case EnvelopeNotFoundCode:
+		e.Status = http.StatusNotFound
+		return "红包不存在"
+	case RoomNotFoundCode:
+		e.Status = http.StatusNotFound
+		return "房间不存在"
+	case PublishAtCode:
+		e.Status = http.StatusNotFound
+		return "预定发送时间不能大于现在"
 	}
 	return "操作失败"
 }

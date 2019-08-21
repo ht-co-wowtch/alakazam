@@ -7,17 +7,17 @@ const (
 	Blockade = 0
 
 	// 聊天
-	Message = 1
+	MessageStatus = 1
 
 	// 搶紅包
 	redEnvelope = 2
 
-	PlayStatus = Message + redEnvelope
+	PlayStatus = MessageStatus + redEnvelope
 )
 
 // 是否禁言
 func IsBanned(status int) bool {
-	return (Message & status) != Message
+	return (MessageStatus & status) != MessageStatus
 }
 
 // 是否可搶/發紅包
@@ -27,13 +27,13 @@ func IsRedEnvelope(status int) bool {
 
 const (
 	// 訪客
-	Guest = "guest"
+	Guest = 0
 
 	// 營銷
-	Marketing = "marketing"
+	Marketing = 1
 
 	// 玩家
-	Player = "player"
+	Player = 2
 )
 
 type Member struct {
@@ -45,9 +45,7 @@ type Member struct {
 
 	Avatar string `xorm:"varchar(255) not null"`
 
-	Type string `xorm:"varchar(10) not null"`
-
-	Permission int `xorm:"not null"`
+	Type int `xorm:"tinyint(3) not null"`
 
 	// 是否被封鎖
 	IsBlockade bool `xorm:"default(0) not null"`
@@ -63,7 +61,7 @@ func (r *Member) Status() int {
 	var status int
 	switch r.Type {
 	case Guest:
-		status = Message
+		status = MessageStatus
 	case Player, Marketing:
 		status = PlayStatus
 	}
@@ -92,4 +90,10 @@ func (s *Store) Find(uid string) (*Member, bool, error) {
 	ok, err := s.d.Where("uid = ?", uid).
 		Get(m)
 	return m, ok, err
+}
+
+func (s *Store) GetMembers(ids []int) ([]Member, error) {
+	m := make([]Member, 0)
+	err := s.d.Table(&Member{}).Find(&m)
+	return m, err
 }

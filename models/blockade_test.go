@@ -8,7 +8,7 @@ import (
 func TestSetBlockade(t *testing.T) {
 	assert.NoError(t, prepareTestDatabase())
 
-	aff, err := s.SetBlockade(uidA, "")
+	aff, err := s.SetBlockade(uidA)
 
 	assert.Nil(t, err)
 	assert.Equal(t, int64(1), aff)

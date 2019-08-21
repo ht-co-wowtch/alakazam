@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package pb;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+message PushMsg {
+    enum Type {
+        Empty = 0;
+        ROOM = 1;
+        MONEY = 2;
+        TOP = 3;
+    }
+    Type type = 1;
+    int32 speed = 2;
+    string server = 3;
+    repeated int32 room = 4;
+    repeated string keys = 5;
+    bytes msg = 6;
+    int64 mid = 7;
+    int64 seq = 8;
+    int64 sendAt = 9;
+    string message = 10;
+}
+
+message PingReply {
+}
+
+message PingReq {
+}
+
+message ConnectReq {
+    option (gogoproto.goproto_stringer) = false;
+    string server = 1;
+    bytes token = 2;
+}
+
+message ConnectReply {
+    string uid = 1;
+    string key = 2;
+    string name = 3;
+    string roomID = 4;
+    int64 heartbeat = 5;
+    int32 status = 6;
+}
+
+message DisconnectReq {
+    string uid = 1;
+    string key = 2;
+    string server = 3;
+}
+
+message ChangeRoomReq {
+     string uid = 1;
+     string key = 2;
+     string roomID = 3;
+}
+
+message ChangeRoomReply {}
+
+message DisconnectReply {
+    bool has = 1;
+}
+
+message HeartbeatReq {
+    string uid = 1;
+    string key = 2;
+    string name = 3;
+    string roomId = 4;
+    string server = 5;
+}
+
+message HeartbeatReply {
+}
+
+message OnlineReq {
+    option (gogoproto.goproto_stringer) = false;
+    string server = 1;
+    map<string, int32> roomCount = 2;
+}
+
+message OnlineReply {
+    option (gogoproto.goproto_stringer) = false;
+    map<string, int32> allRoomCount = 1;
+}
+
+service Logic {
+    // Ping Service 
+    rpc Ping(PingReq) returns(PingReply);
+    // Connect
+    rpc Connect(ConnectReq) returns (ConnectReply);
+    // Disconnect
+    rpc Disconnect(DisconnectReq) returns (DisconnectReply);
+    // ChangeRoom
+    rpc ChangeRoom(ChangeRoomReq) returns (ChangeRoomReply);
+    // Heartbeat
+    rpc Heartbeat(HeartbeatReq) returns (HeartbeatReply);
+    // RenewOnline
+    rpc RenewOnline(OnlineReq) returns (OnlineReply);
+}

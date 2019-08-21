@@ -218,7 +218,7 @@
 
     var appendMsg = function (text, op) {
         obj = JSON.parse(text);
-        if (op == 6) {
+        if (op == 6 || op == 10) {
             document.getElementById("chat").innerHTML += "<li class=\"left clearfix\"><span class=\"chat-img pull-left\">\n" +
                 "                            <img src=\"http://placehold.it/50/55C1E7/fff&text=U\" alt=\"User Avatar\" class=\"img-circle\"/>\n" +
                 "                        </span>\n" +
@@ -296,15 +296,8 @@
                         var op = dataView.getInt32(offset + opOffset);
 
                         var msgBody = textDecoder.decode(data.slice(offset + headerLen, offset + packetLen));
-                        if (op == 6) {
-                            messageReceived(msgBody);
-                            appendMsg(msgBody, 6);
-                        }
-
-                        if (op == 9) {
-                            messageReceived(msgBody);
-                            appendMsg(msgBody, 9);
-                        }
+                        messageReceived(msgBody);
+                        appendMsg(msgBody, op);
                     }
                     break;
                 case 8:

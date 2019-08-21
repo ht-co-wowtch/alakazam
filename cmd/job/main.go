@@ -2,9 +2,8 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/job"
-	"gitlab.com/jetfueltw/cpw/alakazam/job/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/job"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"os"
 	"os/signal"
@@ -22,12 +21,12 @@ func main() {
 	if err := conf.Read(confPath); err != nil {
 		panic(err)
 	}
-	fmt.Println("Using config file:", confPath)
+	log.Infof("Using config file: [%s]", confPath)
 
 	j := job.New(conf.Conf)
-	go j.Consume()
+	j.Run()
 
-	fmt.Println("job start success")
+	log.Info("start success")
 
 	// 接收到close signal的處理
 	c := make(chan os.Signal, 1)

@@ -78,7 +78,6 @@ func TestFindMember(t *testing.T) {
 		Name:       "testA",
 		Avatar:     "/",
 		Type:       Player,
-		Permission: 31,
 		CreateAt:   at,
 	}, m)
 }
