@@ -26,12 +26,14 @@ func (r *Room) Auth(u *member.User) error {
 	if models.IsBanned(u.RoomStatus) {
 		return errors.ErrRoomBanned
 	}
-	is, err := r.member.IsUserBanned(u.Uid, u.H.Status)
-	if err != nil {
-		return err
-	}
-	if is {
-		return errors.ErrBanned
+	if !u.H.IsMessage {
+		is, err := r.member.IsBanned(u.Uid)
+		if err != nil {
+			return err
+		}
+		if is {
+			return errors.ErrBanned
+		}
 	}
 	return nil
 }

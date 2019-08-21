@@ -35,7 +35,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	if err := s.member.Auth(&arg.User); err != nil {
 		return err
 	}
-	if !models.IsRedEnvelope(arg.H.Status) {
+	if arg.H.Type != models.Player {
 		return errors.ErrLogin
 	}
 	give := client.RedEnvelope{
@@ -91,7 +91,7 @@ func (s *httpServer) takeRedEnvelope(c *gin.Context) error {
 	if err := s.member.Auth(&arg.User); err != nil {
 		return err
 	}
-	if !models.IsRedEnvelope(arg.H.Status) {
+	if arg.H.Type != models.Player {
 		return errors.ErrLogin
 	}
 	reply, err := s.client.TakeRedEnvelope(arg.Token, c.GetString("token"))

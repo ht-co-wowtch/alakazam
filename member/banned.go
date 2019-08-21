@@ -2,7 +2,6 @@ package member
 
 import (
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"time"
 )
 
@@ -17,11 +16,8 @@ func (l *Member) SetBanned(uid string, expired int) error {
 	return l.c.setBanned(uid, time.Duration(expired)*time.Second)
 }
 
-func (l *Member) IsUserBanned(uid string, status int) (bool, error) {
-	if !models.IsBanned(status) {
-		return false, nil
-	}
-	_, ok, err := l.c.getBanned(uid)
+func (l *Member) IsBanned(uid string) (bool, error) {
+	ok, err := l.c.isBanned(uid)
 	if err != nil {
 		return false, err
 	}

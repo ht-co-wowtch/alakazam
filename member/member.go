@@ -67,7 +67,7 @@ func (m *Member) Login(token, roomId, server string) (*models.Member, string, er
 	key := uuid.New().String()
 
 	// 儲存user資料至redis
-	if err := m.c.set(u, key, roomId, server); err != nil {
+	if err := m.c.login(u, key, roomId, server); err != nil {
 		return nil, "", err
 	} else {
 		log.Info(
@@ -82,12 +82,12 @@ func (m *Member) Login(token, roomId, server string) (*models.Member, string, er
 }
 
 func (m *Member) Logout(uid, key string) (bool, error) {
-	return m.c.deleteUser(uid, key)
+	return m.c.delete(uid, key)
 }
 
 // 會員在線認證
 func (m *Member) Auth(u *User) error {
-	hash, err := m.c.get(u.Uid, u.Key)
+	hash, err := m.c.getSession(u.Uid, u.Key)
 	if err != nil {
 		return err
 	}
@@ -111,7 +111,7 @@ func (m *Member) GetMembers(id []int) ([]models.Member, error) {
 }
 
 func (m *Member) Heartbeat(uid string) error {
-	_, err := m.c.refreshUserExpire(uid)
+	_, err := m.c.refreshExpire(uid)
 	if err != nil {
 		return err
 	}
