@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"net/http"
+	"strconv"
 )
 
 func (s *httpServer) CreateRoom(c *gin.Context) error {
@@ -17,18 +18,24 @@ func (s *httpServer) CreateRoom(c *gin.Context) error {
 		return err
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"room_id": roomId,
+		"id": roomId,
 	})
 	return nil
 }
 
 func (s *httpServer) UpdateRoom(c *gin.Context) error {
 	var params room.Status
-	params.Id = c.Param("id")
+	rid, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return err
+	}
 	if err := c.ShouldBindJSON(&params); err != nil {
 		return err
 	}
-	if err := s.room.Update(params); err != nil {
+	if _, err := s.room.Get(rid); err != nil {
+		return err
+	}
+	if err := s.room.Update(rid, params); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)
@@ -36,23 +43,24 @@ func (s *httpServer) UpdateRoom(c *gin.Context) error {
 }
 
 type Rid struct {
-	Id string `form:"id" binding:"required"`
+	Id int `form:"id" binding:"required"`
 }
 
 func (s *httpServer) GetRoom(c *gin.Context) error {
-	rid := Rid{
-		Id: c.Param("id"),
-	}
-	if err := binding.Validator.ValidateStruct(&rid.Id); err != nil {
+	rid, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
 		return err
 	}
-	r, err := s.room.Get(rid.Id)
+	if err := binding.Validator.ValidateStruct(&Rid{Id: rid}); err != nil {
+		return err
+	}
+	r, err := s.room.Get(rid)
 	if err != nil {
 		return err
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"id":         r.Uuid,
+		"id":         r.Id,
 		"is_message": r.IsMessage,
 		"limit": room.Limit{
 			Day:     r.DayLimit,
@@ -67,14 +75,14 @@ func (s *httpServer) GetRoom(c *gin.Context) error {
 }
 
 func (s *httpServer) DeleteRoom(c *gin.Context) error {
-	room := Rid{
-		Id: c.Param("id"),
-	}
-	if err := binding.Validator.ValidateStruct(&room.Id); err != nil {
+	rid, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
 		return err
 	}
-	err := s.room.Delete(room.Id)
-	if err != nil {
+	if err := binding.Validator.ValidateStruct(&Rid{Id: rid}); err != nil {
+		return err
+	}
+	if err := s.room.Delete(rid); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)

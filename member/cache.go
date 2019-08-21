@@ -73,7 +73,7 @@ var errUserNil = errors.New("get user cache data has nil")
 
 type HMember struct {
 	Mid    int
-	Room   string
+	Room   int
 	Name   string
 	Status int
 }
@@ -88,7 +88,10 @@ func (c *Cache) get(uid string, key string) (HMember, error) {
 			return HMember{}, errdefs.InvalidParameter(errUserNil, 1)
 		}
 	}
-
+	rid, err := strconv.Atoi(res[0].(string))
+	if err != nil {
+		return HMember{}, err
+	}
 	status, err := strconv.Atoi(res[2].(string))
 	if err != nil {
 		return HMember{}, err
@@ -99,7 +102,7 @@ func (c *Cache) get(uid string, key string) (HMember, error) {
 	}
 	return HMember{
 		Mid:    mid,
-		Room:   res[0].(string),
+		Room:   rid,
 		Name:   res[1].(string),
 		Status: status,
 	}, nil

@@ -8,6 +8,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"net/http"
+	"strconv"
 )
 
 type GiveRedEnvelope struct {
@@ -38,7 +39,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		return errors.ErrLogin
 	}
 	give := client.RedEnvelope{
-		RoomId:    arg.H.Room,
+		RoomId:    strconv.Itoa(arg.H.Room),
 		Message:   arg.Message,
 		Type:      arg.Type,
 		Amount:    arg.Amount,
@@ -50,15 +51,9 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		return err
 	}
 
-	r, err := s.room.Get(arg.H.Room)
-	if err != nil {
-		return err
-	}
-
 	msg := message.RedEnvelopeMessage{
 		Messages: message.Messages{
-			Rooms:   []string{arg.H.Room},
-			Rids:    []int64{int64(r.Id)},
+			Rooms:   []int32{int32(arg.H.Room)},
 			Mid:     int64(arg.H.Mid),
 			Uid:     arg.Uid,
 			Name:    arg.H.Name,

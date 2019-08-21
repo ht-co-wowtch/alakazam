@@ -2,7 +2,6 @@ package models
 
 import (
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/jetfueltw/cpw/micro/id"
 	"testing"
 	"time"
 )
@@ -14,8 +13,7 @@ func TestRoomTableName(t *testing.T) {
 }
 
 func TestCreateRoom(t *testing.T) {
-	room := Room{
-		Uuid:         id.UUid32(),
+	room := &Room{
 		IsMessage:    true,
 		IsFollow:     true,
 		DayLimit:     1,
@@ -29,7 +27,7 @@ func TestCreateRoom(t *testing.T) {
 	assert.Equal(t, int64(1), aff)
 
 	r := new(Room)
-	ok, err := x.Where("uuid = ?", room.Uuid).Get(r)
+	ok, err := x.Where("id = ?", room.Id).Get(r)
 
 	assert.Nil(t, err)
 	assert.True(t, ok)
@@ -44,7 +42,7 @@ func TestUpdateRoom(t *testing.T) {
 	assert.NoError(t, prepareTestDatabase())
 
 	room := Room{
-		Uuid:         roomIdA,
+		Id:           1,
 		IsMessage:    false,
 		IsFollow:     false,
 		DayLimit:     2,
@@ -58,7 +56,7 @@ func TestUpdateRoom(t *testing.T) {
 	assert.Equal(t, int64(1), aff)
 
 	r := new(Room)
-	ok, err := x.Where("id = ?", roomIdA).Get(r)
+	ok, err := x.Where("id = ?", room.Id).Get(r)
 
 	assert.Nil(t, err)
 	assert.True(t, ok)
@@ -73,12 +71,11 @@ func TestGetRoom(t *testing.T) {
 
 	at, _ := time.ParseInLocation("2006-01-02 15:04:05", "2019-06-26 13:52:32", time.Local)
 
-	r, ok, err := s.GetRoom(roomIdA)
+	r, ok, err := s.GetRoom(1)
 
 	assert.Nil(t, err)
 	assert.True(t, ok)
 	assert.Equal(t, Room{
-		Uuid:         roomIdA,
 		IsMessage:    true,
 		IsFollow:     true,
 		DayLimit:     1,

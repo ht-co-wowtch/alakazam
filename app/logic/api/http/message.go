@@ -7,8 +7,7 @@ import (
 )
 
 func (s *httpServer) getMessage(c *gin.Context) error {
-	room := c.Param("room")
-	r, err := s.room.Get(room)
+	rid, err := strconv.Atoi(c.Param("room"))
 	if err != nil {
 		return err
 	}
@@ -16,7 +15,7 @@ func (s *httpServer) getMessage(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	msg, err := s.history.Get(r.Id, msg_id)
+	msg, err := s.history.Get(rid, msg_id)
 	if err != nil {
 		return err
 	}

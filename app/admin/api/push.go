@@ -8,7 +8,7 @@ import (
 
 type PushRoomForm struct {
 	// 要廣播的房間
-	RoomId []string `json:"room_id" binding:"required"`
+	RoomId []int32 `json:"room_id" binding:"required"`
 
 	// user push message
 	Message string `json:"message" binding:"required,max=250"`
@@ -24,18 +24,8 @@ func (s *httpServer) push(c *gin.Context) error {
 		return err
 	}
 
-	var rid []int64
-	for _, v := range p.RoomId {
-		r, err := s.room.Get(v)
-		if err != nil {
-			return err
-		}
-		rid = append(rid, int64(r.Id))
-	}
-
 	msg := message.AdminMessage{
 		Rooms:   p.RoomId,
-		Rids:    rid,
 		Message: p.Message,
 		IsTop:   p.Top,
 	}

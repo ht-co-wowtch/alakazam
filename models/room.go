@@ -18,8 +18,6 @@ type Room struct {
 	// 要設定的房間id
 	Id int `xorm:"pk autoincr"`
 
-	Uuid string
-
 	// 是否禁言
 	IsMessage bool `xorm:"default(0) not null"`
 
@@ -46,7 +44,7 @@ type Room struct {
 }
 
 func (r *Room) Permission() int {
-	if r.Uuid == "" {
+	if r.Id == 0 {
 		return MessageStatus
 	}
 	var permission int
@@ -63,11 +61,11 @@ func (r *Room) TableName() string {
 	return "rooms"
 }
 
-func (s *Store) CreateRoom(room Room) (int64, error) {
+func (s *Store) CreateRoom(room *Room) (int64, error) {
 	room.UpdateAt = time.Now()
 	room.CreateAt = time.Now()
 	room.Status = true
-	return s.d.Master().InsertOne(&room)
+	return s.d.Master().InsertOne(room)
 }
 
 func (s *Store) UpdateRoom(room Room) (int64, error) {
@@ -77,21 +75,21 @@ func (s *Store) UpdateRoom(room Room) (int64, error) {
 	} else {
 		u = s.d.Cols("is_message", "day_limit", "deposit_limit", "dml_limit")
 	}
-	return u.Where("uuid = ?", room.Uuid).
+	return u.Where("id = ?", room.Id).
 		Update(&room)
 }
 
-func (s *Store) GetRoom(roomId string) (Room, bool, error) {
+func (s *Store) GetRoom(roomId int) (Room, bool, error) {
 	r := Room{}
-	ok, err := s.d.Where("uuid = ?", roomId).Get(&r)
+	ok, err := s.d.Where("id = ?", roomId).Get(&r)
 	return r, ok, err
 }
 
-func (s *Store) DeleteRoom(roomId string) (int64, error) {
+func (s *Store) DeleteRoom(id int) (int64, error) {
 	r := Room{
 		Status: false,
 	}
 	return s.d.Cols("status").
-		Where("uuid = ?", roomId).
+		Where("id = ?", id).
 		Update(&r)
 }

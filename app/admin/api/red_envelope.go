@@ -6,12 +6,13 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 type redEnvelope struct {
 	// 房間id
-	RoomId string `json:"room_id" binding:"required"`
+	RoomId int `json:"room_id" binding:"required"`
 
 	// 紅包訊息
 	Message string `json:"message" binding:"required,max=20"`
@@ -39,7 +40,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	}
 	result, err := s.nidoran.GiveRedEnvelopeForAdmin(client.RedEnvelopeAdmin{
 		RedEnvelope: client.RedEnvelope{
-			RoomId:    o.RoomId,
+			RoomId:    strconv.Itoa(o.RoomId),
 			Message:   o.Message,
 			Type:      o.Type,
 			Amount:    o.Amount,
@@ -52,15 +53,9 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		return err
 	}
 	if o.PublishAt.IsZero() {
-		r, err := s.room.Get(o.RoomId)
-		if err != nil {
-			return err
-		}
-
 		msg := message.AdminRedEnvelopeMessage{
 			AdminMessage: message.AdminMessage{
-				Rooms:   []string{o.RoomId},
-				Rids:    []int64{int64(r.Id)},
+				Rooms:   []int32{int32(o.RoomId)},
 				Message: o.Message,
 			},
 			RedEnvelopeId: result.Uid,

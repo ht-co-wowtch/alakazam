@@ -57,7 +57,6 @@ func (p *DelayProducer) SendDelayRedEnvelopeForAdmin(msg AdminRedEnvelopeMessage
 	pushMsg, err := p.producer.toRedEnvelopePb(RedEnvelopeMessage{
 		Messages: Messages{
 			Rooms:   msg.Rooms,
-			Rids:    msg.Rids,
 			Mid:     RootMid,
 			Uid:     RootUid,
 			Name:    RootName,

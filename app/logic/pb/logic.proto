@@ -14,14 +14,13 @@ message PushMsg {
     Type type = 1;
     int32 speed = 2;
     string server = 3;
-    repeated string room = 4;
+    repeated int32 room = 4;
     repeated string keys = 5;
     bytes msg = 6;
     int64 mid = 7;
-    repeated int64 rids = 8;
-    int64 seq = 9;
-    int64 sendAt = 10;
-    string message = 11;
+    int64 seq = 8;
+    int64 sendAt = 9;
+    string message = 10;
 }
 
 message PingReply {

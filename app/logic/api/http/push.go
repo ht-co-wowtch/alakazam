@@ -29,14 +29,9 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 	if err := s.room.IsMessage(p.H.Room, p.RoomStatus, p.Uid, c.GetString("token")); err != nil {
 		return err
 	}
-	r, err := s.room.Get(p.H.Room)
-	if err != nil {
-		return err
-	}
 
 	msg := message.Messages{
-		Rooms:   []string{p.H.Room},
-		Rids:    []int64{int64(r.Id)},
+		Rooms:   []int32{int32(p.H.Room)},
 		Mid:     int64(p.H.Mid),
 		Uid:     p.Uid,
 		Name:    p.H.Name,

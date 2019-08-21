@@ -22,13 +22,13 @@ func newCache(client *redis.Client) *Cache {
 
 const (
 	// 房間的前綴詞，用於存儲在redis當key
-	roomKey = "room_%s"
+	roomKey = "room_%d"
 
 	// server name的前綴詞，用於存儲在redis當key
 	onlineKey = "server_%s"
 )
 
-func keyRoom(key string) string {
+func keyRoom(key int) string {
 	return fmt.Sprintf(roomKey, key)
 }
 
@@ -50,11 +50,11 @@ var (
 	roomExpired = time.Hour
 )
 
-func (c *Cache) get(id string) (int, error) {
+func (c *Cache) get(id int) (int, error) {
 	return c.c.HGet(keyRoom(id), hashPermissionKey).Int()
 }
 
-func (c *Cache) getMoney(id string) (day, dml, deposit int, err error) {
+func (c *Cache) getMoney(id int) (day, dml, deposit int, err error) {
 	r, err := c.c.HMGet(keyRoom(id), hashLimitDayKey, hashLimitDmlKey, hashLimitAmountKey).Result()
 	if err != nil {
 		return 0, 0, 0, err
@@ -83,7 +83,7 @@ func (c *Cache) set(room models.Room) error {
 		hashLimitDmlKey:    room.DmlLimit,
 		hashLimitAmountKey: room.DepositLimit,
 	}
-	key := keyRoom(room.Uuid)
+	key := keyRoom(room.Id)
 	tx := c.c.Pipeline()
 	tx.HMSet(key, f)
 	tx.Expire(key, roomExpired)

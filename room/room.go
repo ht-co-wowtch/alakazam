@@ -32,9 +32,6 @@ func New(db *models.Store, cache *redis.Client, member *member.Member, cli *clie
 }
 
 type Status struct {
-	// 要設定的房間id
-	Id string `json:"id" binding:"required,len=32"`
-
 	// 是否禁言
 	IsMessage bool `json:"is_message"`
 
@@ -56,31 +53,23 @@ type Limit struct {
 	Dml int `json:"dml"`
 }
 
-func (l *Room) Create(r Status) (string, error) {
+func (l *Room) Create(r Status) (int, error) {
 	room := models.Room{
-		Uuid:         r.Id,
 		IsMessage:    r.IsMessage,
 		DayLimit:     r.Limit.Day,
 		DepositLimit: r.Limit.Deposit,
 		DmlLimit:     r.Limit.Dml,
 		Status:       true,
 	}
-	dbRoom, err := l.Get(r.Id)
-	if err == errors.ErrNoRows {
-		_, err = l.db.CreateRoom(room)
+	if _, err := l.db.CreateRoom(&room); err != nil {
+		return 0, err
 	}
-	if err != nil {
-		return "", err
-	}
-	if dbRoom.Uuid != "" {
-		return room.Uuid, l.update(room)
-	}
-	return r.Id, l.c.set(room)
+	return room.Id, l.c.set(room)
 }
 
-func (l *Room) Update(r Status) error {
+func (l *Room) Update(id int, r Status) error {
 	room := models.Room{
-		Uuid:         r.Id,
+		Id:           id,
 		IsMessage:    r.IsMessage,
 		DayLimit:     r.Limit.Day,
 		DepositLimit: r.Limit.Deposit,
@@ -89,15 +78,15 @@ func (l *Room) Update(r Status) error {
 	return l.update(room)
 }
 
-func (l *Room) Delete(roomId string) error {
-	r, err := l.Get(roomId)
+func (l *Room) Delete(id int) error {
+	r, err := l.Get(id)
 	if err != nil {
 		return err
 	}
 	if r.Status == false {
 		return nil
 	}
-	aff, err := l.db.DeleteRoom(roomId)
+	aff, err := l.db.DeleteRoom(id)
 	if err != nil {
 		return err
 	}
@@ -107,8 +96,8 @@ func (l *Room) Delete(roomId string) error {
 	return nil
 }
 
-func (l *Room) Get(roomId string) (models.Room, error) {
-	r, ok, err := l.db.GetRoom(roomId)
+func (l *Room) Get(id int) (models.Room, error) {
+	r, ok, err := l.db.GetRoom(id)
 	if err != nil {
 		return models.Room{}, err
 	}
@@ -129,7 +118,7 @@ func (l *Room) update(room models.Room) error {
 	return nil
 }
 
-func (l *Room) IsMessage(rid string, status int, uid, token string) error {
+func (l *Room) IsMessage(rid int, status int, uid, token string) error {
 	if !models.IsMoney(status) {
 		return nil
 	}

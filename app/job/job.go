@@ -22,7 +22,7 @@ func New(c *conf.Config) *Job {
 		consume: &consume{
 			rc:    c.Room,
 			ctx:   ctx,
-			rooms: make(map[string]*Room),
+			rooms: make(map[int32]*Room),
 		},
 		ctx:    ctx,
 		cancel: cancel,

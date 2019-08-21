@@ -61,12 +61,12 @@ func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
 			return err
 		}
 	}
-	for _, rid := range msg.Rids {
+	for _, rid := range msg.Room {
 		if _, err := tx.Exec(addRoomMessage, rid, msg.Seq, msg.Type, sendAt); err != nil {
 			log.Error(
 				"insert room message",
 				zap.Error(err),
-				zap.Int64("room", rid),
+				zap.Int32("room", rid),
 				zap.Int64("msg_id", msg.Seq),
 			)
 			return err

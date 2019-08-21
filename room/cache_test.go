@@ -6,7 +6,6 @@ import (
 	goRedis "github.com/go-redis/redis"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"gitlab.com/jetfueltw/cpw/micro/id"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"os"
 	"strconv"
@@ -46,7 +45,6 @@ var (
 	amount = 500
 
 	room = models.Room{
-		Uuid:         id.UUid32(),
 		IsMessage:    true,
 		DayLimit:     day,
 		DmlLimit:     dml,
@@ -59,7 +57,7 @@ func TestSetRoom(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	m := r.HGetAll(keyRoom(room.Uuid)).Val()
+	m := r.HGetAll(keyRoom(room.Id)).Val()
 
 	assert.Equal(t, map[string]string{
 		hashPermissionKey:  "5",
@@ -68,7 +66,7 @@ func TestSetRoom(t *testing.T) {
 		hashLimitAmountKey: strconv.Itoa(amount),
 	}, m)
 
-	expire := r.TTL(keyRoom(room.Uuid)).Val()
+	expire := r.TTL(keyRoom(room.Id)).Val()
 
 	assert.Equal(t, time.Hour, expire)
 }
@@ -76,7 +74,7 @@ func TestSetRoom(t *testing.T) {
 func TestGetRoomByMoney(t *testing.T) {
 	_ = c.set(room)
 
-	dy, dl, a, err := c.getMoney(room.Uuid)
+	dy, dl, a, err := c.getMoney(room.Id)
 
 	assert.Nil(t, err)
 	assert.Equal(t, day, dy)
@@ -87,7 +85,7 @@ func TestGetRoomByMoney(t *testing.T) {
 func TestGetRoom(t *testing.T) {
 	_ = c.set(room)
 
-	s, err := c.get(room.Uuid)
+	s, err := c.get(room.Id)
 
 	assert.Nil(t, err)
 	assert.Equal(t, s, s)

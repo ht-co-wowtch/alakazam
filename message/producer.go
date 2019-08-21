@@ -52,8 +52,7 @@ const (
 )
 
 type Messages struct {
-	Rooms   []string
-	Rids    []int64
+	Rooms   []int32
 	Mid     int64
 	Uid     string
 	Name    string
@@ -85,7 +84,6 @@ func (p *Producer) toPb(msg Messages) (*logicpb.PushMsg, error) {
 		Type:    logicpb.PushMsg_ROOM,
 		Room:    msg.Rooms,
 		Mid:     msg.Mid,
-		Rids:    msg.Rids,
 		Msg:     bm,
 		Message: msg.Message,
 		SendAt:  now.Unix(),
@@ -104,8 +102,7 @@ func (p *Producer) Send(msg Messages) (int64, error) {
 }
 
 type AdminMessage struct {
-	Rooms   []string
-	Rids    []int64
+	Rooms   []int32
 	Message string
 	IsTop   bool
 }
@@ -115,7 +112,6 @@ type AdminMessage struct {
 func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
 	pushMsg, err := p.toPb(Messages{
 		Rooms:   msg.Rooms,
-		Rids:    msg.Rids,
 		Mid:     RootMid,
 		Uid:     RootUid,
 		Name:    RootName,
@@ -171,7 +167,6 @@ func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*logicpb.PushMsg, er
 		Type:    logicpb.PushMsg_MONEY,
 		Room:    msg.Rooms,
 		Mid:     msg.Mid,
-		Rids:    msg.Rids,
 		Msg:     bm,
 		SendAt:  now.Unix(),
 		Message: msg.Message,
@@ -200,7 +195,6 @@ func (p *Producer) SendRedEnvelopeForAdmin(msg AdminRedEnvelopeMessage) (int64, 
 	pushMsg, err := p.toRedEnvelopePb(RedEnvelopeMessage{
 		Messages: Messages{
 			Rooms:   msg.Rooms,
-			Rids:    msg.Rids,
 			Mid:     RootMid,
 			Uid:     RootUid,
 			Name:    RootName,

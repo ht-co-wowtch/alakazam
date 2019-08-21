@@ -2,9 +2,9 @@ package job
 
 import (
 	"errors"
+	comet "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
-	comet "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"time"
@@ -25,14 +25,14 @@ type Room struct {
 	consume *consume
 
 	// 房間id
-	id string
+	id int32
 
 	// 發送訊息至房間訊息聚合的chan
 	proto chan *comet.Proto
 }
 
 // 開一個房間訊息聚合
-func NewRoom(consume *consume, id string) (r *Room) {
+func NewRoom(consume *consume, id int32) (r *Room) {
 	r = &Room{
 		c:       consume.rc,
 		id:      id,
@@ -73,7 +73,7 @@ func (r *Room) pushproc(batch int, sigTime time.Duration) {
 		buf = bytes.NewWriterSize(int(comet.MaxBodySize))
 	)
 
-	log.Info("start room goroutine", zap.String("id", r.id))
+	log.Info("start room goroutine", zap.Int32("id", r.id))
 
 	// 控制多久才推送訊息給comet server
 	td := time.AfterFunc(sigTime, func() {
@@ -136,5 +136,5 @@ func (r *Room) pushproc(batch int, sigTime time.Duration) {
 
 	// 該房間已超過多久都有訊息要推送就刪除
 	r.consume.delRoom(r.id)
-	log.Info("room goroutine exit", zap.String("id", r.id))
+	log.Info("room goroutine exit", zap.Int32("id", r.id))
 }

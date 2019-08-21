@@ -8,6 +8,7 @@ import (
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
+	"strconv"
 	"sync"
 )
 
@@ -22,7 +23,7 @@ type consume struct {
 	roomsMutex sync.RWMutex
 
 	// 房間訊息聚合
-	rooms map[string]*Room
+	rooms map[int32]*Room
 
 	ctx context.Context
 }
@@ -53,9 +54,9 @@ func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 }
 
 // 房間訊息推送給comet
-func (c *consume) broadcastRoomRawBytes(roomID string, body []byte) (err error) {
+func (c *consume) broadcastRoomRawBytes(roomID int32, body []byte) (err error) {
 	args := cometpb.BroadcastRoomReq{
-		RoomID: roomID,
+		RoomID: strconv.Itoa(int(roomID)),
 		Proto: &cometpb.Proto{
 			Op:   cometpb.OpBatchRaw,
 			Body: body,
@@ -69,7 +70,7 @@ func (c *consume) broadcastRoomRawBytes(roomID string, body []byte) (err error) 
 }
 
 // 根據room id取Roomd用做房間訊息聚合
-func (c *consume) getRoom(roomID string) *Room {
+func (c *consume) getRoom(roomID int32) *Room {
 	c.roomsMutex.RLock()
 	room, ok := c.rooms[roomID]
 	c.roomsMutex.RUnlock()
@@ -80,13 +81,13 @@ func (c *consume) getRoom(roomID string) *Room {
 			c.rooms[roomID] = room
 		}
 		c.roomsMutex.Unlock()
-		log.Info("new a room active", zap.String("id", roomID), zap.Int("active", len(c.rooms)))
+		log.Info("new a room active", zap.Int32("id", roomID), zap.Int("active", len(c.rooms)))
 	}
 	return room
 }
 
 // 移除房間訊息聚合
-func (c *consume) delRoom(roomID string) {
+func (c *consume) delRoom(roomID int32) {
 	c.roomsMutex.Lock()
 	delete(c.rooms, roomID)
 	c.roomsMutex.Unlock()
