@@ -20,7 +20,7 @@ type Config struct {
 
 func init() {
 	config.SetEnvReplace(true)
-	config.SetEnvPrefix("seq")
+	config.SetEnvPrefix("alakazam")
 }
 
 func Read(path string) error {

@@ -42,7 +42,7 @@ type Comet struct {
 	// 開多個goroutine併發處理訊息做send grpc client
 	RoutineSize int
 
-	RPCClient *grpc.Conf
+	Comet *grpc.Conf
 }
 
 // kafka config
@@ -64,12 +64,12 @@ func Read(path string) error {
 	}
 
 	Conf = new(Config)
-	client, _ := grpc.ReadViper(v.Sub("grpc.client"))
+	comet, _ := grpc.ReadViper(v.Sub("grpc.comet"))
 	co := v.Sub("comet")
 	Conf.Comet = &Comet{
 		RoutineChan: co.GetInt("routineChan"),
 		RoutineSize: co.GetInt("routineSize"),
-		RPCClient:   client,
+		Comet:       comet,
 	}
 
 	k := v.Sub("kafka")

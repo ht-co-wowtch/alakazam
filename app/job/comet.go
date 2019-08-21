@@ -63,7 +63,7 @@ func NewComet(c *conf.Comet) (*Comet, error) {
 
 	// 跟Comet servers建立grpc client
 	var err error
-	if cmt.client, err = newCometClient(c.RPCClient); err != nil {
+	if cmt.client, err = newCometClient(c.Comet); err != nil {
 		return nil, err
 	}
 	cmt.ctx, cmt.cancel = context.WithCancel(context.Background())

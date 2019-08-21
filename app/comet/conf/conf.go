@@ -18,7 +18,7 @@ type Config struct {
 	TCP       *TCP
 	Protocol  *Protocol
 	Bucket    *Bucket
-	RPCClient *grpc.Conf
+	Logic     *grpc.Conf
 	RPCServer *grpc.Conf
 }
 
@@ -115,7 +115,7 @@ func Read(path string) error {
 		return err
 	}
 	Conf = new(Config)
-	Conf.RPCClient, _ = grpc.ReadViper(v.Sub("grpc.client"))
+	Conf.Logic, _ = grpc.ReadViper(v.Sub("grpc.logic"))
 	Conf.RPCServer, _ = grpc.ReadViper(v.Sub("grpc.server"))
 	Conf.TCP = &TCP{
 		Sndbuf:       4096,

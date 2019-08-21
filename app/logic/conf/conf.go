@@ -23,7 +23,7 @@ type Config struct {
 	DB         *database.Conf
 	Kafka      *Kafka
 	Redis      *redis.Conf
-	Api        *client.Conf
+	Nidoran    *client.Conf
 	Seq        *grpc.Conf
 	// comet連線用戶心跳，server會清除在線紀錄
 	Heartbeat int64
@@ -58,7 +58,7 @@ func Read(path string) error {
 	if err != nil {
 		return err
 	}
-	Conf.Api, err = client.ReadViper(v.Sub("api"))
+	Conf.Nidoran, err = client.ReadViper(v.Sub("nidoran"))
 	if err != nil {
 		return err
 	}

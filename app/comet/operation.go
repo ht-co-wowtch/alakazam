@@ -13,7 +13,7 @@ import (
 
 // 告知logic service有人想要進入某個房間
 func (s *Server) Connect(c context.Context, p *cometpb.Proto) (*logicpb.ConnectReply, error) {
-	return s.rpcClient.Connect(c, &logicpb.ConnectReq{
+	return s.logic.Connect(c, &logicpb.ConnectReq{
 		Server: s.name,
 		Token:  p.Body,
 	})
@@ -21,7 +21,7 @@ func (s *Server) Connect(c context.Context, p *cometpb.Proto) (*logicpb.ConnectR
 
 // client連線中斷，告知logic service需清理此人的連線資料
 func (s *Server) Disconnect(c context.Context, uid, key string) (err error) {
-	_, err = s.rpcClient.Disconnect(context.Background(), &logicpb.DisconnectReq{
+	_, err = s.logic.Disconnect(context.Background(), &logicpb.DisconnectReq{
 		Server: s.name,
 		Uid:    uid,
 		Key:    key,
@@ -31,7 +31,7 @@ func (s *Server) Disconnect(c context.Context, uid, key string) (err error) {
 
 // 告知logic service要刷新某人的在線狀態(session 過期時間)
 func (s *Server) Heartbeat(ctx context.Context, ch *Channel) (err error) {
-	_, err = s.rpcClient.Heartbeat(ctx, &logicpb.HeartbeatReq{
+	_, err = s.logic.Heartbeat(ctx, &logicpb.HeartbeatReq{
 		Server: s.name,
 		Uid:    ch.Uid,
 		Key:    ch.Key,
@@ -43,7 +43,7 @@ func (s *Server) Heartbeat(ctx context.Context, ch *Channel) (err error) {
 
 // 告知logic service現在房間的在線人數
 func (s *Server) RenewOnline(ctx context.Context, serverID string, rommCount map[string]int32) (allRoom map[string]int32, err error) {
-	reply, err := s.rpcClient.RenewOnline(ctx, &logicpb.OnlineReq{
+	reply, err := s.logic.RenewOnline(ctx, &logicpb.OnlineReq{
 		Server:    s.name,
 		RoomCount: rommCount,
 	}, grpc.UseCompressor(gzip.Name))
@@ -70,7 +70,7 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 
 		if err := b.ChangeRoom(r.RoomId, ch); err != nil {
 			log.Error("change room", zap.Error(err), zap.Binary("data", p.Body))
-		} else if _, err := s.rpcClient.ChangeRoom(ctx, &logicpb.ChangeRoomReq{
+		} else if _, err := s.logic.ChangeRoom(ctx, &logicpb.ChangeRoomReq{
 			Uid:    ch.Uid,
 			Key:    ch.Key,
 			RoomID: r.RoomId,

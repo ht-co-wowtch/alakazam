@@ -26,7 +26,9 @@ RUN set -ex
 RUN go build -ldflags '-s -w' -o /logic cmd/logic/main.go && \
     go build -ldflags '-s -w' -o /comet cmd/comet/main.go && \
     go build -ldflags '-s -w' -o /job cmd/job/main.go && \
-    go build -ldflags '-s -w' -o /admin cmd/admin/main.go
+    go build -ldflags '-s -w' -o /admin cmd/admin/main.go && \
+    go build -ldflags '-s -w' -o /message cmd/message/main.go && \
+    go build -ldflags '-s -w' -o /seq cmd/seq/main.go
 
 FROM alpine
 
@@ -36,9 +38,13 @@ COPY config/admin-example.yml admin.yml
 COPY config/comet-example.yml comet.yml
 COPY config/job-example.yml job.yml
 COPY config/logic-example.yml logic.yml
+COPY config/message-example.yml message.yml
+COPY config/seq-example.yml seq.yml
 COPY --from=build /logic .
 COPY --from=build /comet .
 COPY --from=build /job .
 COPY --from=build /admin .
+COPY --from=build /message .
+COPY --from=build /seq .
 
 CMD ["/bin/sh"]

@@ -45,7 +45,7 @@ func New(c *conf.Config) *Server {
 	ctx, cancel := context.WithCancel(context.Background())
 	cache := redis.New(c.Redis)
 	db := models.NewStore(c.DB)
-	cli := client.New(c.Api)
+	cli := client.New(c.Nidoran)
 	seqCli, err := rpccli.NewClient(c.Seq)
 	if err != nil {
 		panic(err)

@@ -7,7 +7,7 @@ import (
 
 	"github.com/zhenjl/cityhash"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
-	 "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/grpc"
 )
 
@@ -45,15 +45,15 @@ type Server struct {
 	name string
 
 	// Logic service grpc client
-	rpcClient pb.LogicClient
+	logic pb.LogicClient
 }
 
 // new Server
 func NewServer(c *conf.Config) *Server {
 	s := &Server{
-		c:         c,
-		round:     NewRound(c),
-		rpcClient: newLogicClient(c.RPCClient),
+		c:     c,
+		round: NewRound(c),
+		logic: newLogicClient(c.Logic),
 	}
 
 	// 初始化Bucket

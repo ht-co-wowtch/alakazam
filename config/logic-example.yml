@@ -1,6 +1,6 @@
 # http server
 http:
-  debug: true
+  debug: false
   addr: :3111
   readTimeout: 1s
   writeTimeout: 1s
@@ -21,7 +21,7 @@ grpc:
     addr: :3120
 
 # 三方應用接口 config
-api:
+nidoran:
   host: http://127.0.0.1:3005
   # 最大連接數量
   maxConns: 8
@@ -85,7 +85,7 @@ heartbeat: 240
 log:
   # 開啟debug模式只會紀錄Info Level以上的log
   # 使用DPanic level時會Panic
-  debug: true
+  debug: false
   # 是否關閉log的輸出檔案代碼位置
   disableCaller: true
   # 是否關閉Warn Level(不包含)以上的stack trace message

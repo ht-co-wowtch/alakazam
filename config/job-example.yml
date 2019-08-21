@@ -7,7 +7,7 @@ kafka:
 
 # grpc client for comet
 grpc:
-  client:
+  comet:
     addr: :3109
 
 # 推送給comet
@@ -25,7 +25,7 @@ room:
 log:
   # 開啟debug模式只會紀錄Info Level以上的log
   # 使用DPanic level時會Panic
-  debug: true
+  debug: false
   # 是否關閉log的輸出檔案代碼位置
   disableCaller: true
   # 是否關閉Warn Level(不包含)以上的stack trace message
