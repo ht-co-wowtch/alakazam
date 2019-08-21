@@ -10,6 +10,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gopkg.in/go-playground/validator.v8"
+	"strconv"
 	"time"
 )
 
@@ -177,6 +178,14 @@ func (l *Room) Connect(server string, token []byte) (*ConnectReply, error) {
 		return nil, err
 	}
 	if err := v.Struct(&params); err != nil {
+		return nil, err
+	}
+
+	rid, err := strconv.Atoi(params.RoomID)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := l.Get(rid); err != nil {
 		return nil, err
 	}
 
