@@ -127,8 +127,13 @@ func (c *Cache) getSession(uid string, key string) (HMember, error) {
 
 // 移除user資訊
 // DEL : uid_{user id}
-func (c *Cache) delete(uid, key string) (bool, error) {
+func (c *Cache) logout(uid, key string) (bool, error) {
 	aff, err := c.c.HDel(keyUid(uid), key).Result()
+	return aff >= 1, err
+}
+
+func (c *Cache) delete(uid string) (bool, error) {
+	aff, err := c.c.Del(keyUid(uid)).Result()
 	return aff >= 1, err
 }
 

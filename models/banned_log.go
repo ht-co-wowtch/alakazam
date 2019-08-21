@@ -10,6 +10,7 @@ type BannedLog struct {
 	Sec      int
 	IsSystem bool
 	ExpireAt time.Time
+	CreateAt time.Time
 }
 
 func (r *BannedLog) TableName() string {
@@ -23,4 +24,14 @@ func (s *Store) SetBannedLog(memberId int, sec time.Duration, isSystem bool) (in
 		IsSystem: isSystem,
 		ExpireAt: time.Now().Add(sec),
 	})
+}
+
+func (s *Store) GetTodaySystemBannedLog(memberId int) ([]BannedLog, error) {
+	log := make([]BannedLog, 0)
+	s.d.Where("`member_id` = ?", memberId).
+		Where("is_system = ?", true).
+		Limit(5).
+		Desc("create_at").
+		Find(&log)
+	return log, nil
 }

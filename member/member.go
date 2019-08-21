@@ -82,7 +82,7 @@ func (m *Member) Login(token, roomId, server string) (*models.Member, string, er
 }
 
 func (m *Member) Logout(uid, key string) (bool, error) {
-	return m.c.delete(uid, key)
+	return m.c.logout(uid, key)
 }
 
 // 會員在線認證

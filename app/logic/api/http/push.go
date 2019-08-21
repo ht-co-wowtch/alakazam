@@ -43,7 +43,7 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 	id, err := s.message.Send(msg)
 	if err != nil {
 		if err == errors.ErrRateSameMsg {
-			if err := s.member.SetBanned(p.Uid, 10*60); err != nil {
+			if err := s.member.SetBanned(p.Uid, 10*60, true); err != nil {
 				log.Error("set banned for rate same message", zap.Error(err), zap.String("uid", p.Uid))
 			}
 		}

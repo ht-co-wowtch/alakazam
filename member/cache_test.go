@@ -134,7 +134,7 @@ func TestDeleteUser(t *testing.T) {
 	uid := id.UUid32()
 	r.HSet(keyUid(uid), "key", "test")
 
-	ok, err := c.delete(uid, "key")
+	ok, err := c.logout(uid, "key")
 
 	assert.Nil(t, err)
 	assert.True(t, ok)
