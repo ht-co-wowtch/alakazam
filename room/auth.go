@@ -27,13 +27,14 @@ func (r *Room) Auth(u *member.User) error {
 		return errors.ErrRoomBanned
 	}
 	if !u.H.IsMessage {
-		is, err := r.member.IsBanned(u.Uid)
-		if err != nil {
-			return err
-		}
-		if is {
-			return errors.ErrBanned
-		}
+		return errors.ErrBanned
+	}
+	is, err := r.member.IsBanned(u.Uid)
+	if err != nil {
+		return err
+	}
+	if is {
+		return errors.ErrBanned
 	}
 	return nil
 }
