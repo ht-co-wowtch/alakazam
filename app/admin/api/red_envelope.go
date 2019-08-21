@@ -58,7 +58,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 			Rooms:   []int32{int32(o.RoomId)},
 			Message: o.Message,
 		},
-		RedEnvelopeId: result.Uid,
+		RedEnvelopeId: result.Order,
 		Token:         result.Token,
 		Expired:       result.ExpireAt.Unix(),
 	}
