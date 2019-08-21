@@ -52,26 +52,26 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	if o.PublishAt.IsZero() {
-		msg := message.AdminRedEnvelopeMessage{
-			AdminMessage: message.AdminMessage{
-				Rooms:   []int32{int32(o.RoomId)},
-				Message: o.Message,
-			},
-			RedEnvelopeId: result.Uid,
-			Token:         result.Token,
-			Expired:       result.ExpireAt.Unix(),
-		}
 
+	msg := message.AdminRedEnvelopeMessage{
+		AdminMessage: message.AdminMessage{
+			Rooms:   []int32{int32(o.RoomId)},
+			Message: o.Message,
+		},
+		RedEnvelopeId: result.Uid,
+		Token:         result.Token,
+		Expired:       result.ExpireAt.Unix(),
+	}
+
+	if o.PublishAt.IsZero() {
 		if _, err = s.message.SendRedEnvelopeForAdmin(msg); err != nil {
 			return err
 		}
 	} else if result.PublishAt.Before(time.Now()) {
 		return errors.ErrPublishAt
+	} else if err := s.delayMessage.SendDelayRedEnvelopeForAdmin(msg, result.PublishAt); err != nil {
+		return err
 	}
-	//} else if err := s.delayMessage.SendDelayRedEnvelopeForAdmin(o.RoomId, msg, redEnvelope, result.PublishAt); err != nil {
-	//	return err
-	//}
 	c.JSON(http.StatusOK, result)
 	return nil
 }
