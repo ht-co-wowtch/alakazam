@@ -14,11 +14,11 @@ type Message struct {
 
 type Money struct {
 	Message
-	RedEnvelope
+	RedEnvelope RedEnvelope `json:"red_envelope"`
 }
 
 type RedEnvelope struct {
-	Id      string `json:"red_envelope_id"`
+	Id      string `json:"id"`
 	Token   string `json:"token"`
 	Expired int64  `json:"expired"`
 }

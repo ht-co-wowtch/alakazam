@@ -95,6 +95,23 @@ func (c *Client) GiveRedEnvelopeForAdmin(envelope RedEnvelopeAdmin) (RedEnvelope
 	return u, nil
 }
 
+func (c *Client) UpRedEnvelopePublish(envelopeId string) error {
+	publish := struct {
+		Order string `json:"order"`
+	}{
+		Order: envelopeId,
+	}
+	resp, err := c.c.PostJson("/admin/red-envelope/publish", nil, publish, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if err := checkResponse(resp); err != nil {
+		return err
+	}
+	return nil
+}
+
 type TakeEnvelopeReply struct {
 	// 紅包id
 	Id string `json:"id"`

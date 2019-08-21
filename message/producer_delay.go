@@ -1,6 +1,8 @@
 package message
 
 import (
+	"encoding/json"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
@@ -43,8 +45,20 @@ func (p *DelayProducer) run() {
 			return
 		case m := <-p.cron.Message():
 			for _, v := range m {
-				if err := p.producer.send(v); err != nil {
-					log.Error("delay send message", zap.Int64("id", v.Seq))
+				var err error
+				if v.Type == pb.PushMsg_MONEY {
+					var red Money
+					if err = json.Unmarshal(v.Msg, &red); err != nil {
+						log.Error("red envelope for delay send message", zap.Error(err), zap.Int64("id", v.Seq))
+						continue
+					}
+					if err = p.cli.UpRedEnvelopePublish(red.RedEnvelope.Id); err != nil {
+						log.Error("update red envelope is publish for delay send message", zap.Error(err), zap.Int64("id", v.Seq))
+						continue
+					}
+				}
+				if err = p.producer.send(v); err != nil {
+					log.Error("delay send message", zap.Error(err), zap.Int64("id", v.Seq))
 				} else {
 					log.Info("delay send message", zap.Int64("id", v.Seq))
 				}
