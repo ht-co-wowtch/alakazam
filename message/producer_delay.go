@@ -67,7 +67,7 @@ func (p *DelayProducer) run() {
 	}
 }
 
-func (p *DelayProducer) SendDelayRedEnvelopeForAdmin(msg AdminRedEnvelopeMessage, publishAt time.Time) error {
+func (p *DelayProducer) SendDelayRedEnvelopeForAdmin(msg AdminRedEnvelopeMessage, publishAt time.Time) (int64, error) {
 	pushMsg, err := p.producer.toRedEnvelopePb(RedEnvelopeMessage{
 		Messages: Messages{
 			Rooms:   msg.Rooms,
@@ -81,9 +81,9 @@ func (p *DelayProducer) SendDelayRedEnvelopeForAdmin(msg AdminRedEnvelopeMessage
 		Expired:       msg.Expired,
 	})
 	if err != nil {
-		return err
+		return 0, err
 	}
 	p.cron.add(pushMsg, publishAt)
 	log.Info("add delay message for red envelope", zap.Int64("id", pushMsg.Seq))
-	return nil
+	return pushMsg.Seq, nil
 }

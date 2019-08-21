@@ -62,16 +62,31 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		Token:         result.Token,
 		Expired:       result.ExpireAt.Unix(),
 	}
-
+	var msgId int64
 	if o.PublishAt.IsZero() {
-		if _, err = s.message.SendRedEnvelopeForAdmin(msg); err != nil {
+		if msgId, err = s.message.SendRedEnvelopeForAdmin(msg); err != nil {
 			return err
 		}
 	} else if result.PublishAt.Before(time.Now()) {
 		return errors.ErrPublishAt
-	} else if err := s.delayMessage.SendDelayRedEnvelopeForAdmin(msg, result.PublishAt); err != nil {
+	} else if msgId, err = s.delayMessage.SendDelayRedEnvelopeForAdmin(msg, result.PublishAt); err != nil {
 		return err
 	}
-	c.JSON(http.StatusOK, result)
+
+	json := struct {
+		Id          string    `json:"id"`
+		MsgId       int64     `json:"message_id"`
+		TotalAmount int       `json:"total_amount"`
+		PublishAt   time.Time `json:"publish_at"`
+		ExpireAt    time.Time `json:"expire_at"`
+	}{
+		Id:          result.Order,
+		MsgId:       msgId,
+		TotalAmount: result.TotalAmount,
+		PublishAt:   result.PublishAt,
+		ExpireAt:    result.ExpireAt,
+	}
+
+	c.JSON(http.StatusOK, json)
 	return nil
 }
