@@ -58,5 +58,29 @@ func (m *Member) IsBanned(uid string) (bool, error) {
 }
 
 func (m *Member) RemoveBanned(uid string) error {
-	return m.c.delBanned(uid)
+	me, ok, err := m.db.Find(uid)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return errors.ErrNoRows
+	}
+	if err := m.c.delBanned(uid); err != nil {
+		return err
+	}
+	if !me.IsMessage {
+		aff, err := m.db.UpdateIsMessage(me.Id, true)
+		if err != nil {
+			return err
+		}
+		if aff != 1 {
+			return errors.ErrNoRows
+		}
+
+		me.IsMessage = true
+		if err := m.c.set(me); err != nil {
+			return err
+		}
+	}
+	return nil
 }
