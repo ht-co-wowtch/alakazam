@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	// 封鎖
@@ -90,4 +92,12 @@ func (s *Store) GetMembers(ids []int) ([]Member, error) {
 	m := make([]Member, 0)
 	err := s.d.Table(&Member{}).Find(&m)
 	return m, err
+}
+
+func (s *Store) UpdateIsMessage(memberId int, isMessage bool) (int64, error) {
+	return s.d.Cols("is_message").
+		Where("id = ?", memberId).
+		Update(&Member{
+			IsMessage: isMessage,
+		})
 }

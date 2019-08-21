@@ -23,9 +23,6 @@ const (
 
 	// user hash table server key
 	hServerKey = "server"
-
-	// user hash table status key
-	hashStatusKey = "status"
 )
 
 type Cache struct {
@@ -167,22 +164,14 @@ func (c *Cache) getName(uid []string) ([]string, error) {
 // 設定禁言
 func (c *Cache) setBanned(uid string, expired time.Duration) error {
 	key := keyBanned(uid)
-	ok, err := c.c.SetNX(key, time.Now().Add(expired).Unix(), expired).Result()
+	_, err := c.c.Set(key, time.Now().Add(expired).Unix(), expired).Result()
 	if err != nil {
 		return err
-	}
-	if ok {
-		m, err := c.get(uid)
-		if err != nil {
-			return err
-		}
-		m.IsMessage = false
-		return c.set(m)
 	}
 	return nil
 }
 
-// 取得禁言時效
+// 是否禁言中
 func (c *Cache) isBanned(uid string) (bool, error) {
 	i, err := c.c.Exists(keyBanned(uid)).Result()
 	return i >= 1, err
@@ -191,15 +180,7 @@ func (c *Cache) isBanned(uid string) (bool, error) {
 // 解除禁言
 func (c *Cache) delBanned(uid string) error {
 	_, err := c.c.Del(keyBanned(uid)).Result()
-	if err != nil {
-		return err
-	}
-	m, err := c.get(uid)
-	if err != nil {
-		return err
-	}
-	m.IsMessage = true
-	return c.set(m)
+	return err
 }
 
 // 更換房間

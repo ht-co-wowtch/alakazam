@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func (m *Member) SetBanned(uid string, expired int) error {
+func (m *Member) SetBanned(uid string, sec int) error {
 	me, ok, err := m.db.Find(uid)
 	if err != nil {
 		return err
@@ -15,10 +15,27 @@ func (m *Member) SetBanned(uid string, expired int) error {
 	if !ok {
 		return errors.ErrNoRows
 	}
-	expire := time.Duration(expired) * time.Second
-	if err := m.c.setBanned(uid, expire); err != nil {
-		return err
+	expire := time.Duration(sec) * time.Second
+	if sec > 0 {
+		if err := m.c.setBanned(uid, expire); err != nil {
+			return err
+		}
+	} else if sec == -1 {
+		aff, err := m.db.UpdateIsMessage(me.Id, false)
+		if err != nil {
+			return err
+		}
+		if aff != 1 {
+			return errors.ErrNoRows
+		}
+		expire = time.Duration(0)
+
+		me.IsMessage = false
+		if err := m.c.set(me); err != nil {
+			return err
+		}
 	}
+
 	aff, err := m.db.SetBannedLog(me.Id, expire, false)
 	if err != nil || aff == 0 {
 		log.Error("set banned log", zap.Error(err), zap.Int64("affected", aff))
