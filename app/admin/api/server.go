@@ -63,6 +63,8 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.DELETE("/push/:id", api.ErrHandler(s.deleteTopMessage))
 
 	e.POST("/red-envelope", api.ErrHandler(s.giveRedEnvelope))
+
+	e.DELETE("/kick/:uid", api.ErrHandler(s.kick))
 }
 
 func (s *httpServer) Close() error {

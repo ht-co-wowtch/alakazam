@@ -85,6 +85,19 @@ func (m *Member) Logout(uid, key string) (bool, error) {
 	return m.c.logout(uid, key)
 }
 
+func (m *Member) Kick(uid string) ([]string, error) {
+	keys, err := m.c.getKey(uid)
+	if err != nil {
+		return nil, err
+	}
+	err = m.c.delete(uid)
+	return keys, err
+}
+
+func (m *Member) GetKeys(uid string) ([]string, error) {
+	return m.c.getKey(uid)
+}
+
 // 會員在線認證
 func (m *Member) Auth(u *User) error {
 	hash, err := m.c.getSession(u.Uid, u.Key)
@@ -111,7 +124,7 @@ func (m *Member) GetMembers(id []int) ([]models.Member, error) {
 }
 
 func (m *Member) Heartbeat(uid string) error {
-	_, err := m.c.refreshExpire(uid)
+	err := m.c.refreshExpire(uid)
 	if err != nil {
 		return err
 	}

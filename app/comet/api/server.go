@@ -40,9 +40,16 @@ func (s *server) Ping(ctx context.Context, req *pb.Empty) (*pb.Empty, error) {
 	return &pb.Empty{}, nil
 }
 
-// Close Service
-func (s *server) Close(ctx context.Context, req *pb.Empty) (*pb.Empty, error) {
-	// TODO close
+// 踢人
+func (s *server) Kick(ctx context.Context, req *pb.KeyReq) (*pb.Empty, error) {
+	for _, key := range req.Key {
+		if b := s.srv.Bucket(key); b != nil {
+			if ch := b.Channel(key); ch != nil {
+				_ = ch.Push(req.Proto)
+				ch.Close()
+			}
+		}
+	}
 	return &pb.Empty{}, nil
 }
 

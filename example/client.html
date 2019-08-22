@@ -305,6 +305,10 @@
                     var msgBody = JSON.parse(json)
 
                     document.getElementById("room_id").innerHTML = msgBody.room_id
+                case 20:
+                    var json = textDecoder.decode(data.slice(headerLen, packetLen));
+                    var msgBody = JSON.parse(json)
+                    console.log(msgBody.message)
                 default:
                     break
             }

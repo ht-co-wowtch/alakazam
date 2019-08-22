@@ -144,6 +144,23 @@ func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
 	return pushMsg.Seq, nil
 }
 
+type KickMessage struct {
+	Message string
+	Keys    []string
+}
+
+func (p *Producer) Kick(msg KickMessage) error {
+	pushMsg := &logicpb.PushMsg{
+		Type:    logicpb.PushMsg_Close,
+		Keys:    msg.Keys,
+		Message: msg.Message,
+	}
+	if err := p.send(pushMsg); err != nil {
+		return err
+	}
+	return nil
+}
+
 type RedEnvelopeMessage struct {
 	Messages
 	RedEnvelopeId string

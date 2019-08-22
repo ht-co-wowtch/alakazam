@@ -120,7 +120,7 @@ func TestRefreshUserExpire(t *testing.T) {
 	uid := id.UUid32()
 	r.Set(keyUid(uid), 1, time.Hour)
 
-	ok, err := c.refreshExpire(uid)
+	err := c.refreshExpire(uid)
 
 	assert.True(t, ok)
 	assert.Nil(t, err)

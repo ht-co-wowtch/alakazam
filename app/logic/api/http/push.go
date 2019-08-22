@@ -43,8 +43,24 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 	id, err := s.message.Send(msg)
 	if err != nil {
 		if err == errors.ErrRateSameMsg {
-			if err := s.member.SetBanned(p.Uid, 10*60, true); err != nil {
+			isBlockade, err := s.member.SetBannedForSystem(p.Uid, 10*60)
+			if err != nil {
 				log.Error("set banned for rate same message", zap.Error(err), zap.String("uid", p.Uid))
+			}
+			if isBlockade {
+				keys, err := s.member.Kick(p.User.Uid)
+				if err != nil {
+					log.Error("kick member for push room", zap.Error(err), zap.String("uid", p.User.Uid))
+				}
+				if len(keys) > 0 {
+					err = s.message.Kick(message.KickMessage{
+						Message: "你被踢出房间，因为自动禁言达五次",
+						Keys:    keys,
+					})
+					if err == nil {
+						log.Error("kick member set message for push room", zap.Error(err))
+					}
+				}
 			}
 		}
 		return err

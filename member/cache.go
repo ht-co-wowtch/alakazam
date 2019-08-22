@@ -15,6 +15,8 @@ const (
 	// user id的前綴詞，用於存儲在redis當key
 	uidKey = "uid_%s"
 
+	uidWsKey = "uid_ws_%s"
+
 	// user 禁言key的前綴詞
 	bannedKey = "b_%s"
 
@@ -42,6 +44,10 @@ func keyUid(uid string) string {
 	return fmt.Sprintf(uidKey, uid)
 }
 
+func keyUidWs(uid string) string {
+	return fmt.Sprintf(uidWsKey, uid)
+}
+
 func keyBanned(uid string) string {
 	return fmt.Sprintf(bannedKey, uid)
 }
@@ -53,15 +59,20 @@ func (c *Cache) login(member *models.Member, key, roomId, server string) error {
 		return err
 	}
 
-	keyI := keyUid(member.Uid)
+	uidKey := keyUid(member.Uid)
 	tx := c.c.Pipeline()
 	f := map[string]interface{}{
 		key:        roomId,
 		hServerKey: server,
 		hJsonKey:   b,
 	}
-	tx.HMSet(keyI, f)
-	tx.Expire(keyI, c.expire)
+	tx.HMSet(uidKey, f)
+	tx.Expire(uidKey, c.expire)
+
+	uidWsKey := keyUidWs(member.Uid)
+	tx.HSet(uidWsKey, key, true)
+	tx.Expire(uidWsKey, c.expire)
+
 	_, err = tx.Exec()
 	return err
 }
@@ -86,6 +97,18 @@ func (c *Cache) get(uid string) (*models.Member, error) {
 		return nil, err
 	}
 	return &m, nil
+}
+
+func (c *Cache) getKey(uid string) ([]string, error) {
+	maps, err := c.c.HGetAll(keyUidWs(uid)).Result()
+	if err != nil {
+		return nil, err
+	}
+	var keys []string
+	for key, _ := range maps {
+		keys = append(keys, key)
+	}
+	return keys, nil
 }
 
 type HMember struct {
@@ -132,15 +155,22 @@ func (c *Cache) logout(uid, key string) (bool, error) {
 	return aff >= 1, err
 }
 
-func (c *Cache) delete(uid string) (bool, error) {
-	aff, err := c.c.Del(keyUid(uid)).Result()
-	return aff >= 1, err
+func (c *Cache) delete(uid string) error {
+	tx := c.c.Pipeline()
+	tx.Del(keyUid(uid))
+	tx.Del(keyUidWs(uid))
+	_, err := tx.Exec()
+	return err
 }
 
 // restart user資料的過期時間
 // EXPIRE : uid_{user id}  (HSET)
-func (c *Cache) refreshExpire(uid string) (bool, error) {
-	return c.c.Expire(keyUid(uid), c.expire).Result()
+func (c *Cache) refreshExpire(uid string) error {
+	tx := c.c.Pipeline()
+	tx.Expire(keyUid(uid), c.expire)
+	tx.Expire(keyUidWs(uid), c.expire)
+	_, err := tx.Exec()
+	return err
 }
 
 // 取會員名稱

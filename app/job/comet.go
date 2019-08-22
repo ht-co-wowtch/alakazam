@@ -35,6 +35,9 @@ type Comet struct {
 	// 處理多房間訊息推送給comet的chan
 	broadcastChan chan *pb.BroadcastReq
 
+	// 處理踢人
+	closeChan chan *pb.KeyReq
+
 	// 決定併發單人訊息推送至comet的goroutine參數
 	// 使用原子鎖做遞增來平均分配給goroutine
 	pushChanNum uint64
@@ -58,6 +61,7 @@ func NewComet(c *conf.Comet) (*Comet, error) {
 	cmt := &Comet{
 		roomChan:      make([]chan *pb.BroadcastRoomReq, c.RoutineSize),
 		broadcastChan: make(chan *pb.BroadcastReq, c.RoutineSize),
+		closeChan:     make(chan *pb.KeyReq, 100),
 		routineSize:   uint64(c.RoutineSize),
 	}
 
@@ -71,7 +75,7 @@ func NewComet(c *conf.Comet) (*Comet, error) {
 	// 開多個goroutine併發做send grpc client
 	for i := 0; i < c.RoutineSize; i++ {
 		cmt.roomChan[i] = make(chan *pb.BroadcastRoomReq, c.RoutineChan)
-		go cmt.process(cmt.roomChan[i], cmt.broadcastChan)
+		go cmt.process(cmt.roomChan[i], cmt.broadcastChan, cmt.closeChan)
 	}
 	return cmt, nil
 }
@@ -90,8 +94,12 @@ func (c *Comet) Broadcast(arg *pb.BroadcastReq) {
 	c.broadcastChan <- arg
 }
 
+func (c *Comet) Kick(arg *pb.KeyReq) {
+	c.closeChan <- arg
+}
+
 // 處理訊息推送給comet server
-func (c *Comet) process(roomChan chan *pb.BroadcastRoomReq, broadcastChan chan *pb.BroadcastReq) {
+func (c *Comet) process(roomChan chan *pb.BroadcastRoomReq, broadcastChan chan *pb.BroadcastReq, closeChan chan *pb.KeyReq) {
 	for {
 		select {
 		// 多個房間推送
@@ -111,6 +119,11 @@ func (c *Comet) process(roomChan chan *pb.BroadcastRoomReq, broadcastChan chan *
 			})
 			if err != nil {
 				log.Error("grpc client push room", zap.Error(err), zap.Any("arg", roomArg))
+			}
+		case keysArg := <-closeChan:
+			_, err := c.client.Kick(context.Background(), keysArg)
+			if err != nil {
+				log.Error("grpc client kick", zap.Error(err), zap.Any("arg", keysArg))
 			}
 		case <-c.ctx.Done():
 			return

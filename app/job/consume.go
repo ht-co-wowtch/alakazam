@@ -2,6 +2,7 @@ package job
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
@@ -41,6 +42,8 @@ func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 	// 紅包
 	case logicpb.PushMsg_MONEY:
 		model = cometpb.OpMoney
+	case logicpb.PushMsg_Close:
+		return c.kick(pushMsg)
 	// 異常資料
 	default:
 		return fmt.Errorf("no match push type: %s", pushMsg.Type)
@@ -91,4 +94,23 @@ func (c *consume) delRoom(roomID int32) {
 	c.roomsMutex.Lock()
 	delete(c.rooms, roomID)
 	c.roomsMutex.Unlock()
+}
+
+func (c *consume) kick(pushMsg *logicpb.PushMsg) error {
+	msg := struct {
+		Message string `json:"message"`
+	}{
+		Message: pushMsg.Message,
+	}
+	b, _ := json.Marshal(msg)
+	for _, c := range c.servers {
+		c.Kick(&cometpb.KeyReq{
+			Proto: &cometpb.Proto{
+				Op:   cometpb.OpProtoFinish,
+				Body: b,
+			},
+			Key: pushMsg.Keys,
+		})
+	}
+	return nil
 }

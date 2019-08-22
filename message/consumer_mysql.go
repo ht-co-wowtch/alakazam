@@ -49,7 +49,7 @@ func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
 			)
 			return err
 		}
-	default:
+	case pb.PushMsg_ROOM, pb.PushMsg_TOP:
 		if _, err := tx.Exec(addMessage, msg.Seq, msg.Mid, msg.Message, sendAt); err != nil {
 			log.Error(
 				"insert message",
@@ -61,16 +61,20 @@ func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
 			return err
 		}
 	}
-	for _, rid := range msg.Room {
-		if _, err := tx.Exec(addRoomMessage, rid, msg.Seq, msg.Type, sendAt); err != nil {
-			log.Error(
-				"insert room message",
-				zap.Error(err),
-				zap.Int32("room", rid),
-				zap.Int64("msg_id", msg.Seq),
-			)
-			return err
+
+	if msg.Type != pb.PushMsg_Close {
+		for _, rid := range msg.Room {
+			if _, err := tx.Exec(addRoomMessage, rid, msg.Seq, msg.Type, sendAt); err != nil {
+				log.Error(
+					"insert room message",
+					zap.Error(err),
+					zap.Int32("room", rid),
+					zap.Int64("msg_id", msg.Seq),
+				)
+				return err
+			}
 		}
+		return tx.Commit()
 	}
-	return tx.Commit()
+	return nil
 }
