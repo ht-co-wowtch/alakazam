@@ -122,7 +122,6 @@ func TestRefreshUserExpire(t *testing.T) {
 
 	err := c.refreshExpire(uid)
 
-	assert.True(t, ok)
 	assert.Nil(t, err)
 
 	m := r.TTL(keyUid(uid)).Val()
