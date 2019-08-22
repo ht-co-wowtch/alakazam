@@ -11,24 +11,37 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"time"
 )
 
-func NewServer(c *conf.Config) (*grpc.Server, error) {
+func NewServer(ctx context.Context, c *conf.Config) (*grpc.Server, error) {
 	srv := rpc.New(c.RPCServer)
 	bs := make(map[int64]*models.Seq, 0)
 	db := models.NewStore(c.DB)
-	seqs, err := db.LoadSeq()
-	if err != nil {
-		return nil, err
-	}
-	for _, v := range seqs {
-		v.Cur = v.Max
-		bs[int64(v.Id)] = &v
-	}
-	pb.RegisterSeqServer(srv, &rpcServer{
+	rpcS := rpcServer{
 		bs: bs,
 		db: db,
-	})
+	}
+	if err := rpcS.Load(); err != nil {
+		return nil, err
+	}
+	go func() {
+		t := time.NewTicker(time.Minute * 10)
+
+		for {
+			select {
+			case <-t.C:
+				if err := rpcS.Load(); err != nil {
+					log.Error("load seq", zap.Error(err))
+				} else {
+					log.Info("load seq")
+				}
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+	pb.RegisterSeqServer(srv, &rpcS)
 	return srv, nil
 }
 
@@ -52,8 +65,8 @@ func (s *rpcServer) Ids(ctx context.Context, arg *pb.SeqReq) (*pb.SeqResp, error
 		return nil, errors.New("not seq code")
 	}
 	var seq int64
-	b.L.Lock()
-	defer b.L.Unlock()
+	b.Mu.Lock()
+	defer b.Mu.Unlock()
 	if seq = b.Cur + arg.Count; seq >= b.Max {
 		b.Max += b.Batch
 		ok, err := s.db.SyncSeq(b)
@@ -76,4 +89,18 @@ func (s *rpcServer) Create(ctx context.Context, info *pb.SeqCreateReq) (*pb.SeqC
 		return &pb.SeqCreateResp{}, err
 	}
 	return &pb.SeqCreateResp{Id: int64(id)}, nil
+}
+
+func (s *rpcServer) Load() error {
+	seqs, err := s.db.LoadSeq()
+	if err != nil {
+		return err
+	}
+	for _, v := range seqs {
+		v.Mu.Lock()
+		v.Cur = v.Max
+		s.bs[int64(v.Id)] = &v
+		v.Mu.Unlock()
+	}
+	return nil
 }

@@ -1,6 +1,7 @@
 package seq
 
 import (
+	"context"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/seq/api"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/seq/conf"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -9,11 +10,14 @@ import (
 )
 
 type Server struct {
+	ctx       context.Context
+	cancel    context.CancelFunc
 	rpcServer *grpc.Server
 }
 
 func New(c *conf.Config) *Server {
-	srv, err := api.NewServer(c)
+	ctx, cancel := context.WithCancel(context.Background())
+	srv, err := api.NewServer(ctx, c)
 	lis, err := net.Listen(c.RPCServer.Network, c.RPCServer.Addr)
 	if err != nil {
 		panic(err)
@@ -24,9 +28,14 @@ func New(c *conf.Config) *Server {
 		}
 	}()
 	log.Infof("rpc server port [%s]", c.RPCServer.Addr)
-	return &Server{rpcServer: srv}
+	return &Server{
+		ctx:       ctx,
+		cancel:    cancel,
+		rpcServer: srv,
+	}
 }
 
 func (s *Server) Close() {
+	s.cancel()
 	s.rpcServer.GracefulStop()
 }
