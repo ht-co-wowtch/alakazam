@@ -36,9 +36,10 @@ func New(conf *conf.Config) *Server {
 		panic(err)
 	}
 	messageProducer := message.NewProducer(conf.Kafka.Brokers, conf.Kafka.Topic, seqpb.NewSeqClient(seqCli), nil)
+	shield := message.NewShield(db)
 	memberCli := member.New(db, cache, cli)
 	roomCli := room.New(db, cache, memberCli, cli, 0)
-	httpServer := api.NewServer(conf.HTTPServer, memberCli, messageProducer, roomCli, cli)
+	httpServer := api.NewServer(conf.HTTPServer, memberCli, messageProducer, roomCli, cli, shield)
 	go func() {
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			panic(err)
