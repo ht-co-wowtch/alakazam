@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"time"
 )
@@ -54,7 +55,7 @@ const (
 func (s *Store) GetRoomMessage(roomId, lastMsgId int) (*Messages, error) {
 	rms := make([]RoomMessage, 0)
 
-	query := s.d.Table(&RoomMessage{}).
+	query := s.d.Table(fmt.Sprintf("room_messages_%02d", roomId%50)).
 		Where("`room_id` = ?", roomId)
 
 	if lastMsgId > 0 {
@@ -84,7 +85,7 @@ func (s *Store) GetRoomMessage(roomId, lastMsgId int) (*Messages, error) {
 
 	msgs := make([]Message, 0)
 	redMsgs := make([]RedEnvelopeMessage, 0)
-	if err := s.d.In("msg_id", msgId).Find(&msgs); err != nil {
+	if err := s.d.In("msg_id", msgId).Table(fmt.Sprintf("messages_%02d", roomId%50)).Find(&msgs); err != nil {
 		return nil, err
 	}
 	if err := s.d.In("msg_id", redMsgId).Find(&redMsgs); err != nil {
