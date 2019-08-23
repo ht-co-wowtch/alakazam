@@ -2,12 +2,9 @@ package member
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"gitlab.com/jetfueltw/cpw/micro/errdefs"
-	"strconv"
 	"time"
 )
 
@@ -53,24 +50,18 @@ func keyBanned(uid string) string {
 }
 
 // 儲存user資訊
-func (c *Cache) login(member *models.Member, key, roomId, server string) error {
+func (c *Cache) login(member *models.Member, key, server string) error {
 	b, err := json.Marshal(member)
 	if err != nil {
 		return err
 	}
 
-	uidKey := keyUid(member.Uid)
 	tx := c.c.Pipeline()
-	f := map[string]interface{}{
-		key:        roomId,
-		hServerKey: server,
-		hJsonKey:   b,
-	}
-	tx.HMSet(uidKey, f)
-	tx.Expire(uidKey, c.expire)
+
+	tx.Set(keyUid(member.Uid), b, c.expire)
 
 	uidWsKey := keyUidWs(member.Uid)
-	tx.HSet(uidWsKey, key, true)
+	tx.HSet(uidWsKey, key, server)
 	tx.Expire(uidWsKey, c.expire)
 
 	_, err = tx.Exec()
@@ -82,13 +73,11 @@ func (c *Cache) set(member *models.Member) error {
 	if err != nil {
 		return err
 	}
-	return c.c.HSet(keyUid(member.Uid), hJsonKey, b).Err()
+	return c.c.Set(keyUid(member.Uid), b, c.expire).Err()
 }
 
-var errUserNil = errors.New("get user cache data has nil")
-
 func (c *Cache) get(uid string) (*models.Member, error) {
-	b, err := c.c.HGet(keyUid(uid), hJsonKey).Bytes()
+	b, err := c.c.Get(keyUid(uid)).Bytes()
 	if err != nil {
 		return nil, err
 	}
@@ -119,39 +108,10 @@ type HMember struct {
 	IsMessage bool
 }
 
-func (c *Cache) getSession(uid string, key string) (HMember, error) {
-	res, err := c.c.HMGet(keyUid(uid), key, hJsonKey).Result()
-	if err != nil {
-		return HMember{}, err
-	}
-	for _, v := range res {
-		if v == nil {
-			return HMember{}, errdefs.InvalidParameter(errUserNil, 1)
-		}
-	}
-
-	var m models.Member
-	if err = json.Unmarshal([]byte(res[1].(string)), &m); err != nil {
-		return HMember{}, err
-	}
-
-	rid, err := strconv.Atoi(res[0].(string))
-	if err != nil {
-		return HMember{}, err
-	}
-	return HMember{
-		Mid:       m.Id,
-		Room:      rid,
-		Name:      m.Name,
-		Type:      m.Type,
-		IsMessage: m.IsMessage,
-	}, nil
-}
-
 // 移除user資訊
 // DEL : uid_{user id}
 func (c *Cache) logout(uid, key string) (bool, error) {
-	aff, err := c.c.HDel(keyUid(uid), key).Result()
+	aff, err := c.c.HDel(keyUidWs(uid), key).Result()
 	return aff >= 1, err
 }
 
@@ -178,7 +138,7 @@ func (c *Cache) getName(uid []string) ([]string, error) {
 	tx := c.c.Pipeline()
 	cmd := make([]*redis.StringCmd, len(uid))
 	for i, id := range uid {
-		cmd[i] = tx.HGet(keyUid(id), hJsonKey)
+		cmd[i] = tx.Get(keyUid(id))
 	}
 	_, err := tx.Exec()
 	if err != nil {
@@ -215,14 +175,5 @@ func (c *Cache) isBanned(uid string) (bool, error) {
 // 解除禁言
 func (c *Cache) delBanned(uid string) error {
 	_, err := c.c.Del(keyBanned(uid)).Result()
-	return err
-}
-
-// 更換房間
-func (c *Cache) changeRoom(uid, key, roomId string) error {
-	tx := c.c.Pipeline()
-	tx.HSet(keyUid(uid), key, roomId)
-	tx.Expire(keyUid(uid), c.expire)
-	_, err := tx.Exec()
 	return err
 }

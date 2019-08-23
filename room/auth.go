@@ -3,38 +3,34 @@ package room
 import (
 	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
+	"strconv"
 )
 
-func (r *Room) Auth(u *member.User) error {
-	var err error
-	u.RoomStatus, err = r.c.get(u.H.Room)
-	if err != nil && err != redis.Nil {
-		return err
-	}
-	if u.RoomStatus == 0 {
-		room, _, err := r.db.GetRoom(u.H.Room)
+func (r *Room) GetUserRoom(uid, rId string) (*models.Room, error) {
+	room, err := r.c.get(rId)
+	if room == nil {
+		if err != redis.Nil {
+			return nil, err
+		}
+
+		id, err := strconv.Atoi(rId)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		u.RoomStatus = room.Permission()
+
+		room, ok, err := r.db.GetRoom(id)
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
+			return nil, errors.ErrNoRows
+		}
 		if err := r.c.set(room); err != nil {
-			return err
+			log.Error("set room cache", zap.Error(err))
 		}
 	}
-	if models.IsBanned(u.RoomStatus) {
-		return errors.ErrRoomBanned
-	}
-	if !u.H.IsMessage {
-		return errors.ErrBanned
-	}
-	is, err := r.member.IsBanned(u.Uid)
-	if err != nil {
-		return err
-	}
-	if is {
-		return errors.ErrBanned
-	}
-	return nil
+	return room, nil
 }

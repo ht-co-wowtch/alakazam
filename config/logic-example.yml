@@ -20,6 +20,9 @@ grpc:
   seq:
     addr: :3120
 
+jwt:
+  authSecret: AxQxVJ3bEqLvzzWejkFxrhKkavQhY4Am
+
 # 三方應用接口 config
 nidoran:
   host: http://127.0.0.1:3005

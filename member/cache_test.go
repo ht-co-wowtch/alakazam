@@ -7,7 +7,6 @@ import (
 	goRedis "github.com/go-redis/redis"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/id"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"os"
@@ -89,15 +88,15 @@ func TestDelBanned(t *testing.T) {
 	assert.False(t, ok)
 }
 
-func TestSetLogin(t *testing.T) {
+func TestLogin(t *testing.T) {
 	uid := id.UUid32()
 	key := id.UUid32()
 	name := "test"
 	server := "server"
 	member := &models.Member{Id: 1, Uid: uid, Name: name, Type: models.Player, IsMessage: true}
-	err := c.login(member, key, "1", server)
+	err := c.login(member, key, server)
 
-	u := r.HGetAll(keyUid(uid)).Val()
+	u := r.Get(keyUid(uid)).Val()
 
 	b, err := json.Marshal(member)
 	if err != nil {
@@ -105,13 +104,20 @@ func TestSetLogin(t *testing.T) {
 	}
 
 	assert.Nil(t, err)
+	assert.Equal(t, string(b), u)
+
+	keys, err := r.HGetAll(keyUidWs(member.Uid)).Result()
+
+	assert.Nil(t, err)
 	assert.Equal(t, map[string]string{
-		key:        "1",
-		hJsonKey:   string(b),
-		hServerKey: server,
-	}, u)
+		key: server,
+	}, keys)
 
 	expire := r.TTL(keyUid(uid)).Val()
+
+	assert.Equal(t, c.expire, expire)
+
+	expire = r.TTL(keyUidWs(uid)).Val()
 
 	assert.Equal(t, c.expire, expire)
 }
@@ -119,62 +125,59 @@ func TestSetLogin(t *testing.T) {
 func TestRefreshUserExpire(t *testing.T) {
 	uid := id.UUid32()
 	r.Set(keyUid(uid), 1, time.Hour)
+	r.Set(keyUidWs(uid), 1, time.Hour)
 
 	err := c.refreshExpire(uid)
 
 	assert.Nil(t, err)
 
-	m := r.TTL(keyUid(uid)).Val()
+	uidT := r.TTL(keyUid(uid)).Val()
+	wsT := r.TTL(keyUidWs(uid)).Val()
 
-	assert.Equal(t, c.expire, m)
+	assert.Equal(t, c.expire, uidT)
+	assert.Equal(t, c.expire, wsT)
 }
 
 func TestDeleteUser(t *testing.T) {
 	uid := id.UUid32()
-	r.HSet(keyUid(uid), "key", "test")
+	r.HSet(keyUidWs(uid), "key1", "test")
+	r.HSet(keyUidWs(uid), "key2", "test")
 
-	ok, err := c.logout(uid, "key")
+	ok, err := c.logout(uid, "key1")
 
 	assert.Nil(t, err)
 	assert.True(t, ok)
+
+	keys, err := r.HGetAll(keyUidWs(uid)).Result()
+
+	assert.Nil(t, err)
+	assert.Equal(t, map[string]string{
+		"key2": "test",
+	}, keys)
 }
 
-func TestGetSession(t *testing.T) {
+func TestSetAndGet(t *testing.T) {
 	uid := id.UUid32()
-	key := id.UUid32()
 	name := "test"
 	member := &models.Member{Id: 1, Uid: uid, Name: name, Type: models.Player, IsMessage: true}
 
-	_ = c.login(member, key, "1", "test")
+	err := c.set(member)
+	assert.Nil(t, err)
 
-	h, err := c.getSession(uid, key)
+	m, err := c.get(member.Uid)
 
 	assert.Nil(t, err)
-	assert.Equal(t, 1, h.Mid)
-	assert.Equal(t, 1, h.Room)
-	assert.Equal(t, name, h.Name)
-	assert.Equal(t, 1, h.Mid)
-	assert.Equal(t, models.Player, h.Type)
-	assert.True(t, h.IsMessage)
-}
-
-func TestGetSessionByNil(t *testing.T) {
-	uid := id.UUid32()
-	key := id.UUid32()
-	name := "test"
-	member := &models.Member{Uid: uid, Name: name, Type: models.Player}
-
-	_ = c.login(member, key, "1", "test")
-
-	_, err := c.getSession(uid, "123")
-
-	assert.Equal(t, errdefs.InvalidParameter(errUserNil, 1), err)
+	assert.Equal(t, member.Id, m.Id)
+	assert.Equal(t, member.Uid, m.Uid)
+	assert.Equal(t, member.Name, m.Name)
+	assert.Equal(t, member.Type, m.Type)
+	assert.Equal(t, member.IsMessage, m.IsMessage)
 }
 
 func TestGetUserName(t *testing.T) {
 	uid := []string{"1", "2", "3", "4"}
 	for _, v := range uid {
-		if err := c.login(&models.Member{Uid: v, Name: v}, v, v, v); err != nil {
+		if err := c.login(&models.Member{Uid: v, Name: v}, v, v); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -183,22 +186,4 @@ func TestGetUserName(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, uid, name)
-}
-
-func TestChangeRoom(t *testing.T) {
-	uid := id.UUid32()
-	key := id.UUid32()
-	roomId := id.UUid32()
-
-	err := c.changeRoom(uid, key, roomId)
-
-	assert.Nil(t, err)
-
-	i := r.HGet(keyUid(uid), key).Val()
-
-	assert.Equal(t, roomId, i)
-
-	m := r.TTL(keyUid(uid)).Val()
-
-	assert.Equal(t, c.expire, m)
 }

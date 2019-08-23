@@ -1,6 +1,7 @@
 package room
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/alicebob/miniredis"
 	goRedis "github.com/go-redis/redis"
@@ -8,7 +9,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"os"
-	"strconv"
 	"testing"
 	"time"
 )
@@ -45,6 +45,7 @@ var (
 	amount = 500
 
 	room = models.Room{
+		Id:           1,
 		IsMessage:    true,
 		DayLimit:     day,
 		DmlLimit:     dml,
@@ -57,38 +58,25 @@ func TestSetRoom(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	m := r.HGetAll(keyRoom(room.Id)).Val()
+	m := r.Get(keyRoom("1")).Val()
 
-	assert.Equal(t, map[string]string{
-		hashPermissionKey:  "5",
-		hashLimitDayKey:    strconv.Itoa(day),
-		hashLimitDmlKey:    strconv.Itoa(dml),
-		hashLimitAmountKey: strconv.Itoa(amount),
-	}, m)
-
-	expire := r.TTL(keyRoom(room.Id)).Val()
-
-	assert.Equal(t, time.Hour, expire)
-}
-
-func TestGetRoomByMoney(t *testing.T) {
-	_ = c.set(room)
-
-	dy, dl, a, err := c.getMoney(room.Id)
+	b, err := json.Marshal(room)
 
 	assert.Nil(t, err)
-	assert.Equal(t, day, dy)
-	assert.Equal(t, dml, dl)
-	assert.Equal(t, amount, a)
+	assert.Equal(t, string(b), m)
+
+	expire := r.TTL(keyRoom("1")).Val()
+
+	assert.Equal(t, time.Hour, expire)
 }
 
 func TestGetRoom(t *testing.T) {
 	_ = c.set(room)
 
-	s, err := c.get(room.Id)
+	s, err := c.get("1")
 
 	assert.Nil(t, err)
-	assert.Equal(t, s, s)
+	assert.Equal(t, room, *s)
 }
 
 func TestAddServerOnline(t *testing.T) {

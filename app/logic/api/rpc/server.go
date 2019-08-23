@@ -52,7 +52,7 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 
 // 某client要中斷連線
 func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.DisconnectReply, error) {
-	has, err := s.room.Disconnect(req.Uid, req.Key, req.Server)
+	has, err := s.room.Disconnect(req.Uid, req.Key)
 	if err != nil {
 		log.Error("grpc disconnect", zap.Error(err), zap.String("uid", req.Uid))
 		return &pb.DisconnectReply{}, err
@@ -64,11 +64,7 @@ func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.Dis
 
 // user當前連線要切換房間
 func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.ChangeRoomReply, error) {
-	err := s.room.ChangeRoom(req.Uid, req.Key, req.RoomID)
-	if err != nil {
-		log.Error("grpc change room", zap.Error(err), zap.String("uid", req.Uid), zap.String("room_id", req.RoomID))
-	}
-	return &pb.ChangeRoomReply{}, err
+	return &pb.ChangeRoomReply{}, nil
 }
 
 // 重置user redis過期時間

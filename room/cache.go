@@ -22,73 +22,46 @@ func newCache(client *redis.Client) *Cache {
 
 const (
 	// 房間的前綴詞，用於存儲在redis當key
-	roomKey = "room_%d"
+	roomKey = "room_%s"
+
+	userRoomKey = "uid_room_%s"
 
 	// server name的前綴詞，用於存儲在redis當key
 	onlineKey = "server_%s"
 )
 
-func keyRoom(key int) string {
-	return fmt.Sprintf(roomKey, key)
+func keyRoom(id string) string {
+	return fmt.Sprintf(roomKey, id)
+}
+
+func keyUserRoom(id string) string {
+	return fmt.Sprintf(userRoomKey, id)
 }
 
 func keyServerOnline(key string) string {
 	return fmt.Sprintf(onlineKey, key)
 }
 
-const (
-	hashPermissionKey = "permission"
-
-	hashLimitDayKey = "day"
-
-	hashLimitAmountKey = "amount"
-
-	hashLimitDmlKey = "dml"
-)
-
 var (
 	roomExpired = time.Hour
 )
 
-func (c *Cache) get(id int) (int, error) {
-	return c.c.HGet(keyRoom(id), hashPermissionKey).Int()
-}
-
-func (c *Cache) getMoney(id int) (day, dml, deposit int, err error) {
-	r, err := c.c.HMGet(keyRoom(id), hashLimitDayKey, hashLimitDmlKey, hashLimitAmountKey).Result()
-	if err != nil {
-		return 0, 0, 0, err
-	}
-	for _, v := range r {
-		if v == nil {
-			return 0, 0, 0, fmt.Errorf("room: %s limit data is nil", id)
-		}
-	}
-	if day, err = strconv.Atoi(r[0].(string)); err != nil {
-		return 0, 0, 0, fmt.Errorf("cache day limit: %s error(%v)", r[0], err)
-	}
-	if dml, err = strconv.Atoi(r[1].(string)); err != nil {
-		return 0, 0, 0, fmt.Errorf("cache dml limit: %s error(%v)", r[1], err)
-	}
-	if deposit, err = strconv.Atoi(r[2].(string)); err != nil {
-		return 0, 0, 0, fmt.Errorf("cache deposit limit: %s error(%v)", r[2], err)
-	}
-	return day, dml, deposit, nil
-}
-
 func (c *Cache) set(room models.Room) error {
-	f := map[string]interface{}{
-		hashPermissionKey:  room.Permission(),
-		hashLimitDayKey:    room.DayLimit,
-		hashLimitDmlKey:    room.DmlLimit,
-		hashLimitAmountKey: room.DepositLimit,
+	b, err := json.Marshal(room)
+	if err != nil {
+		return err
 	}
-	key := keyRoom(room.Id)
-	tx := c.c.Pipeline()
-	tx.HMSet(key, f)
-	tx.Expire(key, roomExpired)
-	_, err := tx.Exec()
-	return err
+	return c.c.Set(keyRoom(strconv.Itoa(room.Id)), b, roomExpired).Err()
+}
+
+func (c *Cache) get(id string) (*models.Room, error) {
+	b, err := c.c.Get(keyRoom(id)).Bytes()
+	if err != nil {
+		return nil, err
+	}
+	var r models.Room
+	err = json.Unmarshal(b, &r)
+	return &r, err
 }
 
 type Online struct {

@@ -3,6 +3,7 @@ package http
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
@@ -25,10 +26,11 @@ type httpServer struct {
 	history *message.History
 	room    *room.Room
 	client  *client.Client
+	jwt     *member.Jwt
 }
 
-func NewServer(conf *web.Conf, member *member.Member, message *message.Producer, room *room.Room, client *client.Client, history *message.History) *http.Server {
-	if conf.Debug {
+func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, room *room.Room, client *client.Client, history *message.History) *http.Server {
+	if conf.HTTPServer.Debug {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
@@ -37,23 +39,24 @@ func NewServer(conf *web.Conf, member *member.Member, message *message.Producer,
 	engine.Use(RecoverHandler)
 
 	srv := httpServer{
-		member:  member,
+		member:  me,
 		message: message,
 		history: history,
 		room:    room,
 		client:  client,
+		jwt:     member.NewJwt(conf.JwtSecret),
 	}
 
 	c := cors.Config{
 		AllowCredentials: true,
-		AllowOrigins:     conf.Cors.Origins,
+		AllowOrigins:     conf.HTTPServer.Cors.Origins,
 		AllowMethods:     []string{"GET", "POST", "PUT"},
-		AllowHeaders:     conf.Cors.Headers,
+		AllowHeaders:     conf.HTTPServer.Cors.Headers,
 		MaxAge:           time.Minute * 5,
 	}
-	engine.Use(cors.New(c), AuthenticationHandler)
+	engine.Use(cors.New(c), srv.authenticationHandler)
 	handler(engine, srv)
-	return web.NewServer(conf, engine)
+	return web.NewServer(conf.HTTPServer, engine)
 }
 
 func handler(e *gin.Engine, s httpServer) {
@@ -65,7 +68,7 @@ func handler(e *gin.Engine, s httpServer) {
 	e.GET("/message/:room", ErrHandler(s.getMessage))
 }
 
-func AuthenticationHandler(c *gin.Context) {
+func (h *httpServer) authenticationHandler(c *gin.Context) {
 	authorization := c.GetHeader("Authorization")
 	token := strings.Split(authorization, " ")
 
@@ -74,8 +77,21 @@ func AuthenticationHandler(c *gin.Context) {
 		c.AbortWithStatusJSON(e.Status, e)
 		return
 	}
+	claims, err := h.jwt.Parse(token[1])
+	if err != nil {
+		e := errdefs.Err(err)
+		c.AbortWithStatusJSON(e.Status, e)
+		return
+	}
 
-	c.Set("token", token[1])
+	uid, ok := claims["uid"]
+	if !ok {
+		log.Error("token not found uid")
+		c.AbortWithStatusJSON(http.StatusForbidden, errors.ErrTokenUid)
+		return
+	}
+
+	c.Set("uid", uid.(string))
 	c.Next()
 }
 

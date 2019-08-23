@@ -26,7 +26,8 @@ func New(db *models.Store, cache *redis.Client, cli *client.Client) *Member {
 
 // 一個聊天室會員的基本資料
 type User struct {
-	Uid        string  `json:"uid" binding:"required,len=32"`
+	Uid        string  `json:"-"`
+	RoomId     string  `json:"room_id"`
 	Key        string  `json:"key" binding:"required,len=36"`
 	RoomStatus int     `json:"-"`
 	H          HMember `json:"-"`
@@ -67,7 +68,7 @@ func (m *Member) Login(token, roomId, server string) (*models.Member, string, er
 	key := uuid.New().String()
 
 	// 儲存user資料至redis
-	if err := m.c.login(u, key, roomId, server); err != nil {
+	if err := m.c.login(u, key, server); err != nil {
 		return nil, "", err
 	} else {
 		log.Info(
@@ -98,17 +99,8 @@ func (m *Member) GetKeys(uid string) ([]string, error) {
 	return m.c.getKey(uid)
 }
 
-// 會員在線認證
-func (m *Member) Auth(u *User) error {
-	hash, err := m.c.getSession(u.Uid, u.Key)
-	if err != nil {
-		return err
-	}
-	if hash.Name == "" {
-		return errors.ErrLogin
-	}
-	u.H = hash
-	return nil
+func (m *Member) Get(uid string) (*models.Member, error) {
+	return m.c.get(uid)
 }
 
 func (m *Member) GetUserName(uid []string) ([]string, error) {
@@ -129,8 +121,4 @@ func (m *Member) Heartbeat(uid string) error {
 		return err
 	}
 	return nil
-}
-
-func (m *Member) ChangeRoom(uid, key, roomId string) error {
-	return m.c.changeRoom(uid, key, roomId)
 }

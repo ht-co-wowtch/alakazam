@@ -32,6 +32,100 @@ func New(db *models.Store, cache *redis.Client, member *member.Member, cli *clie
 	}
 }
 
+type ConnectReply struct {
+	// user uid
+	Uid string
+
+	// websocket connection key
+	Key string
+
+	// user name
+	Name string
+
+	// key所在的房間id
+	RoomId string
+
+	// 前台心跳週期時間
+	Hb int64
+
+	// 操作權限
+	Permission int
+}
+
+var v *validator.Validate
+
+func init() {
+	v = validator.New(&validator.Config{TagName: "binding"})
+}
+
+func (r *Room) Connect(server string, token []byte) (*ConnectReply, error) {
+	var params struct {
+		// 帳務中心+版的認證token
+		Token string `json:"token" binding:"required"`
+
+		// client要進入的room
+		RoomID string `json:"room_id" binding:"required"`
+	}
+
+	if err := json.Unmarshal(token, &params); err != nil {
+		return nil, err
+	}
+	if err := v.Struct(&params); err != nil {
+		return nil, err
+	}
+
+	rid, err := strconv.Atoi(params.RoomID)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := r.Get(rid); err != nil {
+		return nil, err
+	}
+
+	connectReply := new(ConnectReply)
+	user, key, err := r.member.Login(params.Token, params.RoomID, server)
+	if err != nil {
+		return nil, err
+	}
+
+	connectReply.Uid = user.Uid
+	connectReply.Name = user.Name
+	connectReply.Permission = user.Status()
+	connectReply.RoomId = params.RoomID
+	connectReply.Key = key
+	// 告知comet連線多久沒心跳就直接close
+	connectReply.Hb = r.heartbeat
+	return connectReply, nil
+}
+
+// redis清除某人連線資訊
+func (r *Room) Disconnect(uid, key string) (has bool, err error) {
+	return r.member.Logout(uid, key)
+}
+
+// 更新某人redis資訊的過期時間
+func (l *Room) Heartbeat(uid, key, roomId, name, server string) error {
+	return l.member.Heartbeat(uid)
+}
+
+// restart redis內存的每個房間總人數
+func (l *Room) RenewOnline(server string, roomCount map[string]int32) (map[string]int32, error) {
+	online := &Online{
+		Server:    server,
+		RoomCount: roomCount,
+		Updated:   time.Now().Unix(),
+	}
+	if err := l.c.addOnline(server, online); err != nil {
+		return nil, err
+	}
+	return roomCount, nil
+}
+
+func (r *Room) GetOnline(server string) (*Online, error) {
+	return r.c.getOnline(server)
+}
+
 type Status struct {
 	// 是否禁言
 	IsMessage bool `json:"is_message"`
@@ -119,119 +213,19 @@ func (l *Room) update(room models.Room) error {
 	return nil
 }
 
-func (l *Room) IsMessage(rid int, status int, uid, token string) error {
-	if !models.IsMoney(status) {
-		return nil
-	}
-	day, dml, deposit, err := l.c.getMoney(rid)
+func (r *Room) IsMessage(rid int, uid string) error {
+	room, err := r.Get(rid)
 	if err != nil {
 		return err
 	}
-	money, err := l.cli.GetDepositAndDml(day, uid, token)
+	// TODO 三方需改不需要token
+	money, err := r.cli.GetDepositAndDml(room.DayLimit, uid, "token")
 	if err != nil {
 		return err
 	}
-	if float64(dml) > money.Dml || float64(deposit) > money.Deposit {
-		e := errors.New(fmt.Sprintf("您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元", day, deposit, dml))
+	if float64(room.DmlLimit) > money.Dml || float64(room.DepositLimit) > money.Deposit {
+		e := errors.New(fmt.Sprintf("您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元", room.DayLimit, deposit, dml))
 		return errdefs.Unauthorized(e, 4)
 	}
 	return nil
-}
-
-type ConnectReply struct {
-	// user uid
-	Uid string
-
-	// websocket connection key
-	Key string
-
-	// user name
-	Name string
-
-	// key所在的房間id
-	RoomId string
-
-	// 前台心跳週期時間
-	Hb int64
-
-	// 操作權限
-	Permission int
-}
-
-var v *validator.Validate
-
-func init() {
-	v = validator.New(&validator.Config{TagName: "binding"})
-}
-
-// redis紀錄某人連線資訊
-func (l *Room) Connect(server string, token []byte) (*ConnectReply, error) {
-	var params struct {
-		// 帳務中心+版的認證token
-		Token string `json:"token" binding:"required"`
-
-		// client要進入的room
-		RoomID string `json:"room_id" binding:"required"`
-	}
-
-	if err := json.Unmarshal(token, &params); err != nil {
-		return nil, err
-	}
-	if err := v.Struct(&params); err != nil {
-		return nil, err
-	}
-
-	rid, err := strconv.Atoi(params.RoomID)
-	if err != nil {
-		return nil, err
-	}
-	if _, err := l.Get(rid); err != nil {
-		return nil, err
-	}
-
-	r := new(ConnectReply)
-	user, key, err := l.member.Login(params.Token, params.RoomID, server)
-	if err != nil {
-		return nil, err
-	}
-	r.Uid = user.Uid
-	r.Name = user.Name
-	r.Permission = user.Status()
-	r.RoomId = params.RoomID
-	r.Key = key
-	// 告知comet連線多久沒心跳就直接close
-	r.Hb = l.heartbeat
-	return r, nil
-}
-
-// redis清除某人連線資訊
-func (l *Room) Disconnect(uid, key, server string) (has bool, err error) {
-	return l.member.Logout(uid, key)
-}
-
-// user key更換房間
-func (l *Room) ChangeRoom(uid, key, roomId string) error {
-	return l.member.ChangeRoom(uid, key, roomId)
-}
-
-// 更新某人redis資訊的過期時間
-func (l *Room) Heartbeat(uid, key, roomId, name, server string) error {
-	return l.member.Heartbeat(uid)
-}
-
-// restart redis內存的每個房間總人數
-func (l *Room) RenewOnline(server string, roomCount map[string]int32) (map[string]int32, error) {
-	online := &Online{
-		Server:    server,
-		RoomCount: roomCount,
-		Updated:   time.Now().Unix(),
-	}
-	if err := l.c.addOnline(server, online); err != nil {
-		return nil, err
-	}
-	return roomCount, nil
-}
-
-func (r *Room) GetOnline(server string) (*Online, error) {
-	return r.c.getOnline(server)
 }

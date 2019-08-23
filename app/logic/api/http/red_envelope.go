@@ -32,7 +32,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	if err := c.ShouldBindJSON(arg); err != nil {
 		return err
 	}
-	if err := s.member.Auth(&arg.User); err != nil {
+	if err := s.member.Get(&arg.User); err != nil {
 		return err
 	}
 	if arg.H.Type != models.Player {
@@ -88,7 +88,7 @@ func (s *httpServer) takeRedEnvelope(c *gin.Context) error {
 	if err := c.ShouldBindJSON(arg); err != nil {
 		return err
 	}
-	if err := s.member.Auth(&arg.User); err != nil {
+	if err := s.member.Get(&arg.User); err != nil {
 		return err
 	}
 	if arg.H.Type != models.Player {
