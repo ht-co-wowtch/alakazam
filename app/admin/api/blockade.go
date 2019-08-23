@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
@@ -36,7 +37,7 @@ func (s *httpServer) setBlockade(c *gin.Context) error {
 		})
 	} else {
 		c.JSON(http.StatusOK, gin.H{
-			"msg": "封锁成功，將執行中断该用户所在的%d个连线",
+			"msg": fmt.Sprintf("封锁成功，將執行中断该用户所在的%d个连线", len(keys)),
 		})
 	}
 	return nil
