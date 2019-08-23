@@ -17,6 +17,13 @@ func TestFilter_Adds(t *testing.T) {
 	assert.Equal(t, 2, len(filter.trie.root.children))
 }
 
+func TestFilter_Delete(t *testing.T) {
+	filter := New()
+	filter.Adds([]string{"A", "B", "C"})
+
+	assert.True(t, filter.Delete("C"))
+}
+
 func TestFilter(t *testing.T) {
 	filter := New()
 	filter.Add("test")

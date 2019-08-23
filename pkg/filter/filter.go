@@ -34,6 +34,13 @@ func (f *Filter) Adds(words []string) {
 	f.mu.Unlock()
 }
 
+func (f *Filter) Delete(words string) bool {
+	f.mu.Lock()
+	ok := f.trie.delete(words)
+	f.mu.Unlock()
+	return ok
+}
+
 func (f *Filter) Load(rd io.Reader) error {
 	buf := bufio.NewReader(rd)
 	f.mu.Lock()

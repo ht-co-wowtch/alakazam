@@ -59,6 +59,18 @@ func TestAdds(t *testing.T) {
 	assert.Equal(t, 2, len(trie.root.children))
 }
 
+func TestDelete(t *testing.T) {
+	trie := newTrie()
+	trie.add("test")
+	trie.add("abc")
+	trie.add("123")
+
+	assert.False(t, trie.delete("ab"))
+	assert.Equal(t, 3, len(trie.root.children))
+	assert.True(t, trie.delete("abc"))
+	assert.Equal(t, 2, len(trie.root.children))
+}
+
 func TestAddReplace(t *testing.T) {
 	trie := newTrie()
 

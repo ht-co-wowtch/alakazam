@@ -31,6 +31,30 @@ func (tree *trie) add(word string) {
 	}
 }
 
+// 刪除敏感詞
+func (tree *trie) delete(word string) bool {
+	var current = tree.root
+	var runes = []rune(word)
+	var firstNode rune
+
+	for _, r := range runes {
+		ch, ok := current.children[r]
+		if !ok {
+			break
+		}
+		if ch.isEnd == true {
+			firstNode = runes[0]
+			break
+		}
+		current = ch
+	}
+	if firstNode != 0 {
+		delete(tree.root.children, firstNode)
+		return true
+	}
+	return false
+}
+
 // 替換敏感詞
 func (tree *trie) Replace(text string, character rune) string {
 	position := tree.findPosition(text)
