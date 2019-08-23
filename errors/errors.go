@@ -10,6 +10,7 @@ import (
 
 var (
 	ErrPublishAt = errdefs.InvalidParameter(New("预定发送时间不能大于现在"), 0)
+	ErrExist     = errdefs.InvalidParameter(New("资料已存在"), 1)
 
 	ErrLogin         = errdefs.Unauthorized(New("请先登入会员"))
 	ErrRoomBanned    = errdefs.Unauthorized(New("聊天室目前禁言状态，无法发言"), 1)

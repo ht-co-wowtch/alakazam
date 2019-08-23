@@ -6,13 +6,17 @@ import (
 	"strconv"
 )
 
-type shieldReq struct {
-	Id      int    `json:"id"`
+type createShieldReq struct {
+	Context string `json:"context" binding:"required"`
+}
+
+type updateShieldReq struct {
+	Id      int    `json:"id" binding:"required"`
 	Context string `json:"context" binding:"required"`
 }
 
 func (s *httpServer) CreateShield(c *gin.Context) error {
-	var shirld shieldReq
+	var shirld createShieldReq
 	if err := c.ShouldBindJSON(&shirld); err != nil {
 		return err
 	}
@@ -27,7 +31,7 @@ func (s *httpServer) CreateShield(c *gin.Context) error {
 }
 
 func (s *httpServer) UpdateShield(c *gin.Context) error {
-	var shirld shieldReq
+	var shirld updateShieldReq
 	if err := c.ShouldBindJSON(&shirld); err != nil {
 		return err
 	}

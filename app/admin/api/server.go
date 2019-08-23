@@ -15,13 +15,13 @@ import (
 type httpServer struct {
 	member       *member.Member
 	message      *message.Producer
-	shield       message.Shield
+	shield       message.Filter
 	delayMessage *message.DelayProducer
 	room         *room.Room
 	nidoran      *client.Client
 }
 
-func NewServer(conf *web.Conf, member *member.Member, producer *message.Producer, room *room.Room, nidoran *client.Client, shield message.Shield) *http.Server {
+func NewServer(conf *web.Conf, member *member.Member, producer *message.Producer, room *room.Room, nidoran *client.Client, shield message.Filter) *http.Server {
 	if conf.Debug {
 		gin.SetMode(gin.DebugMode)
 	} else {
