@@ -1,4 +1,4 @@
-package sensitive
+package filter
 
 import (
 	"github.com/stretchr/testify/assert"

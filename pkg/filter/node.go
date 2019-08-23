@@ -1,4 +1,4 @@
-package sensitive
+package filter
 
 // Trie樹節點
 type node struct {

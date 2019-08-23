@@ -1,4 +1,4 @@
-package sensitive
+package filter
 
 // Trie樹，又叫字典樹、前缀樹
 type trie struct {
