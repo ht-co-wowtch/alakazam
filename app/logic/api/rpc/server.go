@@ -44,7 +44,7 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 		Uid:       r.Uid,
 		Key:       r.Key,
 		Name:      r.Name,
-		RoomID:    r.RoomId,
+		RoomID:    int32(r.RoomId),
 		Heartbeat: r.Hb,
 		Status:    int32(r.Permission),
 	}, nil
@@ -69,8 +69,8 @@ func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.Cha
 
 // 重置user redis過期時間
 func (s *server) Heartbeat(ctx context.Context, req *pb.HeartbeatReq) (*pb.HeartbeatReply, error) {
-	if err := s.room.Heartbeat(req.Uid, req.Key, req.RoomId, req.Name, req.Server); err != nil {
-		log.Error("grpc heart beat", zap.Error(err), zap.String("uid", req.Uid), zap.String("room_id", req.RoomId))
+	if err := s.room.Heartbeat(req.Uid, req.Key, req.Name, req.Server); err != nil {
+		log.Error("grpc heart beat", zap.Error(err), zap.String("uid", req.Uid), zap.Int32("room_id", req.RoomId))
 		return &pb.HeartbeatReply{}, err
 	}
 	return &pb.HeartbeatReply{}, nil

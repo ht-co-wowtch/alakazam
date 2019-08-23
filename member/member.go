@@ -33,7 +33,7 @@ type User struct {
 	H          HMember `json:"-"`
 }
 
-func (m *Member) Login(token, roomId, server string) (*models.Member, string, error) {
+func (m *Member) Login(rid int, token, server string) (*models.Member, string, error) {
 	user, err := m.cli.Auth(token)
 	if err != nil {
 		return nil, "", err
@@ -75,7 +75,7 @@ func (m *Member) Login(token, roomId, server string) (*models.Member, string, er
 			"conn connected",
 			zap.String("key", key),
 			zap.String("uid", u.Uid),
-			zap.String("room_id", roomId),
+			zap.Int("room_id", rid),
 			zap.String("server", server),
 		)
 	}

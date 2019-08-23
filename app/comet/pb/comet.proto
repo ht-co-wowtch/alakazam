@@ -23,7 +23,7 @@ message BroadcastReq{
 message BroadcastReply{}
 
 message BroadcastRoomReq {
-    string roomID = 1;
+    int32 roomID = 1;
     Proto proto = 2;
 }
 
@@ -33,7 +33,7 @@ message RoomsReq{}
 
 message RoomsReply {
     option (gogoproto.goproto_stringer) = false;
-    map<string,bool> rooms = 1;
+    map<int32,bool> rooms = 1;
 }
 
 message KeyReq {

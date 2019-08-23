@@ -42,7 +42,7 @@ func (s *Server) Heartbeat(ctx context.Context, ch *Channel) (err error) {
 }
 
 // 告知logic service現在房間的在線人數
-func (s *Server) RenewOnline(ctx context.Context, serverID string, rommCount map[string]int32) (allRoom map[string]int32, err error) {
+func (s *Server) RenewOnline(ctx context.Context, serverID string, rommCount map[int32]int32) (allRoom map[int32]int32, err error) {
 	reply, err := s.logic.RenewOnline(ctx, &logicpb.OnlineReq{
 		Server:    s.name,
 		RoomCount: rommCount,
@@ -54,7 +54,7 @@ func (s *Server) RenewOnline(ctx context.Context, serverID string, rommCount map
 }
 
 type changeRoom struct {
-	RoomId string `json:"room_id"`
+	RoomId int32 `json:"room_id"`
 }
 
 // 處理Proto相關邏輯

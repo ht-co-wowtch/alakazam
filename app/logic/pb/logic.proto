@@ -39,7 +39,7 @@ message ConnectReply {
     string uid = 1;
     string key = 2;
     string name = 3;
-    string roomID = 4;
+    int32 roomID = 4;
     int64 heartbeat = 5;
     int32 status = 6;
 }
@@ -53,7 +53,7 @@ message DisconnectReq {
 message ChangeRoomReq {
      string uid = 1;
      string key = 2;
-     string roomID = 3;
+     int32 roomID = 3;
 }
 
 message ChangeRoomReply {}
@@ -66,7 +66,7 @@ message HeartbeatReq {
     string uid = 1;
     string key = 2;
     string name = 3;
-    string roomId = 4;
+    int32 roomId = 4;
     string server = 5;
 }
 
@@ -76,12 +76,12 @@ message HeartbeatReply {
 message OnlineReq {
     option (gogoproto.goproto_stringer) = false;
     string server = 1;
-    map<string, int32> roomCount = 2;
+    map<int32, int32> roomCount = 2;
 }
 
 message OnlineReply {
     option (gogoproto.goproto_stringer) = false;
-    map<string, int32> allRoomCount = 1;
+    map<int32, int32> allRoomCount = 1;
 }
 
 service Logic {

@@ -10,7 +10,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gopkg.in/go-playground/validator.v8"
-	"strconv"
 	"time"
 )
 
@@ -43,7 +42,7 @@ type ConnectReply struct {
 	Name string
 
 	// key所在的房間id
-	RoomId string
+	RoomId int
 
 	// 前台心跳週期時間
 	Hb int64
@@ -64,7 +63,7 @@ func (r *Room) Connect(server string, token []byte) (*ConnectReply, error) {
 		Token string `json:"token" binding:"required"`
 
 		// client要進入的room
-		RoomID string `json:"room_id" binding:"required"`
+		RoomID int `json:"room_id" binding:"required"`
 	}
 
 	if err := json.Unmarshal(token, &params); err != nil {
@@ -73,18 +72,12 @@ func (r *Room) Connect(server string, token []byte) (*ConnectReply, error) {
 	if err := v.Struct(&params); err != nil {
 		return nil, err
 	}
-
-	rid, err := strconv.Atoi(params.RoomID)
-	if err != nil {
-		return nil, err
-	}
-
-	if _, err := r.Get(rid); err != nil {
+	if _, err := r.Get(params.RoomID); err != nil {
 		return nil, err
 	}
 
 	connectReply := new(ConnectReply)
-	user, key, err := r.member.Login(params.Token, params.RoomID, server)
+	user, key, err := r.member.Login(params.RoomID, params.Token, server)
 	if err != nil {
 		return nil, err
 	}
@@ -105,12 +98,12 @@ func (r *Room) Disconnect(uid, key string) (has bool, err error) {
 }
 
 // 更新某人redis資訊的過期時間
-func (l *Room) Heartbeat(uid, key, roomId, name, server string) error {
+func (l *Room) Heartbeat(uid, key, name, server string) error {
 	return l.member.Heartbeat(uid)
 }
 
 // restart redis內存的每個房間總人數
-func (l *Room) RenewOnline(server string, roomCount map[string]int32) (map[string]int32, error) {
+func (l *Room) RenewOnline(server string, roomCount map[int32]int32) (map[int32]int32, error) {
 	online := &Online{
 		Server:    server,
 		RoomCount: roomCount,
@@ -224,7 +217,7 @@ func (r *Room) IsMessage(rid int, uid string) error {
 		return err
 	}
 	if float64(room.DmlLimit) > money.Dml || float64(room.DepositLimit) > money.Deposit {
-		e := errors.New(fmt.Sprintf("您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元", room.DayLimit, deposit, dml))
+		e := errors.New(fmt.Sprintf("您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元", room.DayLimit, room.DepositLimit, room.DmlLimit))
 		return errdefs.Unauthorized(e, 4)
 	}
 	return nil

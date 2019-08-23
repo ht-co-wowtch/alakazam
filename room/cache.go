@@ -65,9 +65,9 @@ func (c *Cache) get(id string) (*models.Room, error) {
 }
 
 type Online struct {
-	Server    string           `json:"server"`
-	RoomCount map[string]int32 `json:"room_count"`
-	Updated   int64            `json:"updated"`
+	Server    string          `json:"server"`
+	RoomCount map[int32]int32 `json:"room_count"`
+	Updated   int64           `json:"updated"`
 }
 
 // 以HSET方式儲存房間人數
@@ -76,12 +76,12 @@ type Online struct {
 // hashKey則是將room name以City Hash32做hash後得出一個數字，以這個數字當hashKey
 // TODO 需要在思考是否需要這樣的機制
 func (c *Cache) addOnline(server string, online *Online) error {
-	roomsMap := map[uint32]map[string]int32{}
+	roomsMap := map[uint32]map[int32]int32{}
 	for room, count := range online.RoomCount {
-		rMap := roomsMap[cityhash.CityHash32([]byte(room), uint32(len(room)))%8]
+		rMap := roomsMap[cityhash.CityHash32([]byte(strconv.Itoa(int(room))), uint32(room))%8]
 		if rMap == nil {
-			rMap = make(map[string]int32)
-			roomsMap[cityhash.CityHash32([]byte(room), uint32(len(room)))%8] = rMap
+			rMap = make(map[int32]int32)
+			roomsMap[cityhash.CityHash32([]byte(strconv.Itoa(int(room))), uint32(room))%8] = rMap
 		}
 		rMap[room] = count
 	}
@@ -114,7 +114,7 @@ func (c *Cache) addServerOnline(key string, hashKey string, online *Online) erro
 // 根據server name取線上各房間總人數
 // TODO 需要在思考需不需要比對Updated
 func (c *Cache) getOnline(server string) (*Online, error) {
-	online := &Online{RoomCount: map[string]int32{}}
+	online := &Online{RoomCount: map[int32]int32{}}
 	// server name
 	key := keyServerOnline(server)
 	for i := 0; i < 8; i++ {

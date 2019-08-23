@@ -73,7 +73,7 @@ func (s *server) Broadcast(ctx context.Context, req *pb.BroadcastReq) (*pb.Broad
 
 // 單一房間推送
 func (s *server) BroadcastRoom(ctx context.Context, req *pb.BroadcastRoomReq) (*pb.BroadcastRoomReply, error) {
-	if req.Proto == nil || req.RoomID == "" {
+	if req.Proto == nil || req.RoomID == 0 {
 		return nil, errors.ErrBroadCastRoomArg
 	}
 	for _, bucket := range s.srv.Buckets() {
@@ -85,7 +85,7 @@ func (s *server) BroadcastRoom(ctx context.Context, req *pb.BroadcastRoomReq) (*
 // server上有哪些房間
 func (s *server) Rooms(ctx context.Context, req *pb.RoomsReq) (*pb.RoomsReply, error) {
 	var (
-		roomIds = make(map[string]bool)
+		roomIds = make(map[int32]bool)
 	)
 	for _, bucket := range s.srv.Buckets() {
 		for roomID := range bucket.Rooms() {

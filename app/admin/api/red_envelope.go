@@ -6,7 +6,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -40,7 +39,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	}
 	result, err := s.nidoran.GiveRedEnvelopeForAdmin(client.RedEnvelopeAdmin{
 		RedEnvelope: client.RedEnvelope{
-			RoomId:    strconv.Itoa(o.RoomId),
+			RoomId:    o.RoomId,
 			Message:   o.Message,
 			Type:      o.Type,
 			Amount:    o.Amount,

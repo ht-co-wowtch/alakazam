@@ -38,7 +38,7 @@ type Server struct {
 	rpc        *grpc.Server
 
 	// 房間在線人數，key是房間id
-	roomCount map[string]int32
+	roomCount map[int32]int32
 }
 
 func New(c *conf.Config) *Server {
@@ -116,7 +116,7 @@ func (s *Server) onlineproc() {
 // 從redis拿出現在各房間人數
 func (s *Server) loadOnline() (err error) {
 	var (
-		roomCount = make(map[string]int32)
+		roomCount = make(map[int32]int32)
 	)
 	var online *room.Online
 	// TODO hostname 先寫死 後續需要註冊中心來sync

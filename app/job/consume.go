@@ -9,7 +9,6 @@ import (
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
-	"strconv"
 	"sync"
 )
 
@@ -59,7 +58,7 @@ func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 // 房間訊息推送給comet
 func (c *consume) broadcastRoomRawBytes(roomID int32, body []byte) (err error) {
 	args := cometpb.BroadcastRoomReq{
-		RoomID: strconv.Itoa(int(roomID)),
+		RoomID: roomID,
 		Proto: &cometpb.Proto{
 			Op:   cometpb.OpBatchRaw,
 			Body: body,

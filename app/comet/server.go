@@ -98,10 +98,10 @@ func (s *Server) Close() (err error) {
 func (s *Server) onlineproc() {
 	for {
 		var (
-			allRoomsCount map[string]int32
+			allRoomsCount map[int32]int32
 			err           error
 		)
-		roomCount := make(map[string]int32)
+		roomCount := make(map[int32]int32)
 
 		// 因為房間會分散在不同的bucket所以需要統計
 		for _, bucket := range s.buckets {
