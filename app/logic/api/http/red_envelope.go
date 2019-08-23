@@ -45,8 +45,8 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		Count:     arg.Count,
 		ExpireMin: 120,
 	}
-	// TODO 三方改成不用token
-	reply, err := s.client.GiveRedEnvelope(give, "token")
+
+	reply, err := s.client.GiveRedEnvelope(give, c.GetString("token"))
 	if err != nil {
 		return err
 	}
@@ -94,7 +94,7 @@ func (s *httpServer) takeRedEnvelope(c *gin.Context) error {
 		return errors.ErrLogin
 	}
 	// TODO 三方改成不用token
-	reply, err := s.client.TakeRedEnvelope(arg.Token, "token")
+	reply, err := s.client.TakeRedEnvelope(arg.Token, c.GetString("token"))
 	if err != nil {
 		return err
 	}

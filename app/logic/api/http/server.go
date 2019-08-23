@@ -54,21 +54,21 @@ func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, 
 		AllowHeaders:     conf.HTTPServer.Cors.Headers,
 		MaxAge:           time.Minute * 5,
 	}
-	engine.Use(cors.New(c), srv.authenticationHandler)
+	engine.Use(cors.New(c), authenticationHandler)
 	handler(engine, srv)
 	return web.NewServer(conf.HTTPServer, engine)
 }
 
 func handler(e *gin.Engine, s httpServer) {
-	e.POST("/push/room", ErrHandler(s.pushRoom))
-	e.POST("/red-envelope", ErrHandler(s.giveRedEnvelope))
-	e.PUT("/red-envelope", ErrHandler(s.takeRedEnvelope))
+	e.POST("/push/room", s.authUid, ErrHandler(s.pushRoom))
+	e.POST("/red-envelope", s.authUid, ErrHandler(s.giveRedEnvelope))
+	e.PUT("/red-envelope", s.authUid, ErrHandler(s.takeRedEnvelope))
 	e.GET("/red-envelope/:id", ErrHandler(s.getRedEnvelopeDetail))
 	e.GET("/red-envelope-consume/:id", ErrHandler(s.getRedEnvelope))
 	e.GET("/message/:room", ErrHandler(s.getMessage))
 }
 
-func (h *httpServer) authenticationHandler(c *gin.Context) {
+func authenticationHandler(c *gin.Context) {
 	authorization := c.GetHeader("Authorization")
 	token := strings.Split(authorization, " ")
 
@@ -77,7 +77,13 @@ func (h *httpServer) authenticationHandler(c *gin.Context) {
 		c.AbortWithStatusJSON(e.Status, e)
 		return
 	}
-	claims, err := h.jwt.Parse(token[1])
+
+	c.Set("token", token[1])
+	c.Next()
+}
+
+func (h *httpServer) authUid(c *gin.Context) {
+	claims, err := h.jwt.Parse(c.GetString("token"))
 	if err != nil {
 		e := errdefs.Err(err)
 		c.AbortWithStatusJSON(e.Status, e)
@@ -92,7 +98,6 @@ func (h *httpServer) authenticationHandler(c *gin.Context) {
 	}
 
 	c.Set("uid", uid.(string))
-	c.Next()
 }
 
 var errInternalServer = errdefs.New(0, 0, "应用程序错误")
