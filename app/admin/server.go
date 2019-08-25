@@ -38,7 +38,7 @@ func New(conf *conf.Config) *Server {
 	messageProducer := message.NewProducer(conf.Kafka.Brokers, conf.Kafka.Topic, seqpb.NewSeqClient(seqCli), nil, db)
 	shield := message.NewFilter(db)
 	memberCli := member.New(db, cache, cli)
-	roomCli := room.New(db, cache, memberCli, cli, 0)
+	roomCli := room.New(db, cache, memberCli, cli)
 	httpServer := api.NewServer(conf.HTTPServer, memberCli, messageProducer, roomCli, cli, shield)
 	go func() {
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {

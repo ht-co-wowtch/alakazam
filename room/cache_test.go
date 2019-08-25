@@ -44,7 +44,7 @@ var (
 	dml    = 100
 	amount = 500
 
-	room = models.Room{
+	roomTest = models.Room{
 		Id:           1,
 		IsMessage:    true,
 		DayLimit:     day,
@@ -54,13 +54,13 @@ var (
 )
 
 func TestSetRoom(t *testing.T) {
-	err := c.set(room)
+	err := c.set(roomTest)
 
 	assert.Nil(t, err)
 
 	m := r.Get(keyRoom("1")).Val()
 
-	b, err := json.Marshal(room)
+	b, err := json.Marshal(roomTest)
 
 	assert.Nil(t, err)
 	assert.Equal(t, string(b), m)
@@ -71,12 +71,19 @@ func TestSetRoom(t *testing.T) {
 }
 
 func TestGetRoom(t *testing.T) {
-	_ = c.set(room)
+	_ = c.set(roomTest)
 
 	s, err := c.get("1")
 
 	assert.Nil(t, err)
-	assert.Equal(t, room, *s)
+	assert.Equal(t, roomTest, *s)
+}
+
+func TestGetNil(t *testing.T) {
+	s, err := c.get("1")
+
+	assert.Nil(t, err)
+	assert.Nil(t, s)
 }
 
 func TestAddServerOnline(t *testing.T) {

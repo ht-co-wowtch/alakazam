@@ -26,7 +26,6 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-
 	if err := s.room.IsMessage(p.RoomId, user.Uid); err != nil {
 		return err
 	}

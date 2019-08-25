@@ -51,6 +51,9 @@ func (c *Cache) set(room models.Room) error {
 func (c *Cache) get(id string) (*models.Room, error) {
 	b, err := c.c.Get(keyRoom(id)).Bytes()
 	if err != nil {
+		if err == redis.Nil {
+			return nil, nil
+		}
 		return nil, err
 	}
 	var r models.Room

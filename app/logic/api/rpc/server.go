@@ -15,14 +15,15 @@ import (
 )
 
 // New logic grpc server
-func New(c *rpc.Conf, room *room.Room) *grpc.Server {
+func New(c *rpc.Conf, room room.Chat, heartbeat int64) *grpc.Server {
 	srv := rpc.New(c)
-	pb.RegisterLogicServer(srv, &server{room})
+	pb.RegisterLogicServer(srv, &server{room: room, HeartbeatNanosec: heartbeat})
 	return srv
 }
 
 type server struct {
-	room *room.Room
+	room             room.Chat
+	HeartbeatNanosec int64
 }
 
 var _ pb.LogicServer = &server{}
@@ -46,7 +47,7 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 		Key:           key,
 		Name:          member.Name,
 		RoomID:        int32(rid),
-		Heartbeat:     s.room.HeartbeatNanosec,
+		Heartbeat:     s.HeartbeatNanosec,
 		IsBlockade:    member.IsBlockade,
 		IsMessage:     member.IsMessage,
 		IsRedEnvelope: member.Type == models.Player,

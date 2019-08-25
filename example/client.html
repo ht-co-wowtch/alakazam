@@ -353,7 +353,7 @@
             url: 'http://' + host + ':3111' + '/push/room',
             async: false,
             data: JSON.stringify({
-                room_id: document.getElementById("rid").value,
+                room_id: parseInt(document.getElementById("rid").value, 10),
                 message: document.getElementById("btn-input").value
             }),
             headers: {
@@ -372,12 +372,13 @@
     function sendRed() {
         var amount = new Number(document.getElementById("red_amount").value);
         var count = new Number(document.getElementById("red_count").value)
+
         $.ajax({
             type: "post",
             url: 'http://' + host + ':3111' + '/red-envelope',
             async: false,
             data: JSON.stringify({
-                room_id: document.getElementById("rid").value,
+                room_id: parseInt(document.getElementById("rid").value, 10),
                 amount: amount,
                 count: count,
                 message: document.getElementById("red_message").value,

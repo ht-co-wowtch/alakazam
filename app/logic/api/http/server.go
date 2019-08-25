@@ -24,12 +24,12 @@ type httpServer struct {
 	member  *member.Member
 	message *message.Producer
 	history *message.History
-	room    *room.Room
+	room    room.Chat
 	client  *client.Client
 	jwt     *member.Jwt
 }
 
-func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, room *room.Room, client *client.Client, history *message.History) *http.Server {
+func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, room room.Chat, client *client.Client, history *message.History) *http.Server {
 	if conf.HTTPServer.Debug {
 		gin.SetMode(gin.DebugMode)
 	} else {
