@@ -16,12 +16,6 @@ const (
 
 	// user 禁言key的前綴詞
 	bannedKey = "b_%s"
-
-	// hash table json key
-	hJsonKey = "data"
-
-	// user hash table server key
-	hServerKey = "server"
 )
 
 type Cache struct {

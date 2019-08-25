@@ -24,18 +24,12 @@ const (
 	// 房間的前綴詞，用於存儲在redis當key
 	roomKey = "room_%s"
 
-	userRoomKey = "uid_room_%s"
-
 	// server name的前綴詞，用於存儲在redis當key
 	onlineKey = "server_%s"
 )
 
 func keyRoom(id string) string {
 	return fmt.Sprintf(roomKey, id)
-}
-
-func keyUserRoom(id string) string {
-	return fmt.Sprintf(userRoomKey, id)
 }
 
 func keyServerOnline(key string) string {

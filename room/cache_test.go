@@ -83,7 +83,7 @@ func TestAddServerOnline(t *testing.T) {
 	unix := time.Now().Unix()
 	server := &Online{
 		Server:    "123",
-		RoomCount: map[string]int32{"1": 1, "2": 2},
+		RoomCount: map[int32]int32{1: 1, 2: 2},
 		Updated:   unix,
 	}
 	err := c.addOnline("123", server)
