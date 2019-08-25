@@ -45,7 +45,7 @@ type Member struct {
 	Avatar     string    `json:"avatar"`
 	Type       int       `json:"type"`
 	IsMessage  bool      `json:"is_message"`
-	IsBlockade bool      `json:"-"`
+	IsBlockade bool      `json:"is_blockade"`
 	CreateAt   time.Time `json:"-"`
 }
 

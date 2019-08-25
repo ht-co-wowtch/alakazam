@@ -14,20 +14,20 @@ import (
 )
 
 type Room struct {
-	db        *models.Store
-	c         *Cache
-	member    *member.Member
-	cli       *client.Client
-	heartbeat int64
+	db               *models.Store
+	c                *Cache
+	member           *member.Member
+	cli              *client.Client
+	HeartbeatNanosec int64
 }
 
 func New(db *models.Store, cache *redis.Client, member *member.Member, cli *client.Client, heartbeat int64) *Room {
 	return &Room{
-		db:        db,
-		c:         newCache(cache),
-		member:    member,
-		cli:       cli,
-		heartbeat: heartbeat,
+		db:               db,
+		c:                newCache(cache),
+		member:           member,
+		cli:              cli,
+		HeartbeatNanosec: heartbeat,
 	}
 }
 
@@ -57,7 +57,7 @@ func init() {
 	v = validator.New(&validator.Config{TagName: "binding"})
 }
 
-func (r *Room) Connect(server string, token []byte) (*ConnectReply, error) {
+func (r *Room) Connect(server string, token []byte) (*models.Member, string, int, error) {
 	var params struct {
 		// 帳務中心+版的認證token
 		Token string `json:"token" binding:"required"`
@@ -67,29 +67,20 @@ func (r *Room) Connect(server string, token []byte) (*ConnectReply, error) {
 	}
 
 	if err := json.Unmarshal(token, &params); err != nil {
-		return nil, err
+		return nil, "", 0, err
 	}
 	if err := v.Struct(&params); err != nil {
-		return nil, err
+		return nil, "", 0, err
 	}
 	if _, err := r.Get(params.RoomID); err != nil {
-		return nil, err
+		return nil, "", 0, err
 	}
 
-	connectReply := new(ConnectReply)
 	user, key, err := r.member.Login(params.RoomID, params.Token, server)
 	if err != nil {
-		return nil, err
+		return nil, "", 0, err
 	}
-
-	connectReply.Uid = user.Uid
-	connectReply.Name = user.Name
-	connectReply.Permission = user.Status()
-	connectReply.RoomId = params.RoomID
-	connectReply.Key = key
-	// 告知comet連線多久沒心跳就直接close
-	connectReply.Hb = r.heartbeat
-	return connectReply, nil
+	return user, key, params.RoomID, nil
 }
 
 // redis清除某人連線資訊

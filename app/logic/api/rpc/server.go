@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
@@ -33,7 +34,7 @@ func (s *server) Ping(ctx context.Context, req *pb.PingReq) (*pb.PingReply, erro
 
 // 某client要做連線
 func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectReply, error) {
-	r, err := s.room.Connect(req.Server, req.Token)
+	member, key, rid, err := s.room.Connect(req.Server, req.Token)
 	if err != nil {
 		if _, ok := err.(*errdefs.Error); !ok {
 			log.Error("grpc connect", zap.Error(err), zap.String("data", string(req.Token)))
@@ -41,12 +42,14 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 		return &pb.ConnectReply{}, err
 	}
 	return &pb.ConnectReply{
-		Uid:       r.Uid,
-		Key:       r.Key,
-		Name:      r.Name,
-		RoomID:    int32(r.RoomId),
-		Heartbeat: r.Hb,
-		Status:    int32(r.Permission),
+		Uid:           member.Uid,
+		Key:           key,
+		Name:          member.Name,
+		RoomID:        int32(rid),
+		Heartbeat:     s.room.HeartbeatNanosec,
+		IsBlockade:    member.IsBlockade,
+		IsMessage:     member.IsMessage,
+		IsRedEnvelope: member.Type == models.Player,
 	}, nil
 }
 

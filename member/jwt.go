@@ -7,10 +7,10 @@ import (
 )
 
 type Jwt struct {
-	secret string
+	secret []byte
 }
 
-func NewJwt(secret string) *Jwt {
+func NewJwt(secret []byte) *Jwt {
 	return &Jwt{
 		secret: secret,
 	}

@@ -38,6 +38,9 @@ func (m *Member) Login(rid int, token, server string) (*models.Member, string, e
 	if err != nil {
 		return nil, "", err
 	}
+	if user.Uid == "" {
+		return nil, "", errors.New("无此帐号")
+	}
 
 	u, ok, err := m.db.Find(user.Uid)
 	if err != nil {

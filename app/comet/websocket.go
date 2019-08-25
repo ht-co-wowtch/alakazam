@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	xtime "gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
@@ -377,7 +376,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 	if err != nil {
 		return 0, time.Duration(0), err
 	}
-	if c.Status == models.Blockade {
+	if c.IsBlockade {
 		if e := authReply(ws, p, blockadeMessage); e != nil {
 			log.Warn("auth reply", zap.Error(e), zap.String("uid", c.Uid), zap.Int32("room_id", c.RoomID))
 		}
@@ -399,8 +398,8 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 		Key:    c.Key,
 		RoomId: c.RoomID,
 	}
-	reply.Permission.IsBanned = models.IsBanned(int(c.Status))
-	reply.Permission.IsRedEnvelope = models.IsRedEnvelope(int(c.Status))
+	reply.Permission.IsBanned = !c.IsMessage
+	reply.Permission.IsRedEnvelope = c.IsRedEnvelope
 
 	b, err := json.Marshal(reply)
 	if err != nil {

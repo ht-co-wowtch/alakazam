@@ -41,7 +41,9 @@ message ConnectReply {
     string name = 3;
     int32 roomID = 4;
     int64 heartbeat = 5;
-    int32 status = 6;
+    bool isBlockade = 6;
+    bool isMessage = 7;
+    bool isRedEnvelope = 8;
 }
 
 message DisconnectReq {
