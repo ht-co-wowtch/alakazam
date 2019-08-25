@@ -26,11 +26,10 @@ func New(db *models.Store, cache *redis.Client, cli *client.Client) *Member {
 
 // 一個聊天室會員的基本資料
 type User struct {
-	Uid        string  `json:"-"`
-	RoomId     string  `json:"room_id"`
-	Key        string  `json:"key" binding:"required,len=36"`
-	RoomStatus int     `json:"-"`
-	H          HMember `json:"-"`
+	Uid        string `json:"-"`
+	RoomId     string `json:"room_id"`
+	Key        string `json:"key" binding:"required,len=36"`
+	RoomStatus int    `json:"-"`
 }
 
 func (m *Member) Login(rid int, token, server string) (*models.Member, string, error) {
@@ -71,7 +70,9 @@ func (m *Member) Login(rid int, token, server string) (*models.Member, string, e
 	key := uuid.New().String()
 
 	// 儲存user資料至redis
-	if err := m.c.login(u, key, server); err != nil {
+	// TODO ok
+	ok, err = m.c.login(u, key, server)
+	if err != nil {
 		return nil, "", err
 	} else {
 		log.Info(
@@ -94,7 +95,11 @@ func (m *Member) Kick(uid string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = m.c.delete(uid)
+	ok, err := m.c.delete(uid)
+	if !ok {
+		// TODO error
+		return nil, err
+	}
 	return keys, err
 }
 

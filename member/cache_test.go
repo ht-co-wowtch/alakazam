@@ -43,20 +43,22 @@ func fatalTestError(fmtStr string, args ...interface{}) {
 
 func TestSetBanned(t *testing.T) {
 	uid := id.UUid32()
-	err := c.set(&models.Member{
+	ok, err := c.set(&models.Member{
 		Uid: uid,
 	})
 	assert.Nil(t, err)
+	assert.True(t, ok)
 
-	err = c.setBanned(uid, time.Duration(10)*time.Second)
+	ok, err = c.setBanned(uid, time.Duration(10)*time.Second)
 	assert.Nil(t, err)
+	assert.True(t, ok)
 
 	unix, err := r.Get(keyBanned(uid)).Int64()
 	ex := time.Unix(unix, 0)
 	assert.Nil(t, err)
 	assert.False(t, ex.IsZero())
 
-	ok, err := c.isBanned(uid)
+	ok, err = c.isBanned(uid)
 	assert.Nil(t, err)
 	assert.True(t, ok)
 
@@ -74,16 +76,19 @@ func TestIsBannedByFalse(t *testing.T) {
 
 func TestDelBanned(t *testing.T) {
 	uid := "1"
-	err := c.set(&models.Member{Uid: uid, IsMessage: true})
+	ok, err := c.set(&models.Member{Uid: uid, IsMessage: true})
 	assert.Nil(t, err)
+	assert.True(t, ok)
 
-	err = c.setBanned(uid, time.Minute)
+	ok, err = c.setBanned(uid, time.Minute)
 	assert.Nil(t, err)
+	assert.True(t, ok)
 
-	err = c.delBanned(uid)
+	ok, err = c.delBanned(uid)
 	assert.Nil(t, err)
+	assert.True(t, ok)
 
-	ok, err := c.isBanned(uid)
+	ok, err = c.isBanned(uid)
 	assert.Nil(t, err)
 	assert.False(t, ok)
 }
@@ -94,7 +99,7 @@ func TestLogin(t *testing.T) {
 	name := "test"
 	server := "server"
 	member := &models.Member{Id: 1, Uid: uid, Name: name, Type: models.Player, IsMessage: true}
-	err := c.login(member, key, server)
+	ok, err := c.login(member, key, server)
 
 	u := r.Get(keyUid(uid)).Val()
 
@@ -105,6 +110,7 @@ func TestLogin(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, string(b), u)
+	assert.True(t, ok)
 
 	keys, err := r.HGetAll(keyUidWs(member.Uid)).Result()
 
@@ -161,8 +167,9 @@ func TestSetAndGet(t *testing.T) {
 	name := "test"
 	member := &models.Member{Id: 1, Uid: uid, Name: name, Type: models.Player, IsMessage: true}
 
-	err := c.set(member)
+	ok, err := c.set(member)
 	assert.Nil(t, err)
+	assert.True(t, ok)
 
 	m, err := c.get(member.Uid)
 
@@ -177,7 +184,7 @@ func TestSetAndGet(t *testing.T) {
 func TestGetUserName(t *testing.T) {
 	uid := []string{"1", "2", "3", "4"}
 	for _, v := range uid {
-		if err := c.login(&models.Member{Uid: v, Name: v}, v, v); err != nil {
+		if _, err := c.login(&models.Member{Uid: v, Name: v}, v, v); err != nil {
 			t.Fatal(err)
 		}
 	}

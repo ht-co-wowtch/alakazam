@@ -17,7 +17,12 @@ func (m *Member) SetBanned(uid string, sec int, isSystem bool) error {
 	}
 	expire := time.Duration(sec) * time.Second
 	if sec > 0 {
-		if err := m.c.setBanned(uid, expire); err != nil {
+		ok, err := m.c.setBanned(uid, expire)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			// TODO error
 			return err
 		}
 	} else if sec == -1 {
@@ -31,7 +36,12 @@ func (m *Member) SetBanned(uid string, sec int, isSystem bool) error {
 		expire = time.Duration(0)
 
 		me.IsMessage = false
-		if err := m.c.set(me); err != nil {
+		ok, err := m.c.set(me)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			// TODO
 			return err
 		}
 	}
@@ -84,17 +94,7 @@ func (m *Member) SetBannedForSystem(uid string, sec int) (bool, error) {
 }
 
 func (m *Member) IsBanned(uid string) (bool, error) {
-	ok, err := m.c.isBanned(uid)
-	if err != nil {
-		return false, err
-	}
-	if ok {
-		return true, nil
-	}
-	if err := m.c.delBanned(uid); err != nil {
-		return true, err
-	}
-	return false, nil
+	return m.c.isBanned(uid)
 }
 
 func (m *Member) RemoveBanned(uid string) error {
@@ -105,8 +105,10 @@ func (m *Member) RemoveBanned(uid string) error {
 	if !ok {
 		return errors.ErrNoRows
 	}
-	if err := m.c.delBanned(uid); err != nil {
-		return err
+	ok, err = m.c.delBanned(uid)
+	if !ok {
+		// TODO error
+		return errors.ErrNoRows
 	}
 	if !me.IsMessage {
 		aff, err := m.db.UpdateIsMessage(me.Id, true)
@@ -118,7 +120,12 @@ func (m *Member) RemoveBanned(uid string) error {
 		}
 
 		me.IsMessage = true
-		if err := m.c.set(me); err != nil {
+		ok, err := m.c.set(me)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			// TODO error
 			return err
 		}
 	}
