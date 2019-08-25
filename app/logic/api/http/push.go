@@ -7,11 +7,10 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"net/http"
-	"strconv"
 )
 
 type messageReq struct {
-	RoomId string `json:"room_id" binding:"required,max=30"`
+	RoomId int `json:"room_id" binding:"required,max=30"`
 
 	// user push message
 	Message string `json:"message" binding:"required,max=100"`
@@ -27,16 +26,13 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	rid, err := strconv.Atoi(p.RoomId)
-	if err != nil {
-		return err
-	}
-	if err := s.room.IsMessage(rid, user.Uid); err != nil {
+
+	if err := s.room.IsMessage(p.RoomId, user.Uid); err != nil {
 		return err
 	}
 
 	msg := message.Messages{
-		Rooms:   []int32{int32(rid)},
+		Rooms:   []int32{int32(p.RoomId)},
 		Mid:     int64(user.Id),
 		Uid:     user.Uid,
 		Name:    user.Name,

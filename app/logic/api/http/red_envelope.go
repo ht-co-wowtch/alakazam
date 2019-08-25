@@ -10,7 +10,7 @@ import (
 )
 
 type giveRedEnvelopeReq struct {
-	RoomId int32 `json:"room_id" binding:"required"`
+	RoomId int `json:"room_id" binding:"required"`
 
 	// 單包金額 or 總金額 看Type種類決定
 	Amount int `json:"amount" binding:"required"`
@@ -38,7 +38,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		return errors.ErrLogin
 	}
 	give := client.RedEnvelope{
-		RoomId:    int(arg.RoomId),
+		RoomId:    arg.RoomId,
 		Message:   arg.Message,
 		Type:      arg.Type,
 		Amount:    arg.Amount,
@@ -53,7 +53,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 
 	msg := message.RedEnvelopeMessage{
 		Messages: message.Messages{
-			Rooms:   []int32{arg.RoomId},
+			Rooms:   []int32{int32(arg.RoomId)},
 			Mid:     int64(user.Id),
 			Uid:     user.Uid,
 			Name:    user.Name,
