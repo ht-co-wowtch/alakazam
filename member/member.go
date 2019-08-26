@@ -113,6 +113,12 @@ func (m *Member) GetKeys(uid string) ([]string, error) {
 func (m *Member) GetSession(uid string) (*models.Member, error) {
 	member, err := m.c.get(uid)
 	if err != nil {
+		if err == redis.Nil {
+			return nil, errors.ErrLogin
+		}
+		return nil, err
+	}
+	if member.Type == models.Guest {
 		return nil, errors.ErrLogin
 	}
 	if !member.IsMessage {
