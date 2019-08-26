@@ -37,7 +37,7 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 	member, key, rid, err := s.room.Connect(req.Server, req.Token)
 	if err != nil {
 		log.Error("grpc connect", zap.Error(err), zap.String("data", string(req.Token)))
-		return &pb.ConnectReply{}, e
+		return &pb.ConnectReply{}, err
 	}
 	return &pb.ConnectReply{
 		Uid:           member.Uid,
