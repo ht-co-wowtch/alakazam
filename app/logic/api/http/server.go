@@ -137,7 +137,7 @@ func ErrHandler(f handlerFunc) gin.HandlerFunc {
 					zap.String("path", c.Request.URL.Path),
 					zap.String("rawQuery", c.Request.URL.RawQuery),
 					zap.String("method", c.Request.Method),
-					zap.Error(e.Err),
+					zap.Error(err),
 				)
 			}
 			c.JSON(e.Status, e)

@@ -61,8 +61,8 @@ func init() {
 	errdefs.SetOutput(output{})
 
 	validation.Set(validation.Required, "栏位必填")
-	validation.Set(validation.Min, "栏位长度至少")
-	validation.Set(validation.Max, "栏位长度最大")
+	validation.Set(validation.Min, "栏位最大值或长度至少")
+	validation.Set(validation.Max, "栏位最大值或长度最大")
 	validation.Set(validation.Len, "栏位长度必须是")
 	validation.Set(validation.Lt, "栏位必须小于")
 	validation.Set(validation.Lte, "栏位必须小于或等于")
@@ -82,11 +82,11 @@ func (m output) JsonUnmarshalType(e *json.UnmarshalTypeError) interface{} {
 	}
 }
 
-func (m output) InternalServer(e error) string {
+func (m output) GetInternalServer() string {
 	return "应用程序错误"
 }
 
-func (m output) Error(e *errdefs.Error) interface{} {
+func (m output) Error(e *errdefs.Error) string {
 	switch e.Code {
 	case BalanceCode:
 		return "您的余额不足发红包"
@@ -104,11 +104,7 @@ func (m output) Error(e *errdefs.Error) interface{} {
 }
 
 func (m output) Other(err error) string {
-	switch e := err.(type) {
-	case Error:
-		return e.Message
-	}
-	return "操作失败"
+	return ""
 }
 
 type Error struct {
