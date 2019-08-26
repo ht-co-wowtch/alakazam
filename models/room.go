@@ -1,17 +1,13 @@
 package models
 
 import (
+	"database/sql"
 	"github.com/go-xorm/xorm"
 	"time"
 )
 
-const (
-	money = 4
-)
-
-// 是否有充值&打碼量限制
-func IsMoney(status int) bool {
-	return (money & status) == money
+type IChat interface {
+	GetRoom(id int) (Room, error)
 }
 
 type Room struct {
@@ -43,20 +39,6 @@ type Room struct {
 	CreateAt time.Time `json:"-"`
 }
 
-func (r *Room) Permission() int {
-	if r.Id == 0 {
-		return MessageStatus
-	}
-	var permission int
-	if r.IsMessage {
-		permission += MessageStatus
-	}
-	if r.DayLimit > 0 && r.DmlLimit+r.DepositLimit > 0 {
-		permission += money
-	}
-	return permission
-}
-
 func (r *Room) TableName() string {
 	return "rooms"
 }
@@ -79,10 +61,13 @@ func (s *Store) UpdateRoom(room Room) (int64, error) {
 		Update(&room)
 }
 
-func (s *Store) GetRoom(roomId int) (Room, bool, error) {
+func (s *Store) GetRoom(roomId int) (Room, error) {
 	r := Room{}
 	ok, err := s.d.Where("id = ?", roomId).Get(&r)
-	return r, ok, err
+	if !ok {
+		return r, sql.ErrNoRows
+	}
+	return r, err
 }
 
 func (s *Store) DeleteRoom(id int) (int64, error) {

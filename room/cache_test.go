@@ -15,7 +15,7 @@ import (
 
 var (
 	r *goRedis.Client
-	c *Cache
+	c *cache
 )
 
 func TestMain(m *testing.M) {
@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 	r = redis.New(&redis.Conf{
 		Addr: s.Addr(),
 	})
-	c = &Cache{
+	c = &cache{
 		c: r,
 	}
 	exitStatus := m.Run()
@@ -58,14 +58,14 @@ func TestSetRoom(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	m := r.Get(keyRoom("1")).Val()
+	m := r.Get(keyRoom(1)).Val()
 
 	b, err := json.Marshal(roomTest)
 
 	assert.Nil(t, err)
 	assert.Equal(t, string(b), m)
 
-	expire := r.TTL(keyRoom("1")).Val()
+	expire := r.TTL(keyRoom(1)).Val()
 
 	assert.Equal(t, time.Hour, expire)
 }
@@ -73,14 +73,14 @@ func TestSetRoom(t *testing.T) {
 func TestGetRoom(t *testing.T) {
 	_ = c.set(roomTest)
 
-	s, err := c.get("1")
+	s, err := c.get(1)
 
 	assert.Nil(t, err)
-	assert.Equal(t, roomTest, *s)
+	assert.Equal(t, roomTest, s)
 }
 
 func TestGetNil(t *testing.T) {
-	s, err := c.get("1")
+	s, err := c.get(1)
 
 	assert.Nil(t, err)
 	assert.Nil(t, s)

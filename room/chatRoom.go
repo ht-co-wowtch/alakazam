@@ -1,6 +1,7 @@
 package room
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis"
@@ -9,8 +10,9 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"gopkg.in/go-playground/validator.v8"
-	"strconv"
 	"time"
 )
 
@@ -29,13 +31,13 @@ type Chat interface {
 }
 
 type chat struct {
-	cache  *Cache
-	db     *models.Store
-	member *member.Member
+	cache  Cache
+	db     models.IChat
+	member member.Chat
 	cli    *client.Client
 }
 
-func NewChat(db *models.Store, cache *redis.Client, member *member.Member, cli *client.Client) Chat {
+func NewChat(db models.IChat, cache *redis.Client, member member.Chat, cli *client.Client) Chat {
 	return &chat{
 		db:     db,
 		cache:  newCache(cache),
@@ -43,6 +45,12 @@ func NewChat(db *models.Store, cache *redis.Client, member *member.Member, cli *
 		cli:    cli,
 	}
 }
+
+var (
+	errNoRoom       = status.Error(codes.NotFound, "room not found")
+	errSetRoomCache = status.Error(codes.Internal, "set room cache")
+	errRoomClose    = status.Error(codes.NotFound, "room is close")
+)
 
 func (c *chat) Connect(server string, token []byte) (*models.Member, string, int, error) {
 	var params struct {
@@ -54,48 +62,54 @@ func (c *chat) Connect(server string, token []byte) (*models.Member, string, int
 	}
 
 	if err := json.Unmarshal(token, &params); err != nil {
-		return nil, "", 0, err
+		return nil, "", 0, status.Error(codes.InvalidArgument, err.Error())
 	}
 	if err := v.Struct(&params); err != nil {
-		return nil, "", 0, err
+		return nil, "", 0, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	room, err := c.cache.get(strconv.Itoa(params.RoomID))
+	room, err := c.cache.get(params.RoomID)
+
 	if err != nil {
-		return nil, "", 0, err
-	}
-	if room == nil {
-		r, ok, err := c.db.GetRoom(params.RoomID)
+		if err != redis.Nil {
+			return nil, "", 0, status.Error(codes.Internal, err.Error())
+		}
+
+		room, err = c.db.GetRoom(params.RoomID)
 		if err != nil {
-			return nil, "", 0, err
+			if err == sql.ErrNoRows {
+				return nil, "", 0, errNoRoom
+			}
+			return nil, "", 0, status.Error(codes.Internal, err.Error())
 		}
-		if !ok {
-			// TODO error
-			return nil, "", 0, errors.New("房間不存在")
-		}
-		if err := c.cache.set(r); err != nil {
-			// TODO error
-			return nil, "", 0, errors.New("讀取房間失敗")
+		if err := c.cache.set(room); err != nil {
+			return nil, "", 0, errSetRoomCache
 		}
 	}
-	if ! room.Status {
-		// TODO error
-		return nil, "", 0, errors.New("房間目前關閉中")
+	if !room.Status {
+		return nil, "", 0, errRoomClose
 	}
 
 	user, key, err := c.member.Login(params.RoomID, params.Token, server)
 	if err != nil {
-		return nil, "", 0, err
+		return nil, "", 0, status.Error(codes.Internal, err.Error())
 	}
 	return user, key, params.RoomID, nil
 }
 
 func (r *chat) Disconnect(uid, key string) (bool, error) {
-	return r.member.Logout(uid, key)
+	ok, err := r.member.Logout(uid, key)
+	if err != nil {
+		return ok, status.Error(codes.Internal, err.Error())
+	}
+	return ok, nil
 }
 
 func (c *chat) Heartbeat(uid, key, name, server string) error {
-	return c.member.Heartbeat(uid)
+	if err := c.member.Heartbeat(uid); err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+	return nil
 }
 
 func (c *chat) RenewOnline(server string, roomCount map[int32]int32) (map[int32]int32, error) {
@@ -105,19 +119,19 @@ func (c *chat) RenewOnline(server string, roomCount map[int32]int32) (map[int32]
 		Updated:   time.Now().Unix(),
 	}
 	if err := c.cache.addOnline(server, online); err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return roomCount, nil
 }
 
 func (r *chat) IsMessage(rid int, uid string) error {
-	room, err := r.cache.get(strconv.Itoa(rid))
+	room, err := r.cache.get(rid)
 	if err != nil {
+		if err == redis.Nil {
+			// TODO error
+			return errors.New("房間讀取錯誤")
+		}
 		return err
-	}
-	if room == nil {
-		// TODO error
-		return errors.New("房間讀取錯誤")
 	}
 	money, err := r.cli.GetDepositAndDml(room.DayLimit, uid)
 	if err != nil {

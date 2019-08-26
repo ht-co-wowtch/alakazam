@@ -5,7 +5,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
-	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
@@ -37,10 +36,8 @@ func (s *server) Ping(ctx context.Context, req *pb.PingReq) (*pb.PingReply, erro
 func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectReply, error) {
 	member, key, rid, err := s.room.Connect(req.Server, req.Token)
 	if err != nil {
-		if _, ok := err.(*errdefs.Error); !ok {
-			log.Error("grpc connect", zap.Error(err), zap.String("data", string(req.Token)))
-		}
-		return &pb.ConnectReply{}, err
+		log.Error("grpc connect", zap.Error(err), zap.String("data", string(req.Token)))
+		return &pb.ConnectReply{}, e
 	}
 	return &pb.ConnectReply{
 		Uid:           member.Uid,

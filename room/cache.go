@@ -10,25 +10,32 @@ import (
 	"time"
 )
 
-type Cache struct {
+type Cache interface {
+	set(room models.Room) error
+	get(id int) (models.Room, error)
+	addOnline(server string, online *Online) error
+	getOnline(server string) (*Online, error)
+}
+
+type cache struct {
 	c *redis.Client
 }
 
-func newCache(client *redis.Client) *Cache {
-	return &Cache{
+func newCache(client *redis.Client) Cache {
+	return &cache{
 		c: client,
 	}
 }
 
 const (
 	// 房間的前綴詞，用於存儲在redis當key
-	roomKey = "room_%s"
+	roomKey = "room_%d"
 
 	// server name的前綴詞，用於存儲在redis當key
 	onlineKey = "server_%s"
 )
 
-func keyRoom(id string) string {
+func keyRoom(id int) string {
 	return fmt.Sprintf(roomKey, id)
 }
 
@@ -40,25 +47,22 @@ var (
 	roomExpired = time.Hour
 )
 
-func (c *Cache) set(room models.Room) error {
+func (c *cache) set(room models.Room) error {
 	b, err := json.Marshal(room)
 	if err != nil {
 		return err
 	}
-	return c.c.Set(keyRoom(strconv.Itoa(room.Id)), b, roomExpired).Err()
+	return c.c.Set(keyRoom(room.Id), b, roomExpired).Err()
 }
 
-func (c *Cache) get(id string) (*models.Room, error) {
+func (c *cache) get(id int) (models.Room, error) {
 	b, err := c.c.Get(keyRoom(id)).Bytes()
 	if err != nil {
-		if err == redis.Nil {
-			return nil, nil
-		}
-		return nil, err
+		return models.Room{}, err
 	}
 	var r models.Room
 	err = json.Unmarshal(b, &r)
-	return &r, err
+	return r, err
 }
 
 type Online struct {
@@ -72,7 +76,7 @@ type Online struct {
 // Key用server name
 // hashKey則是將room name以City Hash32做hash後得出一個數字，以這個數字當hashKey
 // TODO 需要在思考是否需要這樣的機制
-func (c *Cache) addOnline(server string, online *Online) error {
+func (c *cache) addOnline(server string, online *Online) error {
 	roomsMap := map[uint32]map[int32]int32{}
 	for room, count := range online.RoomCount {
 		rMap := roomsMap[cityhash.CityHash32([]byte(strconv.Itoa(int(room))), uint32(room))%8]
@@ -96,7 +100,7 @@ func (c *Cache) addOnline(server string, online *Online) error {
 // 以HSET方式儲存房間人數
 // HSET Key hashKey jsonBody
 // Key用server name
-func (c *Cache) addServerOnline(key string, hashKey string, online *Online) error {
+func (c *cache) addServerOnline(key string, hashKey string, online *Online) error {
 	b, err := json.Marshal(online)
 	if err != nil {
 		return err
@@ -110,7 +114,7 @@ func (c *Cache) addServerOnline(key string, hashKey string, online *Online) erro
 
 // 根據server name取線上各房間總人數
 // TODO 需要在思考需不需要比對Updated
-func (c *Cache) getOnline(server string) (*Online, error) {
+func (c *cache) getOnline(server string) (*Online, error) {
 	online := &Online{RoomCount: map[int32]int32{}}
 	// server name
 	key := keyServerOnline(server)
@@ -130,7 +134,7 @@ func (c *Cache) getOnline(server string) (*Online, error) {
 }
 
 // 根據server name與hashKey取該server name內線上各房間總人數
-func (c *Cache) serverOnline(key string, hashKey string) (*Online, error) {
+func (c *cache) serverOnline(key string, hashKey string) (*Online, error) {
 	b, err := c.c.HGet(key, hashKey).Bytes()
 	if err != nil && err != redis.Nil {
 		return nil, err
@@ -153,6 +157,6 @@ func (c *Cache) serverOnline(key string, hashKey string) (*Online, error) {
 }
 
 // 根據server name 刪除線上各房間總人數
-func (c *Cache) delOnline(server string) error {
+func (c *cache) delOnline(server string) error {
 	return c.c.Del(keyServerOnline(server)).Err()
 }

@@ -1,6 +1,7 @@
 package room
 
 import (
+	"database/sql"
 	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
@@ -18,7 +19,7 @@ type Room interface {
 
 type room struct {
 	db     *models.Store
-	c      *Cache
+	c      Cache
 	member *member.Member
 	cli    *client.Client
 }
@@ -102,12 +103,12 @@ func (r *room) Delete(id int) error {
 }
 
 func (r *room) Get(id int) (models.Room, error) {
-	room, ok, err := r.db.GetRoom(id)
+	room, err := r.db.GetRoom(id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.Room{}, errors.ErrNoRows
+		}
 		return models.Room{}, err
-	}
-	if !ok {
-		return models.Room{}, errors.ErrNoRows
 	}
 	return room, nil
 }

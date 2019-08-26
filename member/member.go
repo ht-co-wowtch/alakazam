@@ -10,6 +10,12 @@ import (
 	"go.uber.org/zap"
 )
 
+type Chat interface {
+	Login(rid int, token, server string) (*models.Member, string, error)
+	Logout(uid, key string) (bool, error)
+	Heartbeat(uid string) error
+}
+
 type Member struct {
 	cli *client.Client
 	db  *models.Store
