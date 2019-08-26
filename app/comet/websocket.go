@@ -158,17 +158,26 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 	ch.IP, _, _ = net.SplitHostPort(conn.RemoteAddr().String())
 	step = 1
 
-	// 判斷連線的 url path info正不正確
-	if req, err = websocket.ReadRequest(rr); err != nil || req.RequestURI != "/sub" {
+	if req, err = websocket.ReadRequest(rr); err != nil {
 		// 關掉連線
 		// 移除心跳timeout任務
 		// 回收讀Buffer
 		conn.Close()
 		tr.Del(trd)
 		rp.Put(rb)
-		if err != io.EOF {
-			log.Error("websocket readRequest", zap.Error(err))
-		}
+		log.Error("websocket read request", zap.Error(err))
+		return
+	}
+
+	// 判斷連線的 url path info正不正確
+	if req.RequestURI != "/sub" {
+		// 關掉連線
+		// 移除心跳timeout任務
+		// 回收讀Buffer
+		conn.Close()
+		tr.Del(trd)
+		rp.Put(rb)
+		log.Error("websocket request url != [sub]", zap.String("url", req.RequestURI))
 		return
 	}
 
