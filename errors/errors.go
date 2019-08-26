@@ -5,7 +5,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/validation"
 	"gopkg.in/go-playground/validator.v8"
-	"net/http"
 )
 
 var (
@@ -50,20 +49,30 @@ var (
 )
 
 const (
-	// 紅包已過期
-	TakeEnvelopeExpiredCode = 15024011
-
-	// 紅包不存在
-	EnvelopeNotFoundCode = 15024041
-
+	// 沒有token
+	noAuthorizationBearer = 15024010
+	// 資料格式錯誤
+	invalidParameter = 15024220
 	// 餘額不足
-	BalanceCode = 12024020
-
+	balanceCode = 12024020
 	// 房間不存在
-	RoomNotFoundCode = 15024042
-
-	// 預定發送時間過期
-	PublishAtCode = 15024002
+	roomNotFoundCode = 15024042
+	// 找不到會員資料
+	memberNotFound = 12024041
+	// 隨機紅包金額不能小於包數
+	redEnvelopeAmount = 15021001
+	// 紅包已過期
+	TakeEnvelopeExpiredCode = 15024031
+	// 紅包不存在
+	redEnvelopeNotFoundCode = 15024044
+	// 紅包已關閉
+	redEnvelopeIsClose = 15024045
+	// 紅包發佈時間不能小於當下
+	redEnvelopePublishTime = 15024047
+	// 紅包已發佈過
+	redEnvelopePublishExist = 15024091
+	// 紅包未發佈但已過期
+	redEnvelopePublishExpire = 15024048
 )
 
 func init() {
@@ -110,23 +119,28 @@ func (m output) GetInternalServer() string {
 
 func (m output) Error(e *errdefs.Error) string {
 	switch e.Code {
-	case BalanceCode:
-		return "您的余额不足发红包"
-	case EnvelopeNotFoundCode:
-		e.Status = http.StatusNotFound
-		return "红包不存在"
-	case RoomNotFoundCode:
-		e.Status = http.StatusNotFound
+	case noAuthorizationBearer:
+		return "无法认证身份"
+	case invalidParameter:
+		return "资料格式错误"
+	case roomNotFoundCode:
 		return "房间不存在"
-	case PublishAtCode:
-		e.Status = http.StatusNotFound
-		return "预定发送时间不能大于现在"
+	case balanceCode:
+		return "余额不足"
+	case memberNotFound:
+		return "找不到会员资料"
+	case redEnvelopeAmount:
+		return "红包金额不能小于包数"
+	case redEnvelopeNotFoundCode, redEnvelopeIsClose:
+		return "红包不存在"
+	case redEnvelopePublishTime:
+		return "红包发布时间不能小于当下"
+	case redEnvelopePublishExist:
+		return "红包已发布过"
+	case redEnvelopePublishExpire:
+		return "红包未发布但已过期"
 	}
 	return "操作失败"
-}
-
-func (m output) Other(err error) string {
-	return ""
 }
 
 type Error struct {

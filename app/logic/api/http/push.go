@@ -22,7 +22,7 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 	if err := c.ShouldBindJSON(p); err != nil {
 		return err
 	}
-	user, err := s.member.GetSession(c.GetString("uid"))
+	user, err := s.member.GetMessageSession(c.GetString("uid"))
 	if err != nil {
 		return err
 	}

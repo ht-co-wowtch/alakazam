@@ -24,18 +24,14 @@ type giveRedEnvelopeReq struct {
 	Type string `json:"type" binding:"required"`
 }
 
-// 發紅包
 func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	arg := new(giveRedEnvelopeReq)
 	if err := c.ShouldBindJSON(arg); err != nil {
 		return err
 	}
-	user, err := s.member.Get(c.GetString("uid"))
+	user, err := s.member.GetSession(c.GetString("uid"))
 	if err != nil {
 		return err
-	}
-	if user.Type != models.Player {
-		return errors.ErrLogin
 	}
 	give := client.RedEnvelope{
 		RoomId:    arg.RoomId,
