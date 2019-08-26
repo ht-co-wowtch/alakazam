@@ -20,25 +20,25 @@ func (s *Server) Connect(c context.Context, p *cometpb.Proto) (*logicpb.ConnectR
 }
 
 // client連線中斷，告知logic service需清理此人的連線資料
-func (s *Server) Disconnect(c context.Context, uid, key string) (err error) {
-	_, err = s.logic.Disconnect(context.Background(), &logicpb.DisconnectReq{
+func (s *Server) Disconnect(c context.Context, uid, key string) error {
+	_, err := s.logic.Disconnect(context.Background(), &logicpb.DisconnectReq{
 		Server: s.name,
 		Uid:    uid,
 		Key:    key,
 	})
-	return
+	return err
 }
 
 // 告知logic service要刷新某人的在線狀態(session 過期時間)
-func (s *Server) Heartbeat(ctx context.Context, ch *Channel) (err error) {
-	_, err = s.logic.Heartbeat(ctx, &logicpb.HeartbeatReq{
+func (s *Server) Heartbeat(ctx context.Context, ch *Channel) error {
+	_, err := s.logic.Heartbeat(ctx, &logicpb.HeartbeatReq{
 		Server: s.name,
 		Uid:    ch.Uid,
 		Key:    ch.Key,
 		Name:   ch.Name,
 		RoomId: ch.Room.ID,
 	})
-	return
+	return err
 }
 
 // 告知logic service現在房間的在線人數

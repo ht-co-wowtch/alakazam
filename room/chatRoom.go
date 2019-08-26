@@ -10,8 +10,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"gopkg.in/go-playground/validator.v8"
 	"time"
 )
@@ -47,9 +45,9 @@ func NewChat(db models.IChat, cache *redis.Client, member member.Chat, cli *clie
 }
 
 var (
-	errNoRoom       = status.Error(codes.NotFound, "room not found")
-	errSetRoomCache = status.Error(codes.Internal, "set room cache")
-	errRoomClose    = status.Error(codes.NotFound, "room is close")
+	errNoRoom       = errors.New("room not found")
+	errSetRoomCache = errors.New("set room cache")
+	errRoomClose    = errors.New("room is close")
 )
 
 func (c *chat) Connect(server string, token []byte) (*models.Member, string, int, error) {
@@ -62,17 +60,17 @@ func (c *chat) Connect(server string, token []byte) (*models.Member, string, int
 	}
 
 	if err := json.Unmarshal(token, &params); err != nil {
-		return nil, "", 0, status.Error(codes.InvalidArgument, err.Error())
+		return nil, "", 0, err
 	}
 	if err := v.Struct(&params); err != nil {
-		return nil, "", 0, status.Error(codes.InvalidArgument, err.Error())
+		return nil, "", 0, err
 	}
 
 	room, err := c.cache.get(params.RoomID)
 
 	if err != nil {
 		if err != redis.Nil {
-			return nil, "", 0, status.Error(codes.Internal, err.Error())
+			return nil, "", 0, err
 		}
 
 		room, err = c.db.GetRoom(params.RoomID)
@@ -80,7 +78,7 @@ func (c *chat) Connect(server string, token []byte) (*models.Member, string, int
 			if err == sql.ErrNoRows {
 				return nil, "", 0, errNoRoom
 			}
-			return nil, "", 0, status.Error(codes.Internal, err.Error())
+			return nil, "", 0, err
 		}
 		if err := c.cache.set(room); err != nil {
 			return nil, "", 0, errSetRoomCache
@@ -92,24 +90,17 @@ func (c *chat) Connect(server string, token []byte) (*models.Member, string, int
 
 	user, key, err := c.member.Login(params.RoomID, params.Token, server)
 	if err != nil {
-		return nil, "", 0, status.Error(codes.Internal, err.Error())
+		return nil, "", 0, err
 	}
 	return user, key, params.RoomID, nil
 }
 
 func (r *chat) Disconnect(uid, key string) (bool, error) {
-	ok, err := r.member.Logout(uid, key)
-	if err != nil {
-		return ok, status.Error(codes.Internal, err.Error())
-	}
-	return ok, nil
+	return r.member.Logout(uid, key)
 }
 
 func (c *chat) Heartbeat(uid, key, name, server string) error {
-	if err := c.member.Heartbeat(uid); err != nil {
-		return status.Error(codes.Internal, err.Error())
-	}
-	return nil
+	return c.member.Heartbeat(uid)
 }
 
 func (c *chat) RenewOnline(server string, roomCount map[int32]int32) (map[int32]int32, error) {
@@ -118,10 +109,8 @@ func (c *chat) RenewOnline(server string, roomCount map[int32]int32) (map[int32]
 		RoomCount: roomCount,
 		Updated:   time.Now().Unix(),
 	}
-	if err := c.cache.addOnline(server, online); err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-	return roomCount, nil
+	err := c.cache.addOnline(server, online)
+	return roomCount, err
 }
 
 func (r *chat) IsMessage(rid int, uid string) error {

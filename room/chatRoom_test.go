@@ -2,11 +2,12 @@ package room
 
 import (
 	"database/sql"
+	"encoding/json"
 	"github.com/go-redis/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"google.golang.org/grpc/status"
+	"gopkg.in/go-playground/validator.v8"
 	"testing"
 )
 
@@ -78,20 +79,26 @@ func TestConnectNotData(t *testing.T) {
 	chat, _, _, _ := makeMock()
 
 	_, _, _, err := chat.Connect("", []byte(""))
-	e, _ := status.FromError(err)
-	assert.Equal(t, "unexpected end of JSON input", e.Message())
+	e, ok := err.(*json.SyntaxError)
+
+	assert.True(t, ok)
+	assert.Equal(t, "unexpected end of JSON input", e.Error())
 }
 
 func TestConnectJson(t *testing.T) {
 	chat, _, _, _ := makeMock()
 
 	_, _, _, err := chat.Connect("", []byte(`{"token":"123","room_id":0}`))
-	e, _ := status.FromError(err)
-	assert.Equal(t, "Key: '.RoomID' Error:Field validation for 'RoomID' failed on the 'required' tag", e.Message())
+	e, ok := err.(validator.ValidationErrors)
+
+	assert.True(t, ok)
+	assert.Equal(t, "Key: '.RoomID' Error:Field validation for 'RoomID' failed on the 'required' tag", e.Error())
 
 	_, _, _, err = chat.Connect("", []byte(`{"token":"","room_id":1}`))
-	e, _ = status.FromError(err)
-	assert.Equal(t, "Key: '.Token' Error:Field validation for 'Token' failed on the 'required' tag", e.Message())
+	e, ok = err.(validator.ValidationErrors)
+
+	assert.True(t, ok)
+	assert.Equal(t, "Key: '.Token' Error:Field validation for 'Token' failed on the 'required' tag", e.Error())
 }
 
 func makeMock() (*chat, *mockDb, *mockCache, *mockMember) {
