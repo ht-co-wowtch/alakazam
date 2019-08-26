@@ -305,6 +305,10 @@
                     var msgBody = JSON.parse(json)
 
                     document.getElementById("room_id").innerHTML = msgBody.room_id
+                case 20:
+                    var json = textDecoder.decode(data.slice(headerLen, packetLen));
+                    var msgBody = JSON.parse(json)
+                    console.log(msgBody.message)
                 default:
                     break
             }
@@ -328,8 +332,7 @@
         }
 
         function auth() {
-
-            var token = '{"token":"' + document.getElementById("token").value + '", "room_id":"' + document.getElementById("rid").value + '"}'
+            var token = '{"token":"' + document.getElementById("token").value + '", "room_id":' + document.getElementById("rid").value + '}'
             var headerBuf = new ArrayBuffer(rawHeaderLen);
             var headerView = new DataView(headerBuf, 0);
             var bodyBuf = textEncoder.encode(token);
@@ -350,8 +353,7 @@
             url: 'http://' + host + ':3111' + '/push/room',
             async: false,
             data: JSON.stringify({
-                uid: document.getElementById("uid").value,
-                key: document.getElementById("key").value,
+                room_id: parseInt(document.getElementById("rid").value, 10),
                 message: document.getElementById("btn-input").value
             }),
             headers: {
@@ -370,13 +372,13 @@
     function sendRed() {
         var amount = new Number(document.getElementById("red_amount").value);
         var count = new Number(document.getElementById("red_count").value)
+
         $.ajax({
             type: "post",
             url: 'http://' + host + ':3111' + '/red-envelope',
             async: false,
             data: JSON.stringify({
-                uid: document.getElementById("uid").value,
-                key: document.getElementById("key").value,
+                room_id: parseInt(document.getElementById("rid").value, 10),
                 amount: amount,
                 count: count,
                 message: document.getElementById("red_message").value,
@@ -398,7 +400,7 @@
     function room() {
         var headerBuf = new ArrayBuffer(rawHeaderLen);
         var headerView = new DataView(headerBuf, 0);
-        var room = '{"room_id":"' + document.getElementById("btn-room-id").value + '"}'
+        var room = '{"room_id":' + document.getElementById("btn-room-id").value + '}'
         var bodyBuf = textEncoder.encode(room);
         headerView.setInt32(packetOffset, rawHeaderLen + bodyBuf.byteLength);
         headerView.setInt16(headerOffset, rawHeaderLen);
@@ -421,8 +423,6 @@
             url: 'http://' + host + ':3111' + '/red-envelope',
             async: false,
             data: JSON.stringify({
-                uid: document.getElementById("uid").value,
-                key: document.getElementById("key").value,
                 token: $(this).data("token")
             }),
             headers: {

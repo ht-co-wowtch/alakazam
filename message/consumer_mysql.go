@@ -2,6 +2,7 @@ package message
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/go-xorm/xorm"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -20,9 +21,9 @@ func NewMysqlConsumer(db *xorm.EngineGroup) *MysqlConsumer {
 }
 
 const (
-	addMessage             = "INSERT INTO `messages` (`msg_id`,`member_id`,`message`,`send_at`) VALUES (?,?,?,?);"
+	addMessage             = "INSERT INTO `messages_%02d` (`msg_id`,`member_id`,`message`,`send_at`) VALUES (?,?,?,?);"
 	addRedEnvelopeMessages = "INSERT INTO `red_envelope_messages` (`msg_id`,`member_id`,`message`,`red_envelopes_id`,`token`,`expire_at`,`send_at`) VALUES (?,?,?,?,?,?,?);"
-	addRoomMessage         = "INSERT INTO `room_messages` (`room_id`,`msg_id`,`type`,`send_at`) VALUES (?,?,?,?);"
+	addRoomMessage         = "INSERT INTO `room_messages_%02d` (`room_id`,`msg_id`,`type`,`send_at`) VALUES (?,?,?,?);"
 )
 
 func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
@@ -49,8 +50,8 @@ func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
 			)
 			return err
 		}
-	default:
-		if _, err := tx.Exec(addMessage, msg.Seq, msg.Mid, msg.Message, sendAt); err != nil {
+	case pb.PushMsg_ROOM, pb.PushMsg_TOP:
+		if _, err := tx.Exec(fmt.Sprintf(addMessage, msg.Room[0]%50), msg.Seq, msg.Mid, msg.Message, sendAt); err != nil {
 			log.Error(
 				"insert message",
 				zap.Error(err),
@@ -61,16 +62,20 @@ func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
 			return err
 		}
 	}
-	for _, rid := range msg.Room {
-		if _, err := tx.Exec(addRoomMessage, rid, msg.Seq, msg.Type, sendAt); err != nil {
-			log.Error(
-				"insert room message",
-				zap.Error(err),
-				zap.Int32("room", rid),
-				zap.Int64("msg_id", msg.Seq),
-			)
-			return err
+
+	if msg.Type != pb.PushMsg_Close {
+		for _, rid := range msg.Room {
+			if _, err := tx.Exec(fmt.Sprintf(addRoomMessage, rid%50), rid, msg.Seq, msg.Type, sendAt); err != nil {
+				log.Error(
+					"insert room message",
+					zap.Error(err),
+					zap.Int32("room", rid),
+					zap.Int64("msg_id", msg.Seq),
+				)
+				return err
+			}
 		}
+		return tx.Commit()
 	}
-	return tx.Commit()
+	return nil
 }

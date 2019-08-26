@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
 	"gitlab.com/jetfueltw/cpw/micro/database"
@@ -8,6 +9,12 @@ import (
 )
 
 var tables []interface{}
+
+var (
+	ErrInsertFailure = errors.New("insert failure")
+	ErrUpdateFailure = errors.New("update failure")
+	ErrDeleteFailure = errors.New("delete failure")
+)
 
 func init() {
 	tables = append(tables,

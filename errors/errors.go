@@ -10,14 +10,21 @@ import (
 
 var (
 	ErrPublishAt = errdefs.InvalidParameter(New("预定发送时间不能大于现在"), 0)
+	ErrExist     = errdefs.InvalidParameter(New("资料已存在"), 1)
 
 	ErrLogin         = errdefs.Unauthorized(New("请先登入会员"))
+	ErrReLogin       = errdefs.Unauthorized(New("请重新登入会员"))
 	ErrRoomBanned    = errdefs.Unauthorized(New("聊天室目前禁言状态，无法发言"), 1)
 	ErrBanned        = errdefs.Unauthorized(New("您在禁言状态，无法发言"), 2)
 	ErrAuthorization = errdefs.Unauthorized(New("Unauthorized"), 3)
 
 	ErrNoPage = errdefs.NotFound(New("无此Api"))
 	ErrNoRows = errdefs.NotFound(New("没有资料"), 1)
+
+	ErrRateMsg     = errdefs.TooManyRequests(New("1秒内只能发一则消息"), 1)
+	ErrRateSameMsg = errdefs.TooManyRequests(New("10秒内相同讯息3次，自动禁言10分钟"), 2)
+
+	ErrTokenUid = errdefs.Forbidden(New("帐号资料认证失败"), 1)
 
 	//ConnectError = eNew(http.StatusBadRequest, 10024000, "进入聊天室失败")
 	//FailureError = eNew(http.StatusBadRequest, 10024001, "操作失败")

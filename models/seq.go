@@ -10,7 +10,7 @@ type Seq struct {
 	Max   int64
 	Cur   int64 `xorm:"-"`
 	Batch int64
-	L     sync.Mutex `xorm:"-"`
+	Mu    sync.Mutex `xorm:"-"`
 }
 
 type ISeq interface {

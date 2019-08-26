@@ -33,12 +33,12 @@ type Server struct {
 	message    *message.Producer
 	client     *client.Client
 	member     *member.Member
-	room       *room.Room
+	room       room.Room
 	httpServer *http.Server
 	rpc        *grpc.Server
 
 	// 房間在線人數，key是房間id
-	roomCount map[string]int32
+	roomCount map[int32]int32
 }
 
 func New(c *conf.Config) *Server {
@@ -50,11 +50,12 @@ func New(c *conf.Config) *Server {
 	if err != nil {
 		panic(err)
 	}
-	messageProducer := message.NewProducer(c.Kafka.Brokers, c.Kafka.Topic, seqpb.NewSeqClient(seqCli))
+	messageProducer := message.NewProducer(c.Kafka.Brokers, c.Kafka.Topic, seqpb.NewSeqClient(seqCli), cache, db)
 	memberCli := member.New(db, cache, cli)
-	roomCli := room.New(db, cache, memberCli, cli, c.Heartbeat)
-	httpServer := api.NewServer(c.HTTPServer, memberCli, messageProducer, roomCli, cli, message.NewHistory(db, memberCli))
-	rpcServer := rpc.New(c.RPCServer, roomCli)
+	roomCli := room.New(db, cache, memberCli, cli)
+	chat := room.NewChat(db, cache, memberCli, cli)
+	httpServer := api.NewServer(c, memberCli, messageProducer, chat, cli, message.NewHistory(db, memberCli))
+	rpcServer := rpc.New(c.RPCServer, chat, c.Heartbeat)
 	go func() {
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			panic(err)
@@ -116,7 +117,7 @@ func (s *Server) onlineproc() {
 // 從redis拿出現在各房間人數
 func (s *Server) loadOnline() (err error) {
 	var (
-		roomCount = make(map[string]int32)
+		roomCount = make(map[int32]int32)
 	)
 	var online *room.Online
 	// TODO hostname 先寫死 後續需要註冊中心來sync

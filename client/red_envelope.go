@@ -9,7 +9,7 @@ import (
 
 type RedEnvelope struct {
 	// 房間id
-	RoomId string `json:"room_id"`
+	RoomId int `json:"room_id"`
 
 	// 紅包訊息
 	Message string `json:"message"`

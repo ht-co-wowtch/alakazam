@@ -11,12 +11,12 @@ type Money struct {
 	Deposit float64 `json:"deposit"`
 }
 
-func (c *Client) GetDepositAndDml(day int, uid, token string) (money Money, err error) {
+func (c *Client) GetDepositAndDml(day int, uid string) (money Money, err error) {
 	q := url.Values{}
 	now := time.Now()
 	q.Set("start_at", now.AddDate(0, 0, -day).Format("2006-01-02T00:00:00Z07:00"))
 	q.Set("end_at", now.Format(time.RFC3339))
-	resp, err := c.c.Get("/deposit-dml", q, bearer(token))
+	resp, err := c.c.Get("/deposit-dml", q, nil)
 	if err != nil {
 		return Money{}, err
 	}

@@ -4,9 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	kafka "github.com/Shopify/sarama"
+	"github.com/go-redis/redis"
 	"github.com/gogo/protobuf/proto"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	seqpb "gitlab.com/jetfueltw/cpw/alakazam/app/seq/api/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	shield "gitlab.com/jetfueltw/cpw/alakazam/pkg/filter"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"time"
@@ -17,6 +21,8 @@ type Producer struct {
 	brokers  []string
 	producer kafka.SyncProducer
 	seq      seqpb.SeqClient
+	rate     *rateLimit
+	filter   *shield.Filter
 	bs       map[int64]*seq
 }
 
@@ -25,7 +31,7 @@ type seq struct {
 	max int64
 }
 
-func NewProducer(brokers []string, topic string, seq seqpb.SeqClient) *Producer {
+func NewProducer(brokers []string, topic string, seq seqpb.SeqClient, cache *redis.Client, db *models.Store) *Producer {
 	kc := kafka.NewConfig()
 	kc.Version = kafka.V2_3_0_0
 	kc.Producer.Return.Successes = true
@@ -33,11 +39,34 @@ func NewProducer(brokers []string, topic string, seq seqpb.SeqClient) *Producer 
 	if err != nil {
 		panic(err)
 	}
+
+	f := &filter{
+		db:     db,
+		filter: shield.New(),
+	}
+	if err := f.load(); err != nil {
+		panic(err)
+	}
+
+	go func() {
+		t := time.NewTicker(time.Hour)
+		for {
+			select {
+			case <-t.C:
+				if err := f.load(); err != nil {
+					log.Error("reload shield", zap.Error(err))
+				}
+			}
+		}
+	}()
+
 	return &Producer{
 		brokers:  brokers,
 		topic:    topic,
 		producer: pub,
 		seq:      seq,
+		filter:   f.filter,
+		rate:     newRateLimit(cache),
 	}
 }
 
@@ -67,13 +96,19 @@ func (p *Producer) toPb(msg Messages) (*logicpb.PushMsg, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	fmsg, isMatch, sensitive := p.filter.FilterFindSensitive(msg.Message)
+	if isMatch {
+		log.Info("message filter hit", zap.Int64("msg_id", seq.Id), zap.Strings("sensitive", sensitive))
+	}
+
 	now := time.Now()
 	bm, err := json.Marshal(Message{
 		Id:      seq.Id,
 		Type:    logicpb.PushMsg_ROOM,
 		Uid:     msg.Uid,
 		Name:    msg.Name,
-		Message: msg.Message,
+		Message: fmsg,
 		Time:    now.Format(time.RFC3339),
 	})
 	if err != nil {
@@ -85,12 +120,23 @@ func (p *Producer) toPb(msg Messages) (*logicpb.PushMsg, error) {
 		Room:    msg.Rooms,
 		Mid:     msg.Mid,
 		Msg:     bm,
-		Message: msg.Message,
+		Message: fmsg,
 		SendAt:  now.Unix(),
 	}, nil
 }
 
 func (p *Producer) Send(msg Messages) (int64, error) {
+	if err := p.rate.perSec(msg.Mid); err != nil {
+		return 0, err
+	}
+	same, err := p.rate.IsSameMsg(msg)
+	if err != nil {
+		return 0, err
+	}
+	if same {
+		return 0, errors.ErrRateSameMsg
+	}
+
 	pushMsg, err := p.toPb(msg)
 	if err != nil {
 		return 0, err
@@ -129,6 +175,23 @@ func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
 	return pushMsg.Seq, nil
 }
 
+type KickMessage struct {
+	Message string
+	Keys    []string
+}
+
+func (p *Producer) Kick(msg KickMessage) error {
+	pushMsg := &logicpb.PushMsg{
+		Type:    logicpb.PushMsg_Close,
+		Keys:    msg.Keys,
+		Message: msg.Message,
+	}
+	if err := p.send(pushMsg); err != nil {
+		return err
+	}
+	return nil
+}
+
 type RedEnvelopeMessage struct {
 	Messages
 	RedEnvelopeId string
@@ -143,6 +206,12 @@ func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*logicpb.PushMsg, er
 	if err != nil {
 		return nil, err
 	}
+
+	fmsg, isMatch, sensitive := p.filter.FilterFindSensitive(msg.Message)
+	if isMatch {
+		log.Info("message filter hit", zap.Int64("msg_id", seq.Id), zap.Strings("sensitive", sensitive))
+	}
+
 	now := time.Now()
 	bm, err := json.Marshal(Money{
 		Message: Message{
@@ -150,7 +219,7 @@ func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*logicpb.PushMsg, er
 			Type:    logicpb.PushMsg_MONEY,
 			Uid:     msg.Uid,
 			Name:    msg.Name,
-			Message: msg.Message,
+			Message: fmsg,
 			Time:    now.Format(time.RFC3339),
 		},
 		RedEnvelope: RedEnvelope{
@@ -169,7 +238,7 @@ func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*logicpb.PushMsg, er
 		Mid:     msg.Mid,
 		Msg:     bm,
 		SendAt:  now.Unix(),
-		Message: msg.Message,
+		Message: fmsg,
 	}, nil
 }
 

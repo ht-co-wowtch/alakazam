@@ -15,12 +15,13 @@ import (
 type httpServer struct {
 	member       *member.Member
 	message      *message.Producer
+	shield       message.Filter
 	delayMessage *message.DelayProducer
-	room         *room.Room
+	room         room.Room
 	nidoran      *client.Client
 }
 
-func NewServer(conf *web.Conf, member *member.Member, producer *message.Producer, room *room.Room, nidoran *client.Client) *http.Server {
+func NewServer(conf *web.Conf, member *member.Member, producer *message.Producer, room room.Room, nidoran *client.Client, shield message.Filter) *http.Server {
 	if conf.Debug {
 		gin.SetMode(gin.DebugMode)
 	} else {
@@ -35,6 +36,7 @@ func NewServer(conf *web.Conf, member *member.Member, producer *message.Producer
 	srv := &httpServer{
 		member:       member,
 		message:      producer,
+		shield:       shield,
 		delayMessage: delayMessage,
 		room:         room,
 		nidoran:      nidoran,
@@ -63,6 +65,12 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.DELETE("/push/:id", api.ErrHandler(s.deleteTopMessage))
 
 	e.POST("/red-envelope", api.ErrHandler(s.giveRedEnvelope))
+
+	e.DELETE("/kick/:uid", api.ErrHandler(s.kick))
+
+	e.POST("/shield", api.ErrHandler(s.CreateShield))
+	e.PUT("/shield", api.ErrHandler(s.UpdateShield))
+	e.DELETE("/shield/:id", api.ErrHandler(s.DeleteShield))
 }
 
 func (s *httpServer) Close() error {

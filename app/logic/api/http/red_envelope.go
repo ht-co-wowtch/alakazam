@@ -4,15 +4,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"net/http"
-	"strconv"
 )
 
-type GiveRedEnvelope struct {
-	member.User
+type giveRedEnvelopeReq struct {
+	RoomId int `json:"room_id" binding:"required"`
 
 	// 單包金額 or 總金額 看Type種類決定
 	Amount int `json:"amount" binding:"required"`
@@ -28,24 +26,26 @@ type GiveRedEnvelope struct {
 
 // 發紅包
 func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
-	arg := new(GiveRedEnvelope)
+	arg := new(giveRedEnvelopeReq)
 	if err := c.ShouldBindJSON(arg); err != nil {
 		return err
 	}
-	if err := s.member.Auth(&arg.User); err != nil {
+	user, err := s.member.Get(c.GetString("uid"))
+	if err != nil {
 		return err
 	}
-	if !models.IsRedEnvelope(arg.H.Status) {
+	if user.Type != models.Player {
 		return errors.ErrLogin
 	}
 	give := client.RedEnvelope{
-		RoomId:    strconv.Itoa(arg.H.Room),
+		RoomId:    arg.RoomId,
 		Message:   arg.Message,
 		Type:      arg.Type,
 		Amount:    arg.Amount,
 		Count:     arg.Count,
 		ExpireMin: 120,
 	}
+
 	reply, err := s.client.GiveRedEnvelope(give, c.GetString("token"))
 	if err != nil {
 		return err
@@ -53,10 +53,10 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 
 	msg := message.RedEnvelopeMessage{
 		Messages: message.Messages{
-			Rooms:   []int32{int32(arg.H.Room)},
-			Mid:     int64(arg.H.Mid),
-			Uid:     arg.Uid,
-			Name:    arg.H.Name,
+			Rooms:   []int32{int32(arg.RoomId)},
+			Mid:     int64(user.Id),
+			Uid:     user.Uid,
+			Name:    user.Name,
 			Message: arg.Message,
 		},
 		RedEnvelopeId: reply.Uid,
@@ -78,8 +78,6 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 }
 
 type TakeRedEnvelope struct {
-	member.User
-
 	Token string `json:"token" binding:"required"`
 }
 
@@ -88,12 +86,14 @@ func (s *httpServer) takeRedEnvelope(c *gin.Context) error {
 	if err := c.ShouldBindJSON(arg); err != nil {
 		return err
 	}
-	if err := s.member.Auth(&arg.User); err != nil {
+	user, err := s.member.Get(c.GetString("uid"))
+	if err != nil {
 		return err
 	}
-	if !models.IsRedEnvelope(arg.H.Status) {
+	if user.Type != models.Player {
 		return errors.ErrLogin
 	}
+	// TODO 三方改成不用token
 	reply, err := s.client.TakeRedEnvelope(arg.Token, c.GetString("token"))
 	if err != nil {
 		return err

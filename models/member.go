@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	// 封鎖
@@ -37,21 +39,14 @@ const (
 )
 
 type Member struct {
-	Id int `xorm:"pk autoincr"`
-
-	Uid string `xorm:"char(32) not null unique index"`
-
-	Name string `xorm:"varchar(30) not null"`
-
-	Avatar string `xorm:"varchar(255) not null"`
-
-	Type int `xorm:"tinyint(3) not null"`
-
-	// 是否被封鎖
-	IsBlockade bool `xorm:"default(0) not null"`
-
-	// 建立時間
-	CreateAt time.Time `xorm:"not null"`
+	Id         int       `xorm:"pk autoincr"`
+	Uid        string    `json:"uid"`
+	Name       string    `json:"name"`
+	Avatar     string    `json:"avatar"`
+	Type       int       `json:"type"`
+	IsMessage  bool      `json:"is_message"`
+	IsBlockade bool      `json:"is_blockade"`
+	CreateAt   time.Time `json:"-"`
 }
 
 func (r *Member) Status() int {
@@ -74,6 +69,7 @@ func (r *Member) TableName() string {
 
 // 新增會員
 func (s *Store) CreateUser(member *Member) (int64, error) {
+	member.IsMessage = true
 	member.CreateAt = time.Now()
 	return s.d.InsertOne(member)
 }
@@ -96,4 +92,12 @@ func (s *Store) GetMembers(ids []int) ([]Member, error) {
 	m := make([]Member, 0)
 	err := s.d.Table(&Member{}).Find(&m)
 	return m, err
+}
+
+func (s *Store) UpdateIsMessage(memberId int, isMessage bool) (int64, error) {
+	return s.d.Cols("is_message").
+		Where("id = ?", memberId).
+		Update(&Member{
+			IsMessage: isMessage,
+		})
 }

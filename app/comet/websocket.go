@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	xtime "gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
@@ -107,7 +106,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 		err error
 
 		// 房間id
-		rid string
+		rid int32
 
 		// 心跳時間週期
 		hb time.Duration
@@ -357,11 +356,11 @@ failed:
 }
 
 // websocket請求連線至某房間
-func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Channel, p *pb.Proto) (string, time.Duration, error) {
+func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Channel, p *pb.Proto) (int32, time.Duration, error) {
 	for {
 		// 如果第一次連線送的資料不是請求連接到某房間則會一直等待
 		if err := p.ReadWebsocket(ws); err != nil {
-			return "", time.Duration(0), err
+			return 0, time.Duration(0), err
 		}
 		if p.Op == pb.OpAuth {
 			break
@@ -375,13 +374,13 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 	// 2. 被封鎖
 	c, err := s.Connect(ctx, p)
 	if err != nil {
-		return "", time.Duration(0), err
+		return 0, time.Duration(0), err
 	}
-	if c.Status == models.Blockade {
+	if c.IsBlockade {
 		if e := authReply(ws, p, blockadeMessage); e != nil {
-			log.Warn("auth reply", zap.Error(e), zap.String("uid", c.Uid), zap.String("room_id", c.RoomID))
+			log.Warn("auth reply", zap.Error(e), zap.String("uid", c.Uid), zap.Int32("room_id", c.RoomID))
 		}
-		return "", time.Duration(0), io.EOF
+		return 0, time.Duration(0), io.EOF
 	}
 
 	// 需要回覆給client告知uid與key
@@ -389,7 +388,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 	reply := struct {
 		Uid        string `json:"uid"`
 		Key        string `json:"key"`
-		RoomId     string `json:"room_id"`
+		RoomId     int32  `json:"room_id"`
 		Permission struct {
 			IsBanned      bool `json:"is_banned"`
 			IsRedEnvelope bool `json:"is_red_envelope"`
@@ -399,15 +398,15 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 		Key:    c.Key,
 		RoomId: c.RoomID,
 	}
-	reply.Permission.IsBanned = models.IsBanned(int(c.Status))
-	reply.Permission.IsRedEnvelope = models.IsRedEnvelope(int(c.Status))
+	reply.Permission.IsBanned = !c.IsMessage
+	reply.Permission.IsRedEnvelope = c.IsRedEnvelope
 
 	b, err := json.Marshal(reply)
 	if err != nil {
-		return "", time.Duration(0), err
+		return 0, time.Duration(0), err
 	}
 	if err = authReply(ws, p, b); err != nil {
-		return "", time.Duration(0), err
+		return 0, time.Duration(0), err
 	}
 	ch.Uid = c.Uid
 	ch.Key = c.Key

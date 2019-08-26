@@ -19,7 +19,7 @@ type Bucket struct {
 	chs map[string]*Channel
 
 	// 當前管理的Room以Room id當作key
-	rooms map[string]*Room
+	rooms map[int32]*Room
 
 	// 一個Bucket會開多個goroutine，每個goroutine都有一把此chan針對房間做推送
 	// 推送時會採用原子操作遞增並除於grpc.BroadcastRoomReq數量取餘數來決定使用哪一個
@@ -33,7 +33,7 @@ type Bucket struct {
 func NewBucket(c *conf.Bucket) (b *Bucket) {
 	b = new(Bucket)
 	b.chs = make(map[string]*Channel, c.Channel)
-	b.rooms = make(map[string]*Room, c.Room)
+	b.rooms = make(map[int32]*Room, c.Room)
 	b.c = c
 
 	// 設定該Bucket需要開幾個goroutine併發做房間訊息推送
@@ -57,13 +57,13 @@ func (b *Bucket) RoomCount() int {
 }
 
 // 統計房間人數
-func (b *Bucket) RoomsCount() (res map[string]int32) {
+func (b *Bucket) RoomsCount() (res map[int32]int32) {
 	var (
-		roomID string
+		roomID int32
 		room   *Room
 	)
 	b.cLock.RLock()
-	res = make(map[string]int32)
+	res = make(map[int32]int32)
 	for roomID, room = range b.rooms {
 		if room.Online > 0 {
 			res[roomID] = room.Online
@@ -74,14 +74,14 @@ func (b *Bucket) RoomsCount() (res map[string]int32) {
 }
 
 // user更換房間
-func (b *Bucket) ChangeRoom(nrid string, ch *Channel) (err error) {
+func (b *Bucket) ChangeRoom(nrid int32, ch *Channel) (err error) {
 	var (
 		nroom *Room
 		ok    bool
 		oroom = ch.Room
 	)
 	// change to no room
-	if nrid == "" {
+	if nrid == 0 {
 		if oroom != nil && oroom.Del(ch) {
 			b.DelRoom(oroom)
 		}
@@ -119,7 +119,7 @@ func (b *Bucket) ChangeRoom(nrid string, ch *Channel) (err error) {
 //			- Channel		|-------- Room     |
 //          |----------------------------------|
 //
-func (b *Bucket) Put(rid string, ch *Channel) (err error) {
+func (b *Bucket) Put(rid int32, ch *Channel) (err error) {
 	var (
 		room *Room
 		ok   bool
@@ -130,7 +130,7 @@ func (b *Bucket) Put(rid string, ch *Channel) (err error) {
 		dch.Close()
 	}
 	b.chs[ch.Key] = ch
-	if rid != "" {
+	if rid != 0 {
 		if room, ok = b.rooms[rid]; !ok {
 			room = NewRoom(rid)
 			b.rooms[rid] = room
@@ -186,7 +186,7 @@ func (b *Bucket) Broadcast(p *pb.Proto) {
 }
 
 // 取得房間
-func (b *Bucket) Room(rid string) (room *Room) {
+func (b *Bucket) Room(rid int32) (room *Room) {
 	b.cLock.RLock()
 	room = b.rooms[rid]
 	b.cLock.RUnlock()
@@ -211,12 +211,12 @@ func (b *Bucket) BroadcastRoom(arg *pb.BroadcastRoomReq) {
 }
 
 // Bucket內房間內所有人數大於1的房間id
-func (b *Bucket) Rooms() (res map[string]struct{}) {
+func (b *Bucket) Rooms() (res map[int32]struct{}) {
 	var (
-		roomID string
+		roomID int32
 		room   *Room
 	)
-	res = make(map[string]struct{})
+	res = make(map[int32]struct{})
 	b.cLock.RLock()
 	for roomID, room = range b.rooms {
 		if room.Online > 0 {
@@ -227,9 +227,9 @@ func (b *Bucket) Rooms() (res map[string]struct{}) {
 	return
 }
 
-func (b *Bucket) UpRoomsCount(roomCountMap map[string]int32) {
+func (b *Bucket) UpRoomsCount(roomCountMap map[int32]int32) {
 	var (
-		roomID string
+		roomID int32
 		room   *Room
 	)
 	b.cLock.RLock()

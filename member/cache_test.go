@@ -1,16 +1,15 @@
 package member
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/alicebob/miniredis"
 	goRedis "github.com/go-redis/redis"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/id"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"os"
-	"strconv"
 	"testing"
 	"time"
 )
@@ -44,159 +43,148 @@ func fatalTestError(fmtStr string, args ...interface{}) {
 
 func TestSetBanned(t *testing.T) {
 	uid := id.UUid32()
-	r.HSet(keyUidInfo(uid), hashStatusKey, 0)
-
-	err := c.setBanned(uid, time.Duration(10)*time.Second)
-	assert.Nil(t, err)
-
-	unix, err := r.Get(keyBannedInfo(uid)).Int64()
-	ex := time.Unix(unix, 0)
-	assert.Nil(t, err)
-	assert.False(t, ex.IsZero())
-
-	status, err := r.HGet(keyUidInfo(uid), hashStatusKey).Int()
-	assert.Equal(t, -1, status)
-	assert.Nil(t, err)
-}
-
-func TestSetBannedByExist(t *testing.T) {
-	uid := id.UUid32()
-	r.HSet(keyUidInfo(uid), hashStatusKey, 0)
-
-	c.setBanned(uid, time.Duration(10)*time.Second)
-	err := c.setBanned(uid, time.Duration(10)*time.Second)
-	assert.Nil(t, err)
-
-	unix, err := r.Get(keyBannedInfo(uid)).Int64()
-	ex := time.Unix(unix, 0)
-	assert.Nil(t, err)
-	assert.False(t, ex.IsZero())
-
-	status, err := r.HGet(keyUidInfo(uid), hashStatusKey).Int()
-	assert.Equal(t, -1, status)
-	assert.Nil(t, err)
-}
-
-func TestGetBanned(t *testing.T) {
-	uid := id.UUid32()
-	unix := time.Now().Unix()
-	r.Set(keyBannedInfo(uid), unix, 10*time.Second)
-
-	ex, ok, err := c.getBanned(uid)
-
+	ok, err := c.set(&models.Member{
+		Uid: uid,
+	})
 	assert.Nil(t, err)
 	assert.True(t, ok)
-	assert.Equal(t, unix, ex.Unix())
-}
 
-func TestGetBannedEmpty(t *testing.T) {
-	ex, ok, err := c.getBanned(id.UUid32())
+	ok, err = c.setBanned(uid, time.Duration(10)*time.Second)
+	assert.Nil(t, err)
+	assert.True(t, ok)
+
+	unix, err := r.Get(keyBanned(uid)).Int64()
+	ex := time.Unix(unix, 0)
+	assert.Nil(t, err)
+	assert.False(t, ex.IsZero())
+
+	ok, err = c.isBanned(uid)
+	assert.Nil(t, err)
+	assert.True(t, ok)
+
+	m, err := c.get(uid)
 
 	assert.Nil(t, err)
+	assert.False(t, m.IsMessage)
+}
+
+func TestIsBannedByFalse(t *testing.T) {
+	ok, err := c.isBanned("1")
+	assert.Nil(t, err)
 	assert.False(t, ok)
-	assert.True(t, ex.IsZero())
 }
 
 func TestDelBanned(t *testing.T) {
-	uid := id.UUid32()
-	r.HSet(keyUidInfo(uid), hashStatusKey, 2)
-	c.setBanned(uid, time.Duration(10)*time.Second)
-	err := c.delBanned(uid)
-
+	uid := "1"
+	ok, err := c.set(&models.Member{Uid: uid, IsMessage: true})
 	assert.Nil(t, err)
+	assert.True(t, ok)
 
-	bi := r.Exists(keyBannedInfo(uid)).Val()
-	status, _ := r.HGet(keyUidInfo(uid), hashStatusKey).Int()
+	ok, err = c.setBanned(uid, time.Minute)
+	assert.Nil(t, err)
+	assert.True(t, ok)
 
-	assert.Equal(t, int64(0), bi)
-	assert.Equal(t, 2, status)
+	ok, err = c.delBanned(uid)
+	assert.Nil(t, err)
+	assert.True(t, ok)
+
+	ok, err = c.isBanned(uid)
+	assert.Nil(t, err)
+	assert.False(t, ok)
 }
 
-func TestSetUser(t *testing.T) {
+func TestLogin(t *testing.T) {
 	uid := id.UUid32()
 	key := id.UUid32()
-	roomId := id.UUid32()
 	name := "test"
 	server := "server"
-	member := &models.Member{Id: 1, Uid: uid, Name: name, Type: models.Player}
-	err := c.set(member, key, roomId, server)
+	member := &models.Member{Id: 1, Uid: uid, Name: name, Type: models.Player, IsMessage: true}
+	ok, err := c.login(member, key, server)
 
-	u := r.HGetAll(keyUidInfo(uid)).Val()
+	u := r.Get(keyUid(uid)).Val()
+
+	b, err := json.Marshal(member)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Nil(t, err)
+	assert.Equal(t, string(b), u)
+	assert.True(t, ok)
+
+	keys, err := r.HGetAll(keyUidWs(member.Uid)).Result()
 
 	assert.Nil(t, err)
 	assert.Equal(t, map[string]string{
-		key:           roomId,
-		hMidKey:       "1",
-		hashNameKey:   name,
-		hashStatusKey: strconv.Itoa(models.PlayStatus),
-		hashServerKey: server,
-	}, u)
+		key: server,
+	}, keys)
 
-	expire := r.TTL(keyUidInfo(uid)).Val()
+	expire := r.TTL(keyUid(uid)).Val()
+
+	assert.Equal(t, c.expire, expire)
+
+	expire = r.TTL(keyUidWs(uid)).Val()
 
 	assert.Equal(t, c.expire, expire)
 }
 
 func TestRefreshUserExpire(t *testing.T) {
 	uid := id.UUid32()
-	r.Set(keyUidInfo(uid), 1, time.Hour)
+	r.Set(keyUid(uid), 1, time.Hour)
+	r.Set(keyUidWs(uid), 1, time.Hour)
 
-	ok, err := c.refreshUserExpire(uid)
+	err := c.refreshExpire(uid)
 
-	assert.True(t, ok)
 	assert.Nil(t, err)
 
-	m := r.TTL(keyUidInfo(uid)).Val()
+	uidT := r.TTL(keyUid(uid)).Val()
+	wsT := r.TTL(keyUidWs(uid)).Val()
 
-	assert.Equal(t, c.expire, m)
+	assert.Equal(t, c.expire, uidT)
+	assert.Equal(t, c.expire, wsT)
 }
 
 func TestDeleteUser(t *testing.T) {
 	uid := id.UUid32()
-	r.HSet(keyUidInfo(uid), "key", "test")
+	r.HSet(keyUidWs(uid), "key1", "test")
+	r.HSet(keyUidWs(uid), "key2", "test")
 
-	ok, err := c.deleteUser(uid, "key")
+	ok, err := c.logout(uid, "key1")
 
 	assert.Nil(t, err)
 	assert.True(t, ok)
-}
 
-func TestGetUser(t *testing.T) {
-	uid := id.UUid32()
-	key := id.UUid32()
-	roomId := id.UUid32()
-	name := "test"
-	member := &models.Member{Id: 1, Uid: uid, Name: name, Type: models.Player}
-
-	_ = c.set(member, key, roomId, "test")
-
-	h, err := c.get(uid, key)
+	keys, err := r.HGetAll(keyUidWs(uid)).Result()
 
 	assert.Nil(t, err)
-	assert.Equal(t, roomId, h.Room)
-	assert.Equal(t, name, h.Name)
-	assert.Equal(t, models.PlayStatus, h.Status)
-	assert.Equal(t, 1, h.Mid)
+	assert.Equal(t, map[string]string{
+		"key2": "test",
+	}, keys)
 }
 
-func TestGetUserBuNil(t *testing.T) {
+func TestSetAndGet(t *testing.T) {
 	uid := id.UUid32()
-	key := id.UUid32()
-	roomId := id.UUid32()
 	name := "test"
-	member := &models.Member{Uid: uid, Name: name, Type: models.Player}
+	member := &models.Member{Id: 1, Uid: uid, Name: name, Type: models.Player, IsMessage: true}
 
-	_ = c.set(member, key, roomId, "test")
+	ok, err := c.set(member)
+	assert.Nil(t, err)
+	assert.True(t, ok)
 
-	_, err := c.get(uid, "123")
+	m, err := c.get(member.Uid)
 
-	assert.Equal(t, errdefs.InvalidParameter(errUserNil, 1), err)
+	assert.Nil(t, err)
+	assert.Equal(t, member.Id, m.Id)
+	assert.Equal(t, member.Uid, m.Uid)
+	assert.Equal(t, member.Name, m.Name)
+	assert.Equal(t, member.Type, m.Type)
+	assert.Equal(t, member.IsMessage, m.IsMessage)
 }
 
 func TestGetUserName(t *testing.T) {
 	uid := []string{"1", "2", "3", "4"}
 	for _, v := range uid {
-		if err := r.HSet(keyUidInfo(v), hashNameKey, v).Err(); err != nil {
+		if _, err := c.login(&models.Member{Uid: v, Name: v}, v, v); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -205,33 +193,4 @@ func TestGetUserName(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, uid, name)
-}
-
-func TestChangeRoom(t *testing.T) {
-	uid := id.UUid32()
-	key := id.UUid32()
-	roomId := id.UUid32()
-
-	err := c.changeRoom(uid, key, roomId)
-
-	assert.Nil(t, err)
-
-	i := r.HGet(keyUidInfo(uid), key).Val()
-
-	assert.Equal(t, roomId, i)
-
-	m := r.TTL(keyUidInfo(uid)).Val()
-
-	assert.Equal(t, c.expire, m)
-}
-
-// BenchmarkGetUserName-4   	   10000	    174115 ns/op
-func BenchmarkGetUserName(b *testing.B) {
-	uid := []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
-	for _, v := range uid {
-		r.HSet(keyUidInfo(v), hashNameKey, v)
-	}
-	for i := 0; i < b.N; i++ {
-		c.getName(uid)
-	}
 }

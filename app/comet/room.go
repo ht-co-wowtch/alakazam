@@ -13,7 +13,7 @@ import (
 // 		       Room
 type Room struct {
 	// 房間id
-	ID string
+	ID int32
 
 	// 讀寫鎖
 	rLock sync.RWMutex
@@ -32,7 +32,7 @@ type Room struct {
 }
 
 // new 房間結構
-func NewRoom(id string) (r *Room) {
+func NewRoom(id int32) (r *Room) {
 	r = new(Room)
 	r.ID = id
 	r.drop = false

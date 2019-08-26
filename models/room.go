@@ -19,28 +19,28 @@ type Room struct {
 	Id int `xorm:"pk autoincr"`
 
 	// 是否禁言
-	IsMessage bool `xorm:"default(0) not null"`
+	IsMessage bool
 
 	// 是否可發/跟注
-	IsFollow bool `xorm:"default(0) not null"`
+	IsFollow bool
 
 	// 聊天打碼與充值量天數限制
-	DayLimit int `xorm:"tinyint(4) default(0)"`
+	DayLimit int
 
 	// 充值量限制
-	DepositLimit int `xorm:"default(0)"`
+	DepositLimit int
 
 	// 打碼量限制
-	DmlLimit int `xorm:"default(0)"`
+	DmlLimit int
 
 	// 房間狀態(開:1 關:0)
-	Status bool `xorm:"default(1)"`
+	Status bool
 
 	// 更新時間
-	UpdateAt time.Time `xorm:"not null"`
+	UpdateAt time.Time `json:"-"`
 
 	// 建立時間
-	CreateAt time.Time `xorm:"not null"`
+	CreateAt time.Time `json:"-"`
 }
 
 func (r *Room) Permission() int {

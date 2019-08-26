@@ -25,6 +25,7 @@ type Config struct {
 	Redis      *redis.Conf
 	Nidoran    *client.Conf
 	Seq        *grpc.Conf
+	JwtSecret  []byte
 	// comet連線用戶心跳，server會清除在線紀錄
 	Heartbeat int64
 }
@@ -74,6 +75,7 @@ func Read(path string) error {
 	if err != nil {
 		return err
 	}
+	Conf.JwtSecret = []byte(v.GetString("jwt.authSecret"))
 	Conf.Kafka = &Kafka{
 		Topic:   v.GetString("kafka.topic"),
 		Brokers: v.GetStringSlice("kafka.brokers"),

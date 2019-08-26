@@ -26,16 +26,19 @@ func New(db *models.Store, cache *redis.Client, cli *client.Client) *Member {
 
 // 一個聊天室會員的基本資料
 type User struct {
-	Uid        string  `json:"uid" binding:"required,len=32"`
-	Key        string  `json:"key" binding:"required,len=36"`
-	RoomStatus int     `json:"-"`
-	H          HMember `json:"-"`
+	Uid        string `json:"-"`
+	RoomId     string `json:"room_id"`
+	Key        string `json:"key" binding:"required,len=36"`
+	RoomStatus int    `json:"-"`
 }
 
-func (m *Member) Login(token, roomId, server string) (*models.Member, string, error) {
+func (m *Member) Login(rid int, token, server string) (*models.Member, string, error) {
 	user, err := m.cli.Auth(token)
 	if err != nil {
 		return nil, "", err
+	}
+	if user.Uid == "" {
+		return nil, "", errors.New("无此帐号")
 	}
 
 	u, ok, err := m.db.Find(user.Uid)
@@ -67,14 +70,16 @@ func (m *Member) Login(token, roomId, server string) (*models.Member, string, er
 	key := uuid.New().String()
 
 	// 儲存user資料至redis
-	if err := m.c.set(u, key, roomId, server); err != nil {
+	// TODO ok
+	ok, err = m.c.login(u, key, server)
+	if err != nil {
 		return nil, "", err
 	} else {
 		log.Info(
 			"conn connected",
 			zap.String("key", key),
 			zap.String("uid", u.Uid),
-			zap.String("room_id", roomId),
+			zap.Int("room_id", rid),
 			zap.String("server", server),
 		)
 	}
@@ -82,20 +87,28 @@ func (m *Member) Login(token, roomId, server string) (*models.Member, string, er
 }
 
 func (m *Member) Logout(uid, key string) (bool, error) {
-	return m.c.deleteUser(uid, key)
+	return m.c.logout(uid, key)
 }
 
-// 會員在線認證
-func (m *Member) Auth(u *User) error {
-	hash, err := m.c.get(u.Uid, u.Key)
+func (m *Member) Kick(uid string) ([]string, error) {
+	keys, err := m.c.getKey(uid)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if hash.Name == "" {
-		return errors.ErrLogin
+	ok, err := m.c.delete(uid)
+	if !ok {
+		// TODO error
+		return nil, err
 	}
-	u.H = hash
-	return nil
+	return keys, err
+}
+
+func (m *Member) GetKeys(uid string) ([]string, error) {
+	return m.c.getKey(uid)
+}
+
+func (m *Member) Get(uid string) (*models.Member, error) {
+	return m.c.get(uid)
 }
 
 func (m *Member) GetUserName(uid []string) ([]string, error) {
@@ -111,13 +124,9 @@ func (m *Member) GetMembers(id []int) ([]models.Member, error) {
 }
 
 func (m *Member) Heartbeat(uid string) error {
-	_, err := m.c.refreshUserExpire(uid)
+	err := m.c.refreshExpire(uid)
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-func (m *Member) ChangeRoom(uid, key, roomId string) error {
-	return m.c.changeRoom(uid, key, roomId)
 }

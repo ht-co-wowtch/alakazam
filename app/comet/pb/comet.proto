@@ -23,7 +23,7 @@ message BroadcastReq{
 message BroadcastReply{}
 
 message BroadcastRoomReq {
-    string roomID = 1;
+    int32 roomID = 1;
     Proto proto = 2;
 }
 
@@ -33,14 +33,19 @@ message RoomsReq{}
 
 message RoomsReply {
     option (gogoproto.goproto_stringer) = false;
-    map<string,bool> rooms = 1;
+    map<int32,bool> rooms = 1;
+}
+
+message KeyReq {
+    Proto proto = 1;
+    repeated string key = 2;
 }
 
 service Comet { 
     // Ping Service 
     rpc Ping(Empty) returns(Empty); 
-    // Close Service 
-    rpc Close(Empty) returns(Empty);
+    // Close websocket
+    rpc Kick(KeyReq) returns(Empty);
     // Broadcast send to every enrity
     rpc Broadcast(BroadcastReq) returns (BroadcastReply);
     // BroadcastRoom broadcast to one room

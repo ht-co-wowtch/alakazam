@@ -40,9 +40,16 @@ func (s *server) Ping(ctx context.Context, req *pb.Empty) (*pb.Empty, error) {
 	return &pb.Empty{}, nil
 }
 
-// Close Service
-func (s *server) Close(ctx context.Context, req *pb.Empty) (*pb.Empty, error) {
-	// TODO close
+// 踢人
+func (s *server) Kick(ctx context.Context, req *pb.KeyReq) (*pb.Empty, error) {
+	for _, key := range req.Key {
+		if b := s.srv.Bucket(key); b != nil {
+			if ch := b.Channel(key); ch != nil {
+				_ = ch.Push(req.Proto)
+				ch.Close()
+			}
+		}
+	}
 	return &pb.Empty{}, nil
 }
 
@@ -66,7 +73,7 @@ func (s *server) Broadcast(ctx context.Context, req *pb.BroadcastReq) (*pb.Broad
 
 // 單一房間推送
 func (s *server) BroadcastRoom(ctx context.Context, req *pb.BroadcastRoomReq) (*pb.BroadcastRoomReply, error) {
-	if req.Proto == nil || req.RoomID == "" {
+	if req.Proto == nil || req.RoomID == 0 {
 		return nil, errors.ErrBroadCastRoomArg
 	}
 	for _, bucket := range s.srv.Buckets() {
@@ -78,7 +85,7 @@ func (s *server) BroadcastRoom(ctx context.Context, req *pb.BroadcastRoomReq) (*
 // server上有哪些房間
 func (s *server) Rooms(ctx context.Context, req *pb.RoomsReq) (*pb.RoomsReply, error) {
 	var (
-		roomIds = make(map[string]bool)
+		roomIds = make(map[int32]bool)
 	)
 	for _, bucket := range s.srv.Buckets() {
 		for roomID := range bucket.Rooms() {

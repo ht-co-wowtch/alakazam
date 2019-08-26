@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
@@ -14,14 +15,15 @@ import (
 )
 
 // New logic grpc server
-func New(c *rpc.Conf, room *room.Room) *grpc.Server {
+func New(c *rpc.Conf, room room.Chat, heartbeat int64) *grpc.Server {
 	srv := rpc.New(c)
-	pb.RegisterLogicServer(srv, &server{room})
+	pb.RegisterLogicServer(srv, &server{room: room, HeartbeatNanosec: heartbeat})
 	return srv
 }
 
 type server struct {
-	room *room.Room
+	room             room.Chat
+	HeartbeatNanosec int64
 }
 
 var _ pb.LogicServer = &server{}
@@ -33,7 +35,7 @@ func (s *server) Ping(ctx context.Context, req *pb.PingReq) (*pb.PingReply, erro
 
 // 某client要做連線
 func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectReply, error) {
-	r, err := s.room.Connect(req.Server, req.Token)
+	member, key, rid, err := s.room.Connect(req.Server, req.Token)
 	if err != nil {
 		if _, ok := err.(*errdefs.Error); !ok {
 			log.Error("grpc connect", zap.Error(err), zap.String("data", string(req.Token)))
@@ -41,18 +43,20 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 		return &pb.ConnectReply{}, err
 	}
 	return &pb.ConnectReply{
-		Uid:       r.Uid,
-		Key:       r.Key,
-		Name:      r.Name,
-		RoomID:    r.RoomId,
-		Heartbeat: r.Hb,
-		Status:    int32(r.Permission),
+		Uid:           member.Uid,
+		Key:           key,
+		Name:          member.Name,
+		RoomID:        int32(rid),
+		Heartbeat:     s.HeartbeatNanosec,
+		IsBlockade:    member.IsBlockade,
+		IsMessage:     member.IsMessage,
+		IsRedEnvelope: member.Type == models.Player,
 	}, nil
 }
 
 // 某client要中斷連線
 func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.DisconnectReply, error) {
-	has, err := s.room.Disconnect(req.Uid, req.Key, req.Server)
+	has, err := s.room.Disconnect(req.Uid, req.Key)
 	if err != nil {
 		log.Error("grpc disconnect", zap.Error(err), zap.String("uid", req.Uid))
 		return &pb.DisconnectReply{}, err
@@ -64,17 +68,13 @@ func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.Dis
 
 // user當前連線要切換房間
 func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.ChangeRoomReply, error) {
-	err := s.room.ChangeRoom(req.Uid, req.Key, req.RoomID)
-	if err != nil {
-		log.Error("grpc change room", zap.Error(err), zap.String("uid", req.Uid), zap.String("room_id", req.RoomID))
-	}
-	return &pb.ChangeRoomReply{}, err
+	return &pb.ChangeRoomReply{}, nil
 }
 
 // 重置user redis過期時間
 func (s *server) Heartbeat(ctx context.Context, req *pb.HeartbeatReq) (*pb.HeartbeatReply, error) {
-	if err := s.room.Heartbeat(req.Uid, req.Key, req.RoomId, req.Name, req.Server); err != nil {
-		log.Error("grpc heart beat", zap.Error(err), zap.String("uid", req.Uid), zap.String("room_id", req.RoomId))
+	if err := s.room.Heartbeat(req.Uid, req.Key, req.Name, req.Server); err != nil {
+		log.Error("grpc heart beat", zap.Error(err), zap.String("uid", req.Uid), zap.Int32("room_id", req.RoomId))
 		return &pb.HeartbeatReply{}, err
 	}
 	return &pb.HeartbeatReply{}, nil

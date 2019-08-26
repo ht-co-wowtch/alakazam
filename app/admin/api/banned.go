@@ -17,7 +17,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	if err := c.ShouldBindJSON(&params); err != nil {
 		return err
 	}
-	if err := s.member.SetBanned(params.Uid, params.Expired); err != nil {
+	if err := s.member.SetBanned(params.Uid, params.Expired, false); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)
