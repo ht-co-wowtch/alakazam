@@ -9,20 +9,32 @@ import (
 )
 
 var (
+	// 沒有資料
+	ErrNoMember  = errdefs.NotFound(New("没有会员资料"), 4041)
+	ErrNoRoom    = errdefs.NotFound(New("没有房间资料"), 4042)
+	ErrRoomClose = errdefs.NotFound(New("目前房间已关闭"), 4043)
+
+	// 限速
+	ErrRateMsg     = errdefs.TooManyRequests(New("1秒内只能发一则消息"), 4291)
+	ErrRateSameMsg = errdefs.TooManyRequests(New("10秒内相同讯息3次，自动禁言10分钟"), 4292)
+
+	// 身份認證
+	ErrValidationToken = errdefs.Forbidden(New("用户认证失败"), 4031)
+	ErrClaimsToken     = errdefs.Forbidden(New("用户认证失败"), 4032)
+	ErrValidToken      = errdefs.Forbidden(New("用户认证失败"), 4033)
+	ErrLogin           = errdefs.Forbidden(New("请先登入会员"), 4034)
+	// 4035
+	ErrRoomLimit       = "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元"
+	ErrMemberNoMessage = errdefs.Forbidden(New("您在永久禁言状态，无法发言"), 4036)
+	ErrMemberBanned    = errdefs.Forbidden(New("您在禁言状态，无法发言"), 4037)
+	ErrRoomNoMessage   = errdefs.Forbidden(New("聊天室目前禁言状态，无法发言"), 4038)
+
 	ErrPublishAt = errdefs.InvalidParameter(New("预定发送时间不能大于现在"), 0)
 	ErrExist     = errdefs.InvalidParameter(New("资料已存在"), 1)
 
-	ErrLogin         = errdefs.Unauthorized(New("请先登入会员"))
-	ErrReLogin       = errdefs.Unauthorized(New("请重新登入会员"))
-	ErrRoomBanned    = errdefs.Unauthorized(New("聊天室目前禁言状态，无法发言"), 1)
-	ErrBanned        = errdefs.Unauthorized(New("您在禁言状态，无法发言"), 2)
 	ErrAuthorization = errdefs.Unauthorized(New("Unauthorized"), 3)
 
-	ErrNoPage = errdefs.NotFound(New("无此Api"))
 	ErrNoRows = errdefs.NotFound(New("没有资料"), 1)
-
-	ErrRateMsg     = errdefs.TooManyRequests(New("1秒内只能发一则消息"), 1)
-	ErrRateSameMsg = errdefs.TooManyRequests(New("10秒内相同讯息3次，自动禁言10分钟"), 2)
 
 	ErrTokenUid = errdefs.Forbidden(New("帐号资料认证失败"), 1)
 
@@ -59,6 +71,8 @@ func init() {
 		panic(err)
 	}
 	errdefs.SetOutput(output{})
+	errdefs.SetJsonOut(output{})
+	errdefs.SetValidationOut(output{})
 
 	validation.Set(validation.Required, "栏位必填")
 	validation.Set(validation.Min, "栏位最大值或长度至少")
@@ -76,10 +90,18 @@ func (m output) Validation(e validator.ValidationErrors) interface{} {
 	return validation.ValidationErrorsMap(e)
 }
 
+func (m output) GetValidationMessage() string {
+	return "栏位资料格式有误"
+}
+
 func (m output) JsonUnmarshalType(e *json.UnmarshalTypeError) interface{} {
 	return map[string]string{
 		e.Field: "栏位资料格式有误",
 	}
+}
+
+func (m output) GetJsonUnmarshalTypeMessage() string {
+	return "栏位资料型态有误"
 }
 
 func (m output) GetInternalServer() string {

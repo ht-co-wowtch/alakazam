@@ -10,7 +10,7 @@ import (
 )
 
 type messageReq struct {
-	RoomId int `json:"room_id" binding:"required,max=30"`
+	RoomId int `json:"room_id" binding:"required,max=10000"`
 
 	// user push message
 	Message string `json:"message" binding:"required,max=100"`
@@ -22,7 +22,7 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 	if err := c.ShouldBindJSON(p); err != nil {
 		return err
 	}
-	user, err := s.member.Get(c.GetString("uid"))
+	user, err := s.member.GetSession(c.GetString("uid"))
 	if err != nil {
 		return err
 	}
@@ -37,33 +37,33 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 		Name:    user.Name,
 		Message: p.Message,
 	}
+
 	id, err := s.message.Send(msg)
-	if err != nil {
-		if err == errors.ErrRateSameMsg {
-			isBlockade, err := s.member.SetBannedForSystem(user.Uid, 10*60)
+	switch err {
+	case errors.ErrRateSameMsg:
+		isBlockade, err := s.member.SetBannedForSystem(user.Uid, 10*60)
+		if err != nil {
+			log.Error("set banned for rate same message", zap.Error(err), zap.String("uid", user.Uid))
+		}
+		if isBlockade {
+			keys, err := s.member.Kick(user.Uid)
 			if err != nil {
-				log.Error("set banned for rate same message", zap.Error(err), zap.String("uid", user.Uid))
+				log.Error("kick member for push room", zap.Error(err), zap.String("uid", user.Uid))
 			}
-			if isBlockade {
-				keys, err := s.member.Kick(user.Uid)
-				if err != nil {
-					log.Error("kick member for push room", zap.Error(err), zap.String("uid", user.Uid))
-				}
-				if len(keys) > 0 {
-					err = s.message.Kick(message.KickMessage{
-						Message: "你被踢出房间，因为自动禁言达五次",
-						Keys:    keys,
-					})
-					if err == nil {
-						log.Error("kick member set message for push room", zap.Error(err))
-					}
+			if len(keys) > 0 {
+				err = s.message.Kick(message.KickMessage{
+					Message: "你被踢出房间，因为自动禁言达五次",
+					Keys:    keys,
+				})
+				if err == nil {
+					log.Error("kick member set message for push room", zap.Error(err))
 				}
 			}
 		}
-		return err
+	case nil:
+		c.JSON(http.StatusOK, gin.H{
+			"id": id,
+		})
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"id": id,
-	})
-	return nil
+	return err
 }

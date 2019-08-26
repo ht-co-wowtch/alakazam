@@ -95,10 +95,6 @@ func (m *Member) SetBannedForSystem(uid string, sec int) (bool, error) {
 	return false, nil
 }
 
-func (m *Member) IsBanned(uid string) (bool, error) {
-	return m.c.isBanned(uid)
-}
-
 func (m *Member) RemoveBanned(uid string) error {
 	me, err := m.db.Find(uid)
 	if err != nil {

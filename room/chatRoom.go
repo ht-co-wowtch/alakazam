@@ -44,12 +44,6 @@ func NewChat(db models.IChat, cache *redis.Client, member member.Chat, cli *clie
 	}
 }
 
-var (
-	errNoRoom       = errors.New("room not found")
-	errSetRoomCache = errors.New("set room cache")
-	errRoomClose    = errors.New("room is close")
-)
-
 func (c *chat) Connect(server string, token []byte) (*models.Member, string, int, error) {
 	var params struct {
 		// 帳務中心+版的認證token
@@ -66,26 +60,12 @@ func (c *chat) Connect(server string, token []byte) (*models.Member, string, int
 		return nil, "", 0, err
 	}
 
-	room, err := c.cache.get(params.RoomID)
-
+	room, err := c.getChat(params.RoomID)
 	if err != nil {
-		if err != redis.Nil {
-			return nil, "", 0, err
-		}
-
-		room, err = c.db.GetRoom(params.RoomID)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				return nil, "", 0, errNoRoom
-			}
-			return nil, "", 0, err
-		}
-		if err := c.cache.set(room); err != nil {
-			return nil, "", 0, errSetRoomCache
-		}
+		return nil, "", 0, err
 	}
 	if !room.Status {
-		return nil, "", 0, errRoomClose
+		return nil, "", 0, errors.ErrRoomClose
 	}
 
 	user, key, err := c.member.Login(params.RoomID, params.Token, server)
@@ -93,6 +73,27 @@ func (c *chat) Connect(server string, token []byte) (*models.Member, string, int
 		return nil, "", 0, err
 	}
 	return user, key, params.RoomID, nil
+}
+
+func (c *chat) getChat(id int) (models.Room, error) {
+	room, err := c.cache.get(id)
+	if err != nil {
+		if err != redis.Nil {
+			return models.Room{}, err
+		}
+
+		room, err = c.db.GetRoom(id)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return models.Room{}, errors.ErrNoRoom
+			}
+			return models.Room{}, err
+		}
+		if err := c.cache.set(room); err != nil {
+			return models.Room{}, err
+		}
+	}
+	return room, nil
 }
 
 func (r *chat) Disconnect(uid, key string) (bool, error) {
@@ -113,22 +114,24 @@ func (c *chat) RenewOnline(server string, roomCount map[int32]int32) (map[int32]
 	return roomCount, err
 }
 
-func (r *chat) IsMessage(rid int, uid string) error {
-	room, err := r.cache.get(rid)
+func (c *chat) IsMessage(rid int, uid string) error {
+	room, err := c.getChat(rid)
 	if err != nil {
-		if err == redis.Nil {
-			// TODO error
-			return errors.New("房間讀取錯誤")
-		}
 		return err
 	}
-	money, err := r.cli.GetDepositAndDml(room.DayLimit, uid)
+	if !room.Status {
+		return errors.ErrRoomClose
+	}
+	if !room.IsMessage {
+		return errors.ErrRoomNoMessage
+	}
+	money, err := c.cli.GetDepositAndDml(room.DayLimit, uid)
 	if err != nil {
 		return err
 	}
 	if float64(room.DmlLimit) > money.Dml || float64(room.DepositLimit) > money.Deposit {
-		e := errors.New(fmt.Sprintf("您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元", room.DayLimit, room.DepositLimit, room.DmlLimit))
-		return errdefs.Unauthorized(e, 4)
+		msg := fmt.Sprintf(errors.ErrRoomLimit, room.DayLimit, room.DepositLimit, room.DmlLimit)
+		return errdefs.Forbidden(errors.New(msg), 4035)
 	}
 	return nil
 }

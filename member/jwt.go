@@ -26,15 +26,15 @@ func (j *Jwt) Parse(token string) (jwt.MapClaims, error) {
 	switch e := err.(type) {
 	case *jwt.ValidationError:
 		if e.Errors == jwt.ValidationErrorExpired {
-			return nil, errors.ErrReLogin
+			return nil, errors.ErrValidationToken
 		}
 	case nil:
 		claims, ok := t.Claims.(jwt.MapClaims)
 		if !ok {
-			err = errors.ErrReLogin
+			err = errors.ErrClaimsToken
 		}
 		if !t.Valid {
-			err = errors.ErrLogin
+			err = errors.ErrValidToken
 		}
 		if err != nil {
 			return nil, err

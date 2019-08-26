@@ -6,6 +6,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gopkg.in/go-playground/validator.v8"
 	"testing"
@@ -61,7 +62,7 @@ func TestConnectNotRoom(t *testing.T) {
 
 	_, _, _, err := chat.Connect("", jsonb)
 
-	assert.Equal(t, errNoRoom, err)
+	assert.Equal(t, errors.ErrNoRoom, err)
 }
 
 func TestConnectRoomClose(t *testing.T) {
@@ -72,7 +73,7 @@ func TestConnectRoomClose(t *testing.T) {
 
 	_, _, _, err := chat.Connect("", jsonb)
 
-	assert.Equal(t, errRoomClose, err)
+	assert.Equal(t, errors.ErrRoomClose, err)
 }
 
 func TestConnectNotData(t *testing.T) {

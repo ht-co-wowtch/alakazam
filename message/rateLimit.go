@@ -36,11 +36,11 @@ func (r *rateLimit) perSec(mid int64) error {
 	return nil
 }
 
-func (r *rateLimit) IsSameMsg(msg Messages) (bool, error) {
+func (r *rateLimit) sameMsg(msg Messages) error {
 	key := fmt.Sprintf("rate_msg_%s", md5.Sum([]byte(msg.Uid+msg.Message)))
 	cut, err := r.cache.Incr(key).Result()
 	if err != nil {
-		return false, err
+		return err
 	}
 	if cut == 1 {
 		_, err := r.cache.Expire(key, r.sameSec).Result()
@@ -52,7 +52,7 @@ func (r *rateLimit) IsSameMsg(msg Messages) (bool, error) {
 		}
 	}
 	if cut >= 3 {
-		return true, nil
+		return errors.ErrRateSameMsg
 	}
-	return false, nil
+	return nil
 }

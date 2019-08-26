@@ -8,7 +8,6 @@ import (
 	"github.com/gogo/protobuf/proto"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	seqpb "gitlab.com/jetfueltw/cpw/alakazam/app/seq/api/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	shield "gitlab.com/jetfueltw/cpw/alakazam/pkg/filter"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -129,12 +128,8 @@ func (p *Producer) Send(msg Messages) (int64, error) {
 	if err := p.rate.perSec(msg.Mid); err != nil {
 		return 0, err
 	}
-	same, err := p.rate.IsSameMsg(msg)
-	if err != nil {
+	if err := p.rate.sameMsg(msg); err != nil {
 		return 0, err
-	}
-	if same {
-		return 0, errors.ErrRateSameMsg
 	}
 
 	pushMsg, err := p.toPb(msg)

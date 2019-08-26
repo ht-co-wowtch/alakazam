@@ -110,8 +110,31 @@ func (m *Member) GetKeys(uid string) ([]string, error) {
 	return m.c.getKey(uid)
 }
 
+func (m *Member) GetSession(uid string) (*models.Member, error) {
+	member, err := m.c.get(uid)
+	if err != nil {
+		return nil, errors.ErrLogin
+	}
+	if !member.IsMessage {
+		return nil, errors.ErrMemberNoMessage
+	}
+
+	ok, err := m.c.isBanned(uid)
+	if err != nil {
+		return nil, err
+	}
+	if ok {
+		return nil, errors.ErrMemberBanned
+	}
+	return member, nil
+}
+
 func (m *Member) Get(uid string) (*models.Member, error) {
-	return m.c.get(uid)
+	member, err := m.c.get(uid)
+	if err != nil {
+		return nil, errors.ErrNoMember
+	}
+	return member, nil
 }
 
 func (m *Member) GetUserName(uid []string) ([]string, error) {

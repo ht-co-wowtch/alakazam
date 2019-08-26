@@ -180,6 +180,12 @@ func TestSetAndGet(t *testing.T) {
 	assert.Equal(t, member.IsMessage, m.IsMessage)
 }
 
+func TestGetNil(t *testing.T) {
+	_, err := c.get("test")
+
+	assert.Equal(t, goRedis.Nil, err)
+}
+
 func TestGetUserName(t *testing.T) {
 	uid := []string{"1", "2", "3", "4"}
 	for _, v := range uid {
