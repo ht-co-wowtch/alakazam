@@ -8,11 +8,15 @@ import (
 	"time"
 )
 
+var (
+	errFailure = errors.New("失敗")
+)
+
 func (m *Member) SetBanned(uid string, sec int, isSystem bool) error {
 	me, err := m.db.Find(uid)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return errors.ErrNoRows
+			return errors.ErrNoMember
 		}
 		return err
 	}
@@ -24,33 +28,36 @@ func (m *Member) SetBanned(uid string, sec int, isSystem bool) error {
 			return err
 		}
 		if !ok {
-			// TODO error
-			return err
+			return errFailure
 		}
 	} else if sec == -1 {
-		aff, err := m.db.UpdateIsMessage(me.Id, false)
-		if err != nil {
-			return err
+		if !me.IsMessage {
+			return nil
 		}
-		if aff != 1 {
-			return errors.ErrNoRows
-		}
-		expire = time.Duration(0)
 
-		me.IsMessage = false
-		ok, err := m.c.set(me)
+		ok, err := m.db.UpdateIsMessage(me.Id, false)
 		if err != nil {
 			return err
 		}
 		if !ok {
-			// TODO
+			return errFailure
+		}
+
+		expire = time.Duration(0)
+
+		me.IsMessage = false
+		ok, err = m.c.set(me)
+		if err != nil {
 			return err
+		}
+		if !ok {
+			return errFailure
 		}
 	}
 
-	aff, err := m.db.SetBannedLog(me.Id, expire, isSystem)
-	if err != nil || aff == 0 {
-		log.Error("set banned log", zap.Error(err), zap.Int64("affected", aff))
+	ok, err := m.db.SetBannedLog(me.Id, expire, isSystem)
+	if err != nil || !ok {
+		log.Error("set banned log", zap.Error(err), zap.Bool("action", ok))
 	}
 	return nil
 }
@@ -63,7 +70,7 @@ func (m *Member) SetBannedForSystem(uid string, sec int) (bool, error) {
 	me, err := m.db.Find(uid)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return false, nil
+			return false, errors.ErrNoMember
 		}
 		return false, err
 	}
@@ -99,33 +106,34 @@ func (m *Member) RemoveBanned(uid string) error {
 	me, err := m.db.Find(uid)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return errors.ErrNoRows
+			return errors.ErrNoMember
 		}
 		return err
 	}
 
 	ok, err := m.c.delBanned(uid)
+	if err != nil {
+		return err
+	}
 	if !ok {
-		// TODO error
-		return errors.ErrNoRows
+		return errFailure
 	}
 	if !me.IsMessage {
-		aff, err := m.db.UpdateIsMessage(me.Id, true)
-		if err != nil {
-			return err
-		}
-		if aff != 1 {
-			return errors.ErrNoRows
-		}
-
-		me.IsMessage = true
-		ok, err := m.c.set(me)
+		ok, err := m.db.UpdateIsMessage(me.Id, true)
 		if err != nil {
 			return err
 		}
 		if !ok {
-			// TODO error
+			return errFailure
+		}
+
+		me.IsMessage = true
+		ok, err = m.c.set(me)
+		if err != nil {
 			return err
+		}
+		if !ok {
+			return errFailure
 		}
 	}
 	return nil

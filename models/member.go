@@ -100,10 +100,11 @@ func (s *Store) GetMembers(ids []int) ([]Member, error) {
 	return m, err
 }
 
-func (s *Store) UpdateIsMessage(memberId int, isMessage bool) (int64, error) {
-	return s.d.Cols("is_message").
+func (s *Store) UpdateIsMessage(memberId int, isMessage bool) (bool, error) {
+	aff, err := s.d.Cols("is_message").
 		Where("id = ?", memberId).
 		Update(&Member{
 			IsMessage: isMessage,
 		})
+	return aff == 1, err
 }

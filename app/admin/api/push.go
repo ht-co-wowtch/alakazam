@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type PushRoomForm struct {
+type pushRoomForm struct {
 	// 要廣播的房間
 	RoomId []int32 `json:"room_id" binding:"required"`
 
@@ -19,7 +19,7 @@ type PushRoomForm struct {
 
 // 多房間推送
 func (s *httpServer) push(c *gin.Context) error {
-	p := new(PushRoomForm)
+	p := new(pushRoomForm)
 	if err := c.ShouldBindJSON(p); err != nil {
 		return err
 	}

@@ -17,21 +17,22 @@ func (r *BannedLog) TableName() string {
 	return "banned_logs"
 }
 
-func (s *Store) SetBannedLog(memberId int, sec time.Duration, isSystem bool) (int64, error) {
-	return s.d.InsertOne(&BannedLog{
+func (s *Store) SetBannedLog(memberId int, sec time.Duration, isSystem bool) (bool, error) {
+	aff, err := s.d.InsertOne(&BannedLog{
 		MemberId: memberId,
 		Sec:      int(sec.Seconds()),
 		IsSystem: isSystem,
 		ExpireAt: time.Now().Add(sec),
 	})
+	return aff == 1, err
 }
 
 func (s *Store) GetTodaySystemBannedLog(memberId int) ([]BannedLog, error) {
 	log := make([]BannedLog, 0)
-	s.d.Where("`member_id` = ?", memberId).
+	err := s.d.Where("`member_id` = ?", memberId).
 		Where("is_system = ?", true).
 		Limit(5).
 		Desc("create_at").
 		Find(&log)
-	return log, nil
+	return log, err
 }
