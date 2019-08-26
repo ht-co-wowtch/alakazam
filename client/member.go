@@ -2,6 +2,7 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 )
 
 type User struct {
@@ -10,6 +11,10 @@ type User struct {
 	Avatar string `json:"avatar"`
 	Type   int    `json:"type"`
 }
+
+var (
+	errNoMember = errors.New("member not not found")
+)
 
 func (c *Client) Auth(token string) (User, error) {
 	resp, err := c.c.Get("/profile", nil, bearer(token))
@@ -24,6 +29,9 @@ func (c *Client) Auth(token string) (User, error) {
 	var u User
 	if err := json.NewDecoder(resp.Body).Decode(&u); err != nil {
 		return User{}, err
+	}
+	if u.Uid == "" {
+		return u, errNoMember
 	}
 	return u, nil
 }

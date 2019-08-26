@@ -1,12 +1,14 @@
 package member
 
+import "database/sql"
+
 func (m *Member) SetBlockade(uid string) (bool, error) {
-	me, ok, err := m.db.Find(uid)
+	me, err := m.db.Find(uid)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
 		return false, err
-	}
-	if !ok {
-		return false, nil
 	}
 	if me.IsBlockade {
 		return true, nil
@@ -16,12 +18,12 @@ func (m *Member) SetBlockade(uid string) (bool, error) {
 }
 
 func (m *Member) RemoveBlockade(uid string) (bool, error) {
-	me, ok, err := m.db.Find(uid)
+	me, err := m.db.Find(uid)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
 		return false, err
-	}
-	if !ok {
-		return false, nil
 	}
 	if !me.IsBlockade {
 		return true, nil

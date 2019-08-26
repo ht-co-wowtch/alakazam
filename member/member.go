@@ -1,6 +1,7 @@
 package member
 
 import (
+	"database/sql"
 	"github.com/go-redis/redis"
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
@@ -30,55 +31,51 @@ func New(db *models.Store, cache *redis.Client, cli *client.Client) *Member {
 	}
 }
 
-// 一個聊天室會員的基本資料
-type User struct {
-	Uid        string `json:"-"`
-	RoomId     string `json:"room_id"`
-	Key        string `json:"key" binding:"required,len=36"`
-	RoomStatus int    `json:"-"`
-}
+var (
+	errInsertMember = errors.New("insert member")
+)
 
 func (m *Member) Login(rid int, token, server string) (*models.Member, string, error) {
 	user, err := m.cli.Auth(token)
 	if err != nil {
 		return nil, "", err
 	}
-	if user.Uid == "" {
-		return nil, "", errors.New("无此帐号")
-	}
 
-	u, ok, err := m.db.Find(user.Uid)
+	u, err := m.db.Find(user.Uid)
 	if err != nil {
-		return nil, "", err
-	}
-	if !ok {
+		if err != sql.ErrNoRows {
+			return nil, "", err
+		}
+
 		u = &models.Member{
 			Uid:    user.Uid,
 			Name:   user.Name,
 			Avatar: user.Avatar,
 			Type:   user.Type,
 		}
-		if aff, err := m.db.CreateUser(u); err != nil || aff <= 0 {
+		ok, err := m.db.CreateUser(u)
+		if err != nil {
 			return nil, "", err
 		}
-	} else if u.IsBlockade {
+		if !ok {
+			return nil, "", errInsertMember
+		}
+	}
+	if u.IsBlockade {
 		return u, "", nil
 	}
 
 	if u.Name != user.Name || u.Avatar != user.Avatar {
 		u.Name = user.Name
 		u.Avatar = user.Avatar
-		if aff, err := m.db.UpdateUser(u); err != nil || aff <= 0 {
-			log.Error("UpdateUser", zap.String("uid", user.Uid), zap.Int64("affected", aff), zap.Error(err))
+		if ok, err := m.db.UpdateUser(u); err != nil || !ok {
+			log.Error("update user", zap.String("uid", user.Uid), zap.Bool("action", ok), zap.Error(err))
 		}
 	}
 
 	key := uuid.New().String()
 
-	// 儲存user資料至redis
-	// TODO ok
-	ok, err = m.c.login(u, key, server)
-	if err != nil {
+	if err = m.c.login(u, key, server); err != nil {
 		return nil, "", err
 	} else {
 		log.Info(
@@ -130,9 +127,5 @@ func (m *Member) GetMembers(id []int) ([]models.Member, error) {
 }
 
 func (m *Member) Heartbeat(uid string) error {
-	err := m.c.refreshExpire(uid)
-	if err != nil {
-		return err
-	}
-	return nil
+	return m.c.refreshExpire(uid)
 }

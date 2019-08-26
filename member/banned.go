@@ -1,6 +1,7 @@
 package member
 
 import (
+	"database/sql"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
@@ -8,13 +9,14 @@ import (
 )
 
 func (m *Member) SetBanned(uid string, sec int, isSystem bool) error {
-	me, ok, err := m.db.Find(uid)
+	me, err := m.db.Find(uid)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.ErrNoRows
+		}
 		return err
 	}
-	if !ok {
-		return errors.ErrNoRows
-	}
+
 	expire := time.Duration(sec) * time.Second
 	if sec > 0 {
 		ok, err := m.c.setBanned(uid, expire)
@@ -58,12 +60,12 @@ func (m *Member) SetBannedForSystem(uid string, sec int) (bool, error) {
 		return false, err
 	}
 
-	me, ok, err := m.db.Find(uid)
+	me, err := m.db.Find(uid)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
 		return false, err
-	}
-	if !ok {
-		return false, nil
 	}
 
 	l, err := m.db.GetTodaySystemBannedLog(me.Id)
@@ -98,14 +100,15 @@ func (m *Member) IsBanned(uid string) (bool, error) {
 }
 
 func (m *Member) RemoveBanned(uid string) error {
-	me, ok, err := m.db.Find(uid)
+	me, err := m.db.Find(uid)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.ErrNoRows
+		}
 		return err
 	}
-	if !ok {
-		return errors.ErrNoRows
-	}
-	ok, err = m.c.delBanned(uid)
+
+	ok, err := m.c.delBanned(uid)
 	if !ok {
 		// TODO error
 		return errors.ErrNoRows

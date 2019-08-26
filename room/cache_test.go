@@ -80,10 +80,10 @@ func TestGetRoom(t *testing.T) {
 }
 
 func TestGetNil(t *testing.T) {
-	s, err := c.get(1)
+	s, err := c.get(2)
 
-	assert.Nil(t, err)
-	assert.Nil(t, s)
+	assert.Equal(t, goRedis.Nil, err)
+	assert.Equal(t, models.Room{}, s)
 }
 
 func TestAddServerOnline(t *testing.T) {
