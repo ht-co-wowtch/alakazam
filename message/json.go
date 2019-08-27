@@ -1,15 +1,13 @@
 package message
 
-import "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
-
 type Message struct {
-	Id      int64           `json:"id"`
-	Uid     string          `json:"uid"`
-	Type    pb.PushMsg_Type `json:"type"`
-	Name    string          `json:"name"`
-	Avatar  string          `json:"avatar"`
-	Message string          `json:"message"`
-	Time    string          `json:"time"`
+	Id      int64  `json:"id"`
+	Uid     string `json:"uid"`
+	Type    string `json:"type"`
+	Name    string `json:"name"`
+	Avatar  string `json:"avatar"`
+	Message string `json:"message"`
+	Time    string `json:"time"`
 }
 
 type Money struct {
@@ -20,5 +18,26 @@ type Money struct {
 type RedEnvelope struct {
 	Id      string `json:"id"`
 	Token   string `json:"token"`
-	Expired int64  `json:"expired"`
+	Expired string `json:"expired"`
+}
+
+type historyMessage struct {
+	Id      int64  `json:"id"`
+	Uid     string `json:"uid"`
+	Type    string `json:"type"`
+	Name    string `json:"name"`
+	Avatar  string `json:"avatar"`
+	Message string `json:"message"`
+	Time    string `json:"time"`
+}
+
+type historyRedEnvelopeMessage struct {
+	historyMessage
+	RedEnvelope historyRedEnvelope `json:"red_envelope"`
+}
+
+type historyRedEnvelope struct {
+	Id      string `json:"id"`
+	Token   string `json:"token"`
+	Expired string `json:"expired"`
 }

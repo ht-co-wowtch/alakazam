@@ -60,34 +60,30 @@ func TestIsSameMsg(t *testing.T) {
 
 	testCase := []struct {
 		msg       []Messages
-		IsSameMsg []bool
+		IsSameMsg []error
 	}{
 		{
 			msg:       []Messages{msgA},
-			IsSameMsg: []bool{false},
+			IsSameMsg: []error{nil},
 		},
 		{
 			msg:       []Messages{msgB, msgB},
-			IsSameMsg: []bool{false, false},
+			IsSameMsg: []error{nil, nil},
 		},
 		{
 			msg:       []Messages{msgC, msgC, msgC},
-			IsSameMsg: []bool{false, false, true},
+			IsSameMsg: []error{nil, nil, errors.ErrRateSameMsg},
 		},
 		{
 			msg:       []Messages{msgD, msgD, msgD, msgD},
-			IsSameMsg: []bool{false, false, true, true},
+			IsSameMsg: []error{nil, nil, errors.ErrRateSameMsg, errors.ErrRateSameMsg},
 		},
 	}
 
 	for _, v := range testCase {
 		for i, m := range v.msg {
-			is, err := rate.IsSameMsg(m)
-			if err != nil {
-				t.Fatal(err)
-			}
-			assert.Equal(t, v.IsSameMsg[i], is)
+			err := rate.sameMsg(m)
+			assert.Equal(t, v.IsSameMsg[i], err)
 		}
 	}
-
 }

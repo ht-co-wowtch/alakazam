@@ -1,6 +1,7 @@
 package room
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis"
@@ -10,7 +11,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gopkg.in/go-playground/validator.v8"
-	"strconv"
 	"time"
 )
 
@@ -29,13 +29,13 @@ type Chat interface {
 }
 
 type chat struct {
-	cache  *Cache
-	db     *models.Store
-	member *member.Member
+	cache  Cache
+	db     models.IChat
+	member member.Chat
 	cli    *client.Client
 }
 
-func NewChat(db *models.Store, cache *redis.Client, member *member.Member, cli *client.Client) Chat {
+func NewChat(db models.IChat, cache *redis.Client, member member.Chat, cli *client.Client) Chat {
 	return &chat{
 		db:     db,
 		cache:  newCache(cache),
@@ -60,27 +60,12 @@ func (c *chat) Connect(server string, token []byte) (*models.Member, string, int
 		return nil, "", 0, err
 	}
 
-	room, err := c.cache.get(strconv.Itoa(params.RoomID))
+	room, err := c.getChat(params.RoomID)
 	if err != nil {
 		return nil, "", 0, err
 	}
-	if room == nil {
-		r, ok, err := c.db.GetRoom(params.RoomID)
-		if err != nil {
-			return nil, "", 0, err
-		}
-		if !ok {
-			// TODO error
-			return nil, "", 0, errors.New("房間不存在")
-		}
-		if err := c.cache.set(r); err != nil {
-			// TODO error
-			return nil, "", 0, errors.New("讀取房間失敗")
-		}
-	}
-	if ! room.Status {
-		// TODO error
-		return nil, "", 0, errors.New("房間目前關閉中")
+	if !room.Status {
+		return nil, "", 0, errors.ErrRoomClose
 	}
 
 	user, key, err := c.member.Login(params.RoomID, params.Token, server)
@@ -88,6 +73,27 @@ func (c *chat) Connect(server string, token []byte) (*models.Member, string, int
 		return nil, "", 0, err
 	}
 	return user, key, params.RoomID, nil
+}
+
+func (c *chat) getChat(id int) (models.Room, error) {
+	room, err := c.cache.get(id)
+	if err != nil {
+		if err != redis.Nil {
+			return models.Room{}, err
+		}
+
+		room, err = c.db.GetRoom(id)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return models.Room{}, errors.ErrNoRoom
+			}
+			return models.Room{}, err
+		}
+		if err := c.cache.set(room); err != nil {
+			return models.Room{}, err
+		}
+	}
+	return room, nil
 }
 
 func (r *chat) Disconnect(uid, key string) (bool, error) {
@@ -104,28 +110,28 @@ func (c *chat) RenewOnline(server string, roomCount map[int32]int32) (map[int32]
 		RoomCount: roomCount,
 		Updated:   time.Now().Unix(),
 	}
-	if err := c.cache.addOnline(server, online); err != nil {
-		return nil, err
-	}
-	return roomCount, nil
+	err := c.cache.addOnline(server, online)
+	return roomCount, err
 }
 
-func (r *chat) IsMessage(rid int, uid string) error {
-	room, err := r.cache.get(strconv.Itoa(rid))
+func (c *chat) IsMessage(rid int, uid string) error {
+	room, err := c.getChat(rid)
 	if err != nil {
 		return err
 	}
-	if room == nil {
-		// TODO error
-		return errors.New("房間讀取錯誤")
+	if !room.Status {
+		return errors.ErrRoomClose
 	}
-	money, err := r.cli.GetDepositAndDml(room.DayLimit, uid)
+	if !room.IsMessage {
+		return errors.ErrRoomNoMessage
+	}
+	money, err := c.cli.GetDepositAndDml(room.DayLimit, uid)
 	if err != nil {
 		return err
 	}
 	if float64(room.DmlLimit) > money.Dml || float64(room.DepositLimit) > money.Deposit {
-		e := errors.New(fmt.Sprintf("您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元", room.DayLimit, room.DepositLimit, room.DmlLimit))
-		return errdefs.Unauthorized(e, 4)
+		msg := fmt.Sprintf(errors.ErrRoomLimit, room.DayLimit, room.DepositLimit, room.DmlLimit)
+		return errdefs.Forbidden(errors.New(msg), 4035)
 	}
 	return nil
 }

@@ -3,9 +3,7 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"net/http"
 )
 
@@ -24,18 +22,14 @@ type giveRedEnvelopeReq struct {
 	Type string `json:"type" binding:"required"`
 }
 
-// 發紅包
 func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	arg := new(giveRedEnvelopeReq)
 	if err := c.ShouldBindJSON(arg); err != nil {
 		return err
 	}
-	user, err := s.member.Get(c.GetString("uid"))
+	user, err := s.member.GetSession(c.GetString("uid"))
 	if err != nil {
 		return err
-	}
-	if user.Type != models.Player {
-		return errors.ErrLogin
 	}
 	give := client.RedEnvelope{
 		RoomId:    arg.RoomId,
@@ -61,7 +55,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		},
 		RedEnvelopeId: reply.Uid,
 		Token:         reply.Token,
-		Expired:       reply.ExpireAt.Unix(),
+		Expired:       reply.ExpireAt,
 	}
 
 	msgId, err := s.message.SendRedEnvelope(msg)
@@ -77,35 +71,27 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	return nil
 }
 
-type TakeRedEnvelope struct {
+type takeRedEnvelope struct {
 	Token string `json:"token" binding:"required"`
 }
 
 func (s *httpServer) takeRedEnvelope(c *gin.Context) error {
-	arg := new(TakeRedEnvelope)
+	arg := new(takeRedEnvelope)
 	if err := c.ShouldBindJSON(arg); err != nil {
 		return err
 	}
-	user, err := s.member.Get(c.GetString("uid"))
+
+	user, err := s.member.GetSession(c.GetString("uid"))
 	if err != nil {
 		return err
 	}
-	if user.Type != models.Player {
-		return errors.ErrLogin
-	}
-	// TODO 三方改成不用token
+
 	reply, err := s.client.TakeRedEnvelope(arg.Token, c.GetString("token"))
 	if err != nil {
 		return err
 	}
 
-	if reply.Uid != "" {
-		name, err := s.member.GetUserName([]string{reply.Uid})
-		if err != nil {
-			return err
-		}
-		reply.Name = name[0]
-	}
+	reply.Name = user.Name
 
 	switch reply.Status {
 	case client.TakeEnvelopeSuccess:

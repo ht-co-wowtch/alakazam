@@ -8,7 +8,6 @@ import (
 	"github.com/gogo/protobuf/proto"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	seqpb "gitlab.com/jetfueltw/cpw/alakazam/app/seq/api/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	shield "gitlab.com/jetfueltw/cpw/alakazam/pkg/filter"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -87,6 +86,7 @@ type Messages struct {
 	Name    string
 	Message string
 	IsTop   bool
+	Type    string
 }
 
 func (p *Producer) toPb(msg Messages) (*logicpb.PushMsg, error) {
@@ -105,7 +105,7 @@ func (p *Producer) toPb(msg Messages) (*logicpb.PushMsg, error) {
 	now := time.Now()
 	bm, err := json.Marshal(Message{
 		Id:      seq.Id,
-		Type:    logicpb.PushMsg_ROOM,
+		Type:    msg.Type,
 		Uid:     msg.Uid,
 		Name:    msg.Name,
 		Message: fmsg,
@@ -129,14 +129,11 @@ func (p *Producer) Send(msg Messages) (int64, error) {
 	if err := p.rate.perSec(msg.Mid); err != nil {
 		return 0, err
 	}
-	same, err := p.rate.IsSameMsg(msg)
-	if err != nil {
+	if err := p.rate.sameMsg(msg); err != nil {
 		return 0, err
 	}
-	if same {
-		return 0, errors.ErrRateSameMsg
-	}
 
+	msg.Type = messageType
 	pushMsg, err := p.toPb(msg)
 	if err != nil {
 		return 0, err
@@ -156,12 +153,17 @@ type AdminMessage struct {
 // 所有房間推送
 // TODO 需實作訊息是否頂置
 func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
+	ty := messageType
+	if msg.IsTop {
+		ty = topType
+	}
 	pushMsg, err := p.toPb(Messages{
 		Rooms:   msg.Rooms,
 		Mid:     RootMid,
 		Uid:     RootUid,
 		Name:    RootName,
 		Message: msg.Message,
+		Type:    ty,
 	})
 	if err != nil {
 		return 0, err
@@ -196,7 +198,7 @@ type RedEnvelopeMessage struct {
 	Messages
 	RedEnvelopeId string
 	Token         string
-	Expired       int64
+	Expired       time.Time
 }
 
 func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*logicpb.PushMsg, error) {
@@ -216,7 +218,7 @@ func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*logicpb.PushMsg, er
 	bm, err := json.Marshal(Money{
 		Message: Message{
 			Id:      seq.Id,
-			Type:    logicpb.PushMsg_MONEY,
+			Type:    redEnvelopeType,
 			Uid:     msg.Uid,
 			Name:    msg.Name,
 			Message: fmsg,
@@ -225,7 +227,7 @@ func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*logicpb.PushMsg, er
 		RedEnvelope: RedEnvelope{
 			Id:      msg.RedEnvelopeId,
 			Token:   msg.Token,
-			Expired: msg.Expired,
+			Expired: msg.Expired.Format(time.RFC3339),
 		},
 	})
 	if err != nil {
@@ -257,7 +259,7 @@ type AdminRedEnvelopeMessage struct {
 	AdminMessage
 	RedEnvelopeId string
 	Token         string
-	Expired       int64
+	Expired       time.Time
 }
 
 func (p *Producer) SendRedEnvelopeForAdmin(msg AdminRedEnvelopeMessage) (int64, error) {
@@ -294,9 +296,9 @@ func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 	case logicpb.PushMsg_ROOM:
 		key = kafka.StringEncoder(pushMsg.Room[0])
 	case logicpb.PushMsg_MONEY:
-		key = "red_envelope"
+		key = redEnvelopeType
 	case logicpb.PushMsg_TOP:
-		key = "top"
+		key = topType
 	}
 	m := &kafka.ProducerMessage{
 		Key:   key,

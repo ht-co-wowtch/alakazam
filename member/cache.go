@@ -47,10 +47,10 @@ var (
 	errExpire      = errors.New("set expire")
 )
 
-func (c *Cache) login(member *models.Member, key, server string) (bool, error) {
+func (c *Cache) login(member *models.Member, key, server string) error {
 	b, err := json.Marshal(member)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	tx := c.c.Pipeline()
@@ -63,18 +63,18 @@ func (c *Cache) login(member *models.Member, key, server string) (bool, error) {
 
 	_, err = tx.Exec()
 	if err != nil {
-		return false, err
+		return err
 	}
 	if c1.Val() != OK {
-		return false, errSetUidKey
+		return errSetUidKey
 	}
 	if !c2.Val() {
-		return false, errSetUidWsKey
+		return errSetUidWsKey
 	}
 	if !c3.Val() {
-		return false, errExpire
+		return errExpire
 	}
-	return true, err
+	return err
 }
 
 func (c *Cache) set(member *models.Member) (bool, error) {

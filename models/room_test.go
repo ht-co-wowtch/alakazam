@@ -71,10 +71,9 @@ func TestGetRoom(t *testing.T) {
 
 	at, _ := time.ParseInLocation("2006-01-02 15:04:05", "2019-06-26 13:52:32", time.Local)
 
-	r, ok, err := s.GetRoom(1)
+	r, err := s.GetRoom(1)
 
 	assert.Nil(t, err)
-	assert.True(t, ok)
 	assert.Equal(t, Room{
 		IsMessage:    true,
 		IsFollow:     true,

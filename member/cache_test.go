@@ -99,7 +99,7 @@ func TestLogin(t *testing.T) {
 	name := "test"
 	server := "server"
 	member := &models.Member{Id: 1, Uid: uid, Name: name, Type: models.Player, IsMessage: true}
-	ok, err := c.login(member, key, server)
+	err := c.login(member, key, server)
 
 	u := r.Get(keyUid(uid)).Val()
 
@@ -110,7 +110,6 @@ func TestLogin(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, string(b), u)
-	assert.True(t, ok)
 
 	keys, err := r.HGetAll(keyUidWs(member.Uid)).Result()
 
@@ -181,10 +180,16 @@ func TestSetAndGet(t *testing.T) {
 	assert.Equal(t, member.IsMessage, m.IsMessage)
 }
 
+func TestGetNil(t *testing.T) {
+	_, err := c.get("test")
+
+	assert.Equal(t, goRedis.Nil, err)
+}
+
 func TestGetUserName(t *testing.T) {
 	uid := []string{"1", "2", "3", "4"}
 	for _, v := range uid {
-		if _, err := c.login(&models.Member{Uid: v, Name: v}, v, v); err != nil {
+		if err := c.login(&models.Member{Uid: v, Name: v}, v, v); err != nil {
 			t.Fatal(err)
 		}
 	}

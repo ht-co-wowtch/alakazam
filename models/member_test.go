@@ -22,13 +22,13 @@ func TestCreateUser(t *testing.T) {
 		IsBlockade: true,
 	}
 
-	aff, err := s.CreateUser(member)
+	ok, err := s.CreateUser(member)
 
 	assert.Nil(t, err)
-	assert.Equal(t, int64(1), aff)
+	assert.True(t, ok)
 
 	a := new(Member)
-	ok, err := x.Where("uid = ?", uid).Get(a)
+	ok, err = x.Where("uid = ?", uid).Get(a)
 
 	assert.Nil(t, err)
 	assert.True(t, ok)
@@ -49,13 +49,13 @@ func TestUpdateUser(t *testing.T) {
 		Avatar: "/test",
 	}
 
-	aff, err := s.UpdateUser(member)
+	ok, err := s.UpdateUser(member)
 
 	assert.Nil(t, err)
-	assert.Equal(t, int64(1), aff)
+	assert.True(t, ok)
 
 	a := new(Member)
-	ok, err := x.Where("uid = ?", uidA).Get(a)
+	ok, err = x.Where("uid = ?", uidA).Get(a)
 
 	assert.Nil(t, err)
 	assert.True(t, ok)
@@ -66,18 +66,17 @@ func TestUpdateUser(t *testing.T) {
 func TestFindMember(t *testing.T) {
 	assert.NoError(t, prepareTestDatabase())
 
-	m, ok, err := s.Find(uidA)
+	m, err := s.Find(uidA)
 
 	at, _ := time.ParseInLocation("2006-01-02 15:04:05", "2019-06-26 13:52:32", time.Local)
 
 	assert.Nil(t, err)
-	assert.True(t, ok)
 	assert.Equal(t, &Member{
-		Id:         1,
-		Uid:        uidA,
-		Name:       "testA",
-		Avatar:     "/",
-		Type:       Player,
-		CreateAt:   at,
+		Id:       1,
+		Uid:      uidA,
+		Name:     "testA",
+		Avatar:   "/",
+		Type:     Player,
+		CreateAt: at,
 	}, m)
 }

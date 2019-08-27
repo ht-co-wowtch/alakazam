@@ -5,53 +5,64 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/validation"
 	"gopkg.in/go-playground/validator.v8"
-	"net/http"
 )
 
 var (
+	// 沒有資料
+	ErrNoMember  = errdefs.NotFound(New("没有会员资料"), 4041)
+	ErrNoRoom    = errdefs.NotFound(New("没有房间资料"), 4042)
+	ErrRoomClose = errdefs.NotFound(New("目前房间已关闭"), 4043)
+
+	// 限速
+	ErrRateMsg     = errdefs.TooManyRequests(New("1秒内只能发一则消息"), 4291)
+	ErrRateSameMsg = errdefs.TooManyRequests(New("10秒内相同讯息3次，自动禁言10分钟"), 4292)
+
+	// 身份認證
+	ErrValidationToken = errdefs.Forbidden(New("用户认证失败"), 4031)
+	ErrClaimsToken     = errdefs.Forbidden(New("用户认证失败"), 4032)
+	ErrValidToken      = errdefs.Forbidden(New("用户认证失败"), 4033)
+	ErrLogin           = errdefs.Forbidden(New("请先登入会员"), 4034)
+	// 4035
+	ErrRoomLimit       = "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元"
+	ErrMemberNoMessage = errdefs.Forbidden(New("您在永久禁言状态，无法发言"), 4036)
+	ErrMemberBanned    = errdefs.Forbidden(New("您在禁言状态，无法发言"), 4037)
+	ErrRoomNoMessage   = errdefs.Forbidden(New("聊天室目前禁言状态，无法发言"), 4038)
+
 	ErrPublishAt = errdefs.InvalidParameter(New("预定发送时间不能大于现在"), 0)
 	ErrExist     = errdefs.InvalidParameter(New("资料已存在"), 1)
 
-	ErrLogin         = errdefs.Unauthorized(New("请先登入会员"))
-	ErrReLogin       = errdefs.Unauthorized(New("请重新登入会员"))
-	ErrRoomBanned    = errdefs.Unauthorized(New("聊天室目前禁言状态，无法发言"), 1)
-	ErrBanned        = errdefs.Unauthorized(New("您在禁言状态，无法发言"), 2)
 	ErrAuthorization = errdefs.Unauthorized(New("Unauthorized"), 3)
 
-	ErrNoPage = errdefs.NotFound(New("无此Api"))
 	ErrNoRows = errdefs.NotFound(New("没有资料"), 1)
 
-	ErrRateMsg     = errdefs.TooManyRequests(New("1秒内只能发一则消息"), 1)
-	ErrRateSameMsg = errdefs.TooManyRequests(New("10秒内相同讯息3次，自动禁言10分钟"), 2)
-
 	ErrTokenUid = errdefs.Forbidden(New("帐号资料认证失败"), 1)
-
-	//ConnectError = eNew(http.StatusBadRequest, 10024000, "进入聊天室失败")
-	//FailureError = eNew(http.StatusBadRequest, 10024001, "操作失败")
-	//
-	//UserError = eNew(http.StatusBadRequest, 10024003, "取得用户资料失败")
-	//
-	//MoneyError   = eNew(http.StatusUnauthorized, 10024015, "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元")
-	//BalanceError = eNew(http.StatusPaymentRequired, 10024020, "您的余额不足发红包")
-	//AmountError  = eNew(http.StatusPaymentRequired, 10024021, "金额错误")
-	//DataError    = eNew(http.StatusUnprocessableEntity, 10024220, "资料验证错误")
 )
 
 const (
-	// 紅包已過期
-	TakeEnvelopeExpiredCode = 15024011
-
-	// 紅包不存在
-	EnvelopeNotFoundCode = 15024041
-
+	// 沒有token
+	noAuthorizationBearer = 15024010
+	// 資料格式錯誤
+	invalidParameter = 15024220
 	// 餘額不足
-	BalanceCode = 12024020
-
+	balanceCode = 12024020
 	// 房間不存在
-	RoomNotFoundCode = 15024042
-
-	// 預定發送時間過期
-	PublishAtCode = 15024002
+	roomNotFoundCode = 15024042
+	// 找不到會員資料
+	memberNotFound = 12024041
+	// 隨機紅包金額不能小於包數
+	redEnvelopeAmount = 15021001
+	// 紅包已過期
+	TakeEnvelopeExpiredCode = 15024031
+	// 紅包不存在
+	redEnvelopeNotFoundCode = 15024044
+	// 紅包已關閉
+	redEnvelopeIsClose = 15024045
+	// 紅包發佈時間不能小於當下
+	redEnvelopePublishTime = 15024047
+	// 紅包已發佈過
+	redEnvelopePublishExist = 15024091
+	// 紅包未發佈但已過期
+	redEnvelopePublishExpire = 15024048
 )
 
 func init() {
@@ -59,10 +70,12 @@ func init() {
 		panic(err)
 	}
 	errdefs.SetOutput(output{})
+	errdefs.SetJsonOut(output{})
+	errdefs.SetValidationOut(output{})
 
 	validation.Set(validation.Required, "栏位必填")
-	validation.Set(validation.Min, "栏位长度至少")
-	validation.Set(validation.Max, "栏位长度最大")
+	validation.Set(validation.Min, "栏位最大值或长度至少")
+	validation.Set(validation.Max, "栏位最大值或长度最大")
 	validation.Set(validation.Len, "栏位长度必须是")
 	validation.Set(validation.Lt, "栏位必须小于")
 	validation.Set(validation.Lte, "栏位必须小于或等于")
@@ -76,37 +89,46 @@ func (m output) Validation(e validator.ValidationErrors) interface{} {
 	return validation.ValidationErrorsMap(e)
 }
 
+func (m output) GetValidationMessage() string {
+	return "栏位资料格式有误"
+}
+
 func (m output) JsonUnmarshalType(e *json.UnmarshalTypeError) interface{} {
 	return map[string]string{
 		e.Field: "栏位资料格式有误",
 	}
 }
 
-func (m output) InternalServer(e error) string {
+func (m output) GetJsonUnmarshalTypeMessage() string {
+	return "栏位资料型态有误"
+}
+
+func (m output) GetInternalServer() string {
 	return "应用程序错误"
 }
 
-func (m output) Error(e *errdefs.Error) interface{} {
+func (m output) Error(e *errdefs.Error) string {
 	switch e.Code {
-	case BalanceCode:
-		return "您的余额不足发红包"
-	case EnvelopeNotFoundCode:
-		e.Status = http.StatusNotFound
-		return "红包不存在"
-	case RoomNotFoundCode:
-		e.Status = http.StatusNotFound
+	case noAuthorizationBearer:
+		return "无法认证身份"
+	case invalidParameter:
+		return "资料格式错误"
+	case roomNotFoundCode:
 		return "房间不存在"
-	case PublishAtCode:
-		e.Status = http.StatusNotFound
-		return "预定发送时间不能大于现在"
-	}
-	return "操作失败"
-}
-
-func (m output) Other(err error) string {
-	switch e := err.(type) {
-	case Error:
-		return e.Message
+	case balanceCode:
+		return "余额不足"
+	case memberNotFound:
+		return "找不到会员资料"
+	case redEnvelopeAmount:
+		return "红包金额不能小于包数"
+	case redEnvelopeNotFoundCode, redEnvelopeIsClose:
+		return "红包不存在"
+	case redEnvelopePublishTime:
+		return "红包发布时间不能小于当下"
+	case redEnvelopePublishExist:
+		return "红包已发布过"
+	case redEnvelopePublishExpire:
+		return "红包未发布但已过期"
 	}
 	return "操作失败"
 }

@@ -33,14 +33,8 @@ func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 	var model int32
 	switch pushMsg.Type {
 	// 單一/多房間推送
-	case logicpb.PushMsg_ROOM:
+	case logicpb.PushMsg_ROOM, logicpb.PushMsg_MONEY, logicpb.PushMsg_TOP:
 		model = cometpb.OpRaw
-	// 訊息頂置
-	case logicpb.PushMsg_TOP:
-		model = cometpb.OpTopRaw
-	// 紅包
-	case logicpb.PushMsg_MONEY:
-		model = cometpb.OpMoney
 	case logicpb.PushMsg_Close:
 		return c.kick(pushMsg)
 	// 異常資料

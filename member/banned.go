@@ -1,20 +1,26 @@
 package member
 
 import (
+	"database/sql"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"time"
 )
 
+var (
+	errFailure = errors.New("失敗")
+)
+
 func (m *Member) SetBanned(uid string, sec int, isSystem bool) error {
-	me, ok, err := m.db.Find(uid)
+	me, err := m.db.Find(uid)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.ErrNoMember
+		}
 		return err
 	}
-	if !ok {
-		return errors.ErrNoRows
-	}
+
 	expire := time.Duration(sec) * time.Second
 	if sec > 0 {
 		ok, err := m.c.setBanned(uid, expire)
@@ -22,33 +28,36 @@ func (m *Member) SetBanned(uid string, sec int, isSystem bool) error {
 			return err
 		}
 		if !ok {
-			// TODO error
-			return err
+			return errFailure
 		}
 	} else if sec == -1 {
-		aff, err := m.db.UpdateIsMessage(me.Id, false)
-		if err != nil {
-			return err
+		if !me.IsMessage {
+			return nil
 		}
-		if aff != 1 {
-			return errors.ErrNoRows
-		}
-		expire = time.Duration(0)
 
-		me.IsMessage = false
-		ok, err := m.c.set(me)
+		ok, err := m.db.UpdateIsMessage(me.Id, false)
 		if err != nil {
 			return err
 		}
 		if !ok {
-			// TODO
+			return errFailure
+		}
+
+		expire = time.Duration(0)
+
+		me.IsMessage = false
+		ok, err = m.c.set(me)
+		if err != nil {
 			return err
+		}
+		if !ok {
+			return errFailure
 		}
 	}
 
-	aff, err := m.db.SetBannedLog(me.Id, expire, isSystem)
-	if err != nil || aff == 0 {
-		log.Error("set banned log", zap.Error(err), zap.Int64("affected", aff))
+	ok, err := m.db.SetBannedLog(me.Id, expire, isSystem)
+	if err != nil || !ok {
+		log.Error("set banned log", zap.Error(err), zap.Bool("action", ok))
 	}
 	return nil
 }
@@ -58,12 +67,12 @@ func (m *Member) SetBannedForSystem(uid string, sec int) (bool, error) {
 		return false, err
 	}
 
-	me, ok, err := m.db.Find(uid)
+	me, err := m.db.Find(uid)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, errors.ErrNoMember
+		}
 		return false, err
-	}
-	if !ok {
-		return false, nil
 	}
 
 	l, err := m.db.GetTodaySystemBannedLog(me.Id)
@@ -93,40 +102,38 @@ func (m *Member) SetBannedForSystem(uid string, sec int) (bool, error) {
 	return false, nil
 }
 
-func (m *Member) IsBanned(uid string) (bool, error) {
-	return m.c.isBanned(uid)
-}
-
 func (m *Member) RemoveBanned(uid string) error {
-	me, ok, err := m.db.Find(uid)
+	me, err := m.db.Find(uid)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.ErrNoMember
+		}
+		return err
+	}
+
+	ok, err := m.c.delBanned(uid)
 	if err != nil {
 		return err
 	}
 	if !ok {
-		return errors.ErrNoRows
-	}
-	ok, err = m.c.delBanned(uid)
-	if !ok {
-		// TODO error
-		return errors.ErrNoRows
+		return errFailure
 	}
 	if !me.IsMessage {
-		aff, err := m.db.UpdateIsMessage(me.Id, true)
-		if err != nil {
-			return err
-		}
-		if aff != 1 {
-			return errors.ErrNoRows
-		}
-
-		me.IsMessage = true
-		ok, err := m.c.set(me)
+		ok, err := m.db.UpdateIsMessage(me.Id, true)
 		if err != nil {
 			return err
 		}
 		if !ok {
-			// TODO error
+			return errFailure
+		}
+
+		me.IsMessage = true
+		ok, err = m.c.set(me)
+		if err != nil {
 			return err
+		}
+		if !ok {
+			return errFailure
 		}
 	}
 	return nil

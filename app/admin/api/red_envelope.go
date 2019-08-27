@@ -59,7 +59,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		},
 		RedEnvelopeId: result.Order,
 		Token:         result.Token,
-		Expired:       result.ExpireAt.Unix(),
+		Expired:       result.ExpireAt,
 	}
 	var msgId int64
 	if o.PublishAt.IsZero() {
