@@ -402,10 +402,12 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 			IsMessage     bool `json:"is_message"`
 			IsRedEnvelope bool `json:"is_red_envelope"`
 		} `json:"permission"`
+		TopMessage string `json:"top_message"`
 	}{
-		Uid:    c.Uid,
-		Key:    c.Key,
-		RoomId: c.RoomID,
+		Uid:        c.Uid,
+		Key:        c.Key,
+		RoomId:     c.RoomID,
+		TopMessage: c.TopMessage,
 	}
 	reply.Permission.IsMessage = c.IsMessage
 	reply.Permission.IsRedEnvelope = c.IsRedEnvelope

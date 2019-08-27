@@ -85,3 +85,14 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 	}
 	return data, nil
 }
+
+func RoomTopMessageToMessage(msg models.RoomTopMessage) Message {
+	return Message{
+		Id:      msg.MsgId,
+		Uid:     RootUid,
+		Type:    topType,
+		Name:    RootName,
+		Message: msg.Message,
+		Time:    msg.SendAt.Format("15:04:05"),
+	}
+}

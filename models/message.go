@@ -7,6 +7,7 @@ import (
 )
 
 type RoomMessage struct {
+	Id     int `xorm:"pk autoincr"`
 	MsgId  int64
 	RoomId int
 	Type   pb.PushMsg_Type
@@ -17,6 +18,7 @@ func (r *RoomMessage) TableName() string {
 }
 
 type Message struct {
+	Id       int `xorm:"pk autoincr"`
 	MsgId    int64
 	MemberId int
 	Message  string
@@ -28,6 +30,7 @@ func (r *Message) TableName() string {
 }
 
 type RedEnvelopeMessage struct {
+	Id             int `xorm:"pk autoincr"`
 	MsgId          int64
 	MemberId       int
 	Message        string

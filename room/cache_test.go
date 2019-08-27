@@ -6,6 +6,7 @@ import (
 	"github.com/alicebob/miniredis"
 	goRedis "github.com/go-redis/redis"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"os"
@@ -51,39 +52,77 @@ var (
 		DmlLimit:     dml,
 		DepositLimit: amount,
 	}
+
+	roomTopMessageTest = message.Message{
+		Id:      1,
+		Uid:     "123",
+		Name:    "test",
+		Message: "test",
+		Time:    time.Now().Format(time.RFC3339),
+	}
 )
 
-func TestSetRoom(t *testing.T) {
+func TestSetAndGetRoom(t *testing.T) {
+	c.c.FlushAll()
+
 	err := c.set(roomTest)
-
 	assert.Nil(t, err)
 
-	m := r.Get(keyRoom(1)).Val()
-
-	b, err := json.Marshal(roomTest)
-
+	room, err := c.get(roomTest.Id)
 	assert.Nil(t, err)
-	assert.Equal(t, string(b), m)
+	assert.Equal(t, roomTest, room)
 
-	expire := r.TTL(keyRoom(1)).Val()
-
-	assert.Equal(t, time.Hour, expire)
-}
-
-func TestGetRoom(t *testing.T) {
-	_ = c.set(roomTest)
-
-	s, err := c.get(1)
-
-	assert.Nil(t, err)
-	assert.Equal(t, roomTest, s)
+	expire := r.TTL(keyRoom(roomTest.Id)).Val()
+	assert.Equal(t, roomExpired, expire)
 }
 
 func TestGetNil(t *testing.T) {
-	s, err := c.get(2)
+	c.c.FlushAll()
+
+	room, err := c.get(2)
 
 	assert.Equal(t, goRedis.Nil, err)
-	assert.Equal(t, models.Room{}, s)
+	assert.Equal(t, models.Room{}, room)
+}
+
+func TestSetChatAndGetChatRoom(t *testing.T) {
+	c.c.FlushAll()
+
+	b, _ := json.Marshal(roomTopMessageTest)
+
+	err := c.setChat(roomTest, string(b))
+	assert.Nil(t, err)
+
+	room, err := c.getChat(roomTest.Id)
+	message := room.TopMessage
+	room.TopMessage = ""
+	assert.Nil(t, err)
+	assert.Equal(t, roomTest, room)
+
+	assert.Equal(t, string(b), message)
+
+	expire := r.TTL(keyRoom(roomTest.Id)).Val()
+	assert.Equal(t, roomExpired, expire)
+}
+
+func TestGetChatNil(t *testing.T) {
+	c.c.FlushAll()
+
+	room, err := c.getChat(roomTest.Id)
+
+	assert.Equal(t, goRedis.Nil, err)
+	assert.Equal(t, models.Room{}, room)
+}
+
+func TestGetChatMessageNil(t *testing.T) {
+	c.c.FlushAll()
+
+	_, err := c.c.HSet(keyRoom(roomTest.Id), roomDataKey, `{"id":1}`).Result()
+	assert.Nil(t, err)
+
+	room, err := c.getChat(roomTest.Id)
+
+	assert.Equal(t, models.Room{Id: 1}, room)
 }
 
 func TestAddServerOnline(t *testing.T) {

@@ -1,4 +1,14 @@
-- id: 6318a4f786e64c6487a30687e9df3a13
+- id: 1
+  is_message: 1
+  is_follow: 1
+  day_limit: 1
+  deposit_limit: 100
+  dml_limit: 1000
+  status: 1
+  update_at: 2019-06-26 13:52:32
+  create_at: 2019-06-26 13:52:32
+
+- id: 2
   is_message: 1
   is_follow: 1
   day_limit: 1

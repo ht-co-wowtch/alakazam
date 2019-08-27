@@ -3,7 +3,6 @@ package rpc
 import (
 	"context"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -14,15 +13,14 @@ import (
 )
 
 // New logic grpc server
-func New(c *rpc.Conf, room room.Chat, heartbeat int64) *grpc.Server {
+func New(c *rpc.Conf, room room.Chat) *grpc.Server {
 	srv := rpc.New(c)
-	pb.RegisterLogicServer(srv, &server{room: room, HeartbeatNanosec: heartbeat})
+	pb.RegisterLogicServer(srv, &server{room: room})
 	return srv
 }
 
 type server struct {
-	room             room.Chat
-	HeartbeatNanosec int64
+	room room.Chat
 }
 
 var _ pb.LogicServer = &server{}
@@ -34,21 +32,12 @@ func (s *server) Ping(ctx context.Context, req *pb.PingReq) (*pb.PingReply, erro
 
 // 某client要做連線
 func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectReply, error) {
-	member, key, rid, err := s.room.Connect(req.Server, req.Token)
+	connect, err := s.room.Connect(req.Server, req.Token)
 	if err != nil {
 		log.Error("grpc connect", zap.Error(err), zap.String("data", string(req.Token)))
 		return &pb.ConnectReply{}, err
 	}
-	return &pb.ConnectReply{
-		Uid:           member.Uid,
-		Key:           key,
-		Name:          member.Name,
-		RoomID:        int32(rid),
-		Heartbeat:     s.HeartbeatNanosec,
-		IsBlockade:    member.IsBlockade,
-		IsMessage:     member.IsMessage,
-		IsRedEnvelope: member.Type == models.Player,
-	}, nil
+	return connect, nil
 }
 
 // 某client要中斷連線

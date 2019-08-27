@@ -23,6 +23,7 @@ func init() {
 		new(RedEnvelopeMessage),
 		new(Message),
 		new(RoomMessage),
+		new(RoomTopMessage),
 	)
 }
 

@@ -13,6 +13,8 @@ import (
 type Cache interface {
 	set(room models.Room) error
 	get(id int) (models.Room, error)
+	setChat(room models.Room, message string) error
+	getChat(id int) (models.Room, error)
 	addOnline(server string, online *Online) error
 	getOnline(server string) (*Online, error)
 }
@@ -31,6 +33,9 @@ const (
 	// 房間的前綴詞，用於存儲在redis當key
 	roomKey = "room_%d"
 
+	roomDataKey   = "data"
+	roomTopMsgKey = "msg"
+
 	// server name的前綴詞，用於存儲在redis當key
 	onlineKey = "server_%s"
 )
@@ -48,20 +53,65 @@ var (
 )
 
 func (c *cache) set(room models.Room) error {
+	tx := c.c.Pipeline()
 	b, err := json.Marshal(room)
 	if err != nil {
 		return err
 	}
-	return c.c.Set(keyRoom(room.Id), b, roomExpired).Err()
+	key := keyRoom(room.Id)
+	tx.HSet(key, roomDataKey, b)
+	tx.Expire(key, roomExpired)
+	_, err = tx.Exec()
+	return err
 }
 
 func (c *cache) get(id int) (models.Room, error) {
-	b, err := c.c.Get(keyRoom(id)).Bytes()
+	b, err := c.c.HGet(keyRoom(id), roomDataKey).Bytes()
 	if err != nil {
 		return models.Room{}, err
 	}
 	var r models.Room
-	err = json.Unmarshal(b, &r)
+	if err := json.Unmarshal(b, &r); err != nil {
+		return models.Room{}, err
+	}
+	return r, nil
+}
+
+func (c *cache) setChat(room models.Room, message string) error {
+	b1, err := json.Marshal(room)
+	if err != nil {
+		return err
+	}
+
+	tx := c.c.Pipeline()
+	key := keyRoom(room.Id)
+	tx.HMSet(key, map[string]interface{}{
+		roomDataKey:   b1,
+		roomTopMsgKey: message,
+	})
+	tx.Expire(key, roomExpired)
+	_, err = tx.Exec()
+	return err
+}
+
+func (c *cache) getChat(id int) (models.Room, error) {
+	room, err := c.c.HMGet(keyRoom(id), roomDataKey, roomTopMsgKey).Result()
+	if err != nil {
+		return models.Room{}, err
+	}
+	if room[0] == nil {
+		return models.Room{}, redis.Nil
+	}
+
+	var r models.Room
+	if err = json.Unmarshal([]byte(room[0].(string)), &r); err != nil {
+		return r, err
+	}
+	if room[1] == nil {
+		return r, nil
+	}
+
+	r.TopMessage = room[1].(string)
 	return r, err
 }
 
