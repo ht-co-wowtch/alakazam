@@ -40,7 +40,7 @@ var (
 
 const (
 	// 沒有token
-	noAuthorizationBearer = 15024010
+	noAuthorizationBearer = 15024031
 	// 資料格式錯誤
 	invalidParameter = 15024220
 	// 餘額不足
