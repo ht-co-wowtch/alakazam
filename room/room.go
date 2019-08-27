@@ -15,6 +15,8 @@ type Room interface {
 	Delete(id int) error
 	Get(id int) (models.Room, error)
 	GetOnline(server string) (*Online, error)
+	GetTopMessage(msgId int64) ([]int32, models.Message, error)
+	DeleteTopMessage(msgId int64) error
 }
 
 type room struct {
@@ -115,4 +117,35 @@ func (r *room) Get(id int) (models.Room, error) {
 
 func (c *room) GetOnline(server string) (*Online, error) {
 	return c.c.getOnline(server)
+}
+
+func (c *room) GetTopMessage(msgId int64) ([]int32, models.Message, error) {
+	roomTopMsg, err := c.db.FindRoomTopMessage(msgId)
+	if err != nil {
+		return nil, models.Message{}, err
+	}
+	if len(roomTopMsg) == 0 {
+		return nil, models.Message{}, errors.ErrNoRows
+	}
+
+	rid := make([]int32, 0, len(roomTopMsg))
+	for _, v := range roomTopMsg {
+		rid = append(rid, v.RoomId)
+	}
+	return rid, models.Message{
+		MsgId:   msgId,
+		Message: roomTopMsg[0].Message,
+		SendAt:  roomTopMsg[0].SendAt,
+	}, nil
+}
+
+func (c *room) DeleteTopMessage(msgId int64) error {
+	err := c.db.DeleteRoomTopMessage(msgId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.ErrNoRows
+		}
+		return err
+	}
+	return nil
 }

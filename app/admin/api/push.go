@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"net/http"
+	"strconv"
 )
 
 type pushRoomForm struct {
@@ -39,8 +40,27 @@ func (s *httpServer) push(c *gin.Context) error {
 	return nil
 }
 
-// TODO 待完成
 func (s *httpServer) deleteTopMessage(c *gin.Context) error {
-	c.Status(http.StatusNoContent)
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return err
+	}
+
+	msgId := int64(id)
+	rid, msg, err := s.room.GetTopMessage(msgId)
+	if err != nil {
+		return err
+	}
+	if err := s.message.CloseTop(msgId, rid); err != nil {
+		return err
+	}
+	if err := s.room.DeleteTopMessage(msgId); err != nil {
+		return err
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"id":      msgId,
+		"message": msg.Message,
+		"room_id": rid,
+	})
 	return nil
 }

@@ -25,6 +25,9 @@ const (
 	// 回覆更換房間結果
 	OpChangeRoomReply = int32(8)
 
+	// 取消置頂訊息
+	OpCloseTopMessage = int32(9)
+
 	// close連線
 	OpProtoFinish = int32(20)
 

@@ -3,6 +3,7 @@ package message
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	kafka "github.com/Shopify/sarama"
 	"github.com/go-redis/redis"
 	"github.com/gogo/protobuf/proto"
@@ -19,6 +20,7 @@ type Producer struct {
 	topic    string
 	brokers  []string
 	producer kafka.SyncProducer
+	cache    *cache
 	seq      seqpb.SeqClient
 	rate     *rateLimit
 	filter   *shield.Filter
@@ -63,6 +65,7 @@ func NewProducer(brokers []string, topic string, seq seqpb.SeqClient, cache *red
 		brokers:  brokers,
 		topic:    topic,
 		producer: pub,
+		cache:    newCache(cache),
 		seq:      seq,
 		filter:   f.filter,
 		rate:     newRateLimit(cache),
@@ -198,14 +201,15 @@ func (p *Producer) Kick(msg KickMessage) error {
 
 func (p *Producer) CloseTop(msgId int64, rid []int32) error {
 	pushMsg := &logicpb.PushMsg{
-		Type: logicpb.PushMsg_ADMIN_TOP,
+		Type: logicpb.PushMsg_CLOSE_TOP,
 		Seq:  msgId,
 		Room: rid,
+		Msg:  []byte(fmt.Sprintf(`{"id":%d}`, msgId)),
 	}
 	if err := p.send(pushMsg); err != nil {
 		return err
 	}
-	return nil
+	return p.cache.deleteRoomTopMessage(rid)
 }
 
 type RedEnvelopeMessage struct {
@@ -311,7 +315,7 @@ func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 		key = kafka.StringEncoder(pushMsg.Room[0])
 	case logicpb.PushMsg_MONEY:
 		key = redEnvelopeType
-	case logicpb.PushMsg_ADMIN, logicpb.PushMsg_ADMIN_TOP:
+	case logicpb.PushMsg_ADMIN, logicpb.PushMsg_ADMIN_TOP, logicpb.PushMsg_CLOSE_TOP, logicpb.PushMsg_Close:
 		key = "admin"
 	}
 	m := &kafka.ProducerMessage{

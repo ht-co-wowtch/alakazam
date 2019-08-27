@@ -26,13 +26,14 @@ const (
 )
 
 type Server struct {
-	ctx        context.Context
-	cancel     context.CancelFunc
-	db         *models.Store
-	cache      *goRedis.Client
-	message    *message.Producer
-	client     *client.Client
-	member     *member.Member
+	ctx     context.Context
+	cancel  context.CancelFunc
+	db      *models.Store
+	cache   *goRedis.Client
+	message *message.Producer
+	client  *client.Client
+	member  *member.Member
+	// TODO Chat
 	room       room.Room
 	httpServer *http.Server
 	rpc        *grpc.Server

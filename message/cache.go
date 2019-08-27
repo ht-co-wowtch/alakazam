@@ -47,9 +47,16 @@ func (c *cache) addTopMessage(msg *pb.PushMsg) error {
 		if err != nil {
 			return err
 		}
-
 		tx.Set(keyRoomTopMsg(rid), b, c.expiration)
 	}
 	_, err := tx.Exec()
 	return err
+}
+
+func (c *cache) deleteRoomTopMessage(rids []int32) error {
+	delKey := make([]string, 0, len(rids))
+	for _, rid := range rids {
+		delKey = append(delKey, keyRoomTopMsg(rid))
+	}
+	return c.c.Del(delKey...).Err()
 }
