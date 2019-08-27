@@ -55,7 +55,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		},
 		RedEnvelopeId: reply.Uid,
 		Token:         reply.Token,
-		Expired:       reply.ExpireAt.Unix(),
+		Expired:       reply.ExpireAt,
 	}
 
 	msgId, err := s.message.SendRedEnvelope(msg)

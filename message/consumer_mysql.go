@@ -38,7 +38,11 @@ func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
 		if err := json.Unmarshal(msg.Msg, m); err != nil {
 			return err
 		}
-		expireAt := time.Unix(m.RedEnvelope.Expired, 0)
+
+		expireAt, err := time.Parse(time.RFC3339, m.RedEnvelope.Expired)
+		if err != nil {
+			log.Error("parse time for mysql consumer", zap.Error(err), zap.String("expired", m.RedEnvelope.Expired))
+		}
 		if _, err := tx.Exec(addRedEnvelopeMessages, msg.Seq, msg.Mid, msg.Message, m.RedEnvelope.Id, m.RedEnvelope.Token, expireAt, sendAt); err != nil {
 			log.Error(
 				"insert red envelope message",

@@ -64,7 +64,7 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 					Name:    memberMap[msg.RedEnvelopeMessage[msgId].MemberId].Name,
 					Type:    redEnvelopeType,
 					Message: msg.RedEnvelopeMessage[msgId].Message,
-					Time:    msg.RedEnvelopeMessage[msgId].SendAt.Format(time.RFC3339),
+					Time:    msg.RedEnvelopeMessage[msgId].SendAt.Format("15:04:05"),
 				},
 				RedEnvelope: historyRedEnvelope{
 					Id:      msg.RedEnvelopeMessage[msgId].RedEnvelopesId,
@@ -79,7 +79,7 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 				Name:    memberMap[msg.Message[msgId].MemberId].Name,
 				Type:    messageType,
 				Message: msg.Message[msgId].Message,
-				Time:    msg.Message[msgId].SendAt.Format(time.RFC3339),
+				Time:    msg.Message[msgId].SendAt.Format("15:04:05"),
 			})
 		}
 	}

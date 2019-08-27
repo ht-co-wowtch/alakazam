@@ -386,7 +386,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 		return 0, time.Duration(0), err
 	}
 	if c.IsBlockade {
-		if e := authReply(ws, p, blockadeMessage); e != nil {
+		if e := authCloseReply(ws, p, blockadeMessage); e != nil {
 			log.Warn("auth reply", zap.Error(e), zap.String("uid", c.Uid), zap.Int32("room_id", c.RoomID))
 		}
 		return 0, time.Duration(0), io.EOF
@@ -399,7 +399,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 		Key        string `json:"key"`
 		RoomId     int32  `json:"room_id"`
 		Permission struct {
-			IsBanned      bool `json:"is_banned"`
+			IsMessage     bool `json:"is_message"`
 			IsRedEnvelope bool `json:"is_red_envelope"`
 		} `json:"permission"`
 	}{
@@ -407,7 +407,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 		Key:    c.Key,
 		RoomId: c.RoomID,
 	}
-	reply.Permission.IsBanned = !c.IsMessage
+	reply.Permission.IsMessage = c.IsMessage
 	reply.Permission.IsRedEnvelope = c.IsRedEnvelope
 
 	b, err := json.Marshal(reply)
@@ -426,6 +426,16 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 // 回覆連線至某房間結果
 func authReply(ws *websocket.Conn, p *pb.Proto, b []byte) (err error) {
 	p.Op = pb.OpAuthReply
+	p.Body = b
+	if err = p.WriteWebsocket(ws); err != nil {
+		return
+	}
+	err = ws.Flush()
+	return
+}
+
+func authCloseReply(ws *websocket.Conn, p *pb.Proto, b []byte) (err error) {
+	p.Op = pb.OpProtoFinish
 	p.Body = b
 	if err = p.WriteWebsocket(ws); err != nil {
 		return
