@@ -3,6 +3,7 @@ package message
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-redis/redis"
 	"github.com/go-xorm/xorm"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -11,12 +12,14 @@ import (
 )
 
 type MysqlConsumer struct {
-	db *xorm.EngineGroup
+	cache *cache
+	db    *xorm.EngineGroup
 }
 
-func NewMysqlConsumer(db *xorm.EngineGroup) *MysqlConsumer {
+func NewMysqlConsumer(db *xorm.EngineGroup, c *redis.Client) *MysqlConsumer {
 	return &MysqlConsumer{
-		db: db,
+		cache: newCache(c),
+		db:    db,
 	}
 }
 
@@ -112,6 +115,9 @@ func (m *MysqlConsumer) Admin(msg *pb.PushMsg) error {
 			return err
 		}
 	case pb.PushMsg_ADMIN_TOP:
+		if err := m.cache.addTopMessage(msg); err != nil {
+			log.Error("add top message cache for insert room top message", zap.Error(err), zap.Int64("msg_id", msg.Seq))
+		}
 		for _, rid := range msg.Room {
 			if _, err := tx.Exec(addRoomTopMessage, rid, msg.Seq, msg.Message, sendAt); err != nil {
 				log.Error(

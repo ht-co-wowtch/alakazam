@@ -4,6 +4,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/config"
 	"gitlab.com/jetfueltw/cpw/micro/database"
 	"gitlab.com/jetfueltw/cpw/micro/log"
+	"gitlab.com/jetfueltw/cpw/micro/redis"
 )
 
 var (
@@ -13,6 +14,7 @@ var (
 
 // Config is job config.
 type Config struct {
+	Redis *redis.Conf
 	DB    *database.Conf
 	Kafka *Kafka
 }
@@ -37,6 +39,10 @@ func Read(path string) error {
 
 	Conf = new(Config)
 	Conf.DB, err = database.ReadViper(v.Sub("database"))
+	if err != nil {
+		return err
+	}
+	Conf.Redis, err = redis.ReadViper(v.Sub("redis"))
 	if err != nil {
 		return err
 	}

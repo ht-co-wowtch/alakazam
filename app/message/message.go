@@ -5,6 +5,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/message/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/micro/database"
+	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"time"
 )
 
@@ -20,7 +21,7 @@ func New(c *conf.Config) *Message {
 	d.SetTZDatabase(time.Local)
 	return &Message{
 		consumer: consumer,
-		mysql:    message.NewMysqlConsumer(d),
+		mysql:    message.NewMysqlConsumer(d, redis.New(c.Redis)),
 	}
 }
 
