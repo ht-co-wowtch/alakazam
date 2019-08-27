@@ -149,14 +149,6 @@ func (m *Member) GetSession(uid string) (*models.Member, error) {
 	return member, nil
 }
 
-func (m *Member) Get(uid string) (*models.Member, error) {
-	member, err := m.c.get(uid)
-	if err != nil {
-		return nil, errors.ErrNoMember
-	}
-	return member, nil
-}
-
 func (m *Member) GetUserName(uid []string) ([]string, error) {
 	name, err := m.c.getName(uid)
 	if err == redis.Nil {
