@@ -54,7 +54,7 @@ TODO
 - [ ] Metrics監控
 - [ ] 註冊中心(etcd or zk)
 - [ ] 整合測試 bash shell
-- [ ]  golang pprof
+- [ ] golang pprof
 - [ ] 歷史訊息redis
 - [ ] 歷史訊息 mongodb
 - [ ] Kafka and zk config 調整
@@ -348,19 +348,19 @@ Operation = `6`=> 單筆訊息
     "name": "sam78",
     "avatar": "",
     "message": "測試",
-    "time": "09:59:32"
+    "time": "2019-08-27T02:37:00+08:00"
 }
 ```
 
-| name    | 說明       | 格式   |
-| ------- | ---------- | ------ |
-| Id      | 訊息id     | Int    |
-| uid     | 訊息人uid  | string |
-| type    | 訊息類型   | string |
-| name    | 訊息人名稱 | string |
-| avatar  | 頭像url    | string |
-| message | 訊息       | string |
-| time    | 發送時間   | string |
+| name    | 說明       | 格式    |
+| ------- | ---------- | ------- |
+| Id      | 訊息id     | Int     |
+| uid     | 訊息人uid  | string  |
+| type    | 訊息類型   | string  |
+| name    | 訊息人名稱 | string  |
+| avatar  | 頭像url    | string  |
+| message | 訊息       | string  |
+| time    | 發送時間   | RFC3339 |
 
 紅包訊息
 
@@ -372,7 +372,7 @@ Operation = `6`=> 單筆訊息
     "name": "sam78",
     "avatar": "",
     "message": "發大財",
-    "time": "10:15:13",
+    "time": "2019-08-27T02:37:00+08:00",
     "red_envelope": {
         "id": "0d641b03d4d548dbb3a73a2197811261",
         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjY4NzkzMTMsImlkIjoiMWI5MTZiNDc4YzBjNGZjMzhmMGE0MzE1NjMwNjExMTQiLCJ1aWQiOiIwZDY0MWIwM2Q0ZDU0OGRiYjNhNzNhMjE5NzgxMTI2MSJ9.pgyltHiT11XcZySJPiuetV35OXU-wgQ4XtU_UTzwghU",
@@ -381,17 +381,17 @@ Operation = `6`=> 單筆訊息
 }
 ```
 
-| name                 | 說明          | 格式     |
-| -------------------- | ------------- | -------- |
-| Id                   | 訊息id        | Int      |
-| uid                  | 發紅包人的uid | string   |
-| type                 | 訊息種類      | string   |
-| name                 | 發紅包人名稱  | string   |
-| message              | 紅包說明      | string   |
-| time                 | 發送時間      | 15:03:04 |
-| red_envelope.id      | 紅包id        | string   |
-| red_envelope.token   | 搶紅包的token | string   |
-| red_envelope.expired | 紅包過期時間  | RF3339   |
+| name                 | 說明          | 格式    |
+| -------------------- | ------------- | ------- |
+| Id                   | 訊息id        | Int     |
+| uid                  | 發紅包人的uid | string  |
+| type                 | 訊息種類      | string  |
+| name                 | 發紅包人名稱  | string  |
+| message              | 紅包說明      | string  |
+| time                 | 發送時間      | RFC3339 |
+| red_envelope.id      | 紅包id        | string  |
+| red_envelope.token   | 搶紅包的token | string  |
+| red_envelope.expired | 紅包過期時間  | RF3339  |
 
 
 
@@ -411,7 +411,7 @@ Operation = `8`=> 回覆更換房間結果
 | ------- | -------- | ---- |
 | room_id | 新房間id | int  |
 
-#### 
+
 
 ## Web Socket
 
@@ -473,3 +473,19 @@ Boyd內容帶想要切換的房間Id即可，Protocol Operation[參考](#operati
 | ---- | ------------------------------ | ---- |
 | 成功 | [Response](#change-room-reply) |      |
 | 失敗 | 失敗就會close連線              |      |
+
+## Version Update
+
+1. 進入某房間成功後回覆的json結構 [參考](#room-reply)
+   1. room_id 由string 改成 int
+   2. permission.is_banned 更名為permission.permission
+2. 增加聊天室強制中斷連線通知 [參考](#close-reply)
+   1. 如被封鎖，被後台踢掉，被自動踢掉等情況都會這樣
+   2. 會先發一組json內容後，server在將web socket 做close
+3. 前台跟聊天室web socket 做心跳請改成1分鐘1次 [參考](#heartbeat)
+4. 聊天室推送的訊息增加`type`欄位表示種類，原先是利用Protocol Operation 來表示，[參考](#message-reply)
+5. 切換房間原先room_id是string請改成int [參考](#change-room)
+6. 紅包訊息結構內的red_envelope.expired原先是時間戳記改為RFC3339
+7. [發訊息API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80) 原先需要帶`key ` and `uid` 現在只需帶`room_id` `message`
+8. [發紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af) 不需要帶key ` and `uid`
+
