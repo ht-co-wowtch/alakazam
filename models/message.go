@@ -56,8 +56,7 @@ func (s *Store) GetRoomMessage(roomId, lastMsgId int) (*Messages, error) {
 	rms := make([]RoomMessage, 0)
 
 	query := s.d.Table(fmt.Sprintf("room_messages_%02d", roomId%50)).
-		Where("`room_id` = ?", roomId).
-		In("type", pb.PushMsg_ROOM, pb.PushMsg_MONEY)
+		Where("`room_id` = ?", roomId)
 
 	if lastMsgId > 0 {
 		query = query.Where("`msg_id` < ?", lastMsgId)

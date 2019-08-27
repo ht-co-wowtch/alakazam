@@ -22,6 +22,7 @@ func NewMysqlConsumer(db *xorm.EngineGroup) *MysqlConsumer {
 
 const (
 	addMessage             = "INSERT INTO `messages_%02d` (`msg_id`,`member_id`,`message`,`send_at`) VALUES (?,?,?,?);"
+	addAdminMessage        = "INSERT INTO `admin_messages` (`msg_id`,`room_id`,`message`,`type`,`send_at`) VALUES (?,?,?,?,?);"
 	addRedEnvelopeMessages = "INSERT INTO `red_envelope_messages` (`msg_id`,`member_id`,`message`,`red_envelopes_id`,`token`,`expire_at`,`send_at`) VALUES (?,?,?,?,?,?,?);"
 	addRoomMessage         = "INSERT INTO `room_messages_%02d` (`room_id`,`msg_id`,`type`,`send_at`) VALUES (?,?,?,?);"
 )
@@ -54,7 +55,7 @@ func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
 			)
 			return err
 		}
-	case pb.PushMsg_ROOM, pb.PushMsg_TOP:
+	case pb.PushMsg_ROOM:
 		if _, err := tx.Exec(fmt.Sprintf(addMessage, msg.Room[0]%50), msg.Seq, msg.Mid, msg.Message, sendAt); err != nil {
 			log.Error(
 				"insert message",
@@ -65,9 +66,24 @@ func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
 			)
 			return err
 		}
+	case pb.PushMsg_ADMIN, pb.PushMsg_ADMIN_TOP:
+		b, err := json.Marshal(msg.Room)
+		if err != nil {
+			log.Error("json marshal for insert admin message", zap.Int64("msg_id", msg.Seq))
+		}
+		if _, err := tx.Exec(addAdminMessage, msg.Seq, string(b), msg.Message, msg.Type, sendAt); err != nil {
+			log.Error(
+				"insert admin message",
+				zap.Error(err),
+				zap.Int64("msg_id", msg.Seq),
+				zap.Int64("member_id", msg.Mid),
+				zap.String("message", msg.Message),
+			)
+			return err
+		}
 	}
 
-	if msg.Type != pb.PushMsg_Close {
+	if msg.Type <= pb.PushMsg_MONEY {
 		for _, rid := range msg.Room {
 			if _, err := tx.Exec(fmt.Sprintf(addRoomMessage, rid%50), rid, msg.Seq, msg.Type, sendAt); err != nil {
 				log.Error(

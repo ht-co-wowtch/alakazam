@@ -169,7 +169,9 @@ func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
 		return 0, err
 	}
 	if msg.IsTop {
-		pushMsg.Type = logicpb.PushMsg_TOP
+		pushMsg.Type = logicpb.PushMsg_ADMIN_TOP
+	} else {
+		pushMsg.Type = logicpb.PushMsg_ADMIN
 	}
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
@@ -187,6 +189,18 @@ func (p *Producer) Kick(msg KickMessage) error {
 		Type:    logicpb.PushMsg_Close,
 		Keys:    msg.Keys,
 		Message: msg.Message,
+	}
+	if err := p.send(pushMsg); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Producer) CloseTop(msgId int64, rid []int32) error {
+	pushMsg := &logicpb.PushMsg{
+		Type: logicpb.PushMsg_ADMIN_TOP,
+		Seq:  msgId,
+		Room: rid,
 	}
 	if err := p.send(pushMsg); err != nil {
 		return err
@@ -297,8 +311,8 @@ func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 		key = kafka.StringEncoder(pushMsg.Room[0])
 	case logicpb.PushMsg_MONEY:
 		key = redEnvelopeType
-	case logicpb.PushMsg_TOP:
-		key = topType
+	case logicpb.PushMsg_ADMIN, logicpb.PushMsg_ADMIN_TOP:
+		key = "admin"
 	}
 	m := &kafka.ProducerMessage{
 		Key:   key,
