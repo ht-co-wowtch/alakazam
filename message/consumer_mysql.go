@@ -115,9 +115,6 @@ func (m *MysqlConsumer) Admin(msg *pb.PushMsg) error {
 			return err
 		}
 	case pb.PushMsg_ADMIN_TOP:
-		if err := m.cache.addTopMessage(msg); err != nil {
-			log.Error("add top message cache for insert room top message", zap.Error(err), zap.Int64("msg_id", msg.Seq))
-		}
 		for _, rid := range msg.Room {
 			if _, err := tx.Exec(addRoomTopMessage, rid, msg.Seq, msg.Message, sendAt); err != nil {
 				log.Error(

@@ -3,8 +3,11 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type pushRoomForm struct {
@@ -34,6 +37,19 @@ func (s *httpServer) push(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
+	if p.Top {
+		m := message.Message{
+			Id:      id,
+			Uid:     message.RootUid,
+			Type:    message.TopType,
+			Name:    message.RootName,
+			Message: p.Message,
+			Time:    time.Now().Format("15:04:05"),
+		}
+		if err := s.room.AddTopMessage(p.RoomId, m); err != nil {
+			log.Error("add top message for admin push api", zap.Error(err), zap.Int32s("rids", p.RoomId))
+		}
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"id": id,
 	})
@@ -54,7 +70,7 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 	if err := s.message.CloseTop(msgId, rid); err != nil {
 		return err
 	}
-	if err := s.room.DeleteTopMessage(msgId); err != nil {
+	if err := s.room.DeleteTopMessage(rid, msgId); err != nil {
 		return err
 	}
 	c.JSON(http.StatusOK, gin.H{

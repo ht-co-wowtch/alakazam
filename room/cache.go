@@ -15,6 +15,8 @@ type Cache interface {
 	get(id int) (models.Room, error)
 	setChat(room models.Room, message string) error
 	getChat(id int) (models.Room, error)
+	setChatTopMessage(rids []int32, message string) error
+	deleteChatTopMessage(rids []int32) error
 	addOnline(server string, online *Online) error
 	getOnline(server string) (*Online, error)
 }
@@ -49,7 +51,7 @@ func keyServerOnline(key string) string {
 }
 
 var (
-	roomExpired = time.Hour
+	roomExpired = time.Hour * 12
 )
 
 func (c *cache) set(room models.Room) error {
@@ -113,6 +115,34 @@ func (c *cache) getChat(id int) (models.Room, error) {
 
 	r.TopMessage = room[1].(string)
 	return r, err
+}
+
+func (c *cache) setChatTopMessage(rids []int32, message string) error {
+	keys := make([]string, 0, len(rids))
+	for _, rid := range rids {
+		keys = append(keys, keyRoom(int(rid)))
+	}
+
+	tx := c.c.Pipeline()
+	for _, k := range keys {
+		tx.HSet(k, roomTopMsgKey, message)
+	}
+	_, err := tx.Exec()
+	return err
+}
+
+func (c *cache) deleteChatTopMessage(rids []int32) error {
+	keys := make([]string, 0, len(rids))
+	for _, rid := range rids {
+		keys = append(keys, keyRoom(int(rid)))
+	}
+
+	tx := c.c.Pipeline()
+	for _, k := range keys {
+		tx.HDel(k, roomTopMsgKey)
+	}
+	_, err := tx.Exec()
+	return err
 }
 
 type Online struct {

@@ -25,7 +25,7 @@ const (
 	// 紅包訊息
 	redEnvelopeType = "red_envelope"
 	// 公告訊息
-	topType = "top"
+	TopType = "top"
 )
 
 func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
@@ -90,7 +90,7 @@ func RoomTopMessageToMessage(msg models.RoomTopMessage) Message {
 	return Message{
 		Id:      msg.MsgId,
 		Uid:     RootUid,
-		Type:    topType,
+		Type:    TopType,
 		Name:    RootName,
 		Message: msg.Message,
 		Time:    msg.SendAt.Format("15:04:05"),

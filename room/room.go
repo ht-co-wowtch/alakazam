@@ -2,10 +2,12 @@ package room
 
 import (
 	"database/sql"
+	"encoding/json"
 	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 )
 
@@ -16,7 +18,8 @@ type Room interface {
 	Get(id int) (models.Room, error)
 	GetOnline(server string) (*Online, error)
 	GetTopMessage(msgId int64) ([]int32, models.Message, error)
-	DeleteTopMessage(msgId int64) error
+	AddTopMessage(rids []int32, message message.Message) error
+	DeleteTopMessage(rids []int32, msgId int64) error
 }
 
 type room struct {
@@ -115,12 +118,12 @@ func (r *room) Get(id int) (models.Room, error) {
 	return room, nil
 }
 
-func (c *room) GetOnline(server string) (*Online, error) {
-	return c.c.getOnline(server)
+func (r *room) GetOnline(server string) (*Online, error) {
+	return r.c.getOnline(server)
 }
 
-func (c *room) GetTopMessage(msgId int64) ([]int32, models.Message, error) {
-	roomTopMsg, err := c.db.FindRoomTopMessage(msgId)
+func (r *room) GetTopMessage(msgId int64) ([]int32, models.Message, error) {
+	roomTopMsg, err := r.db.FindRoomTopMessage(msgId)
 	if err != nil {
 		return nil, models.Message{}, err
 	}
@@ -139,13 +142,21 @@ func (c *room) GetTopMessage(msgId int64) ([]int32, models.Message, error) {
 	}, nil
 }
 
-func (c *room) DeleteTopMessage(msgId int64) error {
-	err := c.db.DeleteRoomTopMessage(msgId)
+func (r *room) AddTopMessage(rids []int32, message message.Message) error {
+	b, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
+	return r.c.setChatTopMessage(rids, string(b))
+}
+
+func (r *room) DeleteTopMessage(rids []int32, msgId int64) error {
+	err := r.db.DeleteRoomTopMessage(msgId)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return errors.ErrNoRows
 		}
 		return err
 	}
-	return nil
+	return r.c.deleteChatTopMessage(rids)
 }

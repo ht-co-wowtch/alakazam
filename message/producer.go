@@ -158,7 +158,7 @@ type AdminMessage struct {
 func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
 	ty := messageType
 	if msg.IsTop {
-		ty = topType
+		ty = TopType
 	}
 	pushMsg, err := p.toPb(Messages{
 		Rooms:   msg.Rooms,
@@ -209,7 +209,7 @@ func (p *Producer) CloseTop(msgId int64, rid []int32) error {
 	if err := p.send(pushMsg); err != nil {
 		return err
 	}
-	return p.cache.deleteRoomTopMessage(rid)
+	return nil
 }
 
 type RedEnvelopeMessage struct {
