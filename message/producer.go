@@ -109,7 +109,7 @@ func (p *Producer) toPb(msg Messages) (*logicpb.PushMsg, error) {
 		Uid:     msg.Uid,
 		Name:    msg.Name,
 		Message: fmsg,
-		Time:    now.Format(time.RFC3339),
+		Time:    now.Format("15:04:05"),
 	})
 	if err != nil {
 		return nil, err
@@ -222,7 +222,7 @@ func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*logicpb.PushMsg, er
 			Uid:     msg.Uid,
 			Name:    msg.Name,
 			Message: fmsg,
-			Time:    now.Format(time.RFC3339),
+			Time:    now.Format("15:04:05"),
 		},
 		RedEnvelope: RedEnvelope{
 			Id:      msg.RedEnvelopeId,
