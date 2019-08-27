@@ -348,7 +348,7 @@ Operation = `6`=> 單筆訊息
     "name": "sam78",
     "avatar": "",
     "message": "測試",
-    "time": "2019-08-27T02:37:00+08:00"
+    "time": "12:37:00"
 }
 ```
 
@@ -360,7 +360,7 @@ Operation = `6`=> 單筆訊息
 | name    | 訊息人名稱 | string  |
 | avatar  | 頭像url    | string  |
 | message | 訊息       | string  |
-| time    | 發送時間   | RFC3339 |
+| time    | 發送時間   | 時:分:秒 |
 
 紅包訊息
 
@@ -372,7 +372,7 @@ Operation = `6`=> 單筆訊息
     "name": "sam78",
     "avatar": "",
     "message": "發大財",
-    "time": "2019-08-27T02:37:00+08:00",
+    "time": "12:37:00",
     "red_envelope": {
         "id": "0d641b03d4d548dbb3a73a2197811261",
         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjY4NzkzMTMsImlkIjoiMWI5MTZiNDc4YzBjNGZjMzhmMGE0MzE1NjMwNjExMTQiLCJ1aWQiOiIwZDY0MWIwM2Q0ZDU0OGRiYjNhNzNhMjE5NzgxMTI2MSJ9.pgyltHiT11XcZySJPiuetV35OXU-wgQ4XtU_UTzwghU",
@@ -388,7 +388,7 @@ Operation = `6`=> 單筆訊息
 | type                 | 訊息種類      | string  |
 | name                 | 發紅包人名稱  | string  |
 | message              | 紅包說明      | string  |
-| time                 | 發送時間      | RFC3339 |
+| time                 | 發送時間      | 時:分:秒 |
 | red_envelope.id      | 紅包id        | string  |
 | red_envelope.token   | 搶紅包的token | string  |
 | red_envelope.expired | 紅包過期時間  | RF3339  |
