@@ -76,14 +76,16 @@ func (s *Store) GetRoomMessage(roomId, lastMsgId int) (*Messages, error) {
 	var redMsgId []int64
 	msgIds := make([]int64, 0, messageLimit)
 	mapMsg := make(map[int64]pb.PushMsg_Type)
-	for _, v := range rms {
-		mapMsg[v.MsgId] = v.Type
-		msgIds = append(msgIds, v.MsgId)
-		switch v.Type {
+
+	for i := len(rms); i > 1; i-- {
+		msg := rms[i-1]
+		mapMsg[msg.MsgId] = msg.Type
+		msgIds = append(msgIds, msg.MsgId)
+		switch msg.Type {
 		case pb.PushMsg_MONEY:
-			redMsgId = append(redMsgId, v.MsgId)
+			redMsgId = append(redMsgId, msg.MsgId)
 		default:
-			msgId = append(msgId, v.MsgId)
+			msgId = append(msgId, msg.MsgId)
 		}
 	}
 
