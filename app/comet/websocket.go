@@ -366,7 +366,12 @@ failed:
 
 type jsonByte []byte
 
-func (b jsonByte) MarshalJSON() ([]byte, error) { return b, nil }
+func (b jsonByte) MarshalJSON() ([]byte, error) {
+	if b == nil {
+		return []byte(`""`), nil
+	}
+	return b, nil
+}
 
 // websocket請求連線至某房間
 func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Channel, p *pb.Proto) (int32, time.Duration, error) {
