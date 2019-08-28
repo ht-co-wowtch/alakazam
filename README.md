@@ -120,7 +120,7 @@ TODO
 | 6     | [聊天室訊息](#message-raw)                   | json   |
 | 7     | [更換房間](#change-room)                     | json   |
 | 8     | [回覆更換房間結果](#change-room-reply)       | json   |
-| 9     | [取消置頂訊息](#cancle-header-message-reply) | Son    |
+| 9     | [取消置頂訊息](#cancle-header-message-reply) | json   |
 | 20    | [聊天室踢人](#close-Reply)                   | json   |
 
 
@@ -420,9 +420,9 @@ Operation = `9`=> 取消置頂訊息
 }
 ```
 
-| name | 說明     | 格式 |
-| ---- | -------- | ---- |
-| id   | 新房間id | int  |
+| name | 說明       | 格式 |
+| ---- | ---------- | ---- |
+| id   | 置頂消息id | int  |
 
 
 
@@ -434,7 +434,7 @@ Operation = `9`=> 取消置頂訊息
 
 ```json
   {
-      "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTcyMTE2NTAsIm5iZiI6MTU1NzIxMTY1MCwiaXNzIjoibG9naW4iLCJzZXNzaW9uX3Rva2VuIjoiZjc2OTYyM2Y0YTNlNDE4MWE4NzAwYWNkYTE3NzE1MmIiLCJkYXRhIjp7InVpZCI6IjEyNTdlN2Q5ZTFjOTQ0ZWY5YTZmMTI5Y2I5NDk1ZDAyIiwidXNlcm5hbWUiOiJyb290In19.7VJxH3tQpnJqWTlPbId7f0Rt7eQoaVvaJmbWxtHTqRU,
+      "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTcyMTE2NTAsIm5iZiI6MTU1NzIxMTY1MCwiaXNzIjoibG9naW4iLCJzZXNzaW9uX3Rva2VuIjoiZjc2OTYyM2Y0YTNlNDE4MWE4NzAwYWNkYTE3NzE1MmIiLCJkYXRhIjp7InVpZCI6IjEyNTdlN2Q5ZTFjOTQ0ZWY5YTZmMTI5Y2I5NDk1ZDAyIiwidXNlcm5hbWUiOiJyb290In19.7VJxH3tQpnJqWTlPbId7f0Rt7eQoaVvaJmbWxtHTqRU",
       "room_id": 1000
   }
 ```
