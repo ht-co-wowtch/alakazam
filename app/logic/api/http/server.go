@@ -64,7 +64,7 @@ func handler(e *gin.Engine, s httpServer) {
 	e.POST("/red-envelope", s.authUid, ErrHandler(s.giveRedEnvelope))
 	e.PUT("/red-envelope", s.authUid, ErrHandler(s.takeRedEnvelope))
 	e.GET("/red-envelope/:id", ErrHandler(s.getRedEnvelopeDetail))
-	e.GET("/red-envelope-consume/:id", ErrHandler(s.getRedEnvelope))
+	//e.GET("/red-envelope-consume/:id", ErrHandler(s.getRedEnvelope))
 	e.GET("/message/:room", ErrHandler(s.getMessage))
 	e.GET("/top/message/:room", s.authUid, ErrHandler(s.getTopMessage))
 }
