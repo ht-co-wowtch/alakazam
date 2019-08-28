@@ -320,19 +320,23 @@
                 case 6:
                     var json = textDecoder.decode(data.slice(headerLen, packetLen));
                     appendMsg(json, op);
+                    break;
                 case 8:
                     var json = textDecoder.decode(data.slice(headerLen, packetLen));
                     var msgBody = JSON.parse(json)
-
-                    document.getElementById("room_id").innerHTML = msgBody.room_id
+                    document.getElementById("room_id").innerHTML = msgBody.room_id;
+                    console.log(msgBody)
+                    break;
                 case 9:
                     var json = textDecoder.decode(data.slice(headerLen, packetLen));
                     var msgBody = JSON.parse(json)
                     console.log(msgBody)
+                    break;
                 case 20:
                     var json = textDecoder.decode(data.slice(headerLen, packetLen));
                     var msgBody = JSON.parse(json)
                     console.log(msgBody)
+                    break;
                 default:
                     break
             }
@@ -455,7 +459,6 @@
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function (data) {
-                console.log(data)
                 $('#exampleModalLongTitle').text(data.status_message)
                 $('#modal-name').text(data.name + "的紅包")
                 $('#modal-text').text(data.message)

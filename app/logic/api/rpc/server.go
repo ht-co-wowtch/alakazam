@@ -54,7 +54,11 @@ func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.Dis
 
 // user當前連線要切換房間
 func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.ChangeRoomReply, error) {
-	return &pb.ChangeRoomReply{}, nil
+	p, err := s.room.ChangeRoom(int(req.RoomID))
+	if err != nil {
+		log.Error("grpc change room", zap.Error(err), zap.Int32("rid", req.RoomID))
+	}
+	return p, err
 }
 
 // 重置user redis過期時間

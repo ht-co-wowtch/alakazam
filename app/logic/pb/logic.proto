@@ -62,7 +62,9 @@ message ChangeRoomReq {
      int32 roomID = 3;
 }
 
-message ChangeRoomReply {}
+message ChangeRoomReply {
+    bytes headerMessage = 1;
+}
 
 message DisconnectReply {
     bool has = 1;

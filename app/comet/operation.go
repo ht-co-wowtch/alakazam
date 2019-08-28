@@ -3,6 +3,7 @@ package comet
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -57,28 +58,52 @@ type changeRoom struct {
 	RoomId int32 `json:"room_id"`
 }
 
+var changeRoomReply = `{"room_id":%d, "status":%t}`
+
 // 處理Proto相關邏輯
 func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *Bucket) error {
 	switch p.Op {
 	// 更換房間
 	case cometpb.OpChangeRoom:
+		p.Op = cometpb.OpChangeRoomReply
 		var r changeRoom
 
 		if err := json.Unmarshal(p.Body, &r); err != nil {
-			return err
+			p.Body = []byte(fmt.Sprintf(changeRoomReply, r.RoomId, false))
+			return nil
 		}
 
 		if err := b.ChangeRoom(r.RoomId, ch); err != nil {
+			p.Body = []byte(fmt.Sprintf(changeRoomReply, r.RoomId, false))
 			log.Error("change room", zap.Error(err), zap.Binary("data", p.Body))
-		} else if _, err := s.logic.ChangeRoom(ctx, &logicpb.ChangeRoomReq{
+			return nil
+		}
+
+		room, err := s.logic.ChangeRoom(ctx, &logicpb.ChangeRoomReq{
 			Uid:    ch.Uid,
 			Key:    ch.Key,
 			RoomID: r.RoomId,
-		}); err != nil {
-			return err
-		}
+		})
 
-		p.Op = cometpb.OpChangeRoomReply
+		if err != nil {
+			p.Body = []byte(fmt.Sprintf(changeRoomReply, r.RoomId, false))
+			log.Error("change room for logic", zap.Error(err), zap.Binary("data", p.Body))
+			return nil
+		}
+		if room.HeaderMessage != nil {
+			p.Body = []byte(fmt.Sprintf(changeRoomReply, r.RoomId, true))
+			ch.protoRing.SetAdv()
+			ch.Signal()
+
+			p1, err := ch.protoRing.Set()
+			if err != nil {
+				log.Error("proto ping set for change room")
+				return nil
+			}
+
+			p1.Op = cometpb.OpRaw
+			p1.Body = room.HeaderMessage
+		}
 	default:
 		// TODO error
 		p.Body = nil

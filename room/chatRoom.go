@@ -30,6 +30,7 @@ type Chat interface {
 	Heartbeat(uid, key, name, server string) error
 	RenewOnline(server string, roomCount map[int32]int32) (map[int32]int32, error)
 	IsMessage(rid int, uid string) error
+	ChangeRoom(rid int) (*pb.ChangeRoomReply, error)
 	GetTopMessage(rid int) (message.Message, error)
 }
 
@@ -193,4 +194,23 @@ func (c *chat) GetTopMessage(rid int) (message.Message, error) {
 		return message.Message{}, err
 	}
 	return message.ToMessage(msg)
+}
+
+func (c *chat) ChangeRoom(rid int) (*pb.ChangeRoomReply, error) {
+	msg, err := c.cache.getChatTopMessage(rid)
+	if err != nil {
+		if err != redis.Nil {
+			return nil, err
+		}
+
+		room, err := c.reloadChat(rid)
+		if err != nil {
+			return nil, err
+		}
+
+		msg = room.HeaderMessage
+	}
+	return &pb.ChangeRoomReply{
+		HeaderMessage: msg,
+	}, err
 }
