@@ -110,17 +110,18 @@ TODO
 
 不同的Operation說明本次Protocol資料是什麼，如心跳回覆,訊息等等
 
-| value | 說明                                    | body   |
-| ----- | --------------------------------------- | ------ |
-| 1     | [要求連線到某一個房間](#room)           | json   |
-| 2     | [連線到某一個房間結果回覆](#room-reply) | json   |
-| 3     | [發送心跳](#heartbeat)                  | 無Body |
-| 4     | [回覆心跳結果](#heartbeat-reply)        | int32  |
-| 5     | [聊天室批次訊息](#message)              | json   |
-| 6     | [聊天室訊息](#message-raw)              | json   |
-| 7     | [更換房間](#change-room)                | json   |
-| 8     | [回覆更換房間結果](#change-room-reply)  | json   |
-| 20    | [聊天室踢人](#close-Reply)              | json   |
+| value | 說明                                         | body   |
+| ----- | -------------------------------------------- | ------ |
+| 1     | [要求連線到某一個房間](#room)                | json   |
+| 2     | [連線到某一個房間結果回覆](#room-reply)      | json   |
+| 3     | [發送心跳](#heartbeat)                       | 無Body |
+| 4     | [回覆心跳結果](#heartbeat-reply)             | int32  |
+| 5     | [聊天室批次訊息](#message)                   | json   |
+| 6     | [聊天室訊息](#message-raw)                   | json   |
+| 7     | [更換房間](#change-room)                     | json   |
+| 8     | [回覆更換房間結果](#change-room-reply)       | json   |
+| 9     | [取消置頂訊息](#cancle-header-message-reply) | Son    |
+| 20    | [聊天室踢人](#close-Reply)                   | json   |
 
 
 
@@ -256,22 +257,24 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 
 ```json
 {
-    "room_id":1000,
+    "room_id": 1000,
     "uid": "82ea16cd2d6a49d887440066ef739669",
     "key": "defb108d-3d51-475a-b266-4a7f459e7a59",
     "permission": {
         "is_message": true,
         "is_red_envelope": true
     },
-   "top_message":{
-      "id": 4001,
-      "uid": "root",
-      "type": "top",
-      "name": "管理员",
-      "avatar": "",
-      "message": "測試",
-      "time": "12:37:00"
-   }
+    "message": {
+        "header": {
+            "id": 4001,
+            "uid": "root",
+            "type": "top",
+            "name": "管理员",
+            "avatar": "",
+            "message": "測試",
+            "time": "12:37:00"
+        }
+    }
 }
 ```
 
@@ -282,7 +285,7 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 | room_id                    | 房間id                                  |
 | permission.is_message      | true: 可聊天，false: 不可聊天           |
 | permission.is_red_envelope | true: 可發/搶紅包，false: 不可發/搶紅包 |
-| top_message                | 該房間置頂訊息 `沒資料會是空字串`       |
+| message.header             | 該房間置頂訊息 `沒資料會是空字串`       |
 
 
 
@@ -404,6 +407,22 @@ Operation = `8`=> 回覆更換房間結果
 | name    | 說明     | 格式 |
 | ------- | -------- | ---- |
 | room_id | 新房間id | int  |
+
+
+
+#### Cancle Header Message Reply
+
+Operation = `9`=> 取消置頂訊息
+
+```json
+{
+    "id": 5001
+}
+```
+
+| name | 說明     | 格式 |
+| ---- | -------- | ---- |
+| id   | 新房間id | int  |
 
 
 
