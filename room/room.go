@@ -46,6 +46,8 @@ type Status struct {
 
 	// 儲值&打碼量發話限制
 	Limit Limit `json:"limit"`
+
+	Status bool `json:"status"`
 }
 
 type Limit struct {
@@ -80,6 +82,7 @@ func (r *room) Update(id int, status Status) error {
 		DayLimit:     status.Limit.Day,
 		DepositLimit: status.Limit.Deposit,
 		DmlLimit:     status.Limit.Dml,
+		Status:       status.Status,
 	}
 	_, err := r.db.UpdateRoom(room)
 	if err != nil {
@@ -105,6 +108,11 @@ func (r *room) Delete(id int) error {
 	}
 	if aff <= 0 {
 		return errors.ErrNoRows
+	}
+
+	room.Status = false
+	if err := r.c.set(room); err != nil {
+		return err
 	}
 	return nil
 }
