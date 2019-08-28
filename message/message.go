@@ -1,6 +1,7 @@
 package message
 
 import (
+	"encoding/json"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
@@ -95,4 +96,10 @@ func RoomTopMessageToMessage(msg models.RoomTopMessage) Message {
 		Message: msg.Message,
 		Time:    msg.SendAt.Format("15:04:05"),
 	}
+}
+
+func ToMessage(msgByte []byte) (Message, error) {
+	var msg Message
+	err := json.Unmarshal(msgByte, &msg)
+	return msg, err
 }

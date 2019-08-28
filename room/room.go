@@ -171,7 +171,7 @@ func (r *room) AddTopMessage(rids []int32, msg message.Message) error {
 	if err != nil {
 		return err
 	}
-	return r.c.setChatTopMessage(rids, string(b))
+	return r.c.setChatTopMessage(rids, b)
 }
 
 func (r *room) DeleteTopMessage(rids []int32, msgId int64) error {

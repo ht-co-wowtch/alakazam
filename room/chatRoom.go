@@ -30,6 +30,7 @@ type Chat interface {
 	Heartbeat(uid, key, name, server string) error
 	RenewOnline(server string, roomCount map[int32]int32) (map[int32]int32, error)
 	IsMessage(rid int, uid string) error
+	GetTopMessage(rid int) (message.Message, error)
 }
 
 type chat struct {
@@ -181,4 +182,15 @@ func (c *chat) IsMessage(rid int, uid string) error {
 		return errdefs.Forbidden(errors.New(msg), 4035)
 	}
 	return nil
+}
+
+func (c *chat) GetTopMessage(rid int) (message.Message, error) {
+	msg, err := c.cache.getChatTopMessage(rid)
+	if err != nil {
+		if err == redis.Nil {
+			return message.Message{}, errors.ErrNoRows
+		}
+		return message.Message{}, err
+	}
+	return message.ToMessage(msg)
 }

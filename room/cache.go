@@ -15,7 +15,8 @@ type Cache interface {
 	get(id int) (models.Room, error)
 	setChat(room models.Room, message []byte) error
 	getChat(id int) (models.Room, error)
-	setChatTopMessage(rids []int32, message string) error
+	setChatTopMessage(rids []int32, message []byte) error
+	getChatTopMessage(rid int) ([]byte, error)
 	deleteChatTopMessage(rids []int32) error
 	addOnline(server string, online *Online) error
 	getOnline(server string) (*Online, error)
@@ -117,7 +118,7 @@ func (c *cache) getChat(id int) (models.Room, error) {
 	return r, err
 }
 
-func (c *cache) setChatTopMessage(rids []int32, message string) error {
+func (c *cache) setChatTopMessage(rids []int32, message []byte) error {
 	keys := make([]string, 0, len(rids))
 	for _, rid := range rids {
 		keys = append(keys, keyRoom(int(rid)))
@@ -129,6 +130,17 @@ func (c *cache) setChatTopMessage(rids []int32, message string) error {
 	}
 	_, err := tx.Exec()
 	return err
+}
+
+func (c *cache) getChatTopMessage(rid int) ([]byte, error) {
+	b, err := c.c.HGet(keyRoom(rid), roomTopMsgKey).Bytes()
+	if err != nil {
+		return nil, err
+	}
+	if b == nil {
+		return nil, redis.Nil
+	}
+	return b, nil
 }
 
 func (c *cache) deleteChatTopMessage(rids []int32) error {
