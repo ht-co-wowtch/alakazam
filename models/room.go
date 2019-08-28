@@ -38,7 +38,7 @@ type Room struct {
 	// 建立時間
 	CreateAt time.Time `json:"-"`
 
-	TopMessage []byte `xorm:"-"`
+	HeaderMessage []byte `xorm:"-"`
 }
 
 func (r *Room) TableName() string {

@@ -373,6 +373,10 @@ func (b jsonByte) MarshalJSON() ([]byte, error) {
 	return b, nil
 }
 
+type message struct {
+	Header jsonByte `json:"header"`
+}
+
 // websocket請求連線至某房間
 func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Channel, p *pb.Proto) (int32, time.Duration, error) {
 	for {
@@ -411,12 +415,14 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 			IsMessage     bool `json:"is_message"`
 			IsRedEnvelope bool `json:"is_red_envelope"`
 		} `json:"permission"`
-		TopMessage jsonByte `json:"top_message"`
+		Message message `json:"message"`
 	}{
-		Uid:        c.Uid,
-		Key:        c.Key,
-		RoomId:     c.RoomID,
-		TopMessage: c.TopMessage,
+		Uid:    c.Uid,
+		Key:    c.Key,
+		RoomId: c.RoomID,
+		Message: message{
+			Header: c.HeaderMessage,
+		},
 	}
 
 	reply.Permission.IsMessage = c.IsMessage

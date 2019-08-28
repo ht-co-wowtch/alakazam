@@ -33,7 +33,7 @@ func TestConnectRoom(t *testing.T) {
 	chat, _, cache, member := makeMock()
 
 	cache.m.On("getChat", mock.Anything).
-		Return(models.Room{Id: 1, Status: true, IsMessage: true, TopMessage: []byte(`message`)}, nil)
+		Return(models.Room{Id: 1, Status: true, IsMessage: true, HeaderMessage: []byte(`message`)}, nil)
 
 	member.m.On("Login", mock.Anything, mock.Anything, mock.Anything).
 		Return(&models.Member{
@@ -164,7 +164,7 @@ func TestReloadChatMessage(t *testing.T) {
 	room, err := chat.reloadChat(roomTest.Id)
 
 	assert.Nil(t, err)
-	assert.Equal(t, []byte(`{"id":0,"uid":"root","type":"top","name":"管理员","avatar":"","message":"","time":"00:00:00"}`), room.TopMessage)
+	assert.Equal(t, []byte(`{"id":0,"uid":"root","type":"top","name":"管理员","avatar":"","message":"","time":"00:00:00"}`), room.HeaderMessage)
 }
 
 func makeMock() (*chat, *mockDb, *mockCache, *mockMember) {

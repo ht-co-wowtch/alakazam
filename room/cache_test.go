@@ -94,8 +94,8 @@ func TestSetChatAndGetChatRoom(t *testing.T) {
 	assert.Nil(t, err)
 
 	room, err := c.getChat(roomTest.Id)
-	message := room.TopMessage
-	room.TopMessage = []byte(``)
+	message := room.HeaderMessage
+	room.HeaderMessage = []byte(``)
 	assert.Nil(t, err)
 	assert.Equal(t, roomTest, room)
 

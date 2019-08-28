@@ -88,7 +88,7 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 		IsBlockade:    user.IsBlockade,
 		IsMessage:     user.IsMessage,
 		IsRedEnvelope: user.Type == models.Player,
-		TopMessage:    room.TopMessage,
+		HeaderMessage: room.HeaderMessage,
 	}, nil
 }
 
@@ -139,7 +139,7 @@ func (c *chat) reloadChat(id int) (models.Room, error) {
 		if err := c.cache.setChat(room, b); err != nil {
 			return models.Room{}, err
 		}
-		room.TopMessage = b
+		room.HeaderMessage = b
 	}
 	return room, nil
 }

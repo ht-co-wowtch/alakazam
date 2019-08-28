@@ -114,7 +114,7 @@ func (c *cache) getChat(id int) (models.Room, error) {
 		return r, nil
 	}
 
-	r.TopMessage = []byte(room[1].(string))
+	r.HeaderMessage = []byte(room[1].(string))
 	return r, err
 }
 
