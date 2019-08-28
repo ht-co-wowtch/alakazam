@@ -3,6 +3,7 @@ package message
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	kafka "github.com/Shopify/sarama"
 	"github.com/go-redis/redis"
 	"github.com/gogo/protobuf/proto"
@@ -19,6 +20,7 @@ type Producer struct {
 	topic    string
 	brokers  []string
 	producer kafka.SyncProducer
+	cache    *cache
 	seq      seqpb.SeqClient
 	rate     *rateLimit
 	filter   *shield.Filter
@@ -63,6 +65,7 @@ func NewProducer(brokers []string, topic string, seq seqpb.SeqClient, cache *red
 		brokers:  brokers,
 		topic:    topic,
 		producer: pub,
+		cache:    newCache(cache),
 		seq:      seq,
 		filter:   f.filter,
 		rate:     newRateLimit(cache),
@@ -109,7 +112,7 @@ func (p *Producer) toPb(msg Messages) (*logicpb.PushMsg, error) {
 		Uid:     msg.Uid,
 		Name:    msg.Name,
 		Message: fmsg,
-		Time:    now.Format(time.RFC3339),
+		Time:    now.Format("15:04:05"),
 	})
 	if err != nil {
 		return nil, err
@@ -155,7 +158,7 @@ type AdminMessage struct {
 func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
 	ty := messageType
 	if msg.IsTop {
-		ty = topType
+		ty = TopType
 	}
 	pushMsg, err := p.toPb(Messages{
 		Rooms:   msg.Rooms,
@@ -169,7 +172,9 @@ func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
 		return 0, err
 	}
 	if msg.IsTop {
-		pushMsg.Type = logicpb.PushMsg_TOP
+		pushMsg.Type = logicpb.PushMsg_ADMIN_TOP
+	} else {
+		pushMsg.Type = logicpb.PushMsg_ADMIN
 	}
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
@@ -187,6 +192,19 @@ func (p *Producer) Kick(msg KickMessage) error {
 		Type:    logicpb.PushMsg_Close,
 		Keys:    msg.Keys,
 		Message: msg.Message,
+	}
+	if err := p.send(pushMsg); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Producer) CloseTop(msgId int64, rid []int32) error {
+	pushMsg := &logicpb.PushMsg{
+		Type: logicpb.PushMsg_CLOSE_TOP,
+		Seq:  msgId,
+		Room: rid,
+		Msg:  []byte(fmt.Sprintf(`{"id":%d}`, msgId)),
 	}
 	if err := p.send(pushMsg); err != nil {
 		return err
@@ -222,7 +240,7 @@ func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*logicpb.PushMsg, er
 			Uid:     msg.Uid,
 			Name:    msg.Name,
 			Message: fmsg,
-			Time:    now.Format(time.RFC3339),
+			Time:    now.Format("15:04:05"),
 		},
 		RedEnvelope: RedEnvelope{
 			Id:      msg.RedEnvelopeId,
@@ -297,8 +315,8 @@ func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 		key = kafka.StringEncoder(pushMsg.Room[0])
 	case logicpb.PushMsg_MONEY:
 		key = redEnvelopeType
-	case logicpb.PushMsg_TOP:
-		key = topType
+	case logicpb.PushMsg_ADMIN, logicpb.PushMsg_ADMIN_TOP, logicpb.PushMsg_CLOSE_TOP, logicpb.PushMsg_Close:
+		key = "admin"
 	}
 	m := &kafka.ProducerMessage{
 		Key:   key,

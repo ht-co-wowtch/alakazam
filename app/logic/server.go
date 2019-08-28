@@ -26,13 +26,14 @@ const (
 )
 
 type Server struct {
-	ctx        context.Context
-	cancel     context.CancelFunc
-	db         *models.Store
-	cache      *goRedis.Client
-	message    *message.Producer
-	client     *client.Client
-	member     *member.Member
+	ctx     context.Context
+	cancel  context.CancelFunc
+	db      *models.Store
+	cache   *goRedis.Client
+	message *message.Producer
+	client  *client.Client
+	member  *member.Member
+	// TODO Chat
 	room       room.Room
 	httpServer *http.Server
 	rpc        *grpc.Server
@@ -53,9 +54,9 @@ func New(c *conf.Config) *Server {
 	messageProducer := message.NewProducer(c.Kafka.Brokers, c.Kafka.Topic, seqpb.NewSeqClient(seqCli), cache, db)
 	memberCli := member.New(db, cache, cli)
 	roomCli := room.New(db, cache, memberCli, cli)
-	chat := room.NewChat(db, cache, memberCli, cli)
+	chat := room.NewChat(db, cache, memberCli, cli, c.Heartbeat)
 	httpServer := api.NewServer(c, memberCli, messageProducer, chat, cli, message.NewHistory(db, memberCli))
-	rpcServer := rpc.New(c.RPCServer, chat, c.Heartbeat)
+	rpcServer := rpc.New(c.RPCServer, chat)
 	go func() {
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			panic(err)

@@ -13,6 +13,11 @@ import (
 type Cache interface {
 	set(room models.Room) error
 	get(id int) (models.Room, error)
+	setChat(room models.Room, message []byte) error
+	getChat(id int) (models.Room, error)
+	setChatTopMessage(rids []int32, message []byte) error
+	getChatTopMessage(rid int) ([]byte, error)
+	deleteChatTopMessage(rids []int32) error
 	addOnline(server string, online *Online) error
 	getOnline(server string) (*Online, error)
 }
@@ -31,6 +36,9 @@ const (
 	// 房間的前綴詞，用於存儲在redis當key
 	roomKey = "room_%d"
 
+	roomDataKey   = "data"
+	roomTopMsgKey = "msg"
+
 	// server name的前綴詞，用於存儲在redis當key
 	onlineKey = "server_%s"
 )
@@ -44,25 +52,109 @@ func keyServerOnline(key string) string {
 }
 
 var (
-	roomExpired = time.Hour
+	roomExpired = time.Hour * 12
 )
 
 func (c *cache) set(room models.Room) error {
+	tx := c.c.Pipeline()
 	b, err := json.Marshal(room)
 	if err != nil {
 		return err
 	}
-	return c.c.Set(keyRoom(room.Id), b, roomExpired).Err()
+	key := keyRoom(room.Id)
+	tx.HSet(key, roomDataKey, b)
+	tx.Expire(key, roomExpired)
+	_, err = tx.Exec()
+	return err
 }
 
 func (c *cache) get(id int) (models.Room, error) {
-	b, err := c.c.Get(keyRoom(id)).Bytes()
+	b, err := c.c.HGet(keyRoom(id), roomDataKey).Bytes()
 	if err != nil {
 		return models.Room{}, err
 	}
 	var r models.Room
-	err = json.Unmarshal(b, &r)
+	if err := json.Unmarshal(b, &r); err != nil {
+		return models.Room{}, err
+	}
+	return r, nil
+}
+
+func (c *cache) setChat(room models.Room, message []byte) error {
+	b1, err := json.Marshal(room)
+	if err != nil {
+		return err
+	}
+
+	tx := c.c.Pipeline()
+	key := keyRoom(room.Id)
+	tx.HMSet(key, map[string]interface{}{
+		roomDataKey:   b1,
+		roomTopMsgKey: message,
+	})
+	tx.Expire(key, roomExpired)
+	_, err = tx.Exec()
+	return err
+}
+
+func (c *cache) getChat(id int) (models.Room, error) {
+	room, err := c.c.HMGet(keyRoom(id), roomDataKey, roomTopMsgKey).Result()
+	if err != nil {
+		return models.Room{}, err
+	}
+	if room[0] == nil {
+		return models.Room{}, redis.Nil
+	}
+
+	var r models.Room
+	if err = json.Unmarshal([]byte(room[0].(string)), &r); err != nil {
+		return r, err
+	}
+	if room[1] == nil {
+		return r, nil
+	}
+
+	r.HeaderMessage = []byte(room[1].(string))
 	return r, err
+}
+
+func (c *cache) setChatTopMessage(rids []int32, message []byte) error {
+	keys := make([]string, 0, len(rids))
+	for _, rid := range rids {
+		keys = append(keys, keyRoom(int(rid)))
+	}
+
+	tx := c.c.Pipeline()
+	for _, k := range keys {
+		tx.HSet(k, roomTopMsgKey, message)
+	}
+	_, err := tx.Exec()
+	return err
+}
+
+func (c *cache) getChatTopMessage(rid int) ([]byte, error) {
+	b, err := c.c.HGet(keyRoom(rid), roomTopMsgKey).Bytes()
+	if err != nil {
+		return nil, err
+	}
+	if b == nil {
+		return nil, redis.Nil
+	}
+	return b, nil
+}
+
+func (c *cache) deleteChatTopMessage(rids []int32) error {
+	keys := make([]string, 0, len(rids))
+	for _, rid := range rids {
+		keys = append(keys, keyRoom(int(rid)))
+	}
+
+	tx := c.c.Pipeline()
+	for _, k := range keys {
+		tx.HDel(k, roomTopMsgKey)
+	}
+	_, err := tx.Exec()
+	return err
 }
 
 type Online struct {

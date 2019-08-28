@@ -1,3 +1,5 @@
+
+
 # 聊天室
 
 - [快速開始使用服務](#quick-reference)
@@ -83,24 +85,6 @@ TODO
 16. 如何產生一個跟websocket溝通的Protocol [答案](#buffer)
 17. 如何拿到房間在線人數 [答案](#heartbeat-reply)
 
-後台：
-
-1. 如何以管理員身份廣播多個聊天室 [請看後台訊息推送API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#c14d247c-4210-446e-aa0d-97989e4fd03c)
-2. 如何以系統公告身份廣播多個聊天室
-3. 如何得到線上所有聊天室清單與在線人數
-4. 如何得到某聊天室歷史紀錄
-5. 如何禁言某會員  [請看後台禁言API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#1f05bf12-bceb-431c-b50a-cda72b61804e)
-6. 如何封鎖某會員 [請看後台封鎖API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#c84c8a03-1e15-412d-889d-642c537d0d45)
-7. 如何解禁言某會員 [請看後台解禁言API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#b39e8934-9ca3-4dae-8d23-d1931e1bf5ee)
-8. 如何解封鎖某會員 [請看後台解封鎖API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#db157cff-a26b-4d07-a109-ff7d676f9ecb)
-9. 如何在聊天室發紅包
-10. 如何在聊天室發跟注
-11. 如何將訊息置頂
-12. 如何得到禁言名單
-13. 如何得到封鎖名單
-14. 如何得到某聊天室名單
-15. 如何設定一個房間權限(比如`充值`&`打碼量`多少才能聊天) [答案](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#6bdffede-2646-4663-8c13-54cb161a2125)
-
 ## Protocol Body格式
 
 採用websocket做binary傳輸，聊天室推給client訊息內容如下格式
@@ -126,17 +110,18 @@ TODO
 
 不同的Operation說明本次Protocol資料是什麼，如心跳回覆,訊息等等
 
-| value | 說明                                    | body   |
-| ----- | --------------------------------------- | ------ |
-| 1     | [要求連線到某一個房間](#room)           | json   |
-| 2     | [連線到某一個房間結果回覆](#room-reply) | json   |
-| 3     | [發送心跳](#heartbeat)                  | 無Body |
-| 4     | [回覆心跳結果](#heartbeat-reply)        | int32  |
-| 5     | [聊天室批次訊息](#message)              | json   |
-| 6     | [聊天室訊息](#message-raw)              | json   |
-| 7     | [更換房間](#change-room)                | json   |
-| 8     | [回覆更換房間結果](#change-room-reply)  | json   |
-| 20    | [聊天室踢人](#close-Reply)              | json   |
+| value | 說明                                         | body   |
+| ----- | -------------------------------------------- | ------ |
+| 1     | [要求連線到某一個房間](#room)                | json   |
+| 2     | [連線到某一個房間結果回覆](#room-reply)      | json   |
+| 3     | [發送心跳](#heartbeat)                       | 無Body |
+| 4     | [回覆心跳結果](#heartbeat-reply)             | int32  |
+| 5     | [聊天室批次訊息](#message)                   | json   |
+| 6     | [聊天室訊息](#message-raw)                   | json   |
+| 7     | [更換房間](#change-room)                     | json   |
+| 8     | [回覆更換房間結果](#change-room-reply)       | json   |
+| 9     | [取消置頂訊息](#cancle-header-message-reply) | json   |
+| 20    | [聊天室踢人](#close-Reply)                   | json   |
 
 
 
@@ -272,12 +257,23 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 
 ```json
 {
-    "room_id":1000,
+    "room_id": 1000,
     "uid": "82ea16cd2d6a49d887440066ef739669",
     "key": "defb108d-3d51-475a-b266-4a7f459e7a59",
     "permission": {
         "is_message": true,
         "is_red_envelope": true
+    },
+    "message": {
+        "header": {
+            "id": 4001,
+            "uid": "root",
+            "type": "top",
+            "name": "管理员",
+            "avatar": "",
+            "message": "測試",
+            "time": "12:37:00"
+        }
     }
 }
 ```
@@ -289,6 +285,7 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 | room_id                    | 房間id                                  |
 | permission.is_message      | true: 可聊天，false: 不可聊天           |
 | permission.is_red_envelope | true: 可發/搶紅包，false: 不可發/搶紅包 |
+| message.header             | 該房間置頂訊息 `沒資料會是空字串`       |
 
 
 
@@ -348,7 +345,7 @@ Operation = `6`=> 單筆訊息
     "name": "sam78",
     "avatar": "",
     "message": "測試",
-    "time": "2019-08-27T02:37:00+08:00"
+    "time": "12:37:00"
 }
 ```
 
@@ -360,7 +357,7 @@ Operation = `6`=> 單筆訊息
 | name    | 訊息人名稱 | string  |
 | avatar  | 頭像url    | string  |
 | message | 訊息       | string  |
-| time    | 發送時間   | RFC3339 |
+| time    | 發送時間   | 時:分:秒 |
 
 紅包訊息
 
@@ -372,7 +369,7 @@ Operation = `6`=> 單筆訊息
     "name": "sam78",
     "avatar": "",
     "message": "發大財",
-    "time": "2019-08-27T02:37:00+08:00",
+    "time": "12:37:00",
     "red_envelope": {
         "id": "0d641b03d4d548dbb3a73a2197811261",
         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjY4NzkzMTMsImlkIjoiMWI5MTZiNDc4YzBjNGZjMzhmMGE0MzE1NjMwNjExMTQiLCJ1aWQiOiIwZDY0MWIwM2Q0ZDU0OGRiYjNhNzNhMjE5NzgxMTI2MSJ9.pgyltHiT11XcZySJPiuetV35OXU-wgQ4XtU_UTzwghU",
@@ -388,7 +385,7 @@ Operation = `6`=> 單筆訊息
 | type                 | 訊息種類      | string  |
 | name                 | 發紅包人名稱  | string  |
 | message              | 紅包說明      | string  |
-| time                 | 發送時間      | RFC3339 |
+| time                 | 發送時間      | 時:分:秒 |
 | red_envelope.id      | 紅包id        | string  |
 | red_envelope.token   | 搶紅包的token | string  |
 | red_envelope.expired | 紅包過期時間  | RF3339  |
@@ -413,6 +410,22 @@ Operation = `8`=> 回覆更換房間結果
 
 
 
+#### Cancle Header Message Reply
+
+Operation = `9`=> 取消置頂訊息
+
+```json
+{
+    "id": 5001
+}
+```
+
+| name | 說明       | 格式 |
+| ---- | ---------- | ---- |
+| id   | 置頂消息id | int  |
+
+
+
 ## Web Socket
 
 ### Room
@@ -421,7 +434,7 @@ Operation = `8`=> 回覆更換房間結果
 
 ```json
   {
-      "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTcyMTE2NTAsIm5iZiI6MTU1NzIxMTY1MCwiaXNzIjoibG9naW4iLCJzZXNzaW9uX3Rva2VuIjoiZjc2OTYyM2Y0YTNlNDE4MWE4NzAwYWNkYTE3NzE1MmIiLCJkYXRhIjp7InVpZCI6IjEyNTdlN2Q5ZTFjOTQ0ZWY5YTZmMTI5Y2I5NDk1ZDAyIiwidXNlcm5hbWUiOiJyb290In19.7VJxH3tQpnJqWTlPbId7f0Rt7eQoaVvaJmbWxtHTqRU,
+      "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTcyMTE2NTAsIm5iZiI6MTU1NzIxMTY1MCwiaXNzIjoibG9naW4iLCJzZXNzaW9uX3Rva2VuIjoiZjc2OTYyM2Y0YTNlNDE4MWE4NzAwYWNkYTE3NzE1MmIiLCJkYXRhIjp7InVpZCI6IjEyNTdlN2Q5ZTFjOTQ0ZWY5YTZmMTI5Y2I5NDk1ZDAyIiwidXNlcm5hbWUiOiJyb290In19.7VJxH3tQpnJqWTlPbId7f0Rt7eQoaVvaJmbWxtHTqRU",
       "room_id": 1000
   }
 ```
@@ -474,6 +487,33 @@ Boyd內容帶想要切換的房間Id即可，Protocol Operation[參考](#operati
 | 成功 | [Response](#change-room-reply) |      |
 | 失敗 | 失敗就會close連線              |      |
 
+
+
+## Error Code
+
+| Code               | http code | 說明                                                         |
+| ------------------ | --------- | ------------------------------------------------------------ |
+| 10024042, 15024042 | 404       | 沒有房間資料                                                 |
+| 10024041,12024041  | 404       | 找不到會員資料                                               |
+| 10024043           | 404       | 目前房间已关闭                                               |
+| 10024291           | 429       | 1秒内只能发一则消息                                          |
+| 10024292           | 429       | 10秒内相同讯息3次，自动禁言10分钟                            |
+| 10024031, 15024031 | 403       | 用户认证失败 (token解不開)                                   |
+| 10024032           | 403       | 用户认证失败 (token 資料有問題)                              |
+| 10024033           | 403       | 用户认证失败 (時效已過)                                      |
+| 10024035           | 403       | 您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元 |
+| 10024036           | 403       | 您在永久禁言状态，无法发言                                   |
+| 10024037           | 403       | 您在禁言状态，无法发言                                       |
+| 10024038           | 403       | 聊天室目前禁言状态，无法发言                                 |
+| 10024220, 15024220 | 422       | 資料格式有問題，如json欄位驗證失敗                           |
+| 12024020           | 402       | 余额不足                                                     |
+| 15021001           | 400       | 拼手氣紅包金額不能小於包數                                   |
+| 15024044, 15024045 | 404       | 红包不存在                                                   |
+| 10024000, 15024000 | 400       | json欄位型態錯誤，如string放int                              |
+| 10025000, 15025000 | 500       | 伺服器出問題                                                 |
+
+
+
 ## Version Update
 
 1. 進入某房間成功後回覆的json結構 [參考](#room-reply)
@@ -487,5 +527,5 @@ Boyd內容帶想要切換的房間Id即可，Protocol Operation[參考](#operati
 5. 切換房間原先room_id是string請改成int [參考](#change-room)
 6. 紅包訊息結構內的red_envelope.expired原先是時間戳記改為RFC3339
 7. [發訊息API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80) 原先需要帶`key ` and `uid` 現在只需帶`room_id` `message`
-8. [發紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af) 不需要帶key ` and `uid`
+8. [發紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af) 不需要帶`key` and `uid`
 

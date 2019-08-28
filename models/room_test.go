@@ -85,3 +85,23 @@ func TestGetRoom(t *testing.T) {
 		CreateAt:     at,
 	}, r)
 }
+
+func TestGetChat(t *testing.T) {
+	assert.NoError(t, prepareTestDatabase())
+
+	room, message, err := s.GetChat(1)
+
+	assert.Nil(t, err)
+	assert.Equal(t, 1, room.Id)
+	assert.Equal(t, int32(1), message.RoomId)
+}
+
+func TestGetChatNoMessage(t *testing.T) {
+	assert.NoError(t, prepareTestDatabase())
+
+	room, message, err := s.GetChat(2)
+
+	assert.Nil(t, err)
+	assert.Equal(t, 2, room.Id)
+	assert.Equal(t, int32(0), message.RoomId)
+}

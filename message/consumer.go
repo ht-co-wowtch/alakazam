@@ -96,6 +96,7 @@ func (c *consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 			zap.Any("pushMsg", pushMsg),
 		)
 		// 開始處理推送至comet server
+		// TODO error
 		if err := c.handler.Push(pushMsg); err != nil {
 			log.Error("push", zap.Error(err))
 		}

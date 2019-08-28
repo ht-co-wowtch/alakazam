@@ -2,11 +2,15 @@ package room
 
 import (
 	"database/sql"
+	"encoding/json"
 	"github.com/go-redis/redis"
+	"github.com/go-sql-driver/mysql"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"time"
 )
 
 type Room interface {
@@ -15,6 +19,9 @@ type Room interface {
 	Delete(id int) error
 	Get(id int) (models.Room, error)
 	GetOnline(server string) (*Online, error)
+	GetTopMessage(msgId int64) ([]int32, models.Message, error)
+	AddTopMessage(rids []int32, message message.Message) error
+	DeleteTopMessage(rids []int32, msgId int64) error
 }
 
 type room struct {
@@ -39,6 +46,8 @@ type Status struct {
 
 	// 儲值&打碼量發話限制
 	Limit Limit `json:"limit"`
+
+	Status bool `json:"status"`
 }
 
 type Limit struct {
@@ -73,6 +82,7 @@ func (r *room) Update(id int, status Status) error {
 		DayLimit:     status.Limit.Day,
 		DepositLimit: status.Limit.Deposit,
 		DmlLimit:     status.Limit.Dml,
+		Status:       status.Status,
 	}
 	_, err := r.db.UpdateRoom(room)
 	if err != nil {
@@ -99,6 +109,11 @@ func (r *room) Delete(id int) error {
 	if aff <= 0 {
 		return errors.ErrNoRows
 	}
+
+	room.Status = false
+	if err := r.c.set(room); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -113,6 +128,59 @@ func (r *room) Get(id int) (models.Room, error) {
 	return room, nil
 }
 
-func (c *room) GetOnline(server string) (*Online, error) {
-	return c.c.getOnline(server)
+func (r *room) GetOnline(server string) (*Online, error) {
+	return r.c.getOnline(server)
+}
+
+func (r *room) GetTopMessage(msgId int64) ([]int32, models.Message, error) {
+	roomTopMsg, err := r.db.FindRoomTopMessage(msgId)
+	if err != nil {
+		return nil, models.Message{}, err
+	}
+	if len(roomTopMsg) == 0 {
+		return nil, models.Message{}, errors.ErrNoRows
+	}
+
+	rid := make([]int32, 0, len(roomTopMsg))
+	for _, v := range roomTopMsg {
+		rid = append(rid, v.RoomId)
+	}
+	return rid, models.Message{
+		MsgId:   msgId,
+		Message: roomTopMsg[0].Message,
+		SendAt:  roomTopMsg[0].SendAt,
+	}, nil
+}
+
+func (r *room) AddTopMessage(rids []int32, msg message.Message) error {
+	model := models.Message{
+		MsgId:   msg.Id,
+		Message: msg.Message,
+		SendAt:  time.Now(),
+	}
+	if err := r.db.AddRoomTopMessage(rids, model); err != nil {
+		if e, ok := err.(*mysql.MySQLError); ok {
+			if e.Number == 1452 {
+				return errors.ErrNoRoom
+			}
+		}
+		return err
+	}
+
+	b, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+	return r.c.setChatTopMessage(rids, b)
+}
+
+func (r *room) DeleteTopMessage(rids []int32, msgId int64) error {
+	err := r.db.DeleteRoomTopMessage(msgId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.ErrNoRows
+		}
+		return err
+	}
+	return r.c.deleteChatTopMessage(rids)
 }

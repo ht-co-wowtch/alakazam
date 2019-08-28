@@ -7,6 +7,7 @@ import (
 )
 
 type RoomMessage struct {
+	Id     int `xorm:"pk autoincr"`
 	MsgId  int64
 	RoomId int
 	Type   pb.PushMsg_Type
@@ -17,6 +18,7 @@ func (r *RoomMessage) TableName() string {
 }
 
 type Message struct {
+	Id       int `xorm:"pk autoincr"`
 	MsgId    int64
 	MemberId int
 	Message  string
@@ -28,6 +30,7 @@ func (r *Message) TableName() string {
 }
 
 type RedEnvelopeMessage struct {
+	Id             int `xorm:"pk autoincr"`
 	MsgId          int64
 	MemberId       int
 	Message        string
@@ -56,8 +59,7 @@ func (s *Store) GetRoomMessage(roomId, lastMsgId int) (*Messages, error) {
 	rms := make([]RoomMessage, 0)
 
 	query := s.d.Table(fmt.Sprintf("room_messages_%02d", roomId%50)).
-		Where("`room_id` = ?", roomId).
-		In("type", pb.PushMsg_ROOM, pb.PushMsg_MONEY)
+		Where("`room_id` = ?", roomId)
 
 	if lastMsgId > 0 {
 		query = query.Where("`msg_id` < ?", lastMsgId)

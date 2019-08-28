@@ -33,10 +33,12 @@ func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 	var model int32
 	switch pushMsg.Type {
 	// 單一/多房間推送
-	case logicpb.PushMsg_ROOM, logicpb.PushMsg_MONEY, logicpb.PushMsg_TOP:
+	case logicpb.PushMsg_ROOM, logicpb.PushMsg_MONEY, logicpb.PushMsg_ADMIN, logicpb.PushMsg_ADMIN_TOP:
 		model = cometpb.OpRaw
 	case logicpb.PushMsg_Close:
 		return c.kick(pushMsg)
+	case logicpb.PushMsg_CLOSE_TOP:
+		model = cometpb.OpCloseTopMessage
 	// 異常資料
 	default:
 		return fmt.Errorf("no match push type: %s", pushMsg.Type)

@@ -6,10 +6,13 @@ import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 message PushMsg {
     enum Type {
-        Close = 0;
+        Empty = 0;
         ROOM = 1;
         MONEY = 2;
-        TOP = 3;
+        ADMIN = 30;
+        ADMIN_TOP = 31;
+        CLOSE_TOP = 32;
+        Close = 100;
     }
     Type type = 1;
     int32 speed = 2;
@@ -44,6 +47,7 @@ message ConnectReply {
     bool isBlockade = 6;
     bool isMessage = 7;
     bool isRedEnvelope = 8;
+    bytes headerMessage = 9;
 }
 
 message DisconnectReq {

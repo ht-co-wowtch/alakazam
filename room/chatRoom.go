@@ -5,11 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 	"gopkg.in/go-playground/validator.v8"
 	"time"
 )
@@ -21,30 +25,33 @@ func init() {
 }
 
 type Chat interface {
-	Connect(server string, token []byte) (*models.Member, string, int, error)
+	Connect(server string, token []byte) (*pb.ConnectReply, error)
 	Disconnect(uid, key string) (bool, error)
 	Heartbeat(uid, key, name, server string) error
 	RenewOnline(server string, roomCount map[int32]int32) (map[int32]int32, error)
 	IsMessage(rid int, uid string) error
+	GetTopMessage(rid int) (message.Message, error)
 }
 
 type chat struct {
-	cache  Cache
-	db     models.IChat
-	member member.Chat
-	cli    *client.Client
+	cache            Cache
+	db               models.IChat
+	member           member.Chat
+	cli              *client.Client
+	heartbeatNanosec int64
 }
 
-func NewChat(db models.IChat, cache *redis.Client, member member.Chat, cli *client.Client) Chat {
+func NewChat(db models.IChat, cache *redis.Client, member member.Chat, cli *client.Client, heartbeat int64) Chat {
 	return &chat{
-		db:     db,
-		cache:  newCache(cache),
-		member: member,
-		cli:    cli,
+		db:               db,
+		cache:            newCache(cache),
+		member:           member,
+		cli:              cli,
+		heartbeatNanosec: heartbeat,
 	}
 }
 
-func (c *chat) Connect(server string, token []byte) (*models.Member, string, int, error) {
+func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 	var params struct {
 		// 帳務中心+版的認證token
 		Token string `json:"token" binding:"required"`
@@ -54,44 +61,85 @@ func (c *chat) Connect(server string, token []byte) (*models.Member, string, int
 	}
 
 	if err := json.Unmarshal(token, &params); err != nil {
-		return nil, "", 0, err
+		return nil, err
 	}
 	if err := v.Struct(&params); err != nil {
-		return nil, "", 0, err
+		return nil, err
 	}
 
 	room, err := c.getChat(params.RoomID)
 	if err != nil {
-		return nil, "", 0, err
+		return nil, err
 	}
 	if !room.Status {
-		return nil, "", 0, errors.ErrRoomClose
+		return nil, errors.ErrRoomClose
 	}
 
 	user, key, err := c.member.Login(params.RoomID, params.Token, server)
 	if err != nil {
-		return nil, "", 0, err
+		return nil, err
 	}
-	return user, key, params.RoomID, nil
+	return &pb.ConnectReply{
+		Uid:           user.Uid,
+		Key:           key,
+		Name:          user.Name,
+		RoomID:        int32(params.RoomID),
+		Heartbeat:     c.heartbeatNanosec,
+		IsBlockade:    user.IsBlockade,
+		IsMessage:     user.IsMessage,
+		IsRedEnvelope: user.Type == models.Player,
+		HeaderMessage: room.HeaderMessage,
+	}, nil
 }
 
-func (c *chat) getChat(id int) (models.Room, error) {
+func (c *chat) get(id int) (models.Room, error) {
 	room, err := c.cache.get(id)
 	if err != nil {
 		if err != redis.Nil {
 			return models.Room{}, err
 		}
+		if room, err = c.reloadChat(id); err != nil {
+			return models.Room{}, err
+		}
+	}
+	return room, nil
+}
 
-		room, err = c.db.GetRoom(id)
+func (c *chat) getChat(id int) (models.Room, error) {
+	room, err := c.cache.getChat(id)
+	if err != nil {
+		if err != redis.Nil {
+			return models.Room{}, err
+		}
+		if room, err = c.reloadChat(id); err != nil {
+			return models.Room{}, err
+		}
+	}
+	return room, nil
+}
+
+func (c *chat) reloadChat(id int) (models.Room, error) {
+	room, msg, err := c.db.GetChat(id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.Room{}, errors.ErrNoRoom
+		}
+		return models.Room{}, err
+	}
+
+	if msg.RoomId == 0 {
+		if err = c.cache.set(room); err != nil {
+			return models.Room{}, err
+		}
+	} else {
+		b, err := json.Marshal(message.RoomTopMessageToMessage(msg))
 		if err != nil {
-			if err == sql.ErrNoRows {
-				return models.Room{}, errors.ErrNoRoom
-			}
+			log.Error("json Marshal for room top message", zap.Error(err), zap.Int("rid", id))
+		}
+		if err := c.cache.setChat(room, b); err != nil {
 			return models.Room{}, err
 		}
-		if err := c.cache.set(room); err != nil {
-			return models.Room{}, err
-		}
+		room.HeaderMessage = b
 	}
 	return room, nil
 }
@@ -115,7 +163,7 @@ func (c *chat) RenewOnline(server string, roomCount map[int32]int32) (map[int32]
 }
 
 func (c *chat) IsMessage(rid int, uid string) error {
-	room, err := c.getChat(rid)
+	room, err := c.get(rid)
 	if err != nil {
 		return err
 	}
@@ -134,4 +182,15 @@ func (c *chat) IsMessage(rid int, uid string) error {
 		return errdefs.Forbidden(errors.New(msg), 4035)
 	}
 	return nil
+}
+
+func (c *chat) GetTopMessage(rid int) (message.Message, error) {
+	msg, err := c.cache.getChatTopMessage(rid)
+	if err != nil {
+		if err == redis.Nil {
+			return message.Message{}, errors.ErrNoRows
+		}
+		return message.Message{}, err
+	}
+	return message.ToMessage(msg)
 }

@@ -21,12 +21,12 @@ import (
 )
 
 type httpServer struct {
-	member  *member.Member
-	message *message.Producer
-	history *message.History
-	room    room.Chat
-	client  *client.Client
-	jwt     *member.Jwt
+	member        *member.Member
+	message       *message.Producer
+	history       *message.History
+	room          room.Chat
+	client        *client.Client
+	jwt           *member.Jwt
 }
 
 func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, room room.Chat, client *client.Client, history *message.History) *http.Server {
@@ -64,8 +64,9 @@ func handler(e *gin.Engine, s httpServer) {
 	e.POST("/red-envelope", s.authUid, ErrHandler(s.giveRedEnvelope))
 	e.PUT("/red-envelope", s.authUid, ErrHandler(s.takeRedEnvelope))
 	e.GET("/red-envelope/:id", ErrHandler(s.getRedEnvelopeDetail))
-	e.GET("/red-envelope-consume/:id", ErrHandler(s.getRedEnvelope))
+	//e.GET("/red-envelope-consume/:id", ErrHandler(s.getRedEnvelope))
 	e.GET("/message/:room", ErrHandler(s.getMessage))
+	e.GET("/top/message/:room", s.authUid, ErrHandler(s.getTopMessage))
 }
 
 func authenticationHandler(c *gin.Context) {

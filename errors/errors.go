@@ -28,6 +28,9 @@ var (
 	ErrMemberBanned    = errdefs.Forbidden(New("您在禁言状态，无法发言"), 4037)
 	ErrRoomNoMessage   = errdefs.Forbidden(New("聊天室目前禁言状态，无法发言"), 4038)
 
+	// 系統異常
+	ErrInternalServer = errdefs.InternalServer(New("操作失败，系统异常"), 5000)
+
 	ErrPublishAt = errdefs.InvalidParameter(New("预定发送时间不能大于现在"), 0)
 	ErrExist     = errdefs.InvalidParameter(New("资料已存在"), 1)
 
@@ -40,7 +43,7 @@ var (
 
 const (
 	// 沒有token
-	noAuthorizationBearer = 15024010
+	noAuthorizationBearer = 15024031
 	// 資料格式錯誤
 	invalidParameter = 15024220
 	// 餘額不足

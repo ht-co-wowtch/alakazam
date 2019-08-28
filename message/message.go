@@ -1,6 +1,7 @@
 package message
 
 import (
+	"encoding/json"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
@@ -25,7 +26,7 @@ const (
 	// 紅包訊息
 	redEnvelopeType = "red_envelope"
 	// 公告訊息
-	topType = "top"
+	TopType = "top"
 )
 
 func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
@@ -64,7 +65,7 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 					Name:    memberMap[msg.RedEnvelopeMessage[msgId].MemberId].Name,
 					Type:    redEnvelopeType,
 					Message: msg.RedEnvelopeMessage[msgId].Message,
-					Time:    msg.RedEnvelopeMessage[msgId].SendAt.Format(time.RFC3339),
+					Time:    msg.RedEnvelopeMessage[msgId].SendAt.Format("15:04:05"),
 				},
 				RedEnvelope: historyRedEnvelope{
 					Id:      msg.RedEnvelopeMessage[msgId].RedEnvelopesId,
@@ -79,9 +80,26 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 				Name:    memberMap[msg.Message[msgId].MemberId].Name,
 				Type:    messageType,
 				Message: msg.Message[msgId].Message,
-				Time:    msg.Message[msgId].SendAt.Format(time.RFC3339),
+				Time:    msg.Message[msgId].SendAt.Format("15:04:05"),
 			})
 		}
 	}
 	return data, nil
+}
+
+func RoomTopMessageToMessage(msg models.RoomTopMessage) Message {
+	return Message{
+		Id:      msg.MsgId,
+		Uid:     RootUid,
+		Type:    TopType,
+		Name:    RootName,
+		Message: msg.Message,
+		Time:    msg.SendAt.Format("15:04:05"),
+	}
+}
+
+func ToMessage(msgByte []byte) (Message, error) {
+	var msg Message
+	err := json.Unmarshal(msgByte, &msg)
+	return msg, err
 }

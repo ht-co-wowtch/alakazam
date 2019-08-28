@@ -7,7 +7,7 @@ import (
 )
 
 type IChat interface {
-	GetRoom(id int) (Room, error)
+	GetChat(id int) (Room, RoomTopMessage, error)
 }
 
 type Room struct {
@@ -37,6 +37,8 @@ type Room struct {
 
 	// 建立時間
 	CreateAt time.Time `json:"-"`
+
+	HeaderMessage []byte `xorm:"-"`
 }
 
 func (r *Room) TableName() string {
@@ -68,6 +70,37 @@ func (s *Store) GetRoom(roomId int) (Room, error) {
 		return r, sql.ErrNoRows
 	}
 	return r, err
+}
+
+func (s *Store) GetRoomTopMessage(id int) (RoomTopMessage, error) {
+	top := RoomTopMessage{}
+	ok, err := s.d.Where("`room_id` = ?", id).Get(&top)
+	if err != nil {
+		return top, err
+	}
+	if !ok {
+		return top, sql.ErrNoRows
+	}
+	return top, nil
+}
+
+func (s *Store) GetChat(id int) (Room, RoomTopMessage, error) {
+	tx := s.d.Prepare()
+	defer tx.Rollback()
+	room := Room{}
+	ok, _ := tx.Where("id = ?", id).Get(&room)
+
+	top := RoomTopMessage{}
+	tx.Where("`room_id` = ?", id).Get(&top)
+
+	if err := tx.Commit(); err != nil {
+		return room, top, err
+	}
+	if !ok {
+		return room, top, sql.ErrNoRows
+	}
+	return room, top, nil
+
 }
 
 func (s *Store) DeleteRoom(id int) (int64, error) {
