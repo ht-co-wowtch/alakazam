@@ -47,7 +47,7 @@ message ConnectReply {
     bool isBlockade = 6;
     bool isMessage = 7;
     bool isRedEnvelope = 8;
-    string topMessage = 9;
+    bytes topMessage = 9;
 }
 
 message DisconnectReq {

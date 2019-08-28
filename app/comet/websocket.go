@@ -364,6 +364,10 @@ failed:
 	}
 }
 
+type jsonByte []byte
+
+func (b jsonByte) MarshalJSON() ([]byte, error) { return b, nil }
+
 // websocket請求連線至某房間
 func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Channel, p *pb.Proto) (int32, time.Duration, error) {
 	for {
@@ -402,13 +406,14 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 			IsMessage     bool `json:"is_message"`
 			IsRedEnvelope bool `json:"is_red_envelope"`
 		} `json:"permission"`
-		TopMessage string `json:"top_message"`
+		TopMessage jsonByte `json:"top_message"`
 	}{
 		Uid:        c.Uid,
 		Key:        c.Key,
 		RoomId:     c.RoomID,
 		TopMessage: c.TopMessage,
 	}
+
 	reply.Permission.IsMessage = c.IsMessage
 	reply.Permission.IsRedEnvelope = c.IsRedEnvelope
 

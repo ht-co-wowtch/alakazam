@@ -13,7 +13,7 @@ import (
 type Cache interface {
 	set(room models.Room) error
 	get(id int) (models.Room, error)
-	setChat(room models.Room, message string) error
+	setChat(room models.Room, message []byte) error
 	getChat(id int) (models.Room, error)
 	setChatTopMessage(rids []int32, message string) error
 	deleteChatTopMessage(rids []int32) error
@@ -79,7 +79,7 @@ func (c *cache) get(id int) (models.Room, error) {
 	return r, nil
 }
 
-func (c *cache) setChat(room models.Room, message string) error {
+func (c *cache) setChat(room models.Room, message []byte) error {
 	b1, err := json.Marshal(room)
 	if err != nil {
 		return err
@@ -113,7 +113,7 @@ func (c *cache) getChat(id int) (models.Room, error) {
 		return r, nil
 	}
 
-	r.TopMessage = room[1].(string)
+	r.TopMessage = []byte(room[1].(string))
 	return r, err
 }
 

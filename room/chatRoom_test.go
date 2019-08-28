@@ -33,7 +33,7 @@ func TestConnectRoom(t *testing.T) {
 	chat, _, cache, member := makeMock()
 
 	cache.m.On("getChat", mock.Anything).
-		Return(models.Room{Id: 1, Status: true, IsMessage: true, TopMessage: "message"}, nil)
+		Return(models.Room{Id: 1, Status: true, IsMessage: true, TopMessage: []byte(`message`)}, nil)
 
 	member.m.On("Login", mock.Anything, mock.Anything, mock.Anything).
 		Return(&models.Member{
@@ -55,7 +55,7 @@ func TestConnectRoom(t *testing.T) {
 		IsBlockade:    true,
 		IsMessage:     true,
 		IsRedEnvelope: true,
-		TopMessage:    "message",
+		TopMessage:    []byte(`message`),
 	}, connect)
 }
 
@@ -164,7 +164,7 @@ func TestReloadChatMessage(t *testing.T) {
 	room, err := chat.reloadChat(roomTest.Id)
 
 	assert.Nil(t, err)
-	assert.Equal(t, `{"id":0,"uid":"root","type":"top","name":"管理员","avatar":"","message":"","time":"00:00:00"}`, room.TopMessage)
+	assert.Equal(t, []byte(`{"id":0,"uid":"root","type":"top","name":"管理员","avatar":"","message":"","time":"00:00:00"}`), room.TopMessage)
 }
 
 func makeMock() (*chat, *mockDb, *mockCache, *mockMember) {
@@ -221,7 +221,7 @@ func (m *mockCache) get(id int) (models.Room, error) {
 	return arg.Get(0).(models.Room), arg.Error(1)
 }
 
-func (m *mockCache) setChat(room models.Room, message string) error {
+func (m *mockCache) setChat(room models.Room, message []byte) error {
 	arg := m.m.Called(room, message)
 	return arg.Error(0)
 }

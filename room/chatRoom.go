@@ -132,14 +132,13 @@ func (c *chat) reloadChat(id int) (models.Room, error) {
 		}
 	} else {
 		b, err := json.Marshal(message.RoomTopMessageToMessage(msg))
-		topMessage := string(b)
 		if err != nil {
 			log.Error("json Marshal for room top message", zap.Error(err), zap.Int("rid", id))
 		}
-		if err := c.cache.setChat(room, topMessage); err != nil {
+		if err := c.cache.setChat(room, b); err != nil {
 			return models.Room{}, err
 		}
-		room.TopMessage = topMessage
+		room.TopMessage = b
 	}
 	return room, nil
 }
