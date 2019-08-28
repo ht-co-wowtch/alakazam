@@ -1,3 +1,5 @@
+
+
 # 聊天室
 
 - [快速開始使用服務](#quick-reference)
@@ -278,7 +280,16 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
     "permission": {
         "is_message": true,
         "is_red_envelope": true
-    }
+    },
+   "top_message":{
+      "id": 4001,
+      "uid": "root",
+      "type": "top",
+      "name": "管理员",
+      "avatar": "",
+      "message": "測試",
+      "time": "12:37:00"
+   }
 }
 ```
 
@@ -289,6 +300,7 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 | room_id                    | 房間id                                  |
 | permission.is_message      | true: 可聊天，false: 不可聊天           |
 | permission.is_red_envelope | true: 可發/搶紅包，false: 不可發/搶紅包 |
+| top_message                | 該房間置頂訊息                          |
 
 
 
@@ -474,6 +486,8 @@ Boyd內容帶想要切換的房間Id即可，Protocol Operation[參考](#operati
 | 成功 | [Response](#change-room-reply) |      |
 | 失敗 | 失敗就會close連線              |      |
 
+
+
 ## Error Code
 
 | Code               | http code | 說明                                                         |
@@ -512,5 +526,5 @@ Boyd內容帶想要切換的房間Id即可，Protocol Operation[參考](#operati
 5. 切換房間原先room_id是string請改成int [參考](#change-room)
 6. 紅包訊息結構內的red_envelope.expired原先是時間戳記改為RFC3339
 7. [發訊息API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80) 原先需要帶`key ` and `uid` 現在只需帶`room_id` `message`
-8. [發紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af) 不需要帶key ` and `uid`
+8. [發紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af) 不需要帶`key` and `uid`
 
