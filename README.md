@@ -300,7 +300,7 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 | room_id                    | 房間id                                  |
 | permission.is_message      | true: 可聊天，false: 不可聊天           |
 | permission.is_red_envelope | true: 可發/搶紅包，false: 不可發/搶紅包 |
-| top_message                | 該房間置頂訊息                          |
+| top_message                | 該房間置頂訊息 `沒資料會是空字串`       |
 
 
 
