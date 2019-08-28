@@ -4,11 +4,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"github.com/go-redis/redis"
+	"github.com/go-sql-driver/mysql"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"time"
 )
 
 type Room interface {
@@ -142,8 +144,22 @@ func (r *room) GetTopMessage(msgId int64) ([]int32, models.Message, error) {
 	}, nil
 }
 
-func (r *room) AddTopMessage(rids []int32, message message.Message) error {
-	b, err := json.Marshal(message)
+func (r *room) AddTopMessage(rids []int32, msg message.Message) error {
+	model := models.Message{
+		MsgId:   msg.Id,
+		Message: msg.Message,
+		SendAt:  time.Now(),
+	}
+	if err := r.db.AddRoomTopMessage(rids, model); err != nil {
+		if e, ok := err.(*mysql.MySQLError); ok {
+			if e.Number == 1452 {
+				return errors.ErrNoRoom
+			}
+		}
+		return err
+	}
+
+	b, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}

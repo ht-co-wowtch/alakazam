@@ -26,7 +26,6 @@ func NewMysqlConsumer(db *xorm.EngineGroup, c *redis.Client) *MysqlConsumer {
 const (
 	addMessage             = "INSERT INTO `messages_%02d` (`msg_id`,`member_id`,`message`,`send_at`) VALUES (?,?,?,?);"
 	addAdminMessage        = "INSERT INTO `admin_messages` (`msg_id`,`room_id`,`message`,`send_at`) VALUES (?,?,?,?);"
-	addRoomTopMessage      = "REPLACE INTO `room_top_messages` (`room_id`,`msg_id`,`message`,`send_at`) VALUES (?,?,?,?);"
 	addRedEnvelopeMessages = "INSERT INTO `red_envelope_messages` (`msg_id`,`member_id`,`message`,`red_envelopes_id`,`token`,`expire_at`,`send_at`) VALUES (?,?,?,?,?,?,?);"
 	addRoomMessage         = "INSERT INTO `room_messages_%02d` (`room_id`,`msg_id`,`type`,`send_at`) VALUES (?,?,?,?);"
 )
@@ -113,18 +112,6 @@ func (m *MysqlConsumer) Admin(msg *pb.PushMsg) error {
 				zap.String("message", msg.Message),
 			)
 			return err
-		}
-	case pb.PushMsg_ADMIN_TOP:
-		for _, rid := range msg.Room {
-			if _, err := tx.Exec(addRoomTopMessage, rid, msg.Seq, msg.Message, sendAt); err != nil {
-				log.Error(
-					"insert room top message",
-					zap.Error(err),
-					zap.Int64("msg_id", msg.Seq),
-					zap.String("message", msg.Message),
-				)
-				return err
-			}
 		}
 	}
 	return tx.Commit()

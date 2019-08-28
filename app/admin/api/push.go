@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
@@ -47,6 +48,9 @@ func (s *httpServer) push(c *gin.Context) error {
 			Time:    time.Now().Format("15:04:05"),
 		}
 		if err := s.room.AddTopMessage(p.RoomId, m); err != nil {
+			if err == errors.ErrNoRoom {
+				return err
+			}
 			log.Error("add top message for admin push api", zap.Error(err), zap.Int32s("rids", p.RoomId))
 		}
 	}
