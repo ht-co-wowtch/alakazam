@@ -263,17 +263,6 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
     "permission": {
         "is_message": true,
         "is_red_envelope": true
-    },
-    "message": {
-        "header": {
-            "id": 4001,
-            "uid": "root",
-            "type": "top",
-            "name": "管理员",
-            "avatar": "",
-            "message": "測試",
-            "time": "12:37:00"
-        }
     }
 }
 ```
@@ -285,7 +274,6 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 | room_id                    | 房間id                                  |
 | permission.is_message      | true: 可聊天，false: 不可聊天           |
 | permission.is_red_envelope | true: 可發/搶紅包，false: 不可發/搶紅包 |
-| message.header             | 該房間置頂訊息 `沒資料會是空字串`       |
 
 
 
@@ -400,13 +388,15 @@ Operation = `8`=> 回覆更換房間結果
 
 ```json
 {
-    "room_id":1000
+    "room_id":1000,
+  	"status":true
 }
 ```
 
-| name    | 說明     | 格式 |
-| ------- | -------- | ---- |
-| room_id | 新房間id | int  |
+| name    | 說明             | 格式 |
+| ------- | ---------------- | ---- |
+| room_id | 新房間id         | int  |
+| status  | 進入房間是否成功 | Bool |
 
 
 
