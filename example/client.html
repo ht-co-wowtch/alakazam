@@ -261,7 +261,7 @@
                     "                                    <div class=\"header\">\n" + "                                    <small class=\" text-muted\"><span class=\"\"></span></small>\n" +
                     "                                        <strong class=\"primary-font\">" + obj.name + "</strong>\n" +
                     "                                    </div>\n" +
-                    "                                    <p>\n" +
+                    "                                    <p>\n 置頂:" +
                     obj.message +
                     "                                    </p>\n" +
                     "                                </div>\n" +
@@ -317,6 +317,9 @@
                         appendMsg(msgBody, op);
                     }
                     break;
+                case 6:
+                    var json = textDecoder.decode(data.slice(headerLen, packetLen));
+                    appendMsg(json, op);
                 case 8:
                     var json = textDecoder.decode(data.slice(headerLen, packetLen));
                     var msgBody = JSON.parse(json)
