@@ -77,7 +77,7 @@ func (s *Store) GetRoomMessage(roomId, lastMsgId int) (*Messages, error) {
 	msgIds := make([]int64, 0, messageLimit)
 	mapMsg := make(map[int64]pb.PushMsg_Type)
 
-	for i := len(rms); i > 1; i-- {
+	for i := len(rms); i > 0; i-- {
 		msg := rms[i-1]
 		mapMsg[msg.MsgId] = msg.Type
 		msgIds = append(msgIds, msg.MsgId)
