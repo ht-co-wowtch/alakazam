@@ -388,9 +388,9 @@ Operation = `8`=> 回覆更換房間結果
 
 ```json
 {
-    "room_id":1000,
-  	"status":true,
-  	"permission": {
+    "room_id": 1000,
+    "status": true,
+    "permission": {
         "is_message": true,
         "is_red_envelope": true
     }
