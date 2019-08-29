@@ -5,6 +5,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/api"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"math/rand"
 	"os"
@@ -20,6 +21,8 @@ var (
 )
 
 func main() {
+	cmd.LoadTimeZone()
+
 	flag.StringVar(&confPath, "c", "comet.yml", "default config path.")
 	flag.Parse()
 	if err := conf.Read(confPath); err != nil {

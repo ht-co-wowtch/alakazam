@@ -4,6 +4,7 @@ import (
 	"flag"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/admin"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/admin/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"os"
 	"os/signal"
@@ -15,6 +16,8 @@ var (
 )
 
 func main() {
+	cmd.LoadTimeZone()
+
 	flag.StringVar(&confPath, "c", "admin.yml", "default config path")
 	flag.Parse()
 	if err := conf.Read(confPath); err != nil {
