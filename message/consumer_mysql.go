@@ -55,38 +55,33 @@ func (m *MysqlConsumer) Member(msg *pb.PushMsg) error {
 			log.Error("parse time for mysql consumer", zap.Error(err), zap.String("expired", m.RedEnvelope.Expired))
 		}
 		if _, err := tx.Exec(addRedEnvelopeMessages, msg.Seq, msg.Mid, msg.Message, m.RedEnvelope.Id, m.RedEnvelope.Token, expireAt, sendAt); err != nil {
-			log.Error(
-				"insert red envelope message",
-				zap.Error(err),
-				zap.Int64("msg_id", msg.Seq),
-				zap.Int64("member_id", msg.Mid),
-				zap.String("message", msg.Message),
-				zap.String("red envelope id", m.RedEnvelope.Id),
-			)
-			return err
+			return &MysqlRedEnvelopeMessageError{
+				error:         err,
+				redEnvelopeId: m.RedEnvelope.Id,
+				msgId:         msg.Seq,
+				mid:           msg.Mid,
+				message:       msg.Message,
+			}
 		}
 	case pb.PushMsg_ROOM:
 		if _, err := tx.Exec(fmt.Sprintf(addMessage, msg.Room[0]%50), msg.Seq, msg.Mid, msg.Message, sendAt); err != nil {
-			log.Error(
-				"insert message",
-				zap.Error(err),
-				zap.Int64("msg_id", msg.Seq),
-				zap.Int64("member_id", msg.Mid),
-				zap.String("message", msg.Message),
-			)
-			return err
+			return &MysqlMessageError{
+				error:   err,
+				msgId:   msg.Seq,
+				mid:     msg.Mid,
+				message: msg.Message,
+			}
 		}
 	}
 
 	for _, rid := range msg.Room {
 		if _, err := tx.Exec(fmt.Sprintf(addRoomMessage, rid%50), rid, msg.Seq, msg.Type, sendAt); err != nil {
-			log.Error(
-				"insert room message",
-				zap.Error(err),
-				zap.Int32("room", rid),
-				zap.Int64("msg_id", msg.Seq),
-			)
-			return err
+			return &MysqlRoomMessageError{
+				error:   err,
+				msgId:   msg.Seq,
+				room:    msg.Room,
+				message: msg.Message,
+			}
 		}
 	}
 	return tx.Commit()
@@ -102,16 +97,20 @@ func (m *MysqlConsumer) Admin(msg *pb.PushMsg) error {
 	case pb.PushMsg_ADMIN:
 		b, err := json.Marshal(msg.Room)
 		if err != nil {
-			log.Error("json marshal for insert admin message", zap.Int64("msg_id", msg.Seq))
+			return &MysqlAdminMessageError{
+				error:   err,
+				msgId:   msg.Seq,
+				room:    msg.Room,
+				message: msg.Message,
+			}
 		}
 		if _, err := tx.Exec(addAdminMessage, msg.Seq, string(b), msg.Message, sendAt); err != nil {
-			log.Error(
-				"insert admin message",
-				zap.Error(err),
-				zap.Int64("msg_id", msg.Seq),
-				zap.String("message", msg.Message),
-			)
-			return err
+			return &MysqlAdminMessageError{
+				error:   err,
+				msgId:   msg.Seq,
+				room:    msg.Room,
+				message: msg.Message,
+			}
 		}
 	}
 	return tx.Commit()

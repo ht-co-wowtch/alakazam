@@ -3,6 +3,7 @@ package message
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/gogo/protobuf/proto"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
@@ -26,11 +27,13 @@ func NewConsumer(ctx context.Context, topic string, name string, brokers []strin
 	if err != nil {
 		panic(err)
 	}
-	return &Consumer{
+	c := &Consumer{
 		ctx:   ctx,
 		topic: topic,
 		group: group,
 	}
+	go c.errorProc()
+	return c
 }
 
 type ConsumerGroupHandler interface {
@@ -62,6 +65,17 @@ func (c *Consumer) Close() {
 	}
 }
 
+func (c *Consumer) errorProc() {
+	for {
+		select {
+		case <-c.ctx.Done():
+			return
+		case err := <-c.group.Errors():
+			log.Error("consumer message", zap.Error(err))
+		}
+	}
+}
+
 type consumer struct {
 	handler ConsumerGroupHandler
 }
@@ -84,21 +98,13 @@ func (c *consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 		}
 		session.MarkMessage(msg, "")
 		pushMsg := new(pb.PushMsg)
+
 		if err := proto.Unmarshal(msg.Value, pushMsg); err != nil {
-			log.Error("proto unmarshal", zap.Error(err), zap.Any("data", msg))
-			return err
+			return fmt.Errorf("proto unmarshal error:[%s] data: [%s]", err.Error(), string(msg.Value))
 		}
-		log.Info("consume",
-			zap.String("topic", msg.Topic),
-			zap.Int32("partition", msg.Partition),
-			zap.Int64("offset", msg.Offset),
-			zap.String("key", string(msg.Key)),
-			zap.Any("pushMsg", pushMsg),
-		)
 		// 開始處理推送至comet server
-		// TODO error
 		if err := c.handler.Push(pushMsg); err != nil {
-			log.Error("push", zap.Error(err))
+			return err
 		}
 	}
 	return nil
