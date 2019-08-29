@@ -101,7 +101,7 @@ func TestLogin(t *testing.T) {
 	member := &models.Member{Id: 1, Uid: uid, Name: name, Type: models.Player, IsMessage: true}
 	err := c.login(member, key, server)
 
-	u := r.Get(keyUid(uid)).Val()
+	u := r.HMGet(keyUid(uid), uidJsonKey, uidNameKey).Val()
 
 	b, err := json.Marshal(member)
 	if err != nil {
@@ -109,7 +109,8 @@ func TestLogin(t *testing.T) {
 	}
 
 	assert.Nil(t, err)
-	assert.Equal(t, string(b), u)
+	assert.Equal(t, string(b), u[0])
+	assert.Equal(t, name, u[1])
 
 	keys, err := r.HGetAll(keyUidWs(member.Uid)).Result()
 
@@ -197,5 +198,5 @@ func TestGetUserName(t *testing.T) {
 	name, err := c.getName(uid)
 
 	assert.Nil(t, err)
-	assert.Equal(t, uid, name)
+	assert.Equal(t, map[string]string{"1": "1", "2": "2", "3": "3", "4": "4"}, name)
 }

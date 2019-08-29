@@ -10,9 +10,12 @@ import (
 )
 
 const (
-	uidKey    = "uid_%s"
-	uidWsKey  = "uid_ws_%s"
+	uidKey    = "uid_h_%s"
+	uidWsKey  = "uid_h_ws_%s"
 	bannedKey = "b_%s"
+
+	uidJsonKey = "json"
+	uidNameKey = "name"
 
 	OK = "OK"
 )
@@ -55,11 +58,16 @@ func (c *Cache) login(member *models.Member, key, server string) error {
 
 	tx := c.c.Pipeline()
 
-	c1 := tx.Set(keyUid(member.Uid), b, c.expire)
+	uidKey := keyUid(member.Uid)
+	c1 := tx.HMSet(uidKey, map[string]interface{}{
+		uidJsonKey: b,
+		uidNameKey: member.Name,
+	})
 
 	uidWsKey := keyUidWs(member.Uid)
 	c2 := tx.HSet(uidWsKey, key, server)
-	c3 := tx.Expire(uidWsKey, c.expire)
+	c3 := tx.Expire(uidKey, c.expire)
+	c4 := tx.Expire(uidWsKey, c.expire)
 
 	_, err = tx.Exec()
 	if err != nil {
@@ -71,7 +79,7 @@ func (c *Cache) login(member *models.Member, key, server string) error {
 	if !c2.Val() {
 		return errSetUidWsKey
 	}
-	if !c3.Val() {
+	if !c3.Val() || !c4.Val() {
 		return errExpire
 	}
 	return err
@@ -82,12 +90,11 @@ func (c *Cache) set(member *models.Member) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	ok, err := c.c.Set(keyUid(member.Uid), b, c.expire).Result()
-	return ok == OK, err
+	return c.c.HSet(keyUid(member.Uid), uidJsonKey, b).Result()
 }
 
 func (c *Cache) get(uid string) (*models.Member, error) {
-	b, err := c.c.Get(keyUid(uid)).Bytes()
+	b, err := c.c.HGet(keyUid(uid), uidJsonKey).Bytes()
 	if err != nil {
 		return nil, err
 	}
@@ -140,24 +147,19 @@ func (c *Cache) refreshExpire(uid string) error {
 	return err
 }
 
-func (c *Cache) getName(uid []string) ([]string, error) {
+func (c *Cache) getName(uid []string) (map[string]string, error) {
 	tx := c.c.Pipeline()
-	cmd := make([]*redis.StringCmd, len(uid))
-	for i, id := range uid {
-		cmd[i] = tx.Get(keyUid(id))
+	cmd := make(map[string]*redis.StringCmd, len(uid))
+	for _, id := range uid {
+		cmd[id] = tx.HGet(keyUid(id), uidNameKey)
 	}
 	_, err := tx.Exec()
 	if err != nil {
 		return nil, err
 	}
-	name := make([]string, len(uid))
-	for i, v := range cmd {
-		var m models.Member
-		b, _ := v.Bytes()
-		if err = json.Unmarshal(b, &m); err != nil {
-			return nil, err
-		}
-		name[i] = m.Name
+	name := make(map[string]string, len(uid))
+	for id, na := range cmd {
+		name[id] = na.Val()
 	}
 	return name, nil
 }
