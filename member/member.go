@@ -20,11 +20,11 @@ type Chat interface {
 
 type Member struct {
 	cli *client.Client
-	db  *models.Store
-	c   *Cache
+	db  models.Chat
+	c   Cache
 }
 
-func New(db *models.Store, cache *redis.Client, cli *client.Client) *Member {
+func New(db models.Chat, cache *redis.Client, cli *client.Client) *Member {
 	return &Member{
 		db:  db,
 		cli: cli,
@@ -150,10 +150,34 @@ func (m *Member) GetSession(uid string) (*models.Member, error) {
 	return member, nil
 }
 
-func (m *Member) GetUserName(uid []string) ([]string, error) {
+func (m *Member) GetUserName(uid []string) (map[string]string, error) {
 	name, err := m.c.getName(uid)
-	if err == redis.Nil {
-		return nil, errors.ErrNoRows
+	if err != nil && err != redis.Nil {
+		return nil, err
+	}
+
+	selectUid := make([]string, 0)
+	for _, id := range uid {
+		if _, ok := name[id]; !ok {
+			selectUid = append(selectUid, id)
+		}
+	}
+
+	member, err := m.db.GetMembersByUid(selectUid)
+	if err != nil {
+		return nil, err
+	}
+	if name == nil {
+		name = make(map[string]string, len(member))
+	}
+
+	cacheName := make(map[string]string, len(member))
+	for _, v := range member {
+		cacheName[v.Uid] = v.Name
+		name[v.Uid] = v.Name
+	}
+	if err := m.c.setName(cacheName); err != nil {
+		log.Error("set name cache for GetUserName", zap.Error(err), zap.Any("name", name))
 	}
 	return name, nil
 }

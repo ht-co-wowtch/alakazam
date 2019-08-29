@@ -6,6 +6,7 @@ import (
 	"github.com/alicebob/miniredis"
 	goRedis "github.com/go-redis/redis"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/id"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
@@ -16,7 +17,7 @@ import (
 
 var (
 	r *goRedis.Client
-	c *Cache
+	c *cache
 )
 
 func TestMain(m *testing.M) {
@@ -27,7 +28,7 @@ func TestMain(m *testing.M) {
 	r = redis.New(&redis.Conf{
 		Addr: s.Addr(),
 	})
-	c = &Cache{
+	c = &cache{
 		c:      r,
 		expire: time.Second * 10,
 	}
@@ -187,7 +188,7 @@ func TestGetNil(t *testing.T) {
 	assert.Equal(t, goRedis.Nil, err)
 }
 
-func TestGetUserName(t *testing.T) {
+func TestCache_GetUserName(t *testing.T) {
 	uid := []string{"1", "2", "3", "4"}
 	for _, v := range uid {
 		if err := c.login(&models.Member{Uid: v, Name: v}, v, v); err != nil {
@@ -199,4 +200,68 @@ func TestGetUserName(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, map[string]string{"1": "1", "2": "2", "3": "3", "4": "4"}, name)
+}
+
+type mockCache struct {
+	m mock.Mock
+}
+
+func (m *mockCache) login(member *models.Member, key, server string) error {
+	arg := m.m.Called(member, key, server)
+	return arg.Error(0)
+}
+
+func (m *mockCache) set(member *models.Member) (bool, error) {
+	arg := m.m.Called(member)
+	return arg.Bool(0), arg.Error(1)
+}
+
+func (m *mockCache) get(uid string) (*models.Member, error) {
+	arg := m.m.Called(uid)
+	return arg.Get(0).(*models.Member), arg.Error(1)
+}
+
+func (m *mockCache) getKey(uid string) ([]string, error) {
+	arg := m.m.Called(uid)
+	return arg.Get(0).([]string), arg.Error(1)
+}
+
+func (m *mockCache) logout(uid, key string) (bool, error) {
+	arg := m.m.Called(uid, key)
+	return arg.Bool(0), arg.Error(1)
+}
+
+func (m *mockCache) delete(uid string) (bool, error) {
+	arg := m.m.Called(uid)
+	return arg.Bool(0), arg.Error(1)
+}
+
+func (m *mockCache) refreshExpire(uid string) error {
+	arg := m.m.Called(uid)
+	return arg.Error(0)
+}
+
+func (m *mockCache) setName(name map[string]string) error {
+	arg := m.m.Called(name)
+	return arg.Error(0)
+}
+
+func (m *mockCache) getName(uid []string) (map[string]string, error) {
+	arg := m.m.Called(uid)
+	return arg.Get(0).(map[string]string), arg.Error(1)
+}
+
+func (m *mockCache) setBanned(uid string, expired time.Duration) (bool, error) {
+	arg := m.m.Called(uid, expired)
+	return arg.Bool(0), arg.Error(1)
+}
+
+func (m *mockCache) isBanned(uid string) (bool, error) {
+	arg := m.m.Called(uid)
+	return arg.Bool(0), arg.Error(1)
+}
+
+func (m *mockCache) delBanned(uid string) (bool, error) {
+	arg := m.m.Called(uid)
+	return arg.Bool(0), arg.Error(1)
 }

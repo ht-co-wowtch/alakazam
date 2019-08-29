@@ -100,6 +100,12 @@ func (s *Store) GetMembers(ids []int) ([]Member, error) {
 	return m, err
 }
 
+func (s *Store) GetMembersByUid(uid []string) ([]Member, error) {
+	m := make([]Member, 0)
+	err := s.d.In("uid", uid).Find(&m)
+	return m, err
+}
+
 func (s *Store) UpdateIsMessage(memberId int, isMessage bool) (bool, error) {
 	aff, err := s.d.Cols("is_message").
 		Where("id = ?", memberId).

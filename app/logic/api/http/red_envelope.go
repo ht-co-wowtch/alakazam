@@ -119,30 +119,18 @@ func (s *httpServer) getRedEnvelopeDetail(c *gin.Context) error {
 	for i, v := range reply.Members {
 		name[i+1] = v.Uid
 	}
-	n, err := s.member.GetUserName(name)
-	if err != nil {
-		return err
-	}
-	reply.Name = n[0]
-	for i, v := range n[1:] {
-		reply.Members[i].Name = v
-	}
-	c.JSON(http.StatusOK, reply)
-	return nil
-}
 
-func (s *httpServer) getRedEnvelope(c *gin.Context) error {
-	reply, err := s.client.GetRedEnvelope(c.Param("id"), c.GetString("token"))
+	names, err := s.member.GetUserName(name)
 	if err != nil {
 		return err
 	}
-	if reply.Amount != 0 {
-		name, err := s.member.GetUserName([]string{reply.Uid})
-		if err != nil {
-			return err
-		}
-		reply.Name = name[0]
+
+	reply.Name = names[reply.Uid]
+
+	for i, v := range reply.Members {
+		reply.Members[i].Name = names[v.Uid]
 	}
+
 	c.JSON(http.StatusOK, reply)
 	return nil
 }
