@@ -63,7 +63,9 @@ message ChangeRoomReq {
 }
 
 message ChangeRoomReply {
-    bytes headerMessage = 1;
+    bool isMessage = 1;
+    bool isRedEnvelope = 2;
+    bytes headerMessage = 3;
 }
 
 message DisconnectReply {

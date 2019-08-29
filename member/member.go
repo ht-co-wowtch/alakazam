@@ -12,6 +12,7 @@ import (
 )
 
 type Chat interface {
+	GetSession(uid string) (*models.Member, error)
 	Login(rid int, token, server string) (*models.Member, string, error)
 	Logout(uid, key string) (bool, error)
 	Heartbeat(uid string) error

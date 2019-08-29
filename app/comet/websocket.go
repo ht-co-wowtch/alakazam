@@ -364,6 +364,11 @@ failed:
 	}
 }
 
+type permission struct {
+	IsMessage     bool `json:"is_message"`
+	IsRedEnvelope bool `json:"is_red_envelope"`
+}
+
 // websocket請求連線至某房間
 func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Channel, p *pb.Proto) (int32, time.Duration, error) {
 	for {
@@ -395,13 +400,10 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 	// 需要回覆給client告知uid與key
 	// 因為後續發話需依靠這兩個欄位來做pk
 	reply := struct {
-		Uid        string `json:"uid"`
-		Key        string `json:"key"`
-		RoomId     int32  `json:"room_id"`
-		Permission struct {
-			IsMessage     bool `json:"is_message"`
-			IsRedEnvelope bool `json:"is_red_envelope"`
-		} `json:"permission"`
+		Uid        string     `json:"uid"`
+		Key        string     `json:"key"`
+		RoomId     int32      `json:"room_id"`
+		Permission permission `json:"permission"`
 	}{
 		Uid:    c.Uid,
 		Key:    c.Key,

@@ -30,7 +30,7 @@ type Chat interface {
 	Heartbeat(uid, key, name, server string) error
 	RenewOnline(server string, roomCount map[int32]int32) (map[int32]int32, error)
 	IsMessage(rid int, uid string) error
-	ChangeRoom(rid int) (*pb.ChangeRoomReply, error)
+	ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error)
 	GetTopMessage(rid int) (message.Message, error)
 }
 
@@ -80,6 +80,13 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	var isMessage bool
+	if room.IsMessage == false {
+		isMessage = false
+	} else {
+		isMessage = user.IsMessage
+	}
 	return &pb.ConnectReply{
 		Uid:           user.Uid,
 		Key:           key,
@@ -87,7 +94,7 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 		RoomID:        int32(params.RoomID),
 		Heartbeat:     c.heartbeatNanosec,
 		IsBlockade:    user.IsBlockade,
-		IsMessage:     user.IsMessage,
+		IsMessage:     isMessage,
 		IsRedEnvelope: user.Type == models.Player,
 		HeaderMessage: room.HeaderMessage,
 	}, nil
@@ -196,21 +203,29 @@ func (c *chat) GetTopMessage(rid int) (message.Message, error) {
 	return message.ToMessage(msg)
 }
 
-func (c *chat) ChangeRoom(rid int) (*pb.ChangeRoomReply, error) {
-	msg, err := c.cache.getChatTopMessage(rid)
+func (c *chat) ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error) {
+	room, err := c.getChat(rid)
 	if err != nil {
-		if err != redis.Nil {
-			return nil, err
-		}
+		return nil, err
+	}
+	if !room.Status {
+		return nil, errors.ErrRoomClose
+	}
 
-		room, err := c.reloadChat(rid)
-		if err != nil {
-			return nil, err
-		}
+	user, err := c.member.GetSession(uid)
+	if err != nil {
+		return nil, err
+	}
 
-		msg = room.HeaderMessage
+	var isMessage bool
+	if room.IsMessage == false {
+		isMessage = false
+	} else {
+		isMessage = user.IsMessage
 	}
 	return &pb.ChangeRoomReply{
-		HeaderMessage: msg,
+		HeaderMessage: room.HeaderMessage,
+		IsMessage:     isMessage,
+		IsRedEnvelope: user.Type == models.Player,
 	}, err
 }
