@@ -3,7 +3,6 @@ package comet
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -58,7 +57,11 @@ type changeRoom struct {
 	RoomId int32 `json:"room_id"`
 }
 
-var changeRoomReply = `{"room_id":%d, "status":%t}`
+type changeRoomReply struct {
+	RoomId     int32      `json:"room_id"`
+	Status     bool       `json:"status"`
+	Permission permission `json:"permission"`
+}
 
 // 處理Proto相關邏輯
 func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *Bucket) error {
@@ -67,14 +70,18 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 	case cometpb.OpChangeRoom:
 		p.Op = cometpb.OpChangeRoomReply
 		var r changeRoom
+		var re changeRoomReply
 
 		if err := json.Unmarshal(p.Body, &r); err != nil {
-			p.Body = []byte(fmt.Sprintf(changeRoomReply, r.RoomId, false))
+			re.RoomId = r.RoomId
+			p.Body, _ = json.Marshal(re)
 			return nil
 		}
 
+		re.RoomId = r.RoomId
+
 		if err := b.ChangeRoom(r.RoomId, ch); err != nil {
-			p.Body = []byte(fmt.Sprintf(changeRoomReply, r.RoomId, false))
+			p.Body, _ = json.Marshal(re)
 			log.Error("change room", zap.Error(err), zap.Binary("data", p.Body))
 			return nil
 		}
@@ -86,12 +93,17 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 		})
 
 		if err != nil {
-			p.Body = []byte(fmt.Sprintf(changeRoomReply, r.RoomId, false))
+			p.Body, _ = json.Marshal(re)
 			log.Error("change room for logic", zap.Error(err), zap.Binary("data", p.Body))
 			return nil
 		}
+
+		re.Status = true
+		re.Permission.IsMessage = room.IsMessage
+		re.Permission.IsRedEnvelope = room.IsRedEnvelope
+		p.Body, _ = json.Marshal(re)
+
 		if room.HeaderMessage != nil {
-			p.Body = []byte(fmt.Sprintf(changeRoomReply, r.RoomId, true))
 			ch.protoRing.SetAdv()
 			ch.Signal()
 
