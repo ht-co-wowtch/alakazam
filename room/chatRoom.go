@@ -32,6 +32,7 @@ type Chat interface {
 	IsMessage(rid int, uid string) error
 	ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error)
 	GetTopMessage(rid int) (message.Message, error)
+	GetOnline(server string) (*Online, error)
 }
 
 type chat struct {
@@ -228,4 +229,8 @@ func (c *chat) ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error) {
 		IsMessage:     isMessage,
 		IsRedEnvelope: user.Type == models.Player,
 	}, err
+}
+
+func (c *chat) GetOnline(server string) (*Online, error) {
+	return c.cache.getOnline(server)
 }

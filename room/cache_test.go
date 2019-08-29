@@ -90,16 +90,14 @@ func TestSetChatAndGetChatRoom(t *testing.T) {
 
 	b, _ := json.Marshal(roomTopMessageTest)
 
-	err := c.setChat(roomTest, string(b))
+	err := c.setChat(roomTest, b)
 	assert.Nil(t, err)
 
 	room, err := c.getChat(roomTest.Id)
-	message := room.HeaderMessage
-	room.HeaderMessage = []byte(``)
+	rt := roomTest
+	rt.HeaderMessage = b
 	assert.Nil(t, err)
-	assert.Equal(t, roomTest, room)
-
-	assert.Equal(t, string(b), message)
+	assert.Equal(t, rt, room)
 
 	expire := r.TTL(keyRoom(roomTest.Id)).Val()
 	assert.Equal(t, roomExpired, expire)
@@ -123,6 +121,33 @@ func TestGetChatMessageNil(t *testing.T) {
 	room, err := c.getChat(roomTest.Id)
 
 	assert.Equal(t, models.Room{Id: 1}, room)
+}
+
+func TestChatTopMessage(t *testing.T) {
+	c.c.FlushAll()
+
+	msg := []byte(`{}`)
+	err := c.setChatTopMessage([]int32{1, 2, 3, 4}, msg)
+
+	assert.Nil(t, err)
+
+	b1, err := c.getChatTopMessage(1)
+
+	assert.Nil(t, err)
+	assert.Equal(t, msg, b1)
+
+	err = c.deleteChatTopMessage([]int32{2, 4})
+	assert.Nil(t, err)
+
+	b2, err := c.getChatTopMessage(3)
+
+	assert.Nil(t, err)
+	assert.Equal(t, msg, b2)
+
+	b3, err := c.getChatTopMessage(4)
+
+	assert.Equal(t, goRedis.Nil, err)
+	assert.Nil(t, b3)
 }
 
 func TestAddServerOnline(t *testing.T) {

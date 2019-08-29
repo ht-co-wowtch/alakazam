@@ -34,7 +34,7 @@ type Server struct {
 	client  *client.Client
 	member  *member.Member
 	// TODO Chat
-	room       room.Room
+	room       room.Chat
 	httpServer *http.Server
 	rpc        *grpc.Server
 
@@ -53,7 +53,6 @@ func New(c *conf.Config) *Server {
 	}
 	messageProducer := message.NewProducer(c.Kafka.Brokers, c.Kafka.Topic, seqpb.NewSeqClient(seqCli), cache, db)
 	memberCli := member.New(db, cache, cli)
-	roomCli := room.New(db, cache, memberCli, cli)
 	chat := room.NewChat(db, cache, memberCli, cli, c.Heartbeat)
 	httpServer := api.NewServer(c, memberCli, messageProducer, chat, cli, message.NewHistory(db, memberCli))
 	rpcServer := rpc.New(c.RPCServer, chat)
@@ -83,7 +82,7 @@ func New(c *conf.Config) *Server {
 		message:    messageProducer,
 		client:     cli,
 		member:     memberCli,
-		room:       roomCli,
+		room:       chat,
 		httpServer: httpServer,
 		rpc:        rpcServer,
 	}

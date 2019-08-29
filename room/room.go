@@ -18,7 +18,6 @@ type Room interface {
 	Update(id int, status Status) error
 	Delete(id int) error
 	Get(id int) (models.Room, error)
-	GetOnline(server string) (*Online, error)
 	GetTopMessage(msgId int64) ([]int32, models.Message, error)
 	AddTopMessage(rids []int32, message message.Message) error
 	DeleteTopMessage(rids []int32, msgId int64) error
@@ -126,10 +125,6 @@ func (r *room) Get(id int) (models.Room, error) {
 		return models.Room{}, err
 	}
 	return room, nil
-}
-
-func (r *room) GetOnline(server string) (*Online, error) {
-	return r.c.getOnline(server)
 }
 
 func (r *room) GetTopMessage(msgId int64) ([]int32, models.Message, error) {

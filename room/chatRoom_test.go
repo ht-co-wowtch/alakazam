@@ -55,7 +55,7 @@ func TestConnectRoom(t *testing.T) {
 		IsBlockade:    true,
 		IsMessage:     true,
 		IsRedEnvelope: true,
-		TopMessage:    []byte(`message`),
+		HeaderMessage: []byte(`message`),
 	}, connect)
 }
 
@@ -207,6 +207,11 @@ func (m *mockMember) Heartbeat(uid string) error {
 	return arg.Error(0)
 }
 
+func (m *mockMember) GetSession(uid string) (*models.Member, error) {
+	arg := m.m.Called(uid)
+	return arg.Get(0).(*models.Member), arg.Error(1)
+}
+
 type mockCache struct {
 	m mock.Mock
 }
@@ -239,4 +244,19 @@ func (m *mockCache) addOnline(server string, online *Online) error {
 func (m *mockCache) getOnline(server string) (*Online, error) {
 	arg := m.m.Called(server)
 	return arg.Get(0).(*Online), arg.Error(1)
+}
+
+func (m *mockCache) setChatTopMessage(rids []int32, message []byte) error {
+	arg := m.m.Called(rids, message)
+	return arg.Error(0)
+}
+
+func (m *mockCache) getChatTopMessage(rid int) ([]byte, error) {
+	arg := m.m.Called(rid)
+	return arg.Get(0).([]byte), arg.Error(1)
+}
+
+func (m *mockCache) deleteChatTopMessage(rids []int32) error {
+	arg := m.m.Called(rids)
+	return arg.Error(0)
 }
