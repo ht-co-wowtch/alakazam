@@ -470,7 +470,15 @@ headerView.setInt32(opOffset, 3);
 
 ### Change Room
 
-Boyd內容帶想要切換的房間Id即可，Protocol Operation[參考](#operation)
+Boyd內容如下，Protocol Operation[參考](#operation)
+
+```json
+{
+    "room_id": 1000
+}
+```
+
+
 
 | name    | 說明     | 格式   |      |
 | ------- | -------- | ------ | ---- |
