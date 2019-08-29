@@ -36,10 +36,23 @@ func Table() []interface{} {
 }
 
 func NewStore(c *database.Conf) *Store {
-	// TODO 處理error
-	d, _ := database.NewORM(c)
-	d.SetTZDatabase(time.Local)
 	return &Store{
-		d: d,
+		d: NewORM(c),
 	}
+}
+
+func NewORM(c *database.Conf) *xorm.EngineGroup {
+	d, err := database.NewORM(c)
+	if err != nil {
+		panic(err)
+	}
+
+	l, err := time.LoadLocation(c.Master.Local)
+	if err != nil {
+		panic(err)
+	}
+
+	d.Master().SetTZDatabase(l)
+	d.Slave().SetTZDatabase(l)
+	return d
 }

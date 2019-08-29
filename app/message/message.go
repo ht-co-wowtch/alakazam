@@ -4,9 +4,8 @@ import (
 	"context"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/message/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
-	"gitlab.com/jetfueltw/cpw/micro/database"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
-	"time"
 )
 
 type Message struct {
@@ -17,11 +16,9 @@ type Message struct {
 func New(c *conf.Config) *Message {
 	ctx, _ := context.WithCancel(context.Background())
 	consumer := message.NewConsumer(ctx, c.Kafka.Topic, c.Kafka.Group, c.Kafka.Brokers)
-	d, _ := database.NewORM(c.DB)
-	d.SetTZDatabase(time.Local)
 	return &Message{
 		consumer: consumer,
-		mysql:    message.NewMysqlConsumer(d, redis.New(c.Redis)),
+		mysql:    message.NewMysqlConsumer(models.NewORM(c.DB), redis.New(c.Redis)),
 	}
 }
 
