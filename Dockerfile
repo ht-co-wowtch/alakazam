@@ -1,6 +1,8 @@
 FROM golang:1.12-alpine AS build_module
 
 ENV GO111MODULE=on
+ARG GOPROXY
+ENV GOPROXY=${GOPROXY}
 
 RUN set -ex && apk add --no-cache git
 
