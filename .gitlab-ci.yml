@@ -23,7 +23,7 @@ before_script:
 build:
   stage: build
   script:
-    - docker build --pull -t $REGISTRY_IMAGE .
+    - docker build --build-arg "GOPROXY=https://athens.jetfuel.com.tw" --pull -t $REGISTRY_IMAGE .
     - docker push $REGISTRY_IMAGE
   only:
     - /^v\d+\.\d+\.\d+$/
@@ -34,7 +34,7 @@ logic:
   stage: build_service
   script:
     - cd docker/logic
-    - docker build --build-arg "GOPROXY=https://athens.jetfuel.com.tw" --pull -t $CI_REGISTRY_IMAGE:${CI_COMMIT_TAG#v} .
+    - docker build --build-arg image=$REGISTRY_IMAGE -t $REGISTRY_LOGIC_IMAGE:${CI_COMMIT_TAG#v} .
     - docker push $REGISTRY_LOGIC_IMAGE:${CI_COMMIT_TAG#v}
   only:
     - /^v\d+\.\d+\.\d+$/
