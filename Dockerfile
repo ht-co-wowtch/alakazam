@@ -47,4 +47,6 @@ COPY --from=build /admin .
 COPY --from=build /message .
 COPY --from=build /seq .
 
+COPY --from=build /usr/local/go/lib/time/zoneinfo.zip /usr/local/go/lib/time/zoneinfo.zip
+
 CMD ["/bin/sh"]
