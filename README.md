@@ -389,14 +389,20 @@ Operation = `8`=> 回覆更換房間結果
 ```json
 {
     "room_id":1000,
-  	"status":true
+  	"status":true,
+  	"permission": {
+        "is_message": true,
+        "is_red_envelope": true
+    }
 }
 ```
 
-| name    | 說明             | 格式 |
-| ------- | ---------------- | ---- |
-| room_id | 新房間id         | int  |
-| status  | 進入房間是否成功 | Bool |
+| name                       | 說明                                    | 格式 |
+| -------------------------- | --------------------------------------- | ---- |
+| room_id                    | 新房間id                                | int  |
+| status                     | 進入房間是否成功                        | bool |
+| permission.is_message      | true: 可聊天，false: 不可聊天           | bool |
+| permission.is_red_envelope | true: 可發/搶紅包，false: 不可發/搶紅包 | bool |
 
 
 
