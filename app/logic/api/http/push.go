@@ -1,9 +1,11 @@
 package http
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"net/http"
@@ -26,8 +28,19 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := s.room.IsMessage(p.RoomId, user.Uid); err != nil {
+
+	room, err := s.room.GetRoom(p.RoomId)
+	if err != nil {
 		return err
+	}
+
+	money, err := s.client.GetDepositAndDml(room.DayLimit, user.Uid, c.GetString("token"))
+	if err != nil {
+		return err
+	}
+	if float64(room.DmlLimit) > money.Dml || float64(room.DepositLimit) > money.Deposit {
+		msg := fmt.Sprintf(errors.ErrRoomLimit, room.DayLimit, room.DepositLimit, room.DmlLimit)
+		return errdefs.Forbidden(errors.New(msg), 4035)
 	}
 
 	msg := message.Messages{

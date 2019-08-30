@@ -3,7 +3,6 @@ package room
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
@@ -11,7 +10,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"gopkg.in/go-playground/validator.v8"
@@ -29,7 +27,7 @@ type Chat interface {
 	Disconnect(uid, key string) (bool, error)
 	Heartbeat(uid, key, name, server string) error
 	RenewOnline(server string, roomCount map[int32]int32) (map[int32]int32, error)
-	IsMessage(rid int, uid string) error
+	GetRoom(rid int) (models.Room, error)
 	ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error)
 	GetTopMessage(rid int) (message.Message, error)
 	GetOnline(server string) (*Online, error)
@@ -171,26 +169,18 @@ func (c *chat) RenewOnline(server string, roomCount map[int32]int32) (map[int32]
 	return roomCount, err
 }
 
-func (c *chat) IsMessage(rid int, uid string) error {
+func (c *chat) GetRoom(rid int) (models.Room, error) {
 	room, err := c.get(rid)
 	if err != nil {
-		return err
+		return room, err
 	}
 	if !room.Status {
-		return errors.ErrRoomClose
+		return room, errors.ErrRoomClose
 	}
 	if !room.IsMessage {
-		return errors.ErrRoomNoMessage
+		return room, errors.ErrRoomNoMessage
 	}
-	money, err := c.cli.GetDepositAndDml(room.DayLimit, uid)
-	if err != nil {
-		return err
-	}
-	if float64(room.DmlLimit) > money.Dml || float64(room.DepositLimit) > money.Deposit {
-		msg := fmt.Sprintf(errors.ErrRoomLimit, room.DayLimit, room.DepositLimit, room.DmlLimit)
-		return errdefs.Forbidden(errors.New(msg), 4035)
-	}
-	return nil
+	return room, nil
 }
 
 func (c *chat) GetTopMessage(rid int) (message.Message, error) {
