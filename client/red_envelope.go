@@ -2,8 +2,6 @@ package client
 
 import (
 	"encoding/json"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"time"
 )
 
@@ -157,12 +155,6 @@ func (c *Client) TakeRedEnvelope(redEnvelopeToken, token string) (TakeEnvelopeRe
 	}
 	defer resp.Body.Close()
 	if err := checkResponse(resp); err != nil {
-		switch e := err.(type) {
-		case *errdefs.Error:
-			if e.Code == errors.TakeEnvelopeExpiredCode {
-				return TakeEnvelopeReply{Status: TakeEnvelopeExpired}, nil
-			}
-		}
 		return TakeEnvelopeReply{}, err
 	}
 	var u TakeEnvelopeReply
