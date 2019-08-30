@@ -18,15 +18,15 @@ var (
 	ErrRateSameMsg = errdefs.TooManyRequests(New("10秒内相同讯息3次，自动禁言10分钟"), 4292)
 
 	// 身份認證
-	ErrValidationToken = errdefs.Forbidden(New("用户认证失败"), 4031)
-	ErrClaimsToken     = errdefs.Forbidden(New("用户认证失败"), 4032)
-	ErrValidToken      = errdefs.Forbidden(New("用户认证失败"), 4033)
-	ErrLogin           = errdefs.Forbidden(New("请先登入会员"), 4034)
+	ErrValidationToken = errdefs.Unauthorized(New("用户认证失败"), 4011)
+	ErrClaimsToken     = errdefs.Unauthorized(New("用户认证失败"), 4012)
+	ErrValidToken      = errdefs.Unauthorized(New("用户认证失败"), 4013)
+	ErrLogin           = errdefs.Unauthorized(New("请先登入会员"), 4014)
 	// 4035
 	ErrRoomLimit       = "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元"
-	ErrMemberNoMessage = errdefs.Forbidden(New("您在永久禁言状态，无法发言"), 4036)
-	ErrMemberBanned    = errdefs.Forbidden(New("您在禁言状态，无法发言"), 4037)
-	ErrRoomNoMessage   = errdefs.Forbidden(New("聊天室目前禁言状态，无法发言"), 4038)
+	ErrMemberNoMessage = errdefs.Unauthorized(New("您在永久禁言状态，无法发言"), 4015)
+	ErrMemberBanned    = errdefs.Unauthorized(New("您在禁言状态，无法发言"), 4016)
+	ErrRoomNoMessage   = errdefs.Unauthorized(New("聊天室目前禁言状态，无法发言"), 4017)
 
 	// 系統異常
 	ErrInternalServer = errdefs.InternalServer(New("操作失败，系统异常"), 5000)
@@ -38,12 +38,12 @@ var (
 
 	ErrNoRows = errdefs.NotFound(New("没有资料"), 1)
 
-	ErrTokenUid = errdefs.Forbidden(New("帐号资料认证失败"), 1)
+	ErrTokenUid = errdefs.Unauthorized(New("帐号资料认证失败"), 1)
 )
 
 const (
 	// 沒有token
-	noAuthorizationBearer = 15024031
+	noAuthorizationBearer = 15024010
 	// 資料格式錯誤
 	invalidParameter = 15024220
 	// 餘額不足
@@ -54,8 +54,6 @@ const (
 	memberNotFound = 12024041
 	// 隨機紅包金額不能小於包數
 	redEnvelopeAmount = 15021001
-	// 紅包已過期
-	TakeEnvelopeExpiredCode = 15024031
 	// 紅包不存在
 	redEnvelopeNotFoundCode = 15024044
 	// 紅包已關閉
