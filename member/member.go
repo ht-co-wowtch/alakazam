@@ -150,7 +150,15 @@ func (m *Member) GetSession(uid string) (*models.Member, error) {
 	return member, nil
 }
 
-func (m *Member) GetUserName(uid []string) (map[string]string, error) {
+func (m *Member) GetUserName(uid string) (string, error) {
+	members, err := m.GetUserNames([]string{uid})
+	if err != nil {
+		return "", err
+	}
+	return members[uid], nil
+}
+
+func (m *Member) GetUserNames(uid []string) (map[string]string, error) {
 	name, err := m.c.getName(uid)
 	if err != nil && err != redis.Nil {
 		return nil, err

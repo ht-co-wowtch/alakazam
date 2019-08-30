@@ -81,7 +81,7 @@ func (s *httpServer) takeRedEnvelope(c *gin.Context) error {
 		return err
 	}
 
-	user, err := s.member.GetSession(c.GetString("uid"))
+	_, err := s.member.GetSession(c.GetString("uid"))
 	if err != nil {
 		return err
 	}
@@ -90,8 +90,9 @@ func (s *httpServer) takeRedEnvelope(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-
-	reply.Name = user.Name
+	if reply.Name, err = s.member.GetUserName(reply.Uid); err != nil {
+		return err
+	}
 
 	switch reply.Status {
 	case client.TakeEnvelopeSuccess:
@@ -120,7 +121,7 @@ func (s *httpServer) getRedEnvelopeDetail(c *gin.Context) error {
 		name[i+1] = v.Uid
 	}
 
-	names, err := s.member.GetUserName(name)
+	names, err := s.member.GetUserNames(name)
 	if err != nil {
 		return err
 	}

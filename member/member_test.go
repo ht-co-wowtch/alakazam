@@ -26,7 +26,7 @@ func TestGetUserName(t *testing.T) {
 
 	cache.m.On("setName", map[string]string{"2": "2"}).Return(nil)
 
-	name, err := m.GetUserName(uids)
+	name, err := m.GetUserNames(uids)
 
 	assert.Nil(t, err)
 	assert.Equal(t, map[string]string{
@@ -42,7 +42,7 @@ func TestGetUserNameNoRows(t *testing.T) {
 	db.m.On("GetMembersByUid", []string{}).Once().Return([]models.Member{}, nil)
 	cache.m.On("setName", mock.Anything).Return(nil)
 
-	_, err := m.GetUserName([]string{})
+	_, err := m.GetUserNames([]string{})
 
 	db.m.AssertExpectations(t)
 
@@ -52,7 +52,7 @@ func TestGetUserNameNoRows(t *testing.T) {
 func TestGetUserNameError(t *testing.T) {
 	m, _, cache := mockMember()
 	cache.m.On("getName", mock.Anything).Return(map[string]string{}, errors.New(""))
-	_, err := m.GetUserName([]string{})
+	_, err := m.GetUserNames([]string{})
 
 	assert.Equal(t, errors.New(""), err)
 }
