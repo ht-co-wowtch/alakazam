@@ -280,7 +280,7 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 | permission.is_message      | true: 可聊天，false: 不可聊天                                |
 | permission.is_red_envelope | true: 可發/搶紅包，false: 不可發/搶紅包                      |
 
-進入房間有幾種狀況，原因都會寫在`message
+進入房間有幾種狀況，原因都會寫在`message`
 
 1. status => `true` 
    1. 房間無法發話
@@ -323,10 +323,6 @@ body是內容是該房間在線人數，是一個int32
 Operation = `6`=> 單筆訊息
 
 ![arch](./doc/message_raw.png)
-
-```json
-
-```
 
 Ｍessage type 
 
