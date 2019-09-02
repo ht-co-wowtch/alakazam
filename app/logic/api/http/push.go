@@ -34,13 +34,15 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 		return err
 	}
 
-	money, err := s.client.GetDepositAndDml(room.DayLimit, user.Uid, c.GetString("token"))
-	if err != nil {
-		return err
-	}
-	if float64(room.DmlLimit) > money.Dml || float64(room.DepositLimit) > money.Deposit {
-		msg := fmt.Sprintf(errors.ErrRoomLimit, room.DayLimit, room.DepositLimit, room.DmlLimit)
-		return errdefs.Unauthorized(errors.New(msg), 4014)
+	if room.DayLimit >= 1 && room.DmlLimit+room.DepositLimit > 0 {
+		money, err := s.client.GetDepositAndDml(room.DayLimit, user.Uid, c.GetString("token"))
+		if err != nil {
+			return err
+		}
+		if float64(room.DmlLimit) > money.Dml || float64(room.DepositLimit) > money.Deposit {
+			msg := fmt.Sprintf(errors.ErrRoomLimit, room.DayLimit, room.DepositLimit, room.DmlLimit)
+			return errdefs.Unauthorized(errors.New(msg), 4014)
+		}
 	}
 
 	msg := message.Messages{
