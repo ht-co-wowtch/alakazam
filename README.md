@@ -49,6 +49,7 @@ TODO
 - [x] 房間在線人數
 - [x] 遮蔽敏感詞
 - [x] 訊息限速(1秒1則，10內不可重覆三次一樣訊息)
+- [x] 依據性別切換頭像
 
 TODO
 
@@ -260,6 +261,8 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
     "room_id": 1000,
     "uid": "82ea16cd2d6a49d887440066ef739669",
     "key": "defb108d-3d51-475a-b266-4a7f459e7a59",
+  	"message": "聊天室目前禁言状态，无法发言",
+  	"status": true,
     "permission": {
         "is_message": true,
         "is_red_envelope": true
@@ -267,15 +270,27 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 }
 ```
 
-| name                       | 說明                                    |
-| -------------------------- | --------------------------------------- |
-| uid                        | user uid，發送訊息會用到                |
-| key                        | 這次web socket連線id，發送訊息會用到    |
-| room_id                    | 房間id                                  |
-| permission.is_message      | true: 可聊天，false: 不可聊天           |
-| permission.is_red_envelope | true: 可發/搶紅包，false: 不可發/搶紅包 |
+| name                       | 說明                                                         |
+| -------------------------- | ------------------------------------------------------------ |
+| uid                        | user uid，發送訊息會用到                                     |
+| key                        | 這次web socket連線id，發送訊息會用到                         |
+| room_id                    | 房間id                                                       |
+| message                    | 用於顯示給用戶當前房間狀況，訊息，通知等等，可放在發話輸入欄做提示 |
+| status                     | 進入房間是否成功，只代表進入不代表任何權限                   |
+| permission.is_message      | true: 可聊天，false: 不可聊天                                |
+| permission.is_red_envelope | true: 可發/搶紅包，false: 不可發/搶紅包                      |
 
+進入房間有幾種狀況，原因都會寫在`message
 
+1. status => `true` 
+   1. 房間無法發話
+   2. 用戶無法發話
+
+2. status => false
+   1. 用戶被封鎖
+   2. 房間不存在
+   3. 房間已關閉
+   4. 其他例外狀況
 
 #### Close Reply
 
@@ -331,21 +346,21 @@ Operation = `6`=> 單筆訊息
     "uid": "3d641b03d4d548dbb3a73a2197811261",
     "type": "message",
     "name": "sam78",
-    "avatar": "",
+    "avatar": "female",
     "message": "測試",
     "time": "12:37:00"
 }
 ```
 
-| name    | 說明       | 格式    |
-| ------- | ---------- | ------- |
-| Id      | 訊息id     | Int     |
-| uid     | 訊息人uid  | string  |
-| type    | 訊息類型   | string  |
-| name    | 訊息人名稱 | string  |
-| avatar  | 頭像url    | string  |
-| message | 訊息       | string  |
-| time    | 發送時間   | 時:分:秒 |
+| name    | 說明                     | 格式     |
+| ------- | ------------------------ | -------- |
+| Id      | 訊息id                   | Int      |
+| uid     | 訊息人uid                | string   |
+| type    | 訊息類型                 | string   |
+| name    | 訊息人名稱               | string   |
+| avatar  | 頭像名稱 [類型](#avatar) | string   |
+| message | 訊息                     | string   |
+| time    | 發送時間                 | 時:分:秒 |
 
 紅包訊息
 
@@ -355,7 +370,7 @@ Operation = `6`=> 單筆訊息
     "uid": "0d641b03d4d548dbb3a73a2197811261",
     "type": "red_envelope",
     "name": "sam78",
-    "avatar": "",
+    "avatar": "male",
     "message": "發大財",
     "time": "12:37:00",
     "red_envelope": {
@@ -366,17 +381,18 @@ Operation = `6`=> 單筆訊息
 }
 ```
 
-| name                 | 說明          | 格式    |
-| -------------------- | ------------- | ------- |
-| Id                   | 訊息id        | Int     |
-| uid                  | 發紅包人的uid | string  |
-| type                 | 訊息種類      | string  |
-| name                 | 發紅包人名稱  | string  |
-| message              | 紅包說明      | string  |
-| time                 | 發送時間      | 時:分:秒 |
-| red_envelope.id      | 紅包id        | string  |
-| red_envelope.token   | 搶紅包的token | string  |
-| red_envelope.expired | 紅包過期時間  | RF3339  |
+| name                 | 說明                     | 格式     |
+| -------------------- | ------------------------ | -------- |
+| Id                   | 訊息id                   | Int      |
+| uid                  | 發紅包人的uid            | string   |
+| type                 | 訊息種類                 | string   |
+| name                 | 發紅包人名稱             | string   |
+| avatar               | 頭像名稱 [類型](#avatar) | 名稱     |
+| message              | 紅包說明                 | string   |
+| time                 | 發送時間                 | 時:分:秒 |
+| red_envelope.id      | 紅包id                   | string   |
+| red_envelope.token   | 搶紅包的token            | string   |
+| red_envelope.expired | 紅包過期時間             | RF3339   |
 
 
 
@@ -390,6 +406,7 @@ Operation = `8`=> 回覆更換房間結果
 {
     "room_id": 1000,
     "status": true,
+  	"message": "聊天室目前禁言状态，无法发言",
     "permission": {
         "is_message": true,
         "is_red_envelope": true
@@ -397,14 +414,15 @@ Operation = `8`=> 回覆更換房間結果
 }
 ```
 
-| name                       | 說明                                    | 格式 |
-| -------------------------- | --------------------------------------- | ---- |
-| room_id                    | 新房間id                                | int  |
-| status                     | 進入房間是否成功                        | bool |
-| permission.is_message      | true: 可聊天，false: 不可聊天           | bool |
-| permission.is_red_envelope | true: 可發/搶紅包，false: 不可發/搶紅包 | bool |
+| name                       | 說明                                                         | 格式   |
+| -------------------------- | ------------------------------------------------------------ | ------ |
+| room_id                    | 新房間id                                                     | int    |
+| status                     | 進入房間是否成功                                             | bool   |
+| ｍessage                   | 用於顯示給用戶當前房間狀況，訊息，通知等等，可放在發話輸入欄做提示 | String |
+| permission.is_message      | true: 可聊天，false: 不可聊天                                | bool   |
+| permission.is_red_envelope | true: 可發/搶紅包，false: 不可發/搶紅包                      | bool   |
 
-
+>`status` 與 `message` 可以參考[進入房間](#room-reply)
 
 #### Cancle Header Message Reply
 
@@ -490,6 +508,17 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 | ---- | ------------------------------ | ---- |
 | 成功 | [Response](#change-room-reply) |      |
 | 失敗 | 失敗就會close連線              |      |
+
+## Avatar
+
+每個訊息頭像，請參考[Message Reply](#message-reply)  `avatar`欄位值
+
+| Value  | 說明                                        |
+| ------ | ------------------------------------------- |
+| female | 女性頭像 ![arch](./doc/avatar/female.svg)   |
+| male   | 男性頭像![arch](./doc/avatar/male.svg)      |
+| other  | 其他性別頭像![arch](./doc/avatar/other.svg) |
+| root   | 管理員頭像![arch](./doc/avatar/root.svg)    |
 
 
 
