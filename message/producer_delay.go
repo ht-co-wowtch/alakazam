@@ -75,6 +75,7 @@ func (p *DelayProducer) SendDelayRedEnvelopeForAdmin(msg AdminRedEnvelopeMessage
 			Uid:     RootUid,
 			Name:    RootName,
 			Message: msg.Message,
+			Avatar:  99,
 		},
 		RedEnvelopeId: msg.RedEnvelopeId,
 		Token:         msg.Token,

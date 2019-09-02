@@ -52,6 +52,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 			Uid:     user.Uid,
 			Name:    user.Name,
 			Message: arg.Message,
+			Avatar:  user.Gender,
 		},
 		RedEnvelopeId: reply.Order,
 		Token:         reply.Token,

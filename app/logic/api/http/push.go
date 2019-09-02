@@ -51,6 +51,7 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 		Uid:     user.Uid,
 		Name:    user.Name,
 		Message: p.Message,
+		Avatar:  user.Gender,
 	}
 
 	id, err := s.message.Send(msg)

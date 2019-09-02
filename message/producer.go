@@ -90,6 +90,7 @@ type Messages struct {
 	Message string
 	IsTop   bool
 	Type    string
+	Avatar  int
 }
 
 func (p *Producer) toPb(msg Messages) (*logicpb.PushMsg, error) {
@@ -111,6 +112,7 @@ func (p *Producer) toPb(msg Messages) (*logicpb.PushMsg, error) {
 		Type:    msg.Type,
 		Uid:     msg.Uid,
 		Name:    msg.Name,
+		Avatar:  toAvatarName(msg.Avatar),
 		Message: fmsg,
 		Time:    now.Format("15:04:05"),
 	})
@@ -154,7 +156,6 @@ type AdminMessage struct {
 }
 
 // 所有房間推送
-// TODO 需實作訊息是否頂置
 func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
 	ty := messageType
 	if msg.IsTop {
@@ -165,6 +166,7 @@ func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
 		Mid:     RootMid,
 		Uid:     RootUid,
 		Name:    RootName,
+		Avatar:  99,
 		Message: msg.Message,
 		Type:    ty,
 	})
@@ -239,6 +241,7 @@ func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*logicpb.PushMsg, er
 			Type:    redEnvelopeType,
 			Uid:     msg.Uid,
 			Name:    msg.Name,
+			Avatar:  toAvatarName(msg.Avatar),
 			Message: fmsg,
 			Time:    now.Format("15:04:05"),
 		},
@@ -288,6 +291,7 @@ func (p *Producer) SendRedEnvelopeForAdmin(msg AdminRedEnvelopeMessage) (int64, 
 			Uid:     RootUid,
 			Name:    RootName,
 			Message: msg.Message,
+			Avatar:  99,
 		},
 		RedEnvelopeId: msg.RedEnvelopeId,
 		Token:         msg.Token,
