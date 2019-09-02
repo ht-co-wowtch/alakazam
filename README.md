@@ -261,8 +261,8 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
     "room_id": 1000,
     "uid": "82ea16cd2d6a49d887440066ef739669",
     "key": "defb108d-3d51-475a-b266-4a7f459e7a59",
-  	"message": "聊天室目前禁言状态，无法发言",
-  	"status": true,
+    "message": "聊天室目前禁言状态，无法发言",
+    "status": true,
     "permission": {
         "is_message": true,
         "is_red_envelope": true
@@ -406,7 +406,7 @@ Operation = `8`=> 回覆更換房間結果
 {
     "room_id": 1000,
     "status": true,
-  	"message": "聊天室目前禁言状态，无法发言",
+    "message": "聊天室目前禁言状态，无法发言",
     "permission": {
         "is_message": true,
         "is_red_envelope": true
