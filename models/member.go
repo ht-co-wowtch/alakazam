@@ -18,16 +18,6 @@ const (
 	PlayStatus = MessageStatus + redEnvelope
 )
 
-// 是否禁言
-func IsBanned(status int) bool {
-	return (MessageStatus & status) != MessageStatus
-}
-
-// 是否可搶/發紅包
-func IsRedEnvelope(status int) bool {
-	return (redEnvelope & status) == redEnvelope
-}
-
 const (
 	// 訪客
 	Guest = 0
@@ -43,8 +33,8 @@ type Member struct {
 	Id         int       `xorm:"pk autoincr"`
 	Uid        string    `json:"uid"`
 	Name       string    `json:"name"`
-	Avatar     string    `json:"avatar"`
 	Type       int       `json:"type"`
+	Gender     int       `json:"gender"`
 	IsMessage  bool      `json:"is_message"`
 	IsBlockade bool      `json:"is_blockade"`
 	CreateAt   time.Time `json:"-"`

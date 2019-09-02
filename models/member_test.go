@@ -18,7 +18,6 @@ func TestCreateUser(t *testing.T) {
 	member := &Member{
 		Uid:        uid,
 		Name:       "test",
-		Avatar:     "/",
 		IsBlockade: true,
 	}
 
@@ -44,9 +43,8 @@ func TestUpdateUser(t *testing.T) {
 	assert.NoError(t, prepareTestDatabase())
 
 	member := &Member{
-		Uid:    uidA,
-		Name:   "test",
-		Avatar: "/test",
+		Uid:  uidA,
+		Name: "test",
 	}
 
 	ok, err := s.UpdateUser(member)
@@ -60,7 +58,6 @@ func TestUpdateUser(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, ok)
 	assert.Equal(t, member.Name, a.Name)
-	assert.Equal(t, member.Avatar, a.Avatar)
 }
 
 func TestFindMember(t *testing.T) {
@@ -75,7 +72,7 @@ func TestFindMember(t *testing.T) {
 		Id:       1,
 		Uid:      uidA,
 		Name:     "testA",
-		Avatar:   "/",
+		Gender:   2,
 		Type:     Player,
 		CreateAt: at,
 	}, m)

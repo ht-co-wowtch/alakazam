@@ -51,7 +51,7 @@ func (m *Member) Login(rid int, token, server string) (*models.Member, string, e
 		u = &models.Member{
 			Uid:    user.Uid,
 			Name:   user.Name,
-			Avatar: user.Avatar,
+			Gender: user.Gender,
 			Type:   user.Type,
 		}
 		ok, err := m.db.CreateUser(u)
@@ -66,9 +66,9 @@ func (m *Member) Login(rid int, token, server string) (*models.Member, string, e
 		return u, "", nil
 	}
 
-	if u.Name != user.Name || u.Avatar != user.Avatar {
+	if u.Name != user.Name || u.Gender != user.Gender {
 		u.Name = user.Name
-		u.Avatar = user.Avatar
+		u.Gender = user.Gender
 		if ok, err := m.db.UpdateUser(u); err != nil || !ok {
 			log.Error("update user", zap.String("uid", user.Uid), zap.Bool("action", ok), zap.Error(err))
 		}
