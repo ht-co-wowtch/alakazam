@@ -105,6 +105,39 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 	return connect, nil
 }
 
+func (c *chat) ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error) {
+	room, err := c.getChat(rid)
+	if err != nil {
+		return nil, err
+	}
+	if !room.Status {
+		return nil, errors.ErrRoomClose
+	}
+
+	user, err := c.member.GetSession(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	if user.IsBlockade {
+		return nil, errors.ErrBlockade
+	}
+
+	change := &pb.ChangeRoomReply{
+		HeaderMessage: room.HeaderMessage,
+		IsRedEnvelope: user.Type == models.Player,
+	}
+
+	if room.IsMessage == false {
+		change.Message = "聊天室目前禁言状态，无法发言"
+	} else if user.IsMessage {
+		change.IsMessage = true
+	} else {
+		change.Message = "您在永久禁言状态，无法发言"
+	}
+	return change, nil
+}
+
 func (c *chat) get(id int) (models.Room, error) {
 	room, err := c.cache.get(id)
 	if err != nil {
@@ -198,33 +231,6 @@ func (c *chat) GetTopMessage(rid int) (message.Message, error) {
 		return message.Message{}, err
 	}
 	return message.ToMessage(msg)
-}
-
-func (c *chat) ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error) {
-	room, err := c.getChat(rid)
-	if err != nil {
-		return nil, err
-	}
-	if !room.Status {
-		return nil, errors.ErrRoomClose
-	}
-
-	user, err := c.member.GetSession(uid)
-	if err != nil {
-		return nil, err
-	}
-
-	var isMessage bool
-	if room.IsMessage == false {
-		isMessage = false
-	} else {
-		isMessage = user.IsMessage
-	}
-	return &pb.ChangeRoomReply{
-		HeaderMessage: room.HeaderMessage,
-		IsMessage:     isMessage,
-		IsRedEnvelope: user.Type == models.Player,
-	}, err
 }
 
 func (c *chat) GetOnline(server string) (*Online, error) {

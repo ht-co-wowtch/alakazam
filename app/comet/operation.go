@@ -8,7 +8,9 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/encoding/gzip"
+	"google.golang.org/grpc/status"
 )
 
 // 告知logic service有人想要進入某個房間
@@ -59,6 +61,7 @@ type changeRoom struct {
 
 type changeRoomReply struct {
 	RoomId     int32      `json:"room_id"`
+	Message    string     `json:"message"`
 	Status     bool       `json:"status"`
 	Permission permission `json:"permission"`
 }
@@ -74,6 +77,7 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 
 		if err := json.Unmarshal(p.Body, &r); err != nil {
 			re.RoomId = r.RoomId
+			re.Message = "切换房间失败"
 			p.Body, _ = json.Marshal(re)
 			return nil
 		}
@@ -81,8 +85,9 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 		re.RoomId = r.RoomId
 
 		if err := b.ChangeRoom(r.RoomId, ch); err != nil {
+			log.Error("change room", zap.Error(err), zap.String("data", string(p.Body)))
+			re.Message = "切换房间失败"
 			p.Body, _ = json.Marshal(re)
-			log.Error("change room", zap.Error(err), zap.Binary("data", p.Body))
 			return nil
 		}
 
@@ -93,14 +98,21 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 		})
 
 		if err != nil {
+			s, _ := status.FromError(err)
+			if s.Code() != codes.FailedPrecondition {
+				log.Error("change room for logic", zap.Error(err), zap.String("data", string(p.Body)))
+				re.Message = "切换房间失败"
+			} else {
+				re.Message = s.Message()
+			}
 			p.Body, _ = json.Marshal(re)
-			log.Error("change room for logic", zap.Error(err), zap.Binary("data", p.Body))
 			return nil
 		}
 
 		re.Status = true
 		re.Permission.IsMessage = room.IsMessage
 		re.Permission.IsRedEnvelope = room.IsRedEnvelope
+		re.Message = room.Message
 		p.Body, _ = json.Marshal(re)
 
 		if room.HeaderMessage != nil {

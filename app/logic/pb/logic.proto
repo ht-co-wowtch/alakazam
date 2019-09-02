@@ -67,6 +67,7 @@ message ChangeRoomReply {
     bool isMessage = 2;
     bool isRedEnvelope = 3;
     bytes headerMessage = 4;
+    string message = 5;
 }
 
 message DisconnectReply {

@@ -443,13 +443,3 @@ func authReply(ws *websocket.Conn, p *pb.Proto, b []byte) (err error) {
 	err = ws.Flush()
 	return
 }
-
-func authCloseReply(ws *websocket.Conn, p *pb.Proto, b []byte) (err error) {
-	p.Op = pb.OpProtoFinish
-	p.Body = b
-	if err = p.WriteWebsocket(ws); err != nil {
-		return
-	}
-	err = ws.Flush()
-	return
-}

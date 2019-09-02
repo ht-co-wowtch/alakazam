@@ -73,8 +73,21 @@ func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.Cha
 	p, err := s.room.ChangeRoom(req.Uid, int(req.RoomID))
 	if err != nil {
 		log.Error("grpc change room", zap.Error(err), zap.Int32("rid", req.RoomID))
+		switch e := err.(type) {
+		case errdefs.Error:
+			return &pb.ChangeRoomReply{}, status.Error(codes.FailedPrecondition, err.Error())
+		case *errdefs.Causer:
+			var msg string
+			if e.Code == errors.NoLogin {
+				msg = "请先登入会员"
+			} else {
+				msg = err.Error()
+			}
+			return &pb.ChangeRoomReply{}, status.Error(codes.FailedPrecondition, msg)
+		}
+		return &pb.ChangeRoomReply{}, status.Error(codes.Internal, err.Error())
 	}
-	return p, err
+	return p, nil
 }
 
 // 重置user redis過期時間
