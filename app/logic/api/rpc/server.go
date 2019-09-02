@@ -3,11 +3,15 @@ package rpc
 import (
 	"context"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
+	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	// use gzip decoder
 	_ "google.golang.org/grpc/encoding/gzip"
 )
@@ -35,7 +39,19 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 	connect, err := s.room.Connect(req.Server, req.Token)
 	if err != nil {
 		log.Error("grpc connect", zap.Error(err), zap.String("data", string(req.Token)))
-		return &pb.ConnectReply{}, err
+		switch e := err.(type) {
+		case errdefs.Error:
+			return &pb.ConnectReply{}, status.Error(codes.FailedPrecondition, err.Error())
+		case *errdefs.Causer:
+			var msg string
+			if e.Code == errors.NoLogin {
+				msg = "请先登入会员"
+			} else {
+				msg = err.Error()
+			}
+			return &pb.ConnectReply{}, status.Error(codes.FailedPrecondition, msg)
+		}
+		return &pb.ConnectReply{}, status.Error(codes.Internal, err.Error())
 	}
 	return connect, nil
 }

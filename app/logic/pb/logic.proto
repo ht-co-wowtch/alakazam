@@ -44,10 +44,10 @@ message ConnectReply {
     string name = 3;
     int32 roomID = 4;
     int64 heartbeat = 5;
-    bool isBlockade = 6;
-    bool isMessage = 7;
-    bool isRedEnvelope = 8;
-    bytes headerMessage = 9;
+    bool isMessage = 6;
+    bool isRedEnvelope = 7;
+    bytes headerMessage = 8;
+    string message = 9;
 }
 
 message DisconnectReq {
@@ -63,9 +63,10 @@ message ChangeRoomReq {
 }
 
 message ChangeRoomReply {
-    bool isMessage = 1;
-    bool isRedEnvelope = 2;
-    bytes headerMessage = 3;
+    bool isRoomMessage = 1;
+    bool isMessage = 2;
+    bool isRedEnvelope = 3;
+    bytes headerMessage = 4;
 }
 
 message DisconnectReply {

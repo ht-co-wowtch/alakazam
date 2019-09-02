@@ -3,12 +3,15 @@ package comet
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	xtime "gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"io"
 	"net"
 	"strings"
@@ -18,21 +21,6 @@ import (
 const (
 	maxInt = 1<<31 - 1
 )
-
-var blockadeMessage []byte
-
-func init() {
-	errBlockade := struct {
-		Message string `json:"message"`
-	}{
-		Message: "您在封鎖状态，无法进入聊天室",
-	}
-	b, err := json.Marshal(errBlockade)
-	if err != nil {
-		panic(err)
-	}
-	blockadeMessage = b
-}
 
 // 開始監聽Websocket
 func InitWebsocket(server *Server, host string, accept int) (err error) {
@@ -383,42 +371,50 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 		}
 	}
 
-	// 有兩種情況會無法進入聊天室
-	// 1. 請求進入聊天室資料有誤
-	// 2. 被封鎖
+	var reply struct {
+		Uid        string     `json:"uid"`
+		Key        string     `json:"key"`
+		Status     bool       `json:"status"`
+		RoomId     int32      `json:"room_id"`
+		Permission permission `json:"permission"`
+		Message    string     `json:"message"`
+	}
+
 	c, err := s.Connect(ctx, p)
 	if err != nil {
-		return 0, time.Duration(0), err
-	}
-	if c.IsBlockade {
-		if e := authCloseReply(ws, p, blockadeMessage); e != nil {
-			log.Warn("auth reply", zap.Error(e), zap.String("uid", c.Uid), zap.Int32("room_id", c.RoomID))
+		s, _ := status.FromError(err)
+		if s.Code() != codes.FailedPrecondition {
+			log.Error("auth connect", zap.Error(err))
+			reply.Message = "系统异常，请稍后再试"
+		} else {
+			reply.Message = s.Message()
 		}
+
+		b, err := json.Marshal(reply)
+		if err != nil {
+			return 0, time.Duration(0), fmt.Errorf("auth reply json marshal for close error: %s", err.Error())
+		}
+		if err = authReply(ws, p, b); err != nil {
+			return 0, time.Duration(0), fmt.Errorf("auth web socket reply for close error: %s", err.Error())
+		}
+
 		return 0, time.Duration(0), io.EOF
 	}
 
-	// 需要回覆給client告知uid與key
-	// 因為後續發話需依靠這兩個欄位來做pk
-	reply := struct {
-		Uid        string     `json:"uid"`
-		Key        string     `json:"key"`
-		RoomId     int32      `json:"room_id"`
-		Permission permission `json:"permission"`
-	}{
-		Uid:    c.Uid,
-		Key:    c.Key,
-		RoomId: c.RoomID,
-	}
-
+	reply.Uid = c.Uid
+	reply.Key = c.Key
+	reply.RoomId = c.RoomID
 	reply.Permission.IsMessage = c.IsMessage
 	reply.Permission.IsRedEnvelope = c.IsRedEnvelope
+	reply.Message = c.Message
+	reply.Status = true
 
 	b, err := json.Marshal(reply)
 	if err != nil {
-		return 0, time.Duration(0), err
+		return 0, time.Duration(0), fmt.Errorf("auth reply json marshal error: %s", err.Error())
 	}
 	if err = authReply(ws, p, b); err != nil {
-		return 0, time.Duration(0), err
+		return 0, time.Duration(0), fmt.Errorf("auth web socket reply error: %s", err.Error())
 	}
 	if c.HeaderMessage != nil {
 		p.Op = pb.OpRaw

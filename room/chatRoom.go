@@ -80,23 +80,29 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 		return nil, err
 	}
 
-	var isMessage bool
-	if room.IsMessage == false {
-		isMessage = false
-	} else {
-		isMessage = user.IsMessage
+	if user.IsBlockade {
+		return nil, errors.ErrBlockade
 	}
-	return &pb.ConnectReply{
+
+	connect := &pb.ConnectReply{
 		Uid:           user.Uid,
 		Key:           key,
 		Name:          user.Name,
 		RoomID:        int32(params.RoomID),
 		Heartbeat:     c.heartbeatNanosec,
-		IsBlockade:    user.IsBlockade,
-		IsMessage:     isMessage,
 		IsRedEnvelope: user.Type == models.Player,
 		HeaderMessage: room.HeaderMessage,
-	}, nil
+	}
+
+	if room.IsMessage == false {
+		connect.Message = "聊天室目前禁言状态，无法发言"
+	} else if user.IsMessage {
+		connect.IsMessage = true
+	} else {
+		connect.Message = "您在永久禁言状态，无法发言"
+	}
+
+	return connect, nil
 }
 
 func (c *chat) get(id int) (models.Room, error) {

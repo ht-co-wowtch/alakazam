@@ -27,6 +27,7 @@ var (
 	ErrMemberNoMessage = errdefs.Unauthorized(New("您在永久禁言状态，无法发言"), 4015)
 	ErrMemberBanned    = errdefs.Unauthorized(New("您在禁言状态，无法发言"), 4016)
 	ErrRoomNoMessage   = errdefs.Unauthorized(New("聊天室目前禁言状态，无法发言"), 4017)
+	ErrBlockade        = errdefs.Unauthorized(New("您在封鎖状态，无法进入聊天室"), 4018)
 
 	// 系統異常
 	ErrInternalServer = errdefs.InternalServer(New("操作失败，系统异常"), 5000)
@@ -42,6 +43,7 @@ var (
 )
 
 const (
+	NoLogin = 12014041
 	// 沒有token
 	noAuthorizationBearer = 15024010
 	// 資料格式錯誤
@@ -108,7 +110,7 @@ func (m output) GetInternalServer() string {
 	return "应用程序错误"
 }
 
-func (m output) Error(e *errdefs.Error) string {
+func (m output) Error(e *errdefs.Causer) string {
 	switch e.Code {
 	case noAuthorizationBearer:
 		return "无法认证身份"
