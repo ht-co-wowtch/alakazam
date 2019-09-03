@@ -498,10 +498,10 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 
 
 
-| name    | 說明       | 格式   |      |
-| ------- | ---------- | ------ | ---- |
-| room_id | 新房間id   | string |      |
-| gender  | 性別 [類型 | string |      |
+| name    | 說明                 | 格式   |      |
+| ------- | -------------------- | ------ | ---- |
+| room_id | 新房間id             | string |      |
+| gender  | 性別 [類型](#avatar) | string |      |
 
 ![arch](./doc/changeRoom.png)
 
