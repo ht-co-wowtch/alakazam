@@ -275,7 +275,7 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 | uid                        | user uid，發送訊息會用到                                     |
 | key                        | 這次web socket連線id，發送訊息會用到                         |
 | room_id                    | 房間id                                                       |
-| message                    | 用於顯示給用戶當前房間狀況，訊息，通知等等，可放在發話輸入欄做提示 |
+| message                    | 用於顯示給用戶在當前房間狀況，狀況種類請參考如下，無狀況時為空值 |
 | status                     | 進入房間是否成功，只代表進入不代表任何權限                   |
 | permission.is_message      | true: 可聊天，false: 不可聊天                                |
 | permission.is_red_envelope | true: 可發/搶紅包，false: 不可發/搶紅包                      |
@@ -285,6 +285,7 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 1. status => `true` 
    1. 房間無法發話
    2. 用戶無法發話
+   3. 沒有任何異常，為空值
 
 2. status => false
    1. 用戶被封鎖
@@ -414,7 +415,7 @@ Operation = `8`=> 回覆更換房間結果
 | -------------------------- | ------------------------------------------------------------ | ------ |
 | room_id                    | 新房間id                                                     | int    |
 | status                     | 進入房間是否成功                                             | bool   |
-| ｍessage                   | 用於顯示給用戶當前房間狀況，訊息，通知等等，可放在發話輸入欄做提示 | String |
+| ｍessage                   | 用於顯示給用戶在當前房間狀況，狀況種類請參考如下，無狀況時為空值 | string |
 | permission.is_message      | true: 可聊天，false: 不可聊天                                | bool   |
 | permission.is_red_envelope | true: 可發/搶紅包，false: 不可發/搶紅包                      | bool   |
 
