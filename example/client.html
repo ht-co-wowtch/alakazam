@@ -360,7 +360,7 @@
         }
 
         function auth() {
-            var token = '{"token":"' + document.getElementById("token").value + '", "room_id":' + document.getElementById("rid").value + ', "gender":"female"' +'}'
+            var token = '{"token":"' + document.getElementById("token").value + '", "room_id":' + document.getElementById("rid").value + '}'
             var headerBuf = new ArrayBuffer(rawHeaderLen);
             var headerView = new DataView(headerBuf, 0);
             var bodyBuf = textEncoder.encode(token);
@@ -428,7 +428,7 @@
     function room() {
         var headerBuf = new ArrayBuffer(rawHeaderLen);
         var headerView = new DataView(headerBuf, 0);
-        var room = '{"room_id":' + document.getElementById("btn-room-id").value + ', "gender":"other"' + '}'
+        var room = '{"room_id":' + document.getElementById("btn-room-id").value + '}'
         var bodyBuf = textEncoder.encode(room);
         headerView.setInt32(packetOffset, rawHeaderLen + bodyBuf.byteLength);
         headerView.setInt16(headerOffset, rawHeaderLen);

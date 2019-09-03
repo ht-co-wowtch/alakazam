@@ -13,8 +13,7 @@ import (
 
 type Chat interface {
 	GetSession(uid string) (*models.Member, error)
-	UpdateSession(member *models.Member) (bool, error)
-	Login(rid, gender int, token, server string) (*models.Member, string, error)
+	Login(rid int, token, server string) (*models.Member, string, error)
 	Logout(uid, key string) (bool, error)
 	Heartbeat(uid string) error
 }
@@ -37,7 +36,7 @@ var (
 	errInsertMember = errors.New("insert member")
 )
 
-func (m *Member) Login(rid, gender int, token, server string) (*models.Member, string, error) {
+func (m *Member) Login(rid int, token, server string) (*models.Member, string, error) {
 	user, err := m.cli.Auth(token)
 	if err != nil {
 		return nil, "", err
@@ -52,7 +51,7 @@ func (m *Member) Login(rid, gender int, token, server string) (*models.Member, s
 		u = &models.Member{
 			Uid:    user.Uid,
 			Name:   user.Name,
-			Gender: gender,
+			Gender: user.Gender,
 			Type:   user.Type,
 		}
 		ok, err := m.db.CreateUser(u)
@@ -67,9 +66,9 @@ func (m *Member) Login(rid, gender int, token, server string) (*models.Member, s
 		return u, "", nil
 	}
 
-	if u.Name != user.Name || u.Gender != gender {
+	if u.Name != user.Name || u.Gender != user.Gender {
 		u.Name = user.Name
-		u.Gender = gender
+		u.Gender = user.Gender
 		if ok, err := m.db.UpdateUser(u); err != nil || !ok {
 			log.Error("update user", zap.String("uid", user.Uid), zap.Bool("action", ok), zap.Error(err))
 		}
@@ -149,10 +148,6 @@ func (m *Member) GetSession(uid string) (*models.Member, error) {
 		return nil, errors.ErrLogin
 	}
 	return member, nil
-}
-
-func (m *Member) UpdateSession(member *models.Member) (bool, error) {
-	return m.c.set(member)
 }
 
 func (m *Member) GetUserName(uid string) (string, error) {

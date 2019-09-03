@@ -58,9 +58,8 @@ message DisconnectReq {
 
 message ChangeRoomReq {
      string uid = 1;
-     string gender = 2;
-     string key = 3;
-     int32 roomID = 4;
+     string key = 2;
+     int32 roomID = 3;
 }
 
 message ChangeRoomReply {

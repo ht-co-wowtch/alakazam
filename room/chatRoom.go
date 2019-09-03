@@ -28,7 +28,7 @@ type Chat interface {
 	Heartbeat(uid, key, name, server string) error
 	RenewOnline(server string, roomCount map[int32]int32) (map[int32]int32, error)
 	GetRoom(rid int) (models.Room, error)
-	ChangeRoom(uid, gender string, rid int) (*pb.ChangeRoomReply, error)
+	ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error)
 	GetTopMessage(rid int) (message.Message, error)
 	GetOnline(server string) (*Online, error)
 }
@@ -58,19 +58,11 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 
 		// client要進入的room
 		RoomID int `json:"room_id" binding:"required"`
-
-		Gender string `json:"gender" binding:"required"`
 	}
 
 	if err := json.Unmarshal(token, &params); err != nil {
 		return nil, err
 	}
-
-	// TODO 因應前端還未更改所以先自行判斷，待前端處理完成後在移除此邏輯
-	if params.Gender == "" {
-		params.Gender = "other"
-	}
-
 	if err := v.Struct(&params); err != nil {
 		return nil, err
 	}
@@ -83,7 +75,7 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 		return nil, errors.ErrRoomClose
 	}
 
-	user, key, err := c.member.Login(params.RoomID, message.ToAvatarCode(params.Gender), params.Token, server)
+	user, key, err := c.member.Login(params.RoomID, params.Token, server)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +105,7 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 	return connect, nil
 }
 
-func (c *chat) ChangeRoom(uid, gender string, rid int) (*pb.ChangeRoomReply, error) {
+func (c *chat) ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error) {
 	room, err := c.getChat(rid)
 	if err != nil {
 		return nil, err
@@ -125,13 +117,6 @@ func (c *chat) ChangeRoom(uid, gender string, rid int) (*pb.ChangeRoomReply, err
 	user, err := c.member.GetSession(uid)
 	if err != nil {
 		return nil, err
-	}
-
-	if g := message.ToAvatarCode(gender); g != user.Gender {
-		user.Gender = g
-		if _, err := c.member.UpdateSession(user); err != nil {
-			return nil, err
-		}
 	}
 
 	if user.IsBlockade {

@@ -56,8 +56,7 @@ func (s *Server) RenewOnline(ctx context.Context, serverID string, rommCount map
 }
 
 type changeRoom struct {
-	RoomId int32  `json:"room_id"`
-	Gender string `json:"gender"`
+	RoomId int32 `json:"room_id"`
 }
 
 type changeRoomReply struct {
@@ -92,14 +91,8 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 			return nil
 		}
 
-		// TODO 因應前端還未更改所以先自行判斷，待前端處理完成後在移除此邏輯
-		if r.Gender == "" {
-			r.Gender = "other"
-		}
-
 		room, err := s.logic.ChangeRoom(ctx, &logicpb.ChangeRoomReq{
 			Uid:    ch.Uid,
-			Gender: r.Gender,
 			Key:    ch.Key,
 			RoomID: r.RoomId,
 		})

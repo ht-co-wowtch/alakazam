@@ -192,7 +192,7 @@ type mockMember struct {
 	m mock.Mock
 }
 
-func (m *mockMember) Login(rid int, gender, token, server string) (*models.Member, string, error) {
+func (m *mockMember) Login(rid int, token, server string) (*models.Member, string, error) {
 	arg := m.m.Called(rid, token, server)
 	return arg.Get(0).(*models.Member), arg.String(1), arg.Error(2)
 }
