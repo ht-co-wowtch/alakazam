@@ -353,11 +353,6 @@ failed:
 	}
 }
 
-type permission struct {
-	IsMessage     bool `json:"is_message"`
-	IsRedEnvelope bool `json:"is_red_envelope"`
-}
-
 // websocket請求連線至某房間
 func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Channel, p *pb.Proto) (int32, time.Duration, error) {
 	for {
