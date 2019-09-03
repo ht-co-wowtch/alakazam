@@ -70,7 +70,7 @@ func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.Dis
 
 // user當前連線要切換房間
 func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.ChangeRoomReply, error) {
-	p, err := s.room.ChangeRoom(req.Uid, int(req.RoomID))
+	p, err := s.room.ChangeRoom(req.Uid, req.Gender, int(req.RoomID))
 	if err != nil {
 		log.Error("grpc change room", zap.Error(err), zap.Int32("rid", req.RoomID))
 		switch e := err.(type) {

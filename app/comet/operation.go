@@ -56,7 +56,8 @@ func (s *Server) RenewOnline(ctx context.Context, serverID string, rommCount map
 }
 
 type changeRoom struct {
-	RoomId int32 `json:"room_id"`
+	RoomId int32  `json:"room_id"`
+	Gender string `json:"gender"`
 }
 
 type changeRoomReply struct {
@@ -93,6 +94,7 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 
 		room, err := s.logic.ChangeRoom(ctx, &logicpb.ChangeRoomReq{
 			Uid:    ch.Uid,
+			Gender: r.Gender,
 			Key:    ch.Key,
 			RoomID: r.RoomId,
 		})
