@@ -83,39 +83,15 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 		return nil, errors.ErrBlockade
 	}
 
-	reply := &pb.ConnectReply{
+	connect := newPbConnect(user, room, key, int32(params.RoomID))
+	connect.Status = true
+
+	return &pb.ConnectReply{
 		Name:          user.Name,
 		Heartbeat:     c.heartbeatNanosec,
 		HeaderMessage: room.HeaderMessage,
-		Connect: &pb.Connect{
-			Uid:    user.Uid,
-			Key:    key,
-			Status: true,
-			RoomID: int32(params.RoomID),
-		},
-	}
-
-	permission := new(pb.Permission)
-	permissionMsg := new(pb.PermissionMessage)
-
-	if user.Type != models.Guest {
-		if !room.IsMessage {
-			permissionMsg.IsMessage = "聊天室目前禁言状态，无法发言"
-			permission.IsMessage = false
-		} else if user.IsMessage {
-			permission.IsMessage = true
-		} else {
-			permissionMsg.IsMessage = "您在永久禁言状态，无法发言"
-		}
-
-		permission.IsRedEnvelope = true
-	} else {
-		permissionMsg.IsMessage = "请先登入会员"
-		permissionMsg.IsRedEnvelope = "请先登入会员"
-	}
-	reply.Connect.Permission = permission
-	reply.Connect.PermissionMessage = permissionMsg
-	return reply, nil
+		Connect:       connect,
+	}, nil
 }
 
 func (c *chat) ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error) {
@@ -135,20 +111,12 @@ func (c *chat) ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error) {
 	if user.IsBlockade {
 		return nil, errors.ErrBlockade
 	}
-
-	change := &pb.ChangeRoomReply{
+	connect := newPbConnect(user, room, "", int32(rid))
+	connect.Status = true
+	return &pb.ChangeRoomReply{
 		HeaderMessage: room.HeaderMessage,
-		IsRedEnvelope: user.Type == models.Player,
-	}
-
-	if room.IsMessage == false {
-		change.Message = "聊天室目前禁言状态，无法发言"
-	} else if user.IsMessage {
-		change.IsMessage = true
-	} else {
-		change.Message = "您在永久禁言状态，无法发言"
-	}
-	return change, nil
+		Connect:       connect,
+	}, nil
 }
 
 func (c *chat) get(id int) (models.Room, error) {
@@ -248,4 +216,35 @@ func (c *chat) GetTopMessage(rid int) (message.Message, error) {
 
 func (c *chat) GetOnline(server string) (*Online, error) {
 	return c.cache.getOnline(server)
+}
+
+func newPbConnect(user *models.Member, room models.Room, key string, roomId int32) *pb.Connect {
+	connect := &pb.Connect{
+		Uid:    user.Uid,
+		Key:    key,
+		Status: true,
+		RoomID: roomId,
+	}
+
+	permission := new(pb.Permission)
+	permissionMsg := new(pb.PermissionMessage)
+
+	if user.Type != models.Guest {
+		if !room.IsMessage {
+			permissionMsg.IsMessage = "聊天室目前禁言状态，无法发言"
+			permission.IsMessage = false
+		} else if user.IsMessage {
+			permission.IsMessage = true
+		} else {
+			permissionMsg.IsMessage = "您在永久禁言状态，无法发言"
+		}
+
+		permission.IsRedEnvelope = true
+	} else {
+		permissionMsg.IsMessage = "请先登入会员"
+		permissionMsg.IsRedEnvelope = "请先登入会员"
+	}
+	connect.Permission = permission
+	connect.PermissionMessage = permissionMsg
+	return connect
 }

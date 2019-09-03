@@ -59,13 +59,6 @@ type changeRoom struct {
 	RoomId int32 `json:"room_id"`
 }
 
-type changeRoomReply struct {
-	RoomId     int32      `json:"room_id"`
-	Message    string     `json:"message"`
-	Status     bool       `json:"status"`
-	Permission permission `json:"permission"`
-}
-
 // 處理Proto相關邏輯
 func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *Bucket) error {
 	switch p.Op {
@@ -73,31 +66,30 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 	case cometpb.OpChangeRoom:
 		p.Op = cometpb.OpChangeRoomReply
 		var r changeRoom
-		var re changeRoomReply
 
 		if err := json.Unmarshal(p.Body, &r); err != nil {
-			re.RoomId = r.RoomId
+			re := newConnect()
 			re.Message = "切换房间失败"
 			p.Body, _ = json.Marshal(re)
 			return nil
 		}
-
-		re.RoomId = r.RoomId
 
 		if err := b.ChangeRoom(r.RoomId, ch); err != nil {
 			log.Error("change room", zap.Error(err), zap.String("data", string(p.Body)))
+			re := newConnect()
 			re.Message = "切换房间失败"
 			p.Body, _ = json.Marshal(re)
 			return nil
 		}
 
-		room, err := s.logic.ChangeRoom(ctx, &logicpb.ChangeRoomReq{
+		reply, err := s.logic.ChangeRoom(ctx, &logicpb.ChangeRoomReq{
 			Uid:    ch.Uid,
 			Key:    ch.Key,
 			RoomID: r.RoomId,
 		})
 
 		if err != nil {
+			re := newConnect()
 			s, _ := status.FromError(err)
 			if s.Code() != codes.FailedPrecondition {
 				log.Error("change room for logic", zap.Error(err), zap.String("data", string(p.Body)))
@@ -109,13 +101,10 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 			return nil
 		}
 
-		re.Status = true
-		re.Permission.IsMessage = room.IsMessage
-		re.Permission.IsRedEnvelope = room.IsRedEnvelope
-		re.Message = room.Message
-		p.Body, _ = json.Marshal(re)
+		reply.Connect.Key = ch.Key
+		p.Body, _ = json.Marshal(reply.Connect)
 
-		if room.HeaderMessage != nil {
+		if reply.HeaderMessage != nil {
 			ch.protoRing.SetAdv()
 			ch.Signal()
 
@@ -126,11 +115,18 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 			}
 
 			p1.Op = cometpb.OpRaw
-			p1.Body = room.HeaderMessage
+			p1.Body = reply.HeaderMessage
 		}
 	default:
 		// TODO error
 		p.Body = nil
 	}
 	return nil
+}
+
+func newConnect() *logicpb.Connect {
+	return &logicpb.Connect{
+		Permission:        new(logicpb.Permission),
+		PermissionMessage: new(logicpb.PermissionMessage),
+	}
 }

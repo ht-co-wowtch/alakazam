@@ -78,11 +78,8 @@ message ChangeRoomReq {
 }
 
 message ChangeRoomReply {
-    bool isRoomMessage = 1;
-    bool isMessage = 2;
-    bool isRedEnvelope = 3;
-    bytes headerMessage = 4;
-    string message = 5;
+    bytes headerMessage = 1;
+    Connect Connect = 2;
 }
 
 message DisconnectReply {

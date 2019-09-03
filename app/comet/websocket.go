@@ -358,11 +358,6 @@ type permission struct {
 	IsRedEnvelope bool `json:"is_red_envelope"`
 }
 
-type message struct {
-	IsMessage     string `json:"is_message"`
-	IsRedEnvelope string `json:"is_red_envelope"`
-}
-
 // websocket請求連線至某房間
 func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Channel, p *pb.Proto) (int32, time.Duration, error) {
 	for {
@@ -383,7 +378,6 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 		connect := &logicpb.Connect{
 			Permission:        new(logicpb.Permission),
 			PermissionMessage: new(logicpb.PermissionMessage),
-			Status:            false,
 		}
 
 		if s.Code() != codes.FailedPrecondition {
