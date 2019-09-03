@@ -261,24 +261,30 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
     "room_id": 1000,
     "uid": "82ea16cd2d6a49d887440066ef739669",
     "key": "defb108d-3d51-475a-b266-4a7f459e7a59",
-    "message": "聊天室目前禁言状态，无法发言",
-    "status": true,
+    "message": "目前房间已关闭",
+    "status": false,
     "permission": {
-        "is_message": true,
-        "is_red_envelope": true
+        "is_message": false,
+        "is_red_envelope": false
+    },
+    "permission_message": {
+        "is_message": "聊天室目前禁言状态，无法发言",
+        "is_red_envelope": "请先登入会员"
     }
 }
 ```
 
-| name                       | 說明                                                         |
-| -------------------------- | ------------------------------------------------------------ |
-| uid                        | user uid，發送訊息會用到                                     |
-| key                        | 這次web socket連線id，發送訊息會用到                         |
-| room_id                    | 房間id                                                       |
-| message                    | 用於顯示給用戶在當前房間狀況，狀況種類請參考如下，無狀況時為空值 |
-| status                     | 進入房間是否成功，只代表進入不代表任何權限                   |
-| permission.is_message      | true: 可聊天，false: 不可聊天                                |
-| permission.is_red_envelope | true: 可發/搶紅包，false: 不可發/搶紅包                      |
+| name                               | 說明                                         |
+| ---------------------------------- | -------------------------------------------- |
+| uid                                | user uid，發送訊息會用到                     |
+| key                                | 這次web socket連線id，發送訊息會用到         |
+| room_id                            | 房間id                                       |
+| message                            | 用於顯示給用戶在進入當前房間提示或是錯誤訊息 |
+| status                             | 進入房間是否成功，只代表進入不代表任何權限   |
+| permission.is_message              | true: 可聊天，false: 不可聊天                |
+| permission.is_red_envelope         | true: 可發/搶紅包，false: 不可發/搶紅包      |
+| permission_message.is_message      | 進入房間後關於發言相關提示訊息               |
+| permission_message.is_red_envelope | 進入房間後關於搶/發紅包相關提示訊息          |
 
 進入房間有幾種狀況，原因都會寫在`message`
 
@@ -402,24 +408,32 @@ Operation = `8`=> 回覆更換房間結果
 ```json
 {
     "room_id": 1000,
-    "status": true,
-    "message": "聊天室目前禁言状态，无法发言",
+    "uid": "82ea16cd2d6a49d887440066ef739669",
+    "key": "defb108d-3d51-475a-b266-4a7f459e7a59",
+    "message": "目前房间已关闭",
+    "status": false,
     "permission": {
-        "is_message": true,
-        "is_red_envelope": true
+        "is_message": false,
+        "is_red_envelope": false
+    },
+    "permission_message": {
+        "is_message": "聊天室目前禁言状态，无法发言",
+        "is_red_envelope": "请先登入会员"
     }
 }
 ```
 
-| name                       | 說明                                                         | 格式   |
-| -------------------------- | ------------------------------------------------------------ | ------ |
-| room_id                    | 新房間id                                                     | int    |
-| status                     | 進入房間是否成功                                             | bool   |
-| ｍessage                   | 用於顯示給用戶在當前房間狀況，狀況種類請參考如下，無狀況時為空值 | string |
-| permission.is_message      | true: 可聊天，false: 不可聊天                                | bool   |
-| permission.is_red_envelope | true: 可發/搶紅包，false: 不可發/搶紅包                      | bool   |
-
->`status` 與 `message` 可以參考[進入房間](#room-reply)
+| name                               | 說明                                         |
+| ---------------------------------- | -------------------------------------------- |
+| uid                                | user uid，發送訊息會用到                     |
+| key                                | 這次web socket連線id，發送訊息會用到         |
+| room_id                            | 房間id                                       |
+| message                            | 用於顯示給用戶在進入當前房間提示或是錯誤訊息 |
+| status                             | 進入房間是否成功，只代表進入不代表任何權限   |
+| permission.is_message              | true: 可聊天，false: 不可聊天                |
+| permission.is_red_envelope         | true: 可發/搶紅包，false: 不可發/搶紅包      |
+| permission_message.is_message      | 進入房間後關於發言相關提示訊息               |
+| permission_message.is_red_envelope | 進入房間後關於搶/發紅包相關提示訊息          |
 
 #### Cancle Header Message Reply
 
