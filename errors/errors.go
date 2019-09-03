@@ -9,6 +9,7 @@ import (
 
 var (
 	// 沒有資料
+	ErrNoRows    = errdefs.NotFound(New("没有资料"), 4040)
 	ErrNoMember  = errdefs.NotFound(New("没有会员资料"), 4041)
 	ErrNoRoom    = errdefs.NotFound(New("没有房间资料"), 4042)
 	ErrRoomClose = errdefs.NotFound(New("目前房间已关闭"), 4043)
@@ -18,28 +19,22 @@ var (
 	ErrRateSameMsg = errdefs.TooManyRequests(New("10秒内相同讯息3次，自动禁言10分钟"), 4292)
 
 	// 身份認證
+	ErrTokenUid        = errdefs.Unauthorized(New("帐号资料认证失败"), 4010)
 	ErrValidationToken = errdefs.Unauthorized(New("用户认证失败"), 4011)
 	ErrClaimsToken     = errdefs.Unauthorized(New("用户认证失败"), 4012)
 	ErrValidToken      = errdefs.Unauthorized(New("用户认证失败"), 4013)
 	ErrLogin           = errdefs.Unauthorized(New("请先登入会员"), 4014)
+	ErrAuthorization   = errdefs.Unauthorized(New("Unauthorized"), 4019)
+
 	// 4035
 	ErrRoomLimit       = "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元"
 	ErrMemberNoMessage = errdefs.Unauthorized(New("您在永久禁言状态，无法发言"), 4015)
 	ErrMemberBanned    = errdefs.Unauthorized(New("您在禁言状态，无法发言"), 4016)
 	ErrRoomNoMessage   = errdefs.Unauthorized(New("聊天室目前禁言状态，无法发言"), 4017)
 	ErrBlockade        = errdefs.Unauthorized(New("您在封鎖状态，无法进入聊天室"), 4018)
-
-	// 系統異常
-	ErrInternalServer = errdefs.InternalServer(New("操作失败，系统异常"), 5000)
-
-	ErrPublishAt = errdefs.InvalidParameter(New("预定发送时间不能大于现在"), 0)
-	ErrExist     = errdefs.InvalidParameter(New("资料已存在"), 1)
-
-	ErrAuthorization = errdefs.Unauthorized(New("Unauthorized"), 3)
-
-	ErrNoRows = errdefs.NotFound(New("没有资料"), 1)
-
-	ErrTokenUid = errdefs.Unauthorized(New("帐号资料认证失败"), 1)
+	ErrPublishAt       = errdefs.InvalidParameter(New("预定发送时间不能大于现在"), 4001)
+	
+	ErrExist = errdefs.Conflict(New("资料已存在"), 4091)
 )
 
 const (
