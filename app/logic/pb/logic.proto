@@ -32,6 +32,26 @@ message PingReply {
 message PingReq {
 }
 
+message Connect {
+    string uid = 1 [(gogoproto.jsontag) = "uid"];
+    string key = 2 [(gogoproto.jsontag) = "key"];
+    bool status = 3 [(gogoproto.jsontag) = "status"];
+    int32 roomID = 4 [(gogoproto.jsontag) = "room_id"];
+    string message = 5 [(gogoproto.jsontag) = "message"];
+    Permission permission = 6 [(gogoproto.jsontag) = "permission"];
+    PermissionMessage permissionMessage = 7 [(gogoproto.jsontag) = "permission_message"];
+}
+
+message Permission {
+    bool isMessage = 1 [(gogoproto.jsontag) = "is_message"];
+	bool isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
+}
+
+message PermissionMessage {
+    string isMessage = 1 [(gogoproto.jsontag) = "is_message"];
+   	string isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
+}
+
 message ConnectReq {
     option (gogoproto.goproto_stringer) = false;
     string server = 1;
@@ -39,15 +59,10 @@ message ConnectReq {
 }
 
 message ConnectReply {
-    string uid = 1;
-    string key = 2;
-    string name = 3;
-    int32 roomID = 4;
-    int64 heartbeat = 5;
-    bool isMessage = 6;
-    bool isRedEnvelope = 7;
-    bytes headerMessage = 8;
-    string message = 9;
+    string name = 1;
+    int64 heartbeat = 2;
+    bytes headerMessage = 3;
+    Connect Connect = 4;
 }
 
 message DisconnectReq {

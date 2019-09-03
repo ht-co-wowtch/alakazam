@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
+	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	xtime "gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
@@ -357,6 +358,11 @@ type permission struct {
 	IsRedEnvelope bool `json:"is_red_envelope"`
 }
 
+type message struct {
+	IsMessage     string `json:"is_message"`
+	IsRedEnvelope string `json:"is_red_envelope"`
+}
+
 // websocket請求連線至某房間
 func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Channel, p *pb.Proto) (int32, time.Duration, error) {
 	for {
@@ -371,45 +377,33 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 		}
 	}
 
-	var reply struct {
-		Uid        string     `json:"uid"`
-		Key        string     `json:"key"`
-		Status     bool       `json:"status"`
-		RoomId     int32      `json:"room_id"`
-		Permission permission `json:"permission"`
-		Message    string     `json:"message"`
-	}
-
 	c, err := s.Connect(ctx, p)
 	if err != nil {
 		s, _ := status.FromError(err)
-		if s.Code() != codes.FailedPrecondition {
-			log.Error("auth connect", zap.Error(err))
-			reply.Message = "系统异常，请稍后再试"
-		} else {
-			reply.Message = s.Message()
+		connect := &logicpb.Connect{
+			Permission:        new(logicpb.Permission),
+			PermissionMessage: new(logicpb.PermissionMessage),
+			Status:            false,
 		}
 
-		b, err := json.Marshal(reply)
+		if s.Code() != codes.FailedPrecondition {
+			log.Error("auth connect", zap.String("error", s.Message()))
+			connect.Message = "系统异常，请稍后再试"
+		} else {
+			connect.Message = s.Message()
+		}
+
+		b, err := json.Marshal(connect)
 		if err != nil {
 			return 0, time.Duration(0), fmt.Errorf("auth reply json marshal for close error: %s", err.Error())
 		}
 		if err = authReply(ws, p, b); err != nil {
 			return 0, time.Duration(0), fmt.Errorf("auth web socket reply for close error: %s", err.Error())
 		}
-
 		return 0, time.Duration(0), io.EOF
 	}
 
-	reply.Uid = c.Uid
-	reply.Key = c.Key
-	reply.RoomId = c.RoomID
-	reply.Permission.IsMessage = c.IsMessage
-	reply.Permission.IsRedEnvelope = c.IsRedEnvelope
-	reply.Message = c.Message
-	reply.Status = true
-
-	b, err := json.Marshal(reply)
+	b, err := json.Marshal(c.Connect)
 	if err != nil {
 		return 0, time.Duration(0), fmt.Errorf("auth reply json marshal error: %s", err.Error())
 	}
@@ -420,17 +414,17 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 		p.Op = pb.OpRaw
 		p.Body = c.HeaderMessage
 		if err = p.WriteWebsocket(ws); err != nil {
-			log.Error("write header message", zap.Int32("rid", c.RoomID))
+			log.Error("write header message", zap.Int32("rid", c.Connect.RoomID))
 		}
 		if err = ws.Flush(); err != nil {
-			log.Error("send header message", zap.Int32("rid", c.RoomID))
+			log.Error("send header message", zap.Int32("rid", c.Connect.RoomID))
 		}
 	}
 
-	ch.Uid = c.Uid
-	ch.Key = c.Key
+	ch.Uid = c.Connect.Uid
+	ch.Key = c.Connect.Key
 	ch.Name = c.Name
-	return c.RoomID, time.Duration(c.Heartbeat), nil
+	return c.Connect.RoomID, time.Duration(c.Heartbeat), nil
 }
 
 // 回覆連線至某房間結果

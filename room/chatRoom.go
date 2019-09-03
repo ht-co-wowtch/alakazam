@@ -79,30 +79,43 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if user.IsBlockade {
 		return nil, errors.ErrBlockade
 	}
 
-	connect := &pb.ConnectReply{
-		Uid:           user.Uid,
-		Key:           key,
+	reply := &pb.ConnectReply{
 		Name:          user.Name,
-		RoomID:        int32(params.RoomID),
 		Heartbeat:     c.heartbeatNanosec,
-		IsRedEnvelope: user.Type == models.Player,
 		HeaderMessage: room.HeaderMessage,
+		Connect: &pb.Connect{
+			Uid:    user.Uid,
+			Key:    key,
+			Status: true,
+			RoomID: int32(params.RoomID),
+		},
 	}
 
-	if room.IsMessage == false {
-		connect.Message = "聊天室目前禁言状态，无法发言"
-	} else if user.IsMessage {
-		connect.IsMessage = true
+	permission := new(pb.Permission)
+	permissionMsg := new(pb.PermissionMessage)
+
+	if user.Type != models.Guest {
+		if !room.IsMessage {
+			permissionMsg.IsMessage = "聊天室目前禁言状态，无法发言"
+			permission.IsMessage = false
+		} else if user.IsMessage {
+			permission.IsMessage = true
+		} else {
+			permissionMsg.IsMessage = "您在永久禁言状态，无法发言"
+		}
+
+		permission.IsRedEnvelope = true
 	} else {
-		connect.Message = "您在永久禁言状态，无法发言"
+		permissionMsg.IsMessage = "请先登入会员"
+		permissionMsg.IsRedEnvelope = "请先登入会员"
 	}
-
-	return connect, nil
+	reply.Connect.Permission = permission
+	reply.Connect.PermissionMessage = permissionMsg
+	return reply, nil
 }
 
 func (c *chat) ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error) {
