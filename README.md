@@ -446,7 +446,6 @@ Operation = `9`=> 取消置頂訊息
 ```json
   {
     "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTcyMTE2NTAsIm5iZiI6MTU1NzIxMTY1MCwiaXNzIjoibG9naW4iLCJzZXNzaW9uX3Rva2VuIjoiZjc2OTYyM2Y0YTNlNDE4MWE4NzAwYWNkYTE3NzE1MmIiLCJkYXRhIjp7InVpZCI6IjEyNTdlN2Q5ZTFjOTQ0ZWY5YTZmMTI5Y2I5NDk1ZDAyIiwidXNlcm5hbWUiOiJyb290In19.7VJxH3tQpnJqWTlPbId7f0Rt7eQoaVvaJmbWxtHTqRU",
-    "gender": "other",
     "room_id": 1000
 }
 ```
@@ -455,7 +454,6 @@ Operation = `9`=> 取消置頂訊息
 | ------- | ------------------------------------------------------------ | ------ | ---- |
 | token   | 請自行透過[paras服務](https://jetfueltw.postman.co/collections/2999246-70e3e838-def8-4d53-ba12-e1b2797eec57?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#13ab4886-ab04-4e38-90b1-a0e73c4c8e0f)登入後拿到token | string | jwt  |
 | room_id | 想要進入的房間id，透過`paras服務`取得                        | Int    |      |
-| gender  | 性別 [類型](#avatar)                                         | string |      |
 
 | 結果             | 說明                      |
 | ---------------- | ------------------------- |
@@ -491,17 +489,15 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 
 ```json
 {
-    "room_id": 1000,
-    "gender": "other"
+    "room_id": 1000
 }
 ```
 
 
 
-| name    | 說明                 | 格式   |      |
-| ------- | -------------------- | ------ | ---- |
-| room_id | 新房間id             | string |      |
-| gender  | 性別 [類型](#avatar) | string |      |
+| name    | 說明     | 格式   |      |
+| ------- | -------- | ------ | ---- |
+| room_id | 新房間id | string |      |
 
 ![arch](./doc/changeRoom.png)
 
