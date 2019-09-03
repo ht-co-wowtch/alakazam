@@ -71,6 +71,8 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.POST("/shield", api.ErrHandler(s.CreateShield))
 	e.PUT("/shield", api.ErrHandler(s.UpdateShield))
 	e.DELETE("/shield/:id", api.ErrHandler(s.DeleteShield))
+
+	e.PUT("/profile/:token/renew", api.ErrHandler(s.renew))
 }
 
 func (s *httpServer) Close() error {

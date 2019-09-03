@@ -67,7 +67,7 @@ func (s *Store) CreateUser(member *Member) (bool, error) {
 }
 
 func (s *Store) UpdateUser(member *Member) (bool, error) {
-	aff, err := s.d.Cols("name", "avatar").
+	aff, err := s.d.Cols("name", "gender").
 		Where("uid = ?", member.Uid).
 		Update(member)
 	return aff == 1, err

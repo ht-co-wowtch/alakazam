@@ -197,3 +197,22 @@ func (m *Member) GetMembers(id []int) ([]models.Member, error) {
 func (m *Member) Heartbeat(uid string) error {
 	return m.c.refreshExpire(uid)
 }
+
+func (m *Member) Update(uid, name string, gender int) error {
+	u, err := m.db.Find(uid)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.ErrNoMember
+		}
+		return err
+	}
+
+	if u.Name != name || u.Gender != gender {
+		u.Name = name
+		u.Gender = gender
+		if _, err := m.db.UpdateUser(u); err != nil {
+			return err
+		}
+	}
+	return nil
+}
