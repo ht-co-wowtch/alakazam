@@ -1,6 +1,8 @@
 package message
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis"
@@ -8,19 +10,66 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
+	"runtime"
+	"strconv"
 	"time"
 )
 
 type MysqlConsumer struct {
-	cache *cache
-	db    *xorm.EngineGroup
+	cache         *cache
+	db            *xorm.EngineGroup
+	ctx           context.Context
+	consumer      []chan *pb.PushMsg
+	consumerCount int64
 }
 
-func NewMysqlConsumer(db *xorm.EngineGroup, c *redis.Client) *MysqlConsumer {
-	return &MysqlConsumer{
-		cache: newCache(c),
-		db:    db,
+func NewMysqlConsumer(ctx context.Context, db *xorm.EngineGroup, c *redis.Client) *MysqlConsumer {
+	mysql := &MysqlConsumer{
+		ctx:           ctx,
+		cache:         newCache(c),
+		db:            db,
+		consumerCount: 5,
 	}
+
+	mysql.consumer = make([]chan *pb.PushMsg, mysql.consumerCount)
+	for i := 0; i < int(mysql.consumerCount); i++ {
+		mysql.consumer[i] = make(chan *pb.PushMsg, 1000)
+		go mysql.run(mysql.consumer[i])
+	}
+	return mysql
+}
+
+func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
+	id := goroutineID()
+	defer func() {
+
+	}()
+	for {
+		select {
+		case p := <-msg:
+			var err error
+			if p.Type <= pb.PushMsg_MONEY {
+				err = m.Member(p)
+			} else {
+				err = m.Admin(p)
+			}
+			if err != nil {
+				log.Error("consumer message", zap.Error(err))
+			}
+		case <-m.ctx.Done():
+			log.Infof("[goroutine %d] stop mysql consumer", id)
+			return
+		}
+	}
+}
+
+func goroutineID() uint64 {
+	b := make([]byte, 64)
+	b = b[:runtime.Stack(b, false)]
+	b = bytes.TrimPrefix(b, []byte("goroutine "))
+	b = b[:bytes.IndexByte(b, ' ')]
+	n, _ := strconv.ParseUint(string(b), 10, 64)
+	return n
 }
 
 const (
@@ -31,10 +80,8 @@ const (
 )
 
 func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
-	if msg.Type <= pb.PushMsg_MONEY {
-		return m.Member(msg)
-	}
-	return m.Admin(msg)
+	m.consumer[msg.Seq%m.consumerCount] <- msg
+	return nil
 }
 
 func (m *MysqlConsumer) Member(msg *pb.PushMsg) error {

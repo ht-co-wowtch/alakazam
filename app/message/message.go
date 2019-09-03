@@ -18,7 +18,7 @@ func New(c *conf.Config) *Message {
 	consumer := message.NewConsumer(ctx, c.Kafka.Topic, c.Kafka.Group, c.Kafka.Brokers)
 	return &Message{
 		consumer: consumer,
-		mysql:    message.NewMysqlConsumer(models.NewORM(c.DB), redis.New(c.Redis)),
+		mysql:    message.NewMysqlConsumer(ctx, models.NewORM(c.DB), redis.New(c.Redis)),
 	}
 }
 
