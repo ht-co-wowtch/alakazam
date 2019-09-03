@@ -65,6 +65,12 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 	if err := json.Unmarshal(token, &params); err != nil {
 		return nil, err
 	}
+
+	// TODO 因應前端還未更改所以先自行判斷，待前端處理完成後在移除此邏輯
+	if params.Gender == "" {
+		params.Gender = "other"
+	}
+
 	if err := v.Struct(&params); err != nil {
 		return nil, err
 	}
