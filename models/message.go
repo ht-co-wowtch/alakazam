@@ -65,7 +65,10 @@ func (s *Store) GetRoomMessage(roomId, lastMsgId int) (*Messages, error) {
 		query = query.Where("`msg_id` < ?", lastMsgId)
 	}
 
-	err := query.Limit(messageLimit).
+	now := time.Now()
+
+	err := query.Where("send_at between ? and ?", now.Add(-2*time.Hour), now).
+		Limit(messageLimit).
 		Desc("msg_id").
 		Find(&rms)
 	if err != nil {
