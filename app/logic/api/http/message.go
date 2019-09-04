@@ -36,7 +36,6 @@ func (s *httpServer) getMessage(c *gin.Context) error {
 				return errdefs.InvalidParameter(errors.New("时间格式错误"), 4000)
 			}
 		}
-
 		if msg, err = s.history.GetV2(int32(rid), time.Unix(timestamp, 0)); err != nil {
 			return err
 		}

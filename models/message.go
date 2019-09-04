@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"time"
@@ -130,6 +131,9 @@ func (s *Store) GetRoomMessageV2(roomId int32, start time.Time) (*Messages, erro
 		Find(&rms)
 	if err != nil {
 		return nil, err
+	}
+	if len(rms) == 0 {
+		return nil, sql.ErrNoRows
 	}
 
 	var msgId []int64

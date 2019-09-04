@@ -1,6 +1,7 @@
 package message
 
 import (
+	"database/sql"
 	"encoding/json"
 	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
@@ -118,7 +119,10 @@ func (h *History) GetV2(roomId int32, at time.Time) ([]interface{}, error) {
 
 	msg, err := h.db.GetRoomMessageV2(roomId, at)
 	if err != nil {
-		return nil, err
+		if err != sql.ErrNoRows {
+			return nil, err
+		}
+		return []interface{}{}, nil
 	}
 
 	mids := make([]int, len(msg.Message)+len(msg.RedEnvelopeMessage))
