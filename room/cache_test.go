@@ -54,11 +54,12 @@ var (
 	}
 
 	roomTopMessageTest = message.Message{
-		Id:      1,
-		Uid:     "123",
-		Name:    "test",
-		Message: "test",
-		Time:    time.Now().Format(time.RFC3339),
+		Id:        1,
+		Uid:       "123",
+		Name:      "test",
+		Message:   "test",
+		Time:      time.Now().Format(time.RFC3339),
+		Timestamp: time.Now().Unix(),
 	}
 )
 

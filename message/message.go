@@ -62,13 +62,14 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 			user := memberMap[redEnvelope.MemberId]
 			data = append(data, historyRedEnvelopeMessage{
 				historyMessage: historyMessage{
-					Id:      msgId,
-					Uid:     user.Uid,
-					Name:    user.Name,
-					Type:    redEnvelopeType,
-					Avatar:  toAvatarName(user.Gender),
-					Message: redEnvelope.Message,
-					Time:    redEnvelope.SendAt.Format("15:04:05"),
+					Id:        msgId,
+					Uid:       user.Uid,
+					Name:      user.Name,
+					Type:      redEnvelopeType,
+					Avatar:    toAvatarName(user.Gender),
+					Message:   redEnvelope.Message,
+					Time:      redEnvelope.SendAt.Format("15:04:05"),
+					Timestamp: redEnvelope.SendAt.Unix(),
 				},
 				RedEnvelope: historyRedEnvelope{
 					Id:      redEnvelope.RedEnvelopesId,
@@ -79,13 +80,14 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 		case pb.PushMsg_ROOM:
 			user := memberMap[msg.Message[msgId].MemberId]
 			data = append(data, historyMessage{
-				Id:      msgId,
-				Uid:     user.Uid,
-				Name:    user.Name,
-				Type:    messageType,
-				Avatar:  toAvatarName(user.Gender),
-				Message: msg.Message[msgId].Message,
-				Time:    msg.Message[msgId].SendAt.Format("15:04:05"),
+				Id:        msgId,
+				Uid:       user.Uid,
+				Name:      user.Name,
+				Type:      messageType,
+				Avatar:    toAvatarName(user.Gender),
+				Message:   msg.Message[msgId].Message,
+				Time:      msg.Message[msgId].SendAt.Format("15:04:05"),
+				Timestamp: msg.Message[msgId].SendAt.Unix(),
 			})
 		}
 	}
@@ -94,12 +96,13 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 
 func RoomTopMessageToMessage(msg models.RoomTopMessage) Message {
 	return Message{
-		Id:      msg.MsgId,
-		Uid:     RootUid,
-		Type:    TopType,
-		Name:    RootName,
-		Message: msg.Message,
-		Time:    msg.SendAt.Format("15:04:05"),
+		Id:        msg.MsgId,
+		Uid:       RootUid,
+		Type:      TopType,
+		Name:      RootName,
+		Message:   msg.Message,
+		Time:      msg.SendAt.Format("15:04:05"),
+		Timestamp: msg.SendAt.Unix(),
 	}
 }
 

@@ -1,13 +1,14 @@
 package message
 
 type Message struct {
-	Id      int64  `json:"id"`
-	Uid     string `json:"uid"`
-	Type    string `json:"type"`
-	Name    string `json:"name"`
-	Avatar  string `json:"avatar"`
-	Message string `json:"message"`
-	Time    string `json:"time"`
+	Id        int64  `json:"id"`
+	Uid       string `json:"uid"`
+	Type      string `json:"type"`
+	Name      string `json:"name"`
+	Avatar    string `json:"avatar"`
+	Message   string `json:"message"`
+	Time      string `json:"time"`
+	Timestamp int64  `json:"timestamp"`
 }
 
 type Money struct {
@@ -22,13 +23,14 @@ type RedEnvelope struct {
 }
 
 type historyMessage struct {
-	Id      int64  `json:"id"`
-	Uid     string `json:"uid"`
-	Type    string `json:"type"`
-	Name    string `json:"name"`
-	Avatar  string `json:"avatar"`
-	Message string `json:"message"`
-	Time    string `json:"time"`
+	Id        int64  `json:"id"`
+	Uid       string `json:"uid"`
+	Type      string `json:"type"`
+	Name      string `json:"name"`
+	Avatar    string `json:"avatar"`
+	Message   string `json:"message"`
+	Time      string `json:"time"`
+	Timestamp int64  `json:"timestamp"`
 }
 
 type historyRedEnvelopeMessage struct {

@@ -108,13 +108,14 @@ func (p *Producer) toPb(msg Messages) (*logicpb.PushMsg, error) {
 
 	now := time.Now()
 	bm, err := json.Marshal(Message{
-		Id:      seq.Id,
-		Type:    msg.Type,
-		Uid:     msg.Uid,
-		Name:    msg.Name,
-		Avatar:  toAvatarName(msg.Avatar),
-		Message: fmsg,
-		Time:    now.Format("15:04:05"),
+		Id:        seq.Id,
+		Type:      msg.Type,
+		Uid:       msg.Uid,
+		Name:      msg.Name,
+		Avatar:    toAvatarName(msg.Avatar),
+		Message:   fmsg,
+		Time:      now.Format("15:04:05"),
+		Timestamp: now.Unix(),
 	})
 	if err != nil {
 		return nil, err
@@ -237,13 +238,14 @@ func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*logicpb.PushMsg, er
 	now := time.Now()
 	bm, err := json.Marshal(Money{
 		Message: Message{
-			Id:      seq.Id,
-			Type:    redEnvelopeType,
-			Uid:     msg.Uid,
-			Name:    msg.Name,
-			Avatar:  toAvatarName(msg.Avatar),
-			Message: fmsg,
-			Time:    now.Format("15:04:05"),
+			Id:        seq.Id,
+			Type:      redEnvelopeType,
+			Uid:       msg.Uid,
+			Name:      msg.Name,
+			Avatar:    toAvatarName(msg.Avatar),
+			Message:   fmsg,
+			Time:      now.Format("15:04:05"),
+			Timestamp: now.Unix(),
 		},
 		RedEnvelope: RedEnvelope{
 			Id:      msg.RedEnvelopeId,
@@ -313,7 +315,7 @@ func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 	if err != nil {
 		return err
 	}
-	
+
 	m := &kafka.ProducerMessage{
 		Key:   kafka.StringEncoder(pushMsg.Room[0]),
 		Topic: p.topic,

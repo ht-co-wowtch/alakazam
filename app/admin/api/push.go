@@ -39,13 +39,15 @@ func (s *httpServer) push(c *gin.Context) error {
 		return err
 	}
 	if p.Top {
+		now := time.Now()
 		m := message.Message{
-			Id:      id,
-			Uid:     message.RootUid,
-			Type:    message.TopType,
-			Name:    message.RootName,
-			Message: p.Message,
-			Time:    time.Now().Format("15:04:05"),
+			Id:        id,
+			Uid:       message.RootUid,
+			Type:      message.TopType,
+			Name:      message.RootName,
+			Message:   p.Message,
+			Time:      now.Format("15:04:05"),
+			Timestamp: now.Unix(),
 		}
 		if err := s.room.AddTopMessage(p.RoomId, m); err != nil {
 			if err == errors.ErrNoRoom {
