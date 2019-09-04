@@ -21,12 +21,12 @@ func (m Message) Score() float64 {
 	return float64(m.Timestamp)
 }
 
-type Money struct {
+type RedEnvelopeMessage struct {
 	Message
 	RedEnvelope RedEnvelope `json:"red_envelope"`
 }
 
-func (m Money) Score() float64 {
+func (m RedEnvelopeMessage) Score() float64 {
 	return float64(m.Message.Timestamp)
 }
 

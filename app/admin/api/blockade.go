@@ -29,7 +29,7 @@ func (s *httpServer) setBlockade(c *gin.Context) error {
 	if len(keys) == 0 {
 		msg = "封锁成功"
 	} else {
-		err = s.message.Kick(message.KickMessage{
+		err = s.message.Kick(message.ProducerKickMessage{
 			Message: "你被踢出房间，因为被封锁",
 			Keys:    keys,
 		})

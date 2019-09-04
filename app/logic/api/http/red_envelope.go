@@ -45,8 +45,8 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		return err
 	}
 
-	msg := message.RedEnvelopeMessage{
-		Messages: message.Messages{
+	msg := message.ProducerRedEnvelopeMessage{
+		ProducerMessage: message.ProducerMessage{
 			Rooms:   []int32{int32(arg.RoomId)},
 			Mid:     int64(user.Id),
 			Uid:     user.Uid,

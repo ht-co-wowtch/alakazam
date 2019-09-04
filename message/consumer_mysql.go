@@ -112,7 +112,7 @@ func (m *MysqlConsumer) Member(msg *pb.PushMsg) error {
 
 	switch msg.Type {
 	case pb.PushMsg_MONEY:
-		m := new(Money)
+		m := new(RedEnvelopeMessage)
 		if err := json.Unmarshal(msg.Msg, m); err != nil {
 			return err
 		}

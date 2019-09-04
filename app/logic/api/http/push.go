@@ -45,7 +45,7 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 		}
 	}
 
-	msg := message.Messages{
+	msg := message.ProducerMessage{
 		Rooms:   []int32{int32(p.RoomId)},
 		Mid:     int64(user.Id),
 		Uid:     user.Uid,
@@ -67,7 +67,7 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 				log.Error("kick member for push room", zap.Error(err), zap.String("uid", user.Uid))
 			}
 			if len(keys) > 0 {
-				err = s.message.Kick(message.KickMessage{
+				err = s.message.Kick(message.ProducerKickMessage{
 					Message: "你被踢出房间，因为自动禁言达五次",
 					Keys:    keys,
 				})

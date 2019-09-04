@@ -36,7 +36,7 @@ func (r *rateLimit) perSec(mid int64) error {
 	return nil
 }
 
-func (r *rateLimit) sameMsg(msg Messages) error {
+func (r *rateLimit) sameMsg(msg ProducerMessage) error {
 	key := fmt.Sprintf("rate_msg_%s", md5.Sum([]byte(msg.Uid+msg.Message)))
 	cut, err := r.cache.Incr(key).Result()
 	if err != nil {

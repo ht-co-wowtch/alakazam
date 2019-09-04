@@ -29,7 +29,7 @@ func (s *httpServer) push(c *gin.Context) error {
 		return err
 	}
 
-	msg := message.AdminMessage{
+	msg := message.ProducerAdminMessage{
 		Rooms:   p.RoomId,
 		Message: p.Message,
 		IsTop:   p.Top,

@@ -82,7 +82,7 @@ const (
 	RootName = "管理员"
 )
 
-type Messages struct {
+type ProducerMessage struct {
 	Rooms   []int32
 	Mid     int64
 	Uid     string
@@ -93,7 +93,7 @@ type Messages struct {
 	Avatar  int
 }
 
-func (p *Producer) toPb(msg Messages) (*logicpb.PushMsg, error) {
+func (p *Producer) toPb(msg ProducerMessage) (*logicpb.PushMsg, error) {
 	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
 		Id: 1, Count: 1,
 	})
@@ -131,7 +131,7 @@ func (p *Producer) toPb(msg Messages) (*logicpb.PushMsg, error) {
 	}, nil
 }
 
-func (p *Producer) Send(msg Messages) (int64, error) {
+func (p *Producer) Send(msg ProducerMessage) (int64, error) {
 	if err := p.rate.perSec(msg.Mid); err != nil {
 		return 0, err
 	}
@@ -150,19 +150,19 @@ func (p *Producer) Send(msg Messages) (int64, error) {
 	return pushMsg.Seq, nil
 }
 
-type AdminMessage struct {
+type ProducerAdminMessage struct {
 	Rooms   []int32
 	Message string
 	IsTop   bool
 }
 
 // 所有房間推送
-func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
+func (p *Producer) SendForAdmin(msg ProducerAdminMessage) (int64, error) {
 	ty := messageType
 	if msg.IsTop {
 		ty = TopType
 	}
-	pushMsg, err := p.toPb(Messages{
+	pushMsg, err := p.toPb(ProducerMessage{
 		Rooms:   msg.Rooms,
 		Mid:     RootMid,
 		Uid:     RootUid,
@@ -185,12 +185,12 @@ func (p *Producer) SendForAdmin(msg AdminMessage) (int64, error) {
 	return pushMsg.Seq, nil
 }
 
-type KickMessage struct {
+type ProducerKickMessage struct {
 	Message string
 	Keys    []string
 }
 
-func (p *Producer) Kick(msg KickMessage) error {
+func (p *Producer) Kick(msg ProducerKickMessage) error {
 	pushMsg := &logicpb.PushMsg{
 		Type:    logicpb.PushMsg_Close,
 		Keys:    msg.Keys,
@@ -215,14 +215,14 @@ func (p *Producer) CloseTop(msgId int64, rid []int32) error {
 	return nil
 }
 
-type RedEnvelopeMessage struct {
-	Messages
+type ProducerRedEnvelopeMessage struct {
+	ProducerMessage
 	RedEnvelopeId string
 	Token         string
 	Expired       time.Time
 }
 
-func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*logicpb.PushMsg, error) {
+func (p *Producer) toRedEnvelopePb(msg ProducerRedEnvelopeMessage) (*logicpb.PushMsg, error) {
 	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
 		Id: 1, Count: 1,
 	})
@@ -236,7 +236,7 @@ func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*logicpb.PushMsg, er
 	}
 
 	now := time.Now()
-	bm, err := json.Marshal(Money{
+	bm, err := json.Marshal(RedEnvelopeMessage{
 		Message: Message{
 			Id:        seq.Id,
 			Type:      redEnvelopeType,
@@ -267,7 +267,7 @@ func (p *Producer) toRedEnvelopePb(msg RedEnvelopeMessage) (*logicpb.PushMsg, er
 	}, nil
 }
 
-func (p *Producer) SendRedEnvelope(msg RedEnvelopeMessage) (int64, error) {
+func (p *Producer) SendRedEnvelope(msg ProducerRedEnvelopeMessage) (int64, error) {
 	pushMsg, err := p.toRedEnvelopePb(msg)
 	if err != nil {
 		return 0, err
@@ -278,16 +278,16 @@ func (p *Producer) SendRedEnvelope(msg RedEnvelopeMessage) (int64, error) {
 	return pushMsg.Seq, nil
 }
 
-type AdminRedEnvelopeMessage struct {
-	AdminMessage
+type ProducerAdminRedEnvelopeMessage struct {
+	ProducerAdminMessage
 	RedEnvelopeId string
 	Token         string
 	Expired       time.Time
 }
 
-func (p *Producer) SendRedEnvelopeForAdmin(msg AdminRedEnvelopeMessage) (int64, error) {
-	pushMsg, err := p.toRedEnvelopePb(RedEnvelopeMessage{
-		Messages: Messages{
+func (p *Producer) SendRedEnvelopeForAdmin(msg ProducerAdminRedEnvelopeMessage) (int64, error) {
+	pushMsg, err := p.toRedEnvelopePb(ProducerRedEnvelopeMessage{
+		ProducerMessage: ProducerMessage{
 			Rooms:   msg.Rooms,
 			Mid:     RootMid,
 			Uid:     RootUid,

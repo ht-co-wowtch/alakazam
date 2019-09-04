@@ -64,7 +64,7 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 		case pb.PushMsg_MONEY:
 			redEnvelope := msg.RedEnvelopeMessage[msgId]
 			user := memberMap[redEnvelope.MemberId]
-			data = append(data, Money{
+			data = append(data, RedEnvelopeMessage{
 				Message: Message{
 					Id:        msgId,
 					Uid:       user.Uid,
@@ -150,7 +150,7 @@ func (h *History) GetV2(roomId int32, at time.Time) ([]interface{}, error) {
 		case pb.PushMsg_MONEY:
 			redEnvelope := msg.RedEnvelopeMessage[msgId]
 			user := memberMap[redEnvelope.MemberId]
-			data = append(data, Money{
+			data = append(data, RedEnvelopeMessage{
 				Message: Message{
 					Id:        msgId,
 					Uid:       user.Uid,
