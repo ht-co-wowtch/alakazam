@@ -98,7 +98,9 @@ const (
 )
 
 func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
-	m.consumer[msg.Room[0]%m.consumerCount] <- msg
+	if msg.Type <= pb.PushMsg_MONEY {
+		m.consumer[msg.Room[0]%m.consumerCount] <- msg
+	}
 	return nil
 }
 
