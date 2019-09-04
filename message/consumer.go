@@ -10,6 +10,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"net"
+	"time"
 )
 
 type Consumer struct {
@@ -19,17 +20,28 @@ type Consumer struct {
 	handler sarama.ConsumerGroupHandler
 }
 
-func NewConsumer(ctx context.Context, topic string, name string, brokers []string) *Consumer {
+type Config struct {
+	Topic   string
+	Name    string
+	Brokers []string
+	Offsets struct {
+		Initial int64
+	}
+}
+
+func NewConsumer(ctx context.Context, conf Config) *Consumer {
 	config := sarama.NewConfig()
 	config.Version = sarama.V2_3_0_0
 	config.Consumer.Return.Errors = true
-	group, err := sarama.NewConsumerGroup(brokers, name, config)
+	config.Consumer.Offsets.CommitInterval = time.Second
+	config.Consumer.Offsets.Initial = conf.Offsets.Initial
+	group, err := sarama.NewConsumerGroup(conf.Brokers, conf.Name, config)
 	if err != nil {
 		panic(err)
 	}
 	c := &Consumer{
 		ctx:   ctx,
-		topic: topic,
+		topic: conf.Topic,
 		group: group,
 	}
 	go c.errorProc()

@@ -2,6 +2,7 @@ package message
 
 import (
 	"context"
+	"github.com/Shopify/sarama"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/message/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
@@ -15,7 +16,17 @@ type Message struct {
 
 func New(c *conf.Config) *Message {
 	ctx, _ := context.WithCancel(context.Background())
-	consumer := message.NewConsumer(ctx, c.Kafka.Topic, c.Kafka.Group, c.Kafka.Brokers)
+	config := message.Config{
+		Topic:   c.Kafka.Topic,
+		Name:    c.Kafka.Group,
+		Brokers: c.Kafka.Brokers,
+		Offsets: struct {
+			Initial int64
+		}{
+			Initial: sarama.OffsetOldest,
+		},
+	}
+	consumer := message.NewConsumer(ctx, config)
 	return &Message{
 		consumer: consumer,
 		mysql:    message.NewMysqlConsumer(ctx, models.NewORM(c.DB), redis.New(c.Redis)),

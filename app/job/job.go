@@ -2,6 +2,7 @@ package job
 
 import (
 	"context"
+	"github.com/Shopify/sarama"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 )
@@ -17,8 +18,18 @@ type Job struct {
 // New new a push job.
 func New(c *conf.Config) *Job {
 	ctx, cancel := context.WithCancel(context.Background())
+	config := message.Config{
+		Topic:   c.Kafka.Topic,
+		Name:    c.Kafka.Group,
+		Brokers: c.Kafka.Brokers,
+		Offsets: struct {
+			Initial int64
+		}{
+			Initial: sarama.OffsetNewest,
+		},
+	}
 	j := &Job{
-		consumer: message.NewConsumer(ctx, c.Kafka.Topic, c.Kafka.Group, c.Kafka.Brokers),
+		consumer: message.NewConsumer(ctx, config),
 		consume: &consume{
 			rc:    c.Room,
 			ctx:   ctx,
