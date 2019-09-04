@@ -316,8 +316,17 @@ func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 		return err
 	}
 
+	var key kafka.StringEncoder
+
+	switch pushMsg.Type {
+	case logicpb.PushMsg_Close:
+		key = kafka.StringEncoder(pushMsg.Keys[0])
+	default:
+		key = kafka.StringEncoder(pushMsg.Room[0])
+	}
+
 	m := &kafka.ProducerMessage{
-		Key:   kafka.StringEncoder(pushMsg.Room[0]),
+		Key:   key,
 		Topic: p.topic,
 		Value: kafka.ByteEncoder(b),
 	}
