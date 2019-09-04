@@ -20,7 +20,7 @@ type MysqlConsumer struct {
 	db            *xorm.EngineGroup
 	ctx           context.Context
 	consumer      []chan *pb.PushMsg
-	consumerCount int64
+	consumerCount int32
 }
 
 func NewMysqlConsumer(ctx context.Context, db *xorm.EngineGroup, c *redis.Client) *MysqlConsumer {
@@ -41,12 +41,18 @@ func NewMysqlConsumer(ctx context.Context, db *xorm.EngineGroup, c *redis.Client
 
 func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 	id := goroutineID()
-	defer func() {
-
-	}()
 	for {
 		select {
 		case p := <-msg:
+			if err := m.cache.addMessage(p); err != nil {
+				log.Error("consumer message", zap.Error(messageError{
+					msgId:   p.Seq,
+					mid:     p.Mid,
+					message: string(p.Msg),
+					error:   err,
+				}))
+			}
+
 			var err error
 			if p.Type <= pb.PushMsg_MONEY {
 				err = m.Member(p)
@@ -80,7 +86,7 @@ const (
 )
 
 func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
-	m.consumer[msg.Seq%m.consumerCount] <- msg
+	m.consumer[msg.Room[0]%m.consumerCount] <- msg
 	return nil
 }
 
@@ -112,7 +118,7 @@ func (m *MysqlConsumer) Member(msg *pb.PushMsg) error {
 		}
 	case pb.PushMsg_ROOM:
 		if _, err := tx.Exec(fmt.Sprintf(addMessage, msg.Room[0]%50), msg.Seq, msg.Mid, msg.Message, sendAt); err != nil {
-			return &MysqlMessageError{
+			return &messageError{
 				error:   err,
 				msgId:   msg.Seq,
 				mid:     msg.Mid,

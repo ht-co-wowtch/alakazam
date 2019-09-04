@@ -59,10 +59,10 @@ func (c *Consumer) Run(handler ConsumerGroupHandler) {
 }
 
 func (c *Consumer) Close() {
-	c.ctx.Done()
 	if err := c.group.Close(); err != nil {
 		log.Error(err.Error())
 	}
+	c.ctx.Done()
 }
 
 func (c *Consumer) errorProc() {

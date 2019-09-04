@@ -2,14 +2,14 @@ package message
 
 import "fmt"
 
-type MysqlMessageError struct {
+type messageError struct {
 	error   error
 	msgId   int64
 	mid     int64
 	message string
 }
 
-func (m MysqlMessageError) Error() string {
+func (m messageError) Error() string {
 	return fmt.Sprintf("insert message error: %s msg_id: %d mid: %d message: %s", m.error.Error(), m.msgId, m.mid, m.message)
 }
 
