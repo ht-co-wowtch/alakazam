@@ -118,11 +118,11 @@ TODO
 | 3     | [發送心跳](#heartbeat)                       | 無Body |
 | 4     | [回覆心跳結果](#heartbeat-reply)             | int32  |
 | 5     | [聊天室批次訊息](#message)                   | json   |
-| 6     | [聊天室訊息](#message-raw)                   | json   |
+| 6     | [聊天室訊息](#message-reply)                 | json   |
 | 7     | [更換房間](#change-room)                     | json   |
 | 8     | [回覆更換房間結果](#change-room-reply)       | json   |
 | 9     | [取消置頂訊息](#cancle-header-message-reply) | json   |
-| 20    | [聊天室踢人](#close-Reply)                   | json   |
+| 20    | [聊天室踢人](#close-reply)                   | json   |
 
 
 
@@ -351,19 +351,21 @@ Operation = `6`=> 單筆訊息
     "name": "sam78",
     "avatar": "female",
     "message": "測試",
-    "time": "12:37:00"
+    "time": "12:37:00",
+    "timestamp": 1567579890
 }
 ```
 
-| name    | 說明                     | 格式     |
-| ------- | ------------------------ | -------- |
-| Id      | 訊息id                   | Int      |
-| uid     | 訊息人uid                | string   |
-| type    | 訊息類型                 | string   |
-| name    | 訊息人名稱               | string   |
-| avatar  | 頭像名稱 [類型](#avatar) | string   |
-| message | 訊息                     | string   |
-| time    | 發送時間                 | 時:分:秒 |
+| name      | 說明                     | 格式          |
+| --------- | ------------------------ | ------------- |
+| Id        | 訊息id                   | Int           |
+| uid       | 訊息人uid                | string        |
+| type      | 訊息類型                 | string        |
+| name      | 訊息人名稱               | string        |
+| avatar    | 頭像名稱 [類型](#avatar) | string        |
+| message   | 訊息                     | string        |
+| time      | 發送時間                 | 時:分:秒      |
+| timestamp | 訊息發送時間             | 時間戳記(int) |
 
 紅包訊息
 
@@ -376,6 +378,7 @@ Operation = `6`=> 單筆訊息
     "avatar": "male",
     "message": "發大財",
     "time": "12:37:00",
+    "timestamp": 1567579890,
     "red_envelope": {
         "id": "0d641b03d4d548dbb3a73a2197811261",
         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjY4NzkzMTMsImlkIjoiMWI5MTZiNDc4YzBjNGZjMzhmMGE0MzE1NjMwNjExMTQiLCJ1aWQiOiIwZDY0MWIwM2Q0ZDU0OGRiYjNhNzNhMjE5NzgxMTI2MSJ9.pgyltHiT11XcZySJPiuetV35OXU-wgQ4XtU_UTzwghU",
@@ -384,18 +387,19 @@ Operation = `6`=> 單筆訊息
 }
 ```
 
-| name                 | 說明                     | 格式     |
-| -------------------- | ------------------------ | -------- |
-| Id                   | 訊息id                   | Int      |
-| uid                  | 發紅包人的uid            | string   |
-| type                 | 訊息種類                 | string   |
-| name                 | 發紅包人名稱             | string   |
-| avatar               | 頭像名稱 [類型](#avatar) | 名稱     |
-| message              | 紅包說明                 | string   |
-| time                 | 發送時間                 | 時:分:秒 |
-| red_envelope.id      | 紅包id                   | string   |
-| red_envelope.token   | 搶紅包的token            | string   |
-| red_envelope.expired | 紅包過期時間             | RF3339   |
+| name                 | 說明                     | 格式          |
+| -------------------- | ------------------------ | ------------- |
+| Id                   | 訊息id                   | Int           |
+| uid                  | 發紅包人的uid            | string        |
+| type                 | 訊息種類                 | string        |
+| name                 | 發紅包人名稱             | string        |
+| avatar               | 頭像名稱 [類型](#avatar) | 名稱          |
+| message              | 紅包說明                 | string        |
+| time                 | 發送時間                 | 時:分:秒      |
+| timestamp            | 訊息發送時間             | 時間戳記(int) |
+| red_envelope.id      | 紅包id                   | string        |
+| red_envelope.token   | 搶紅包的token            | string        |
+| red_envelope.expired | 紅包過期時間             | RF3339        |
 
 
 
