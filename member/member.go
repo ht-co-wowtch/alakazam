@@ -101,7 +101,6 @@ func (m *Member) Kick(uid string) ([]string, error) {
 	}
 	ok, err := m.c.delete(uid)
 	if !ok {
-		// TODO error
 		return nil, err
 	}
 	return keys, err
