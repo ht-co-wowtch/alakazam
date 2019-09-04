@@ -36,6 +36,18 @@ func NewMysqlConsumer(ctx context.Context, db *xorm.EngineGroup, c *redis.Client
 		mysql.consumer[i] = make(chan *pb.PushMsg, 1000)
 		go mysql.run(mysql.consumer[i])
 	}
+
+	go func() {
+		mysql.delCache()
+		t := time.NewTicker(10 * time.Minute)
+		for {
+			select {
+			case <-t.C:
+				mysql.delCache()
+			}
+		}
+	}()
+
 	return mysql
 }
 
@@ -167,4 +179,13 @@ func (m *MysqlConsumer) Admin(msg *pb.PushMsg) error {
 		}
 	}
 	return tx.Commit()
+}
+
+func (m *MysqlConsumer) delCache() {
+	keys, err := m.cache.getMessageExistsKey()
+	if err != nil {
+		log.Error("get message exists cache key", zap.Error(err))
+	} else if err := m.cache.delMessage(keys); err != nil {
+		log.Error("del cache message", zap.Error(err), zap.Strings("keys", keys))
+	}
 }

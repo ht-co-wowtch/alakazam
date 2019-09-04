@@ -4,17 +4,22 @@ import (
 	"fmt"
 	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	"strconv"
 	"time"
 )
 
 const (
 	OK = "OK"
 
-	messageKey = "room_message_%d_%d"
+	messageKey = "room_message_%d"
 )
 
-func keyMessage(rid int32, hour int) string {
-	return fmt.Sprintf(messageKey, rid, hour)
+var (
+	messageExpire = 2 * time.Hour
+)
+
+func keyMessage(rid int32) string {
+	return fmt.Sprintf(messageKey, rid)
 }
 
 type cache struct {
@@ -30,6 +35,25 @@ func newCache(c *redis.Client) *cache {
 }
 
 func (c *cache) addMessage(msg *pb.PushMsg) error {
-	at := time.Unix(msg.SendAt, 0)
-	return c.c.ZAdd(keyMessage(msg.Room[0], at.Hour()), redis.Z{Score: float64(msg.SendAt), Member: msg.Msg}).Err()
+	return c.c.ZAdd(keyMessage(msg.Room[0]), redis.Z{Score: float64(msg.SendAt), Member: msg.Msg}).Err()
+}
+
+func (c *cache) getMessage(rid int32, at time.Time) {
+	c.c.ZRevRangeByScore(keyMessage(rid), redis.ZRangeBy{
+		Max: strconv.FormatInt(at.Unix(), 10),
+		Min: strconv.FormatInt(at.Add(-messageExpire).Unix(), 10),
+	})
+}
+
+func (c *cache) delMessage(keys []string) error {
+	tx := c.c.Pipeline()
+	for _, k := range keys {
+		tx.ZRemRangeByScore(k, "-inf", strconv.FormatInt(time.Now().Add(-messageExpire).Unix(), 10))
+	}
+	_, err := tx.Exec()
+	return err
+}
+
+func (c *cache) getMessageExistsKey() ([]string, error) {
+	return c.c.Keys(fmt.Sprintf(messageKey, "*")).Result()
 }
