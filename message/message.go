@@ -2,6 +2,7 @@ package message
 
 import (
 	"encoding/json"
+	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
@@ -11,11 +12,13 @@ import (
 type History struct {
 	db     *models.Store
 	member *member.Member
+	cache  Cache
 }
 
-func NewHistory(db *models.Store, member *member.Member) *History {
+func NewHistory(db *models.Store, c *redis.Client, member *member.Member) *History {
 	return &History{
 		db:     db,
+		cache:  newCache(c),
 		member: member,
 	}
 }
@@ -92,6 +95,30 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 		}
 	}
 	return data, nil
+}
+
+func (h *History) GetV2(roomId int32, at time.Time) ([]interface{}, error) {
+	if time.Now().Add(-2 * time.Hour).After(at) {
+		return nil, nil
+	}
+
+	msgs, err := h.cache.getMessage(roomId, at)
+	if err != nil {
+		return nil, nil
+	}
+
+	message := make([]interface{}, 0, len(msgs))
+	for i := len(msgs); i > 0; i-- {
+		b := msgs[i-1]
+		message = append(message, stringJson(b))
+	}
+	return message, nil
+}
+
+type stringJson string
+
+func (s stringJson) MarshalJSON() ([]byte, error) {
+	return []byte(s), nil
 }
 
 func RoomTopMessageToMessage(msg models.RoomTopMessage) Message {

@@ -22,6 +22,10 @@ func keyMessage(rid int32) string {
 	return fmt.Sprintf(messageKey, rid)
 }
 
+type Cache interface {
+	getMessage(rid int32, at time.Time) ([]string, error)
+}
+
 type cache struct {
 	c          *redis.Client
 	expiration time.Duration
@@ -38,11 +42,13 @@ func (c *cache) addMessage(msg *pb.PushMsg) error {
 	return c.c.ZAdd(keyMessage(msg.Room[0]), redis.Z{Score: float64(msg.SendAt), Member: msg.Msg}).Err()
 }
 
-func (c *cache) getMessage(rid int32, at time.Time) {
-	c.c.ZRevRangeByScore(keyMessage(rid), redis.ZRangeBy{
-		Max: strconv.FormatInt(at.Unix(), 10),
-		Min: strconv.FormatInt(at.Add(-messageExpire).Unix(), 10),
-	})
+func (c *cache) getMessage(rid int32, at time.Time) ([]string, error) {
+	return c.c.ZRevRangeByScore(keyMessage(rid), redis.ZRangeBy{
+		Max:    "(" + strconv.FormatInt(at.Unix(), 10),
+		Min:    strconv.FormatInt(at.Add(-messageExpire).Unix(), 10),
+		Offset: 0,
+		Count:  20,
+	}).Result()
 }
 
 func (c *cache) delMessage(keys []string) error {
@@ -55,5 +61,5 @@ func (c *cache) delMessage(keys []string) error {
 }
 
 func (c *cache) getMessageExistsKey() ([]string, error) {
-	return c.c.Keys(fmt.Sprintf(messageKey, "*")).Result()
+	return c.c.Keys("room_message_*").Result()
 }

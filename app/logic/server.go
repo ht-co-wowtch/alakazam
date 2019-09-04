@@ -54,7 +54,7 @@ func New(c *conf.Config) *Server {
 	messageProducer := message.NewProducer(c.Kafka.Brokers, c.Kafka.Topic, seqpb.NewSeqClient(seqCli), cache, db)
 	memberCli := member.New(db, cache, cli)
 	chat := room.NewChat(db, cache, memberCli, cli, c.Heartbeat)
-	httpServer := api.NewServer(c, memberCli, messageProducer, chat, cli, message.NewHistory(db, memberCli))
+	httpServer := api.NewServer(c, memberCli, messageProducer, chat, cli, message.NewHistory(db, cache, memberCli))
 	rpcServer := rpc.New(c.RPCServer, chat)
 	go func() {
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
