@@ -64,8 +64,8 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 		case pb.PushMsg_MONEY:
 			redEnvelope := msg.RedEnvelopeMessage[msgId]
 			user := memberMap[redEnvelope.MemberId]
-			data = append(data, historyRedEnvelopeMessage{
-				historyMessage: historyMessage{
+			data = append(data, Money{
+				Message: Message{
 					Id:        msgId,
 					Uid:       user.Uid,
 					Name:      user.Name,
@@ -75,7 +75,7 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 					Time:      redEnvelope.SendAt.Format("15:04:05"),
 					Timestamp: redEnvelope.SendAt.Unix(),
 				},
-				RedEnvelope: historyRedEnvelope{
+				RedEnvelope: RedEnvelope{
 					Id:      redEnvelope.RedEnvelopesId,
 					Token:   redEnvelope.Token,
 					Expired: redEnvelope.ExpireAt.Format(time.RFC3339),
@@ -83,7 +83,7 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 			})
 		case pb.PushMsg_ROOM:
 			user := memberMap[msg.Message[msgId].MemberId]
-			data = append(data, historyMessage{
+			data = append(data, Message{
 				Id:        msgId,
 				Uid:       user.Uid,
 				Name:      user.Name,
@@ -150,8 +150,8 @@ func (h *History) GetV2(roomId int32, at time.Time) ([]interface{}, error) {
 		case pb.PushMsg_MONEY:
 			redEnvelope := msg.RedEnvelopeMessage[msgId]
 			user := memberMap[redEnvelope.MemberId]
-			data = append(data, historyRedEnvelopeMessage{
-				historyMessage: historyMessage{
+			data = append(data, Money{
+				Message: Message{
 					Id:        msgId,
 					Uid:       user.Uid,
 					Name:      user.Name,
@@ -161,7 +161,7 @@ func (h *History) GetV2(roomId int32, at time.Time) ([]interface{}, error) {
 					Time:      redEnvelope.SendAt.Format("15:04:05"),
 					Timestamp: redEnvelope.SendAt.Unix(),
 				},
-				RedEnvelope: historyRedEnvelope{
+				RedEnvelope: RedEnvelope{
 					Id:      redEnvelope.RedEnvelopesId,
 					Token:   redEnvelope.Token,
 					Expired: redEnvelope.ExpireAt.Format(time.RFC3339),
@@ -169,7 +169,7 @@ func (h *History) GetV2(roomId int32, at time.Time) ([]interface{}, error) {
 			})
 		case pb.PushMsg_ROOM:
 			user := memberMap[msg.Message[msgId].MemberId]
-			data = append(data, historyMessage{
+			data = append(data, Message{
 				Id:        msgId,
 				Uid:       user.Uid,
 				Name:      user.Name,
