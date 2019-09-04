@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"strconv"
 	"time"
 )
@@ -24,6 +25,7 @@ func keyMessage(rid int32) string {
 
 type Cache interface {
 	getMessage(rid int32, at time.Time) ([]string, error)
+	addMessages(rid int32, msg []interface{}) error
 }
 
 type cache struct {
@@ -36,6 +38,25 @@ func newCache(c *redis.Client) *cache {
 		c:          c,
 		expiration: time.Hour,
 	}
+}
+
+type ZM interface {
+	Score() float64
+}
+
+func (c *cache) addMessages(rid int32, msg []interface{}) error {
+	z := make([]redis.Z, len(msg))
+	for i, v := range msg {
+		data, ok := v.(ZM)
+		if !ok {
+			return errors.New("not implementation message.ZM")
+		}
+		z[i] = redis.Z{
+			Score:  data.Score(),
+			Member: v,
+		}
+	}
+	return c.c.ZAdd(keyMessage(rid), z...).Err()
 }
 
 func (c *cache) addMessage(msg *pb.PushMsg) error {

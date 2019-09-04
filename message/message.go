@@ -107,12 +107,77 @@ func (h *History) GetV2(roomId int32, at time.Time) ([]interface{}, error) {
 		return nil, nil
 	}
 
-	message := make([]interface{}, 0, len(msgs))
-	for i := len(msgs); i > 0; i-- {
-		b := msgs[i-1]
-		message = append(message, stringJson(b))
+	if len(msgs) > 0 {
+		message := make([]interface{}, 0, len(msgs))
+		for i := len(msgs); i > 0; i-- {
+			b := msgs[i-1]
+			message = append(message, stringJson(b))
+		}
+		return message, nil
 	}
-	return message, nil
+
+	msg, err := h.db.GetRoomMessageV2(roomId, at)
+	if err != nil {
+		return nil, err
+	}
+
+	mids := make([]int, len(msg.Message)+len(msg.RedEnvelopeMessage))
+
+	for _, v := range msg.Message {
+		mids = append(mids, v.MemberId)
+	}
+	for _, v := range msg.RedEnvelopeMessage {
+		mids = append(mids, v.MemberId)
+	}
+
+	ms, err := h.member.GetMembers(mids)
+	if err != nil {
+		return nil, err
+	}
+
+	memberMap := make(map[int]models.Member, len(ms))
+	for _, v := range ms {
+		memberMap[v.Id] = v
+	}
+
+	data := make([]interface{}, 0)
+	for _, msgId := range msg.List {
+		switch msg.Type[msgId] {
+		case pb.PushMsg_MONEY:
+			redEnvelope := msg.RedEnvelopeMessage[msgId]
+			user := memberMap[redEnvelope.MemberId]
+			data = append(data, historyRedEnvelopeMessage{
+				historyMessage: historyMessage{
+					Id:        msgId,
+					Uid:       user.Uid,
+					Name:      user.Name,
+					Type:      redEnvelopeType,
+					Avatar:    toAvatarName(user.Gender),
+					Message:   redEnvelope.Message,
+					Time:      redEnvelope.SendAt.Format("15:04:05"),
+					Timestamp: redEnvelope.SendAt.Unix(),
+				},
+				RedEnvelope: historyRedEnvelope{
+					Id:      redEnvelope.RedEnvelopesId,
+					Token:   redEnvelope.Token,
+					Expired: redEnvelope.ExpireAt.Format(time.RFC3339),
+				},
+			})
+		case pb.PushMsg_ROOM:
+			user := memberMap[msg.Message[msgId].MemberId]
+			data = append(data, historyMessage{
+				Id:        msgId,
+				Uid:       user.Uid,
+				Name:      user.Name,
+				Type:      messageType,
+				Avatar:    toAvatarName(user.Gender),
+				Message:   msg.Message[msgId].Message,
+				Time:      msg.Message[msgId].SendAt.Format("15:04:05"),
+				Timestamp: msg.Message[msgId].SendAt.Unix(),
+			})
+		}
+	}
+	return data, h.cache.addMessages(roomId, data)
 }
 
 type stringJson string
