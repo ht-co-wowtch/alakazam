@@ -389,6 +389,24 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 		if err = authReply(ws, p, b); err != nil {
 			return 0, time.Duration(0), fmt.Errorf("auth web socket reply for close error: %s", err.Error())
 		}
+
+		msg := struct {
+			Message string `json:"message"`
+		}{
+			Message: connect.Message,
+		}
+
+		// TODO 嘗試當無法連線時應該只發送OpProtoFinish而非OpAuthReply -> OpProtoFinish
+		closeP := &pb.Proto{
+			Op: pb.OpProtoFinish,
+		}
+		closeP.Body, _ = json.Marshal(msg)
+
+		if err = closeP.WriteWebsocket(ws); err != nil {
+			return 0, time.Duration(0), fmt.Errorf("auth reply close web socket for WriteWebsocket error: %s", err.Error())
+		} else if err = ws.Flush(); err != nil {
+			return 0, time.Duration(0), fmt.Errorf("auth reply close web socket for Flush error: %s", err.Error())
+		}
 		return 0, time.Duration(0), io.EOF
 	}
 
@@ -416,7 +434,6 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 	return c.Connect.RoomID, time.Duration(c.Heartbeat), nil
 }
 
-// 回覆連線至某房間結果
 func authReply(ws *websocket.Conn, p *pb.Proto, b []byte) (err error) {
 	p.Op = pb.OpAuthReply
 	p.Body = b
