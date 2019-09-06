@@ -21,12 +21,12 @@ import (
 )
 
 type httpServer struct {
-	member        *member.Member
-	message       *message.Producer
-	history       *message.History
-	room          room.Chat
-	client        *client.Client
-	jwt           *member.Jwt
+	member  *member.Member
+	message *message.Producer
+	history *message.History
+	room    room.Chat
+	client  *client.Client
+	jwt     *member.Jwt
 }
 
 func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, room room.Chat, client *client.Client, history *message.History) *http.Server {
@@ -132,13 +132,15 @@ func ErrHandler(f handlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := f(c); err != nil {
 			e := errdefs.Err(err)
-			log.Error(
-				"api error",
-				zap.String("path", c.Request.URL.Path),
-				zap.String("rawQuery", c.Request.URL.RawQuery),
-				zap.String("method", c.Request.Method),
-				zap.Error(err),
-			)
+			if e.Status == http.StatusInternalServerError {
+				log.Error(
+					"api error",
+					zap.String("path", c.Request.URL.Path),
+					zap.String("rawQuery", c.Request.URL.RawQuery),
+					zap.String("method", c.Request.Method),
+					zap.Error(err),
+				)
+			}
 			if e.Errors == nil {
 				e.Errors = map[string]string{}
 			}
