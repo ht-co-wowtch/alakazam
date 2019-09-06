@@ -36,7 +36,7 @@ const (
 func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 	msg, err := h.db.GetRoomMessage(roomId, lastMsgId)
 	if err != nil {
-		return nil, err
+		return []interface{}{}, err
 	}
 
 	mids := make([]int, len(msg.Message)+len(msg.RedEnvelopeMessage))
@@ -50,7 +50,7 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 
 	ms, err := h.member.GetMembers(mids)
 	if err != nil {
-		return nil, err
+		return []interface{}{}, err
 	}
 
 	memberMap := make(map[int]models.Member, len(ms))
@@ -100,12 +100,12 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 
 func (h *History) GetV2(roomId int32, at time.Time) ([]interface{}, error) {
 	if time.Now().Add(-2 * time.Hour).After(at) {
-		return nil, nil
+		return []interface{}{}, nil
 	}
 
 	msgs, err := h.cache.getMessage(roomId, at)
 	if err != nil {
-		return nil, nil
+		return []interface{}{}, nil
 	}
 
 	if len(msgs) > 0 {
@@ -136,7 +136,7 @@ func (h *History) GetV2(roomId int32, at time.Time) ([]interface{}, error) {
 
 	ms, err := h.member.GetMembers(mids)
 	if err != nil {
-		return nil, err
+		return []interface{}{}, err
 	}
 
 	memberMap := make(map[int]models.Member, len(ms))
