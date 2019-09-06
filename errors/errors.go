@@ -40,27 +40,27 @@ var (
 const (
 	NoLogin = 12014041
 	// 沒有token
-	noAuthorizationBearer = 15024010
+	noAuthorizationBearer = 15022001
 	// 資料格式錯誤
-	invalidParameter = 15024220
+	invalidParameter = 15021002
 	// 餘額不足
 	balanceCode = 12024020
 	// 房間不存在
-	roomNotFoundCode = 15024042
+	roomNotFoundCode = 15025001
 	// 找不到會員資料
 	memberNotFound = 12024041
 	// 隨機紅包金額不能小於包數
-	redEnvelopeAmount = 15021001
+	redEnvelopeAmount = 15023001
 	// 紅包不存在
-	redEnvelopeNotFoundCode = 15024044
+	redEnvelopeNotFoundCode = 15024001
 	// 紅包已關閉
-	redEnvelopeIsClose = 15024045
+	redEnvelopeIsClose = 15024002
 	// 紅包發佈時間不能小於當下
-	redEnvelopePublishTime = 15024047
+	redEnvelopePublishTime = 15024006
 	// 紅包已發佈過
-	redEnvelopePublishExist = 15024091
+	redEnvelopePublishExist = 15024007
 	// 紅包未發佈但已過期
-	redEnvelopePublishExpire = 15024048
+	redEnvelopePublishExpire = 15024008
 )
 
 func init() {
