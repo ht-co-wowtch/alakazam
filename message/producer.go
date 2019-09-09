@@ -14,7 +14,9 @@ import (
 	shield "gitlab.com/jetfueltw/cpw/alakazam/pkg/filter"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
+	"golang.org/x/net/html"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -95,14 +97,9 @@ type ProducerMessage struct {
 	Avatar  int
 }
 
-var (
-	// 空白字元
-	msgRegex = regexp.MustCompile(`^(\s|\xE3\x80\x80)*$`)
-)
-
 func (p *Producer) toPb(msg ProducerMessage) (*logicpb.PushMsg, error) {
-	if msgRegex.MatchString(msg.Message) {
-		return nil, errors.ErrEmpty
+	if err := checkMessage(msg.Message); err != nil {
+		return nil, err
 	}
 
 	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
@@ -234,6 +231,9 @@ type ProducerRedEnvelopeMessage struct {
 }
 
 func (p *Producer) toRedEnvelopePb(msg ProducerRedEnvelopeMessage) (*logicpb.PushMsg, error) {
+	if err := checkMessage(msg.Message); err != nil {
+		return nil, err
+	}
 	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
 		Id: 1, Count: 1,
 	})
@@ -346,4 +346,32 @@ func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 		log.Error("message producer send message", zap.Error(err), zap.Int32("partition", partition), zap.Int64("offset", offset))
 	}
 	return err
+}
+
+var (
+	// 空白字元
+	msgRegex = regexp.MustCompile(`^(\s|\xE3\x80\x80)*$`)
+)
+
+func checkMessage(msg string) error {
+	if msgRegex.MatchString(msg) {
+		return errors.ErrIllegal
+	}
+
+	tokenizer := html.NewTokenizer(strings.NewReader(msg))
+	for {
+		if tokenizer.Next() == html.ErrorToken {
+			return errors.ErrIllegal
+		}
+
+		token := tokenizer.Token()
+		switch token.Type {
+		case html.StartTagToken, html.EndTagToken, html.SelfClosingTagToken:
+			return errors.ErrIllegal
+		case html.TextToken:
+			return nil
+		default:
+			break
+		}
+	}
 }

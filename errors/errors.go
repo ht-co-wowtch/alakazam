@@ -11,9 +11,9 @@ var (
 	// 								例外	00**
 
 	// 								通用	10**
-	ErrNoRows = errdefs.NotFound(1001, "没有资料", nil)
-	ErrExist  = errdefs.Conflict(1002, "资料已存在", nil)
-	ErrEmpty  = errdefs.Conflict(1003, "不可以輸入空白", nil)
+	ErrNoRows  = errdefs.NotFound(1001, "没有资料", nil)
+	ErrExist   = errdefs.Conflict(1002, "资料已存在", nil)
+	ErrIllegal = errdefs.InvalidParameter(1003, "消息包含被禁止的内容", nil)
 
 	// 								認證/會員	20**
 	ErrNoMember        = errdefs.NotFound(2001, "没有会员资料", nil)
