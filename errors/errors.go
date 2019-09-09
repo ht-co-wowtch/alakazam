@@ -8,33 +8,37 @@ import (
 )
 
 var (
-	// 沒有資料
-	ErrNoRows    = errdefs.NotFound(4040, "没有资料", nil)
-	ErrNoMember  = errdefs.NotFound(4041, "没有会员资料", nil)
-	ErrNoRoom    = errdefs.NotFound(4042, "没有房间资料", nil)
-	ErrRoomClose = errdefs.NotFound(4043, "目前房间已关闭", nil)
+	// 								例外	00**
 
-	// 限速
-	ErrRateMsg     = errdefs.TooManyRequests(4291, "1秒内只能发一则消息", nil)
-	ErrRateSameMsg = errdefs.TooManyRequests(4292, "10秒内相同讯息3次，自动禁言10分钟", nil)
+	// 								通用	10**
+	ErrNoRows = errdefs.NotFound(1001, "没有资料", nil)
+	ErrExist  = errdefs.Conflict(1002, "资料已存在", nil)
 
-	// 身份認證
-	ErrTokenUid        = errdefs.Unauthorized(4010, "帐号资料认证失败", nil)
-	ErrValidationToken = errdefs.Unauthorized(4011, "用户认证失败", nil)
-	ErrClaimsToken     = errdefs.Unauthorized(4012, "用户认证失败", nil)
-	ErrValidToken      = errdefs.Unauthorized(4013, "用户认证失败", nil)
-	ErrLogin           = errdefs.Unauthorized(4014, "请先登入会员", nil)
-	ErrAuthorization   = errdefs.Unauthorized(4019, "Unauthorized", nil)
+	// 								認證/會員	20**
+	ErrNoMember        = errdefs.NotFound(2001, "没有会员资料", nil)
+	ErrTokenUid        = errdefs.Unauthorized(2002, "帐号资料认证失败", nil)
+	ErrValidationToken = errdefs.Unauthorized(2003, "用户认证失败", nil)
+	ErrClaimsToken     = errdefs.Unauthorized(2004, "用户认证失败", nil)
+	ErrValidToken      = errdefs.Unauthorized(2005, "用户认证失败", nil)
+	ErrLogin           = errdefs.Unauthorized(2006, "请先登入会员", nil)
+	ErrAuthorization   = errdefs.Unauthorized(2007, "Unauthorized", nil)
+	ErrMemberNoMessage = errdefs.Unauthorized(2008, "您在永久禁言状态，无法发言", nil)
+	ErrMemberBanned    = errdefs.Unauthorized(2009, "您在禁言状态，无法发言", nil)
+	ErrBlockade        = errdefs.Unauthorized(2010, "您在封鎖状态，无法进入聊天室", nil)
 
-	// 4035
-	ErrRoomLimit       = "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元"
-	ErrMemberNoMessage = errdefs.Unauthorized(4015, "您在永久禁言状态，无法发言", nil)
-	ErrMemberBanned    = errdefs.Unauthorized(4016, "您在禁言状态，无法发言", nil)
-	ErrRoomNoMessage   = errdefs.Unauthorized(4017, "聊天室目前禁言状态，无法发言", nil)
-	ErrBlockade        = errdefs.Unauthorized(4018, "您在封鎖状态，无法进入聊天室", nil)
-	ErrPublishAt       = errdefs.InvalidParameter(4001, "预定发送时间不能大于现在", nil)
+	// 								金額	30**
 
-	ErrExist = errdefs.Conflict(4091, "资料已存在", nil)
+	// 								紅包	40**
+	ErrPublishAt = errdefs.InvalidParameter(4001, "预定发送时间不能大于现在", nil)
+
+	// 								房間	50**
+	ErrNoRoom      = errdefs.NotFound(5001, "没有房间资料", nil)
+	ErrRoomClose   = errdefs.NotFound(5002, "目前房间已关闭", nil)
+	ErrRateMsg     = errdefs.TooManyRequests(5003, "1秒内只能发一则消息", nil)
+	ErrRateSameMsg = errdefs.TooManyRequests(5004, "10秒内相同讯息3次，自动禁言10分钟", nil)
+	// 5005
+	ErrRoomLimit     = "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元"
+	ErrRoomNoMessage = errdefs.Unauthorized(5006, "聊天室目前禁言状态，无法发言", nil)
 )
 
 const (
@@ -70,6 +74,7 @@ func init() {
 	errdefs.SetOutput(output{})
 	errdefs.SetJsonOut(output{})
 	errdefs.SetValidationOut(output{})
+	errdefs.SetErrorCode(1002, 1003, 0000)
 
 	validation.Set(validation.Required, "栏位必填")
 	validation.Set(validation.Min, "栏位最大值或长度至少")
