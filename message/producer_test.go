@@ -37,7 +37,7 @@ func TestCheckMessage(t *testing.T) {
 	}
 }
 
-func TestCheckMessagePassword(t *testing.T) {
+func TestCheckMessagePass(t *testing.T) {
 	testCases := []string{
 		`測試`,
 		`qqwqwwq`,
