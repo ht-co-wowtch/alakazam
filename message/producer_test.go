@@ -16,16 +16,19 @@ func TestCheckMessage(t *testing.T) {
 		`<iframe /iframe>`,
 		`<iframe src="dd"`,
 		`<iframe src`,
+		`< iframe src=http://m.647751.com/#/lottery/games/9 <iframe height='900'>`,
 		`<iframe src="http://m.647751.com/#/lottery/games/9"`,
 		`<iframe src="http://m.647751.com/#/lottery/games/9"</iframe>`,
 		`<iframe src="http://m.647751.com/#/lottery/games/9" <="" iframe="" height="900px">wddwdw`,
 		`<iframe src="http://m.647751.com/#/lottery/games/9" <="" iframe="" height="900px">wddwdw</iframe>`,
+		`< iframe src="http://m.647751.com/#/lottery/games/9" <="" iframe="" height="900px">wddwdw</iframe>`,
 		`<img src="https://www.imageshop.com.tw/pic/shop/women2/56137/56137_430_65.jpg">`,
 		`<a`,
 		`</a>`,
 		`<a href=""`,
 		`<img`,
 		`<script src='http://tw.yahoo.com />`,
+		`<a onblur="alert(secret)" href="http://www.google.com">Google</a>`,
 		`<script`,
 	}
 
@@ -40,6 +43,7 @@ func TestCheckMessage(t *testing.T) {
 func TestCheckMessagePass(t *testing.T) {
 	testCases := []string{
 		`測試`,
+		`test`,
 		`qqwqwwq`,
 		`iframe>`,
 		`iframe`,
@@ -47,12 +51,12 @@ func TestCheckMessagePass(t *testing.T) {
 		`<`,
 		`><`,
 		`framework`,
-		`< iframe src="http://m.647751.com/#/lottery/games/9" <="" iframe="" height="900px">wddwdw</iframe>`,
 		`img`,
 		`< img`,
 		`a`,
 		`< a`,
 		`< script src='http://tw.yahoo.com />`,
+		`< iframe src="http://m.647751.com/#/lottery/games/9" <="" iframe="" height="900px">wddwdw< /iframe>`,
 	}
 
 	for _, v := range testCases {

@@ -358,10 +358,14 @@ func checkMessage(msg string) error {
 		return errors.ErrIllegal
 	}
 
+	var textCount uint8
 	tokenizer := html.NewTokenizer(strings.NewReader(msg))
 	for {
 		if tokenizer.Next() == html.ErrorToken {
-			return errors.ErrIllegal
+			if textCount == 0 {
+				return errors.ErrIllegal
+			}
+			return nil
 		}
 
 		token := tokenizer.Token()
@@ -369,7 +373,8 @@ func checkMessage(msg string) error {
 		case html.StartTagToken, html.EndTagToken, html.SelfClosingTagToken:
 			return errors.ErrIllegal
 		case html.TextToken:
-			return nil
+			textCount++
+			break
 		default:
 			break
 		}
