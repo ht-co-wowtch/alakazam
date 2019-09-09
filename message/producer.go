@@ -9,10 +9,12 @@ import (
 	"github.com/gogo/protobuf/proto"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	seqpb "gitlab.com/jetfueltw/cpw/alakazam/app/seq/api/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	shield "gitlab.com/jetfueltw/cpw/alakazam/pkg/filter"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
+	"regexp"
 	"time"
 )
 
@@ -93,7 +95,16 @@ type ProducerMessage struct {
 	Avatar  int
 }
 
+var (
+	// 空白字元
+	msgRegex = regexp.MustCompile(`^(\s|\xE3\x80\x80)*$`)
+)
+
 func (p *Producer) toPb(msg ProducerMessage) (*logicpb.PushMsg, error) {
+	if msgRegex.MatchString(msg.Message) {
+		return nil, errors.ErrEmpty
+	}
+
 	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
 		Id: 1, Count: 1,
 	})
