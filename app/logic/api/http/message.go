@@ -9,36 +9,26 @@ import (
 	"time"
 )
 
-// TODO 先兼容msg_id 跟 timestamp，待前端轉換完成在移除msg_id
 func (s *httpServer) getMessage(c *gin.Context) error {
 	rid, err := strconv.Atoi(c.Param("room"))
 	if err != nil {
 		return err
 	}
-	msg_id, err := strconv.Atoi(c.DefaultQuery("msg_id", "0"))
-	if err != nil {
-		return err
+
+	var timestamp int64
+	timestampStr := c.Query("timestamp")
+	if timestampStr == "" {
+		timestamp = time.Now().Unix()
+	} else {
+		timestamp, err = strconv.ParseInt(timestampStr, 10, 0)
+		if err != nil {
+			return errdefs.InvalidParameter(4000, "时间格式错误", nil)
+		}
 	}
 
-	var msg interface{}
-
-	if msg_id != 0 {
-		if msg, err = s.history.Get(rid, msg_id); err != nil {
-			return err
-		}
-	} else {
-		var timestamp int64
-		if timestampStr := c.Query("timestamp"); timestampStr == "" {
-			timestamp = time.Now().Unix()
-		} else {
-			timestamp, err = strconv.ParseInt(c.Query("timestamp"), 10, 0)
-			if err != nil {
-				return errdefs.InvalidParameter(4000, "时间格式错误", nil)
-			}
-		}
-		if msg, err = s.history.GetV2(int32(rid), time.Unix(timestamp, 0)); err != nil {
-			return err
-		}
+	msg, err := s.history.Get(int32(rid), time.Unix(timestamp, 0))
+	if err != nil {
+		return err
 	}
 
 	c.JSON(http.StatusOK, gin.H{

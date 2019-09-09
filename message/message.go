@@ -33,72 +33,7 @@ const (
 	TopType = "top"
 )
 
-func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
-	msg, err := h.db.GetRoomMessage(roomId, lastMsgId)
-	if err != nil {
-		return []interface{}{}, err
-	}
-
-	mids := make([]int, len(msg.Message)+len(msg.RedEnvelopeMessage))
-
-	for _, v := range msg.Message {
-		mids = append(mids, v.MemberId)
-	}
-	for _, v := range msg.RedEnvelopeMessage {
-		mids = append(mids, v.MemberId)
-	}
-
-	ms, err := h.member.GetMembers(mids)
-	if err != nil {
-		return []interface{}{}, err
-	}
-
-	memberMap := make(map[int]models.Member, len(ms))
-	for _, v := range ms {
-		memberMap[v.Id] = v
-	}
-
-	data := make([]interface{}, 0)
-	for _, msgId := range msg.List {
-		switch msg.Type[msgId] {
-		case pb.PushMsg_MONEY:
-			redEnvelope := msg.RedEnvelopeMessage[msgId]
-			user := memberMap[redEnvelope.MemberId]
-			data = append(data, RedEnvelopeMessage{
-				Message: Message{
-					Id:        msgId,
-					Uid:       user.Uid,
-					Name:      user.Name,
-					Type:      redEnvelopeType,
-					Avatar:    toAvatarName(user.Gender),
-					Message:   redEnvelope.Message,
-					Time:      redEnvelope.SendAt.Format("15:04:05"),
-					Timestamp: redEnvelope.SendAt.Unix(),
-				},
-				RedEnvelope: RedEnvelope{
-					Id:      redEnvelope.RedEnvelopesId,
-					Token:   redEnvelope.Token,
-					Expired: redEnvelope.ExpireAt.Format(time.RFC3339),
-				},
-			})
-		case pb.PushMsg_ROOM:
-			user := memberMap[msg.Message[msgId].MemberId]
-			data = append(data, Message{
-				Id:        msgId,
-				Uid:       user.Uid,
-				Name:      user.Name,
-				Type:      messageType,
-				Avatar:    toAvatarName(user.Gender),
-				Message:   msg.Message[msgId].Message,
-				Time:      msg.Message[msgId].SendAt.Format("15:04:05"),
-				Timestamp: msg.Message[msgId].SendAt.Unix(),
-			})
-		}
-	}
-	return data, nil
-}
-
-func (h *History) GetV2(roomId int32, at time.Time) ([]interface{}, error) {
+func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 	if time.Now().Add(-2 * time.Hour).After(at) {
 		return []interface{}{}, nil
 	}
@@ -117,7 +52,7 @@ func (h *History) GetV2(roomId int32, at time.Time) ([]interface{}, error) {
 		return message, nil
 	}
 
-	msg, err := h.db.GetRoomMessageV2(roomId, at)
+	msg, err := h.db.GetRoomMessage(roomId, at)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			return nil, err
