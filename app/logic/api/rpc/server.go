@@ -47,7 +47,7 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 			if e.Code == errors.NoLogin {
 				msg = "请先登入会员"
 			} else {
-				msg = err.Error()
+				msg = e.Message
 			}
 			return &pb.ConnectReply{}, status.Error(codes.FailedPrecondition, msg)
 		}
@@ -81,7 +81,7 @@ func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.Cha
 			if e.Code == errors.NoLogin {
 				msg = "请先登入会员"
 			} else {
-				msg = err.Error()
+				msg = e.Message
 			}
 			return &pb.ChangeRoomReply{}, status.Error(codes.FailedPrecondition, msg)
 		}
