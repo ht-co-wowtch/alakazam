@@ -103,7 +103,7 @@ func (c *chat) ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error) {
 		return nil, errors.ErrRoomClose
 	}
 
-	user, err := c.member.GetSession(uid)
+	user, err := c.member.Get(uid)
 	if err != nil {
 		return nil, err
 	}

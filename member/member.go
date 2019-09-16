@@ -12,6 +12,7 @@ import (
 )
 
 type Chat interface {
+	Get(uid string) (*models.Member, error)
 	GetSession(uid string) (*models.Member, error)
 	Login(rid int, token, server string) (*models.Member, string, error)
 	Logout(uid, key string) (bool, error)
@@ -145,6 +146,17 @@ func (m *Member) GetSession(uid string) (*models.Member, error) {
 	}
 	if member.Type == models.Guest {
 		return nil, errors.ErrLogin
+	}
+	return member, nil
+}
+
+func (m *Member) Get(uid string) (*models.Member, error) {
+	member, err := m.c.get(uid)
+	if err != nil {
+		if err == redis.Nil {
+			return nil, errors.ErrLogin
+		}
+		return nil, err
 	}
 	return member, nil
 }
