@@ -35,8 +35,6 @@ func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, 
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	engine := web.NewHandler()
-	engine.Use(RecoverHandler)
 
 	srv := httpServer{
 		member:  me,
@@ -54,9 +52,18 @@ func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, 
 		AllowHeaders:     conf.HTTPServer.Cors.Headers,
 		MaxAge:           time.Minute * 5,
 	}
-	engine.Use(cors.New(c), authenticationHandler)
+
+	engine := web.NewHandler()
+	engine.Use(RecoverHandler, cors.New(c), authenticationHandler)
 	handler(engine, srv)
-	return web.NewServer(conf.HTTPServer, engine)
+	server := web.NewServer(conf.HTTPServer, engine)
+
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Error(err.Error())
+		}
+	}()
+	return server
 }
 
 func handler(e *gin.Engine, s httpServer) {
@@ -64,7 +71,6 @@ func handler(e *gin.Engine, s httpServer) {
 	e.POST("/red-envelope", s.authUid, ErrHandler(s.giveRedEnvelope))
 	e.PUT("/red-envelope", s.authUid, ErrHandler(s.takeRedEnvelope))
 	e.GET("/red-envelope/:id", ErrHandler(s.getRedEnvelopeDetail))
-	//e.GET("/red-envelope-consume/:id", ErrHandler(s.getRedEnvelope))
 	e.GET("/message/:room", ErrHandler(s.getMessage))
 	e.GET("/top/message/:room", s.authUid, ErrHandler(s.getTopMessage))
 }
