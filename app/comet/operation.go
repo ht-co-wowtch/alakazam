@@ -74,14 +74,6 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 			return nil
 		}
 
-		if err := b.ChangeRoom(r.RoomId, ch); err != nil {
-			log.Error("change room", zap.Error(err), zap.String("data", string(p.Body)))
-			re := newConnect()
-			re.Message = "切换房间失败"
-			p.Body, _ = json.Marshal(re)
-			return nil
-		}
-
 		reply, err := s.logic.ChangeRoom(ctx, &logicpb.ChangeRoomReq{
 			Uid:    ch.Uid,
 			Key:    ch.Key,
@@ -97,6 +89,14 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 			} else {
 				re.Message = s.Message()
 			}
+			p.Body, _ = json.Marshal(re)
+			return nil
+		}
+
+		if err := b.ChangeRoom(r.RoomId, ch); err != nil {
+			log.Error("change room", zap.Error(err), zap.String("data", string(p.Body)))
+			re := newConnect()
+			re.Message = "切换房间失败"
 			p.Body, _ = json.Marshal(re)
 			return nil
 		}
