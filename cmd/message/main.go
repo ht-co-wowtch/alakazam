@@ -5,6 +5,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/message/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"os"
 	"os/signal"
@@ -28,6 +29,7 @@ func main() {
 
 	m := message.New(conf.Conf)
 	m.Run()
+	metrics.RunHttp(conf.Conf.MetricsAddr)
 
 	log.Info("start success")
 

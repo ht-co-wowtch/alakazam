@@ -14,12 +14,13 @@ var (
 
 // Config is comet config.
 type Config struct {
-	Websocket *Websocket
-	TCP       *TCP
-	Protocol  *Protocol
-	Bucket    *Bucket
-	Logic     *grpc.Conf
-	RPCServer *grpc.Conf
+	Websocket   *Websocket
+	TCP         *TCP
+	Protocol    *Protocol
+	Bucket      *Bucket
+	Logic       *grpc.Conf
+	RPCServer   *grpc.Conf
+	MetricsAddr string
 }
 
 // tcp config
@@ -115,6 +116,7 @@ func Read(path string) error {
 		return err
 	}
 	Conf = new(Config)
+	Conf.MetricsAddr = v.GetString("metrics.addr")
 	Conf.Logic, _ = grpc.ReadViper(v.Sub("grpc.logic"))
 	Conf.RPCServer, _ = grpc.ReadViper(v.Sub("grpc.server"))
 	Conf.TCP = &TCP{

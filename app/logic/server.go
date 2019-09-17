@@ -11,7 +11,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	rpccli "gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -58,7 +57,6 @@ func New(c *conf.Config) *Server {
 	httpServer := api.NewServer(c, memberCli, messageProducer, chat, cli, message.NewHistory(db, cache, memberCli))
 	rpcServer := rpc.New(c.RPCServer, chat)
 
-	metrics.RunHttp()
 	log.Infof("http server port [%s]", c.HTTPServer.Addr)
 
 	lis, err := net.Listen(c.RPCServer.Network, c.RPCServer.Addr)

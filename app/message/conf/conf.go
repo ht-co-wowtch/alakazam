@@ -14,9 +14,10 @@ var (
 
 // Config is job config.
 type Config struct {
-	Redis *redis.Conf
-	DB    *database.Conf
-	Kafka *Kafka
+	Redis       *redis.Conf
+	DB          *database.Conf
+	Kafka       *Kafka
+	MetricsAddr string
 }
 
 // kafka config
@@ -38,6 +39,7 @@ func Read(path string) error {
 	}
 
 	Conf = new(Config)
+	Conf.MetricsAddr = v.GetString("metrics.addr")
 	Conf.DB, err = database.ReadViper(v.Sub("database"))
 	if err != nil {
 		return err

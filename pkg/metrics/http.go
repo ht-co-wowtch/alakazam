@@ -6,10 +6,10 @@ import (
 	"net/http"
 )
 
-func RunHttp() {
+func RunHttp(addr string) {
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		err := http.ListenAndServe(":3030", nil)
+		err := http.ListenAndServe(addr, nil)
 		if err != nil && err != http.ErrServerClosed {
 			log.Error(err.Error())
 		}

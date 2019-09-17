@@ -13,9 +13,10 @@ var (
 )
 
 type Config struct {
-	RPCServer *grpc.Conf
-	DB        *database.Conf
-	Redis     *redis.Conf
+	RPCServer   *grpc.Conf
+	DB          *database.Conf
+	Redis       *redis.Conf
+	MetricsAddr string
 }
 
 func init() {
@@ -29,6 +30,7 @@ func Read(path string) error {
 		return err
 	}
 	Conf = new(Config)
+	Conf.MetricsAddr = v.GetString("metrics.addr")
 	Conf.RPCServer, err = grpc.ReadViper(v.Sub("grpc.server"))
 	if err != nil {
 		return err

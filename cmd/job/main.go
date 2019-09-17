@@ -5,6 +5,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/job"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"os"
 	"os/signal"
@@ -28,6 +29,7 @@ func main() {
 
 	j := job.New(conf.Conf)
 	j.Run()
+	metrics.RunHttp(conf.Conf.MetricsAddr)
 
 	log.Info("start success")
 

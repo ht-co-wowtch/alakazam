@@ -5,6 +5,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"os"
 	"os/signal"
@@ -26,6 +27,7 @@ func main() {
 	log.Infof("Using config file: [%s]", confPath)
 
 	srv := logic.New(conf.Conf)
+	metrics.RunHttp(conf.Conf.MetricsAddr)
 
 	// 接收到close signal的處理
 	c := make(chan os.Signal, 1)

@@ -35,6 +35,9 @@ bucket:
   # 每個goroutine推送管道最大緩衝量
   routineSize: 1024
 
+metrics:
+  addr: :3031
+
 log:
   # 開啟debug模式只會紀錄Info Level以上的log
   # 使用DPanic level時會Panic

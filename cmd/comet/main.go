@@ -6,6 +6,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/api"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"math/rand"
 	"os"
@@ -43,6 +44,8 @@ func main() {
 	// 啟動grpc server
 	rpcSrv := api.New(conf.Conf.RPCServer, srv)
 	log.Infof("rpc server port [%s]", conf.Conf.RPCServer.Addr)
+
+	metrics.RunHttp(conf.Conf.MetricsAddr)
 
 	// 接收到close signal的處理
 	c := make(chan os.Signal, 1)
