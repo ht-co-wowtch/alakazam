@@ -9,7 +9,7 @@ import (
 
 func RunHttp(addr string) {
 	go func() {
-		log.Infof("metrics server port [:%s]", addr)
+		log.Infof("metrics server port [%s]", addr)
 		http.Handle("/metrics", promhttp.Handler())
 		http.HandleFunc("/healthz", func(rsp http.ResponseWriter, req *http.Request) {
 			rsp.WriteHeader(http.StatusOK)
