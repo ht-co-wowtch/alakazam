@@ -91,8 +91,10 @@ func (s *httpServer) takeRedEnvelope(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	if reply.Name, err = s.member.GetUserName(reply.Uid); err != nil {
-		return err
+	if reply.Name == "" && reply.Uid != "" {
+		if reply.Name, err = s.member.GetUserName(reply.Uid); err != nil {
+			return err
+		}
 	}
 
 	switch reply.Status {

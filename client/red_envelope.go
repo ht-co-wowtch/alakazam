@@ -28,6 +28,9 @@ type RedEnvelope struct {
 type RedEnvelopeAdmin struct {
 	RedEnvelope
 
+	// 紅包人名稱
+	Name string `json:"name"`
+
 	// 什麼時候發佈
 	PublishAt time.Time `json:"publish_at"`
 }
