@@ -61,12 +61,16 @@ proto-comet:
 	cd app/comet/pb && protoc \
 	--proto_path=${GOPATH}/src \
 	--proto_path=${GOPATH}/src/github.com/gogo/protobuf/protobuf \
+	--proto_path=${GOPATH}/src/github.com/golang/protobuf/ptypes \
 	--proto_path=. \
 	--gofast_out=plugins=grpc:. *.proto \
 	*.proto
 
 proto-seq:
 	cd app/seq/api/pb && protoc \
+	--proto_path=${GOPATH}/src \
+	--proto_path=${GOPATH}/src/github.com/golang/protobuf/ptypes \
+	--proto_path=. \
 	--go_out=plugins=grpc:. *.proto
 
 test:
