@@ -160,6 +160,7 @@ func (p *Producer) Send(msg ProducerMessage) (int64, error) {
 
 type ProducerAdminMessage struct {
 	Rooms   []int32
+	Name    string
 	Message string
 	IsTop   bool
 }
@@ -302,7 +303,7 @@ func (p *Producer) SendRedEnvelopeForAdmin(msg ProducerAdminRedEnvelopeMessage) 
 			Rooms:   msg.Rooms,
 			Mid:     RootMid,
 			Uid:     RootUid,
-			Name:    RootName,
+			Name:    msg.Name,
 			Message: msg.Message,
 			Avatar:  99,
 		},
