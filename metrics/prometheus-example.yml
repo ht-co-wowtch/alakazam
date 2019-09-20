@@ -7,14 +7,14 @@ global:
 # Alertmanager configuration
 alerting:
   alertmanagers:
-  - static_configs:
-    - targets:
-      # - alertmanager:9093
+    - static_configs:
+      - targets:
+          # - alertmanager:9093
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
-  # - "first_rules.yml"
-  # - "second_rules.yml"
+# - "first_rules.yml"
+# - "second_rules.yml"
 
 # A scrape configuration containing exactly one endpoint to scrape:
 # Here it's Prometheus itself.
@@ -23,11 +23,11 @@ scrape_configs:
   - job_name: 'logic'
     static_configs:
       - targets: ['127.0.0.1:3030']
-      
+
   - job_name: 'comet'
     static_configs:
       - targets: ['127.0.0.1:3031']
-      
+
   - job_name: 'job'
     static_configs:
       - targets: ['127.0.0.1:3032']
@@ -36,6 +36,10 @@ scrape_configs:
     static_configs:
       - targets: ['127.0.0.1:3033']
 
-  - job_name: 'seq' 
+  - job_name: 'seq'
     static_configs:
       - targets: ['127.0.0.1:3034']
+
+  - job_name: 'admin'
+    static_configs:
+      - targets: ['127.0.0.1:3035']
