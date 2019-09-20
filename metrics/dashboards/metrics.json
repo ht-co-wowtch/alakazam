@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 3,
-  "iteration": 1568704731906,
+  "id": 1,
+  "iteration": 1568972371445,
   "links": [],
   "panels": [
     {
@@ -66,6 +66,7 @@
         },
         {
           "expr": "rate(go_memstats_alloc_bytes_total{job=\"$job\"}[30s])",
+          "intervalFactor": 5,
           "legendFormat": "alloc rate",
           "refId": "B"
         }
@@ -489,7 +490,7 @@
         "avg": true,
         "current": true,
         "max": true,
-        "min": false,
+        "min": true,
         "show": true,
         "total": false,
         "values": true
@@ -576,7 +577,7 @@
         "avg": true,
         "current": true,
         "max": true,
-        "min": false,
+        "min": true,
         "show": true,
         "total": false,
         "values": true
@@ -655,8 +656,8 @@
         "allValue": null,
         "current": {
           "tags": [],
-          "text": "seq",
-          "value": "seq"
+          "text": "logic",
+          "value": "logic"
         },
         "hide": 0,
         "includeAll": false,
@@ -688,9 +689,14 @@
             "selected": false,
             "text": "seq",
             "value": "seq"
+          },
+          {
+            "selected": false,
+            "text": "admin",
+            "value": "admin"
           }
         ],
-        "query": "logic,comet,job,message,seq",
+        "query": "logic,comet,job,message,seq,admin",
         "skipUrlSync": false,
         "type": "custom"
       }
@@ -717,5 +723,5 @@
   "timezone": "",
   "title": "metrics",
   "uid": "AD8gNkpWk",
-  "version": 6
+  "version": 5
 }
