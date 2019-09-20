@@ -22,7 +22,7 @@ func (s *httpServer) getMessage(c *gin.Context) error {
 	} else {
 		timestamp, err = strconv.ParseInt(timestampStr, 10, 0)
 		if err != nil {
-			return errdefs.InvalidParameter(4000, "时间格式错误", nil)
+			return errdefs.InvalidParameter(4000, "时间格式错误")
 		}
 	}
 

@@ -41,7 +41,7 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 		}
 		if float64(room.DmlLimit) > money.Dml || float64(room.DepositLimit) > money.Deposit {
 			msg := fmt.Sprintf(errors.ErrRoomLimit, room.DayLimit, room.DepositLimit, room.DmlLimit)
-			return errdefs.Unauthorized(5005, msg, nil)
+			return errdefs.Unauthorized(5005, msg)
 		}
 	}
 
