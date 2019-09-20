@@ -12,6 +12,7 @@ import (
 func RunHttp(addr string) {
 	go func() {
 		log.Infof("metrics server port [%s]", addr)
+		gin.SetMode(gin.ReleaseMode)
 		e := gin.New()
 		e.GET("/metrics", gin.WrapH(promhttp.Handler()))
 		e.GET("/healthz", func(c *gin.Context) {
