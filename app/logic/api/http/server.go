@@ -138,13 +138,14 @@ func ErrHandler(f handlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := f(c); err != nil {
 			e := errdefs.Err(err)
-			if e.Status == http.StatusInternalServerError {
+			if e.Err != nil {
 				log.Error(
 					"api error",
+					zap.Int("code", e.Code),
 					zap.String("path", c.Request.URL.Path),
 					zap.String("rawQuery", c.Request.URL.RawQuery),
 					zap.String("method", c.Request.Method),
-					zap.Error(err),
+					zap.Error(e.Err),
 				)
 			}
 			if e.Errors == nil {
