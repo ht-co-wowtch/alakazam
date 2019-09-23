@@ -82,7 +82,7 @@ services:
 > docker-compose up -d 
 ```
 
-6. port `9090 ` and `3000`都對外開放並限制特定IP可存取，ex 台南 and 台北辦公室ip
+6. port `9090 ` and `3000`都對外開放並限制特定IP可存取，ex 台南 and 台中辦公室ip
 
 7. 打開`127.0.0.1:9090/targets`瀏覽器確認prometheus監控狀況，`127.0.0.1`自行更改成主機上的ip，確認是否都為Status為`UP`
 
