@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 1,
-  "iteration": 1568972371445,
+  "iteration": 1569227624804,
   "links": [],
   "panels": [
     {
@@ -67,7 +67,7 @@
         {
           "expr": "rate(go_memstats_alloc_bytes_total{job=\"$job\"}[30s])",
           "intervalFactor": 5,
-          "legendFormat": "alloc rate",
+          "legendFormat": "alloc rate (30s)",
           "refId": "B"
         }
       ],
@@ -251,7 +251,8 @@
           "refId": "A"
         },
         {
-          "expr": "go_memstats_heap_released_bytes{job=\"$job\"}",
+          "expr": "delta(go_memstats_heap_released_bytes{job=\"$job\"}[1m])",
+          "intervalFactor": 2,
           "legendFormat": "heap released",
           "refId": "B"
         }
@@ -646,7 +647,7 @@
       }
     }
   ],
-  "refresh": "30s",
+  "refresh": "5s",
   "schemaVersion": 19,
   "style": "dark",
   "tags": [],
@@ -703,7 +704,7 @@
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {
@@ -723,5 +724,5 @@
   "timezone": "",
   "title": "metrics",
   "uid": "AD8gNkpWk",
-  "version": 5
+  "version": 7
 }
