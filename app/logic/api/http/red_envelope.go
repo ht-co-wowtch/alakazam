@@ -4,6 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -31,6 +33,9 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
+
+	log.Info("give red_envelope api", zap.String("uid", user.Uid), zap.Any("data", arg))
+
 	give := client.RedEnvelope{
 		RoomId:    arg.RoomId,
 		Message:   arg.Message,
