@@ -232,9 +232,11 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 
 	for {
 		if p, err = ch.protoRing.Set(); err != nil {
+			step = 6
 			break
 		}
 		if err = p.ReadWebsocket(ws); err != nil {
+			step = 7
 			break
 		}
 		if p.Op == pb.OpHeartbeat {
@@ -251,14 +253,15 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 			p.Body = nil
 			if now := time.Now(); now.Sub(lastHB) > serverHeartbeat {
 				if err = s.Heartbeat(ctx, ch); err != nil {
+					step = 8
 					break
 				}
 				lastHB = now
 			}
-			step++
 		} else {
 			// 非心跳動作
 			if err = s.Operate(ctx, p, ch, b); err != nil {
+				step = 9
 				break
 			}
 		}
@@ -293,6 +296,7 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 		err    error
 		finish bool
 		online int32
+		step   int
 	)
 
 	for {
@@ -303,6 +307,7 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 		// websocket連線要關閉
 		case pb.ProtoFinish:
 			finish = true
+			step = 1
 			goto failed
 
 			// 有資料需要推送
@@ -310,6 +315,7 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 			for {
 				// 取得上次透過Set()寫入資料的Proto
 				if p, err = ch.protoRing.Get(); err != nil {
+					step = 2
 					break
 				}
 				if p.Op == pb.OpHeartbeatReply {
@@ -317,10 +323,12 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 						online = ch.Room.OnlineNum()
 					}
 					if err = p.WriteWebsocketHeart(ws, online); err != nil {
+						step = 3
 						goto failed
 					}
 				} else {
 					if err = p.WriteWebsocket(ws); err != nil {
+						step = 4
 						goto failed
 					}
 				}
@@ -330,11 +338,13 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 			}
 		default:
 			if err = p.WriteWebsocket(ws); err != nil {
+				step = 5
 				goto failed
 			}
 		}
 		// 送出資料給client
 		if err = ws.Flush(); err != nil {
+			step = 6
 			break
 		}
 	}
@@ -343,7 +353,7 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 	// 2. 回收寫的Buffter
 failed:
 	if err != nil && err != io.EOF && err != websocket.ErrMessageClose {
-		log.Error("dispatch websocket", zap.Error(err), zap.String("uid", ch.Uid))
+		log.Error("dispatch websocket", zap.Error(err), zap.String("uid", ch.Uid), zap.Int("step", step))
 	}
 	ws.Close()
 	wp.Put(wb)
