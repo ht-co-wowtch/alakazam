@@ -16,7 +16,7 @@ const (
 	minServerHeartbeat = time.Minute * 10
 
 	// 通知logic Refresh client連線狀態最大心跳時間
-	maxServerHeartbeat = time.Minute * 30
+	maxServerHeartbeat = time.Minute * 20
 )
 
 func newLogicClient(c *grpc.Conf) pb.LogicClient {
