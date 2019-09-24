@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/conf"
@@ -105,6 +106,13 @@ func (h *httpServer) authUid(c *gin.Context) {
 	}
 
 	c.Set("uid", uid.(string))
+}
+
+func (s *httpServer) Close() error {
+	if err := s.message.Close(); err != nil {
+		return fmt.Errorf("message producer close error(%v)", err)
+	}
+	return nil
 }
 
 var errInternalServer = errdefs.New(0, 0, "应用程序错误")
