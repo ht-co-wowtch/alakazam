@@ -1,8 +1,8 @@
 package comet
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 )
 
 // 用於控制讀寫異步grpc.Proto的環型Pool
@@ -42,12 +42,11 @@ func (r *Ring) init(num uint64) {
 }
 
 // 取用於寫的grpc.Proto，如果讀跟寫游標相等代表沒有可以讀的Proto
-func (r *Ring) Get() (proto *pb.Proto, err error) {
+func (r *Ring) Get() (*pb.Proto, error) {
 	if r.rp == r.wp {
 		return nil, errors.ErrRingEmpty
 	}
-	proto = &r.data[r.rp&r.mask]
-	return
+	return &r.data[r.rp&r.mask], nil
 }
 
 // 讀游標++
@@ -83,12 +82,11 @@ func (r *Ring) GetAdv() {
 //							↑
 //							w
 //
-func (r *Ring) Set() (proto *pb.Proto, err error) {
+func (r *Ring) Set() (*pb.Proto, error) {
 	if r.wp-r.rp >= r.num {
 		return nil, errors.ErrRingFull
 	}
-	proto = &r.data[r.wp&r.mask]
-	return
+	return &r.data[r.wp&r.mask], nil
 }
 
 // 寫游標++
