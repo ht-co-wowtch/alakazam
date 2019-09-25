@@ -40,6 +40,8 @@ func NewProducer(brokers []string, topic string, seq seqpb.SeqClient, cache *red
 	kc := kafka.NewConfig()
 	kc.Version = kafka.V2_3_0_0
 	kc.Producer.Return.Successes = true
+	kc.Producer.RequiredAcks = kafka.WaitForLocal
+	kc.Producer.Retry.Max = 1
 	pub, err := kafka.NewSyncProducer(brokers, kc)
 	if err != nil {
 		panic(err)
