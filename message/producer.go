@@ -39,9 +39,29 @@ type seq struct {
 func NewProducer(brokers []string, topic string, seq seqpb.SeqClient, cache *redis.Client, db *models.Store) *Producer {
 	kc := kafka.NewConfig()
 	kc.Version = kafka.V2_3_0_0
+	// 參數對照https://kafka.apache.org/documentation/#producerconfigs
 	kc.Producer.Return.Successes = true
+	// acks
 	kc.Producer.RequiredAcks = kafka.WaitForLocal
+	// compression.type
+	kc.Producer.Compression = kafka.CompressionNone
+	// retries
 	kc.Producer.Retry.Max = 1
+	// max.in.flight.requests.per.connection
+	kc.Net.MaxOpenRequests = 1
+	// max.request.size，需小於或等於 broker `message.max.bytes`
+	kc.Producer.MaxMessageBytes = 1000000
+	// Producer 最大緩衝Bytes
+	kc.Producer.Flush.Bytes = 16 << 20 // 16MB
+	// linger.ms
+	kc.Producer.Flush.Frequency = time.Duration(0)
+	// batch.size
+	kc.Producer.Flush.Messages = 0
+	// Producer 最大緩衝訊息筆數
+	kc.Producer.Flush.MaxMessages = 0
+	// request.timeout.ms
+	kc.Producer.Timeout = 10 * time.Second
+
 	pub, err := kafka.NewSyncProducer(brokers, kc)
 	if err != nil {
 		panic(err)
