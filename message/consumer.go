@@ -2,7 +2,6 @@ package message
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/gogo/protobuf/proto"
@@ -116,17 +115,12 @@ func (c *consumer) Cleanup(session sarama.ConsumerGroupSession) error {
 	return nil
 }
 
-var errMessageNotFound = errors.New("consumer group claim read message not found")
+//var errMessageNotFound = errors.New("consumer group claim read message not found")
 
 func (c *consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
-	select {
-	case msg, ok := <-claim.Messages():
-		if !ok {
-			return errMessageNotFound
-		}
+	for msg := range claim.Messages() {
 		session.MarkMessage(msg, "")
 		pushMsg := new(pb.PushMsg)
-
 		if err := proto.Unmarshal(msg.Value, pushMsg); err != nil {
 			return fmt.Errorf("proto unmarshal error:[%s] data: [%s]", err.Error(), string(msg.Value))
 		}
