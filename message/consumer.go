@@ -32,9 +32,25 @@ type Config struct {
 func NewConsumer(ctx context.Context, conf Config) *Consumer {
 	config := sarama.NewConfig()
 	config.Version = sarama.V2_3_0_0
-	config.Consumer.Return.Errors = true
-	config.Consumer.Offsets.CommitInterval = time.Second
+
+	// 參考 https://kafka.apache.org/documentation/#consumerconfigs
+	// sarama 沒看到 max.poll.interval.ms ?
+	// enable.auto.commit 不支持
+	// connections.max.idle.ms ?
+
+	// session.timeout.ms
+	config.Consumer.Group.Session.Timeout = 10 * time.Second
+	// heartbeat.interval.ms
+	config.Consumer.Group.Heartbeat.Interval = 3 * time.Second
+	// auto.offset.reset
 	config.Consumer.Offsets.Initial = conf.Offsets.Initial
+	// fetch.min.bytes
+	config.Consumer.Fetch.Min = 1
+	// 相隔多久自動提交Offset
+	config.Consumer.Offsets.CommitInterval = time.Second
+	// 是否透過chan回傳error
+	config.Consumer.Return.Errors = true
+
 	group, err := sarama.NewConsumerGroup(conf.Brokers, conf.Name, config)
 	if err != nil {
 		panic(err)
