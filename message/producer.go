@@ -51,8 +51,8 @@ func NewProducer(brokers []string, topic string, seq seqpb.SeqClient, cache *red
 	kc.Net.MaxOpenRequests = 1
 	// max.request.size，需小於或等於 broker `message.max.bytes`
 	kc.Producer.MaxMessageBytes = 1000000
-	// Producer 最大緩衝Bytes
-	kc.Producer.Flush.Bytes = 16 << 20 // 16MB
+	// Producer 等待多少Bytes後再一併發送給broker
+	kc.Producer.Flush.Bytes = 0
 	// linger.ms
 	kc.Producer.Flush.Frequency = time.Duration(0)
 	// batch.size
