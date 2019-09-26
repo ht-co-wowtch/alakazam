@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"net/http"
@@ -70,15 +71,26 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 
 	msgId := int64(id)
 	rid, msg, err := s.room.GetTopMessage(msgId)
-	if err != nil {
+
+	if err == nil {
+		if err := s.message.CloseTop(msgId, rid); err != nil {
+			return err
+		}
+		if err := s.room.DeleteTopMessage(rid, msgId); err != nil {
+			return err
+		}
+
+		// TODO 因為後台UI介面的因素導致沒有處理`没有资料`情況，所以將`没有资料`情況視為正常
+		// 參考 http://mantis.jetfuel.com.tw/view.php?id=3004
+	} else if err == errors.ErrNoRows {
+		rid = []int32{}
+		msg = models.Message{
+			Message: "没有资料",
+		}
+	} else {
 		return err
 	}
-	if err := s.message.CloseTop(msgId, rid); err != nil {
-		return err
-	}
-	if err := s.room.DeleteTopMessage(rid, msgId); err != nil {
-		return err
-	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"id":      msgId,
 		"message": msg.Message,
