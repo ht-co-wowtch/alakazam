@@ -9,6 +9,7 @@
 - [功能](#features)
 - [聊天室Web Socket協定](#protocol-body)
 - [Web Socket](#web-socket)
+- [Tag](#tag)
 
 ## Quick Start
 
@@ -560,3 +561,21 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 | 15024001, 15024002 | 404       | 红包不存在                                                   |
 | 10021003, 15021003 | 400       | json欄位型態錯誤，如string放int                              |
 | 10020000, 15020000 | 500       | 伺服器出問題                                                 |
+
+
+
+## Tag
+
+`0.24.0`
+
+1. 調整kafka Producer and Consumer Config
+2. 增加發紅包API動作Log
+3. 更新jmeter 腳本
+4. 更新監控儀表板
+5. fix feat: http://mantis.jetfuel.com.tw/view.php?id=3004
+
+`0.24.1`
+
+1. 調整kafka Consumer Config
+2. 解決 log => while consuming push-topic/0: consumer group claim read message not found
+3. 更新jmeter 腳本
