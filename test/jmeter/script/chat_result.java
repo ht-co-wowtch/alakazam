@@ -42,9 +42,10 @@ if (!gotStatus) {
 }
 
 // 判斷room_id
-int gotRoomId = body.getInt("room_id");
-if (gotRoomId != 1) {
-    failureMessage += "room_id 錯誤 got: [" + gotRoomId + "] expect: [1]\n";
+Integer gotRoomId = new Integer(body.getInt("room_id"));
+Integer roomId = new Integer(vars.get("room_id"));
+if (!gotRoomId.equals(roomId)) {
+    failureMessage += "room_id 錯誤 got: [" + gotRoomId + "] expect: [" + roomId + "]\n";
 }
 
 // 判斷permission
