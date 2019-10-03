@@ -21,7 +21,7 @@ require (
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/prometheus/client_golang v1.1.0
-	github.com/rcrowley/go-metrics v0.0.0-20190706150252-9beb055b7962 // indirect
+	github.com/rcrowley/go-metrics v0.0.0-20190706150252-9beb055b7962
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.3.0
 	github.com/yuin/gopher-lua v0.0.0-20190514113301-1cd887cd7036 // indirect
