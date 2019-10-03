@@ -9,6 +9,7 @@ import (
 
 // 參考 https://godoc.org/github.com/Shopify/sarama
 const (
+	// broker
 	incomingByteRateName   = "incoming-byte-rate"
 	outgoingByteRateName   = "outgoing-byte-rate"
 	requestRateName        = "request-rate"
@@ -16,12 +17,18 @@ const (
 	requestLatencyInMsName = "request-latency-in-ms"
 	responseRateName       = "response-rate"
 	responseSizeName       = "response-size"
+
+	// producer
+	batchSizeName         = "batch-size"
+	recordSendRateName    = "record-send-rate"
+	recordsPerRequestName = "records-per-request"
+	compressionRatioName  = "compression-ratio"
 )
 
-type metricCollector struct {
-	brokerDesc       brokerDesc
-	registry         metrics.Registry
-	histogramBuckets []float64
+func registerProducerMetric(registry metrics.Registry) error {
+	metric := newMetricCollector(registry)
+	metric.producerDesc = newProducerDesc()
+	return prometheus.Register(metric)
 }
 
 type brokerDesc struct {
@@ -34,8 +41,8 @@ type brokerDesc struct {
 	responseSize       *prometheus.Desc
 }
 
-func registerMetric(registry metrics.Registry) error {
-	brokerDesc := brokerDesc{
+func newBrokerDesc() brokerDesc {
+	return brokerDesc{
 		incomingByteRate: prometheus.NewDesc(
 			nameNamespace(incomingByteRateName),
 			"Bytes/second read off all brokers",
@@ -72,11 +79,53 @@ func registerMetric(registry metrics.Registry) error {
 			nil, nil,
 		),
 	}
-	return prometheus.Register(&metricCollector{
-		brokerDesc:       brokerDesc,
+}
+
+type producerDesc struct {
+	batchSize         *prometheus.Desc
+	recordSendRate    *prometheus.Desc
+	recordsPerRequest *prometheus.Desc
+	compressionRatio  *prometheus.Desc
+}
+
+func newProducerDesc() producerDesc {
+	return producerDesc{
+		batchSize: prometheus.NewDesc(
+			nameNamespace(batchSizeName),
+			"Distribution of the number of bytes sent per partition per request for topics",
+			nil, nil,
+		),
+		recordSendRate: prometheus.NewDesc(
+			nameNamespace(recordSendRateName),
+			"Records/second sent to topic",
+			nil, nil,
+		),
+		recordsPerRequest: prometheus.NewDesc(
+			nameNamespace(recordsPerRequestName),
+			"Distribution of the number of records sent per request for topics",
+			nil, nil,
+		),
+		compressionRatio: prometheus.NewDesc(
+			nameNamespace(compressionRatioName),
+			"Distribution of the number of records sent per request for topics",
+			nil, nil,
+		),
+	}
+}
+
+type metricCollector struct {
+	brokerDesc       brokerDesc
+	producerDesc     producerDesc
+	registry         metrics.Registry
+	histogramBuckets []float64
+}
+
+func newMetricCollector(registry metrics.Registry) *metricCollector {
+	return &metricCollector{
+		brokerDesc:       newBrokerDesc(),
 		registry:         registry,
 		histogramBuckets: []float64{0.50, 0.75, 0.9, 0.95, 0.99},
-	})
+	}
 }
 
 func (m *metricCollector) Describe(ch chan<- *prometheus.Desc) {
@@ -87,6 +136,13 @@ func (m *metricCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- m.brokerDesc.requestLatencyInMs
 	ch <- m.brokerDesc.responseRate
 	ch <- m.brokerDesc.responseSize
+
+	if m.producerDesc.batchSize != nil {
+		ch <- m.producerDesc.batchSize
+		ch <- m.producerDesc.recordSendRate
+		ch <- m.producerDesc.recordsPerRequest
+		ch <- m.producerDesc.compressionRatio
+	}
 }
 
 func (m *metricCollector) Collect(ch chan<- prometheus.Metric) {
@@ -118,6 +174,8 @@ func (m *metricCollector) collectMeter(ch chan<- prometheus.Metric, name string,
 		desc = m.brokerDesc.requestRate
 	case responseRateName:
 		desc = m.brokerDesc.responseRate
+	case recordSendRateName:
+		desc = m.producerDesc.recordSendRate
 	default:
 		return nil
 	}
@@ -146,6 +204,12 @@ func (m *metricCollector) collectHistogram(ch chan<- prometheus.Metric, name str
 		desc = m.brokerDesc.requestLatencyInMs
 	case responseSizeName:
 		desc = m.brokerDesc.responseSize
+	case batchSizeName:
+		desc = m.producerDesc.batchSize
+	case recordsPerRequestName:
+		desc = m.producerDesc.recordsPerRequest
+	case compressionRatioName:
+		desc = m.producerDesc.compressionRatio
 	default:
 		return nil
 	}

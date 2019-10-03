@@ -67,6 +67,10 @@ func NewProducer(brokers []string, topic string, seq seqpb.SeqClient, cache *red
 		panic(err)
 	}
 
+	if err := registerProducerMetric(kc.MetricRegistry); err != nil {
+		panic(err)
+	}
+
 	f := &filter{
 		db:     db,
 		filter: shield.New(),
