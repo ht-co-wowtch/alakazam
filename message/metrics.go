@@ -11,6 +11,7 @@ import (
 )
 
 // 參考 https://godoc.org/github.com/Shopify/sarama
+// https://docs.confluent.io/current/kafka/monitoring.html#producer-metrics
 const (
 	forBrokerFormatName = "-for-broker-%d"
 	forTopicFormatName  = "-for-topic-%s"
@@ -267,7 +268,8 @@ func (m *metricCollector) Describe(ch chan<- *prometheus.Desc) {
 		ch <- m.producerDesc.batchSize
 		ch <- m.producerDesc.recordSendRate
 		ch <- m.producerDesc.recordsPerRequest
-		ch <- m.producerDesc.compressionRatio
+		// 沒有開訊息壓縮先註解
+		//ch <- m.producerDesc.compressionRatio
 	}
 
 	if m.isConsumerCollector {
@@ -326,7 +328,8 @@ func (m *metricCollector) Collect(ch chan<- prometheus.Metric) {
 		collect.putHistogram(m.producerDesc.batchSize, m.producerDesc.batchSizeNames, topicLabel)
 		collect.putMeter(m.producerDesc.recordSendRate, m.producerDesc.recordSendRateNames, topicLabel)
 		collect.putHistogram(m.producerDesc.recordsPerRequest, m.producerDesc.recordsPerRequestNames, topicLabel)
-		collect.putHistogram(m.producerDesc.compressionRatio, m.producerDesc.compressionRatioNames, topicLabel)
+		// 沒有開訊息壓縮先註解
+		//collect.putHistogram(m.producerDesc.compressionRatio, m.producerDesc.compressionRatioNames, topicLabel)
 	}
 
 	if m.isConsumerCollector {
