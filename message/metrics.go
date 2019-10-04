@@ -13,7 +13,7 @@ import (
 // 參考 https://godoc.org/github.com/Shopify/sarama
 const (
 	forBrokerFormatName = "-for-broker-%d"
-	forTopicFormatName  = "-for-topic-$s"
+	forTopicFormatName  = "-for-topic-%s"
 
 	brokerNameCount   = 7
 	producerNameCount = 4
