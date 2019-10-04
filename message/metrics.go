@@ -107,50 +107,48 @@ func newBrokerDesc(brokerIds []int32) brokerDesc {
 		responseSizeNames = append(responseSizeNames, fmt.Sprintf(responseSizeForBrokerName, id))
 	}
 
-	brokerLabels := []string{"broker"}
-
 	return brokerDesc{
 		incomingByteRateNames: incomingByteRateNames,
 		incomingByteRate: prometheus.NewDesc(
 			nameNamespace(incomingByteRateName),
 			"Bytes/second read off brokers",
-			brokerLabels, nil,
+			[]string{"broker", "key"}, nil,
 		),
 		outgoingByteRateNames: outgoingByteRateNames,
 		outgoingByteRate: prometheus.NewDesc(
 			nameNamespace(outgoingByteRateName),
 			"Bytes/second written off brokers",
-			brokerLabels, nil,
+			[]string{"broker", "key"}, nil,
 		),
 		requestRateNames: requestRateNames,
 		requestRate: prometheus.NewDesc(
 			nameNamespace(requestRateName),
 			"Requests/second sent to brokers",
-			brokerLabels, nil,
+			[]string{"broker", "key"}, nil,
 		),
 		requestSizeNames: requestSizeNames,
 		requestSize: prometheus.NewDesc(
 			nameNamespace(requestSizeName),
 			"Distribution of the request size in bytes for brokers",
-			brokerLabels, nil,
+			[]string{"broker"}, nil,
 		),
 		requestLatencyInMsNames: requestLatencyInMsNames,
 		requestLatencyInMs: prometheus.NewDesc(
 			nameNamespace(requestLatencyInMsName),
 			"Distribution of the request latency in ms for brokers",
-			brokerLabels, nil,
+			[]string{"broker"}, nil,
 		),
 		responseRateNames: responseRateNames,
 		responseRate: prometheus.NewDesc(
 			nameNamespace(responseRateName),
 			"Responses/second received from brokers",
-			brokerLabels, nil,
+			[]string{"broker", "key"}, nil,
 		),
 		responseSizeNames: responseSizeNames,
 		responseSize: prometheus.NewDesc(
 			nameNamespace(responseSizeName),
 			"Distribution of the response size in bytes for brokers",
-			brokerLabels, nil,
+			[]string{"broker"}, nil,
 		),
 	}
 }
@@ -172,8 +170,6 @@ func newProducerDesc(topics []string) producerDesc {
 	recordsPerRequestNames := []string{recordsPerRequestName}
 	compressionRatioNames := []string{compressionRatioName}
 
-	topicLabels := []string{"topic"}
-
 	for _, name := range topics {
 		batchSizeNames = append(batchSizeNames, fmt.Sprintf(batchSizeForTopicName, name))
 		recordSendRateNames = append(recordSendRateNames, fmt.Sprintf(recordSendRateForTopicName, name))
@@ -186,25 +182,25 @@ func newProducerDesc(topics []string) producerDesc {
 		batchSize: prometheus.NewDesc(
 			nameNamespace(batchSizeName),
 			"Distribution of the number of bytes sent per partition per request for topics",
-			topicLabels, nil,
+			[]string{"topic"}, nil,
 		),
 		recordSendRateNames: recordSendRateNames,
 		recordSendRate: prometheus.NewDesc(
 			nameNamespace(recordSendRateName),
 			"Records/second sent to topic",
-			topicLabels, nil,
+			[]string{"topic", "key"}, nil,
 		),
 		recordsPerRequestNames: recordsPerRequestNames,
 		recordsPerRequest: prometheus.NewDesc(
 			nameNamespace(recordsPerRequestName),
 			"Distribution of the number of records sent per request for topics",
-			topicLabels, nil,
+			[]string{"topic"}, nil,
 		),
 		compressionRatioNames: compressionRatioNames,
 		compressionRatio: prometheus.NewDesc(
 			nameNamespace(compressionRatioName),
 			"Distribution of the number of records sent per request for topics",
-			topicLabels, nil,
+			[]string{"topic"}, nil,
 		),
 	}
 }
@@ -373,17 +369,25 @@ type metricConst struct {
 func (m *metricConst) putMeter(desc *prometheus.Desc, name []string, label []string) {
 	for i, n := range name {
 		if data, ok := m.meter[n]; ok {
-			metric, err := prometheus.NewConstMetric(
-				desc,
-				prometheus.CounterValue,
-				float64(data.Snapshot().Count()),
-				label[i],
-			)
+			snapshot := data.Snapshot()
 
-			if err == nil {
-				m.metrics = append(m.metrics, metric)
-			} else {
-				log.Errorf("collect metric [%s] meter error: %v", name, err)
+			data := map[string]float64{
+				"count": float64(snapshot.Count()),
+				"5m":    snapshot.Rate5(),
+			}
+
+			for key, value := range data {
+				metric, err := prometheus.NewConstMetric(
+					desc,
+					prometheus.CounterValue,
+					value,
+					label[i], key,
+				)
+				if err == nil {
+					m.metrics = append(m.metrics, metric)
+				} else {
+					log.Errorf("collect metric [%s] meter for key: %s error: %v", name, key, err)
+				}
 			}
 		}
 	}
@@ -396,8 +400,8 @@ func (m *metricConst) putHistogram(desc *prometheus.Desc, name []string, label [
 			snapshot := data.Snapshot()
 
 			ps := snapshot.Percentiles(m.histogramBuckets)
-			for i, b := range m.histogramBuckets {
-				buckets[b] = uint64(ps[i])
+			for of, b := range m.histogramBuckets {
+				buckets[b] = uint64(ps[of])
 			}
 
 			metric, err := prometheus.NewConstHistogram(
