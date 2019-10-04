@@ -62,12 +62,17 @@ func NewProducer(brokers []string, topic string, seq seqpb.SeqClient, cache *red
 	// request.timeout.ms
 	kc.Producer.Timeout = 10 * time.Second
 
-	pub, err := kafka.NewSyncProducer(brokers, kc)
+	client, err := kafka.NewClient(brokers, kc)
 	if err != nil {
 		panic(err)
 	}
 
-	if err := registerProducerMetric(kc.MetricRegistry); err != nil {
+	pub, err := kafka.NewSyncProducerFromClient(client)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := registerProducerMetric(client, kc.MetricRegistry); err != nil {
 		panic(err)
 	}
 

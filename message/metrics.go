@@ -1,131 +1,261 @@
 package message
 
 import (
+	"fmt"
+	kafka "github.com/Shopify/sarama"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rcrowley/go-metrics"
 	"gitlab.com/jetfueltw/cpw/micro/log"
+	"strconv"
 	"strings"
 )
 
 // 參考 https://godoc.org/github.com/Shopify/sarama
 const (
-	// broker
-	incomingByteRateName   = "incoming-byte-rate"
-	outgoingByteRateName   = "outgoing-byte-rate"
-	requestRateName        = "request-rate"
-	requestSizeName        = "request-size"
-	requestLatencyInMsName = "request-latency-in-ms"
-	responseRateName       = "response-rate"
-	responseSizeName       = "response-size"
+	forBrokerFormatName = "-for-broker-%d"
+	forTopicFormatName  = "-for-topic-$s"
 
-	// producer
-	batchSizeName         = "batch-size"
-	recordSendRateName    = "record-send-rate"
-	recordsPerRequestName = "records-per-request"
-	compressionRatioName  = "compression-ratio"
+	brokerNameCount   = 7
+	producerNameCount = 4
+	consumerNameCount = 1
+
+	// broker name
+	incomingByteRateName            = "incoming-byte-rate"
+	incomingByteRateForBrokerName   = incomingByteRateName + forBrokerFormatName
+	outgoingByteRateName            = "outgoing-byte-rate"
+	outgoingByteRateForBrokerName   = outgoingByteRateName + forBrokerFormatName
+	requestRateName                 = "request-rate"
+	requestRateForBrokerName        = requestRateName + forBrokerFormatName
+	requestSizeName                 = "request-size"
+	requestSizeForBrokerName        = requestSizeName + forBrokerFormatName
+	requestLatencyInMsName          = "request-latency-in-ms"
+	requestLatencyInMsForBrokerName = requestLatencyInMsName + forBrokerFormatName
+	responseRateName                = "response-rate"
+	responseRateForBrokerName       = responseRateName + forBrokerFormatName
+	responseSizeName                = "response-size"
+	responseSizeForBrokerName       = responseSizeName + forBrokerFormatName
+
+	// producer name
+	batchSizeName                 = "batch-size"
+	batchSizeForTopicName         = batchSizeName + forTopicFormatName
+	recordSendRateName            = "record-send-rate"
+	recordSendRateForTopicName    = recordSendRateName + forTopicFormatName
+	recordsPerRequestName         = "records-per-request"
+	recordsPerRequestForTopicName = recordsPerRequestName + forTopicFormatName
+	compressionRatioName          = "compression-ratio"
+	compressionRatioForTopicName  = compressionRatioName + forTopicFormatName
+
+	// consumer name
+	consumerBatchSizeName = "consumer-batch-size"
 )
 
-func registerProducerMetric(registry metrics.Registry) error {
-	metric := newMetricCollector(registry)
-	metric.producerDesc = newProducerDesc()
+func registerProducerMetric(client kafka.Client, registry metrics.Registry) error {
+	metric, err := newMetricCollector(client, registry)
+	if err != nil {
+		return err
+	}
+
+	metric.producerDesc = newProducerDesc(metric.topics)
+	metric.isConsumerCollector = false
+	return prometheus.Register(metric)
+}
+
+func registerConsumerMetric(client kafka.Client, registry metrics.Registry) error {
+	metric, err := newMetricCollector(client, registry)
+	if err != nil {
+		return err
+	}
+
+	metric.consumerDesc = newConsumerDesc()
+	metric.isProducerCollector = false
 	return prometheus.Register(metric)
 }
 
 type brokerDesc struct {
-	incomingByteRate   *prometheus.Desc
-	outgoingByteRate   *prometheus.Desc
-	requestRate        *prometheus.Desc
-	requestSize        *prometheus.Desc
-	requestLatencyInMs *prometheus.Desc
-	responseRate       *prometheus.Desc
-	responseSize       *prometheus.Desc
+	incomingByteRate        *prometheus.Desc
+	outgoingByteRate        *prometheus.Desc
+	requestRate             *prometheus.Desc
+	requestSize             *prometheus.Desc
+	requestLatencyInMs      *prometheus.Desc
+	responseRate            *prometheus.Desc
+	responseSize            *prometheus.Desc
+	incomingByteRateNames   []string
+	outgoingByteRateNames   []string
+	requestRateNames        []string
+	requestSizeNames        []string
+	requestLatencyInMsNames []string
+	responseRateNames       []string
+	responseSizeNames       []string
 }
 
-func newBrokerDesc() brokerDesc {
+func newBrokerDesc(brokerIds []int32) brokerDesc {
+	incomingByteRateNames := []string{incomingByteRateName}
+	outgoingByteRateNames := []string{outgoingByteRateName}
+	requestRateNames := []string{requestRateName}
+	requestSizeNames := []string{requestSizeName}
+	requestLatencyInMsNames := []string{requestLatencyInMsName}
+	responseRateNames := []string{responseRateName}
+	responseSizeNames := []string{responseSizeName}
+
+	for _, id := range brokerIds {
+		incomingByteRateNames = append(incomingByteRateNames, fmt.Sprintf(incomingByteRateForBrokerName, id))
+		outgoingByteRateNames = append(outgoingByteRateNames, fmt.Sprintf(outgoingByteRateForBrokerName, id))
+		requestRateNames = append(requestRateNames, fmt.Sprintf(requestRateForBrokerName, id))
+		requestSizeNames = append(requestSizeNames, fmt.Sprintf(requestSizeForBrokerName, id))
+		requestLatencyInMsNames = append(requestLatencyInMsNames, fmt.Sprintf(requestLatencyInMsForBrokerName, id))
+		responseRateNames = append(responseRateNames, fmt.Sprintf(responseRateForBrokerName, id))
+		responseSizeNames = append(responseSizeNames, fmt.Sprintf(responseSizeForBrokerName, id))
+	}
+
+	brokerLabels := []string{"broker"}
+
 	return brokerDesc{
+		incomingByteRateNames: incomingByteRateNames,
 		incomingByteRate: prometheus.NewDesc(
 			nameNamespace(incomingByteRateName),
-			"Bytes/second read off all brokers",
-			nil, nil,
+			"Bytes/second read off brokers",
+			brokerLabels, nil,
 		),
+		outgoingByteRateNames: outgoingByteRateNames,
 		outgoingByteRate: prometheus.NewDesc(
 			nameNamespace(outgoingByteRateName),
-			"Bytes/second written off all brokers",
-			nil, nil,
+			"Bytes/second written off brokers",
+			brokerLabels, nil,
 		),
+		requestRateNames: requestRateNames,
 		requestRate: prometheus.NewDesc(
 			nameNamespace(requestRateName),
-			"Requests/second sent to all brokers",
-			nil, nil,
+			"Requests/second sent to brokers",
+			brokerLabels, nil,
 		),
+		requestSizeNames: requestSizeNames,
 		requestSize: prometheus.NewDesc(
 			nameNamespace(requestSizeName),
-			"Distribution of the request size in bytes for all brokers",
-			nil, nil,
+			"Distribution of the request size in bytes for brokers",
+			brokerLabels, nil,
 		),
+		requestLatencyInMsNames: requestLatencyInMsNames,
 		requestLatencyInMs: prometheus.NewDesc(
 			nameNamespace(requestLatencyInMsName),
-			"Distribution of the request latency in ms for all brokers",
-			nil, nil,
+			"Distribution of the request latency in ms for brokers",
+			brokerLabels, nil,
 		),
+		responseRateNames: responseRateNames,
 		responseRate: prometheus.NewDesc(
 			nameNamespace(responseRateName),
-			"Responses/second received from all brokers",
-			nil, nil,
+			"Responses/second received from brokers",
+			brokerLabels, nil,
 		),
+		responseSizeNames: responseSizeNames,
 		responseSize: prometheus.NewDesc(
 			nameNamespace(responseSizeName),
-			"Distribution of the response size in bytes for all brokers",
-			nil, nil,
+			"Distribution of the response size in bytes for brokers",
+			brokerLabels, nil,
 		),
 	}
 }
 
 type producerDesc struct {
-	batchSize         *prometheus.Desc
-	recordSendRate    *prometheus.Desc
-	recordsPerRequest *prometheus.Desc
-	compressionRatio  *prometheus.Desc
+	batchSize              *prometheus.Desc
+	recordSendRate         *prometheus.Desc
+	recordsPerRequest      *prometheus.Desc
+	compressionRatio       *prometheus.Desc
+	batchSizeNames         []string
+	recordSendRateNames    []string
+	recordsPerRequestNames []string
+	compressionRatioNames  []string
 }
 
-func newProducerDesc() producerDesc {
+func newProducerDesc(topics []string) producerDesc {
+	batchSizeNames := []string{batchSizeName}
+	recordSendRateNames := []string{recordSendRateName}
+	recordsPerRequestNames := []string{recordsPerRequestName}
+	compressionRatioNames := []string{compressionRatioName}
+
+	topicLabels := []string{"topic"}
+
+	for _, name := range topics {
+		batchSizeNames = append(batchSizeNames, fmt.Sprintf(batchSizeForTopicName, name))
+		recordSendRateNames = append(recordSendRateNames, fmt.Sprintf(recordSendRateForTopicName, name))
+		recordsPerRequestNames = append(recordsPerRequestNames, fmt.Sprintf(recordsPerRequestForTopicName, name))
+		compressionRatioNames = append(compressionRatioNames, fmt.Sprintf(compressionRatioForTopicName, name))
+	}
+
 	return producerDesc{
+		batchSizeNames: batchSizeNames,
 		batchSize: prometheus.NewDesc(
 			nameNamespace(batchSizeName),
 			"Distribution of the number of bytes sent per partition per request for topics",
-			nil, nil,
+			topicLabels, nil,
 		),
+		recordSendRateNames: recordSendRateNames,
 		recordSendRate: prometheus.NewDesc(
 			nameNamespace(recordSendRateName),
 			"Records/second sent to topic",
-			nil, nil,
+			topicLabels, nil,
 		),
+		recordsPerRequestNames: recordsPerRequestNames,
 		recordsPerRequest: prometheus.NewDesc(
 			nameNamespace(recordsPerRequestName),
 			"Distribution of the number of records sent per request for topics",
-			nil, nil,
+			topicLabels, nil,
 		),
+		compressionRatioNames: compressionRatioNames,
 		compressionRatio: prometheus.NewDesc(
 			nameNamespace(compressionRatioName),
 			"Distribution of the number of records sent per request for topics",
+			topicLabels, nil,
+		),
+	}
+}
+
+type consumerDesc struct {
+	consumerBatchSize *prometheus.Desc
+}
+
+func newConsumerDesc() consumerDesc {
+	return consumerDesc{
+		consumerBatchSize: prometheus.NewDesc(
+			nameNamespace(consumerBatchSizeName),
+			"Distribution of the number of messages in a batch",
 			nil, nil,
 		),
 	}
 }
 
 type metricCollector struct {
-	brokerDesc       brokerDesc
-	producerDesc     producerDesc
-	registry         metrics.Registry
-	histogramBuckets []float64
+	brokerIds           []int32
+	topics              []string
+	brokerDesc          brokerDesc
+	producerDesc        producerDesc
+	consumerDesc        consumerDesc
+	registry            metrics.Registry
+	histogramBuckets    []float64
+	isProducerCollector bool
+	isConsumerCollector bool
 }
 
-func newMetricCollector(registry metrics.Registry) *metricCollector {
-	return &metricCollector{
-		brokerDesc:       newBrokerDesc(),
-		registry:         registry,
-		histogramBuckets: []float64{0.50, 0.75, 0.9, 0.95, 0.99},
+func newMetricCollector(client kafka.Client, registry metrics.Registry) (*metricCollector, error) {
+	var bid []int32
+
+	for _, b := range client.Brokers() {
+		bid = append(bid, b.ID())
 	}
+
+	topics, err := client.Topics()
+	if err != nil {
+		return nil, err
+	}
+
+	return &metricCollector{
+		brokerIds:           bid,
+		topics:              topics,
+		brokerDesc:          newBrokerDesc(bid),
+		registry:            registry,
+		histogramBuckets:    []float64{0.50, 0.75, 0.9, 0.95, 0.99},
+		isProducerCollector: true,
+		isConsumerCollector: true,
+	}, nil
 }
 
 func (m *metricCollector) Describe(ch chan<- *prometheus.Desc) {
@@ -137,102 +267,154 @@ func (m *metricCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- m.brokerDesc.responseRate
 	ch <- m.brokerDesc.responseSize
 
-	if m.producerDesc.batchSize != nil {
+	if m.isProducerCollector {
 		ch <- m.producerDesc.batchSize
 		ch <- m.producerDesc.recordSendRate
 		ch <- m.producerDesc.recordsPerRequest
 		ch <- m.producerDesc.compressionRatio
 	}
+
+	if m.isConsumerCollector {
+		ch <- m.consumerDesc.consumerBatchSize
+	}
 }
 
 func (m *metricCollector) Collect(ch chan<- prometheus.Metric) {
+	brokerLabel := []string{"all"}
+	for _, id := range m.brokerIds {
+		brokerLabel = append(brokerLabel, strconv.Itoa(int(id)))
+	}
+
+	topicLabel := []string{"all"}
+	for _, name := range m.topics {
+		if name == "__consumer_offsets" {
+			continue
+		}
+		topicLabel = append(topicLabel, name)
+	}
+
+	count := brokerNameCount * len(brokerLabel)
+
+	if m.isProducerCollector {
+		count += producerNameCount * len(topicLabel)
+	}
+	if m.isConsumerCollector {
+		count += consumerNameCount
+	}
+
+	collect := &metricConst{
+		metrics:          make([]prometheus.Metric, 0, count),
+		meter:            make(map[string]metrics.Meter),
+		histogram:        make(map[string]metrics.Histogram),
+		histogramBuckets: m.histogramBuckets,
+	}
+
 	m.registry.Each(func(name string, collector interface{}) {
 		switch v := collector.(type) {
 		case metrics.Meter:
-			if err := m.collectMeter(ch, name, v); err != nil {
-				log.Errorf("collect metric [%s] meter error: %v", name, err)
-			}
+			collect.meter[name] = v
 		case metrics.Histogram:
-			if err := m.collectHistogram(ch, name, v); err != nil {
-				log.Errorf("collect histogram [%s] meter error: %v", name, err)
-			}
+			collect.histogram[name] = v
 		}
 	})
+
+	collect.putMeter(m.brokerDesc.incomingByteRate, m.brokerDesc.incomingByteRateNames, brokerLabel)
+	collect.putMeter(m.brokerDesc.outgoingByteRate, m.brokerDesc.outgoingByteRateNames, brokerLabel)
+	collect.putHistogram(m.brokerDesc.requestSize, m.brokerDesc.requestSizeNames, brokerLabel)
+	collect.putMeter(m.brokerDesc.requestRate, m.brokerDesc.requestRateNames, brokerLabel)
+	collect.putHistogram(m.brokerDesc.requestLatencyInMs, m.brokerDesc.requestLatencyInMsNames, brokerLabel)
+	collect.putHistogram(m.brokerDesc.responseSize, m.brokerDesc.responseSizeNames, brokerLabel)
+	collect.putMeter(m.brokerDesc.responseRate, m.brokerDesc.responseRateNames, brokerLabel)
+
+	if m.isProducerCollector {
+		collect.putHistogram(m.producerDesc.batchSize, m.producerDesc.batchSizeNames, topicLabel)
+		collect.putMeter(m.producerDesc.recordSendRate, m.producerDesc.recordSendRateNames, topicLabel)
+		collect.putHistogram(m.producerDesc.recordsPerRequest, m.producerDesc.recordsPerRequestNames, topicLabel)
+		collect.putHistogram(m.producerDesc.compressionRatio, m.producerDesc.compressionRatioNames, topicLabel)
+	}
+
+	if m.isConsumerCollector {
+		if consumer, ok := collect.histogram[consumerBatchSizeName]; ok {
+			snapshot := consumer.Snapshot()
+			buckets := make(map[float64]uint64)
+
+			ps := snapshot.Percentiles(m.histogramBuckets)
+			for i, b := range m.histogramBuckets {
+				buckets[b] = uint64(ps[i])
+			}
+
+			metric, err := prometheus.NewConstHistogram(
+				m.consumerDesc.consumerBatchSize,
+				uint64(snapshot.Count()),
+				float64(snapshot.Sum()),
+				buckets,
+			)
+
+			if err == nil {
+				ch <- metric
+			} else {
+				log.Errorf("collect metric [%s] histogram error: %v", consumerBatchSizeName, err)
+			}
+		}
+	}
+
+	for _, v := range collect.metrics {
+		ch <- v
+	}
 }
 
-func (m *metricCollector) collectMeter(ch chan<- prometheus.Metric, name string, meter metrics.Meter) error {
-	var metric prometheus.Metric
-	var desc *prometheus.Desc
-	var err error
-
-	switch name {
-	case incomingByteRateName:
-		desc = m.brokerDesc.incomingByteRate
-	case outgoingByteRateName:
-		desc = m.brokerDesc.outgoingByteRate
-	case requestRateName:
-		desc = m.brokerDesc.requestRate
-	case responseRateName:
-		desc = m.brokerDesc.responseRate
-	case recordSendRateName:
-		desc = m.producerDesc.recordSendRate
-	default:
-		return nil
-	}
-
-	metric, err = prometheus.NewConstMetric(
-		desc,
-		prometheus.CounterValue,
-		float64(meter.Snapshot().Count()),
-	)
-
-	if err == nil && metric != nil {
-		ch <- metric
-	}
-	return err
+type metricConst struct {
+	metrics          []prometheus.Metric
+	meter            map[string]metrics.Meter
+	histogram        map[string]metrics.Histogram
+	histogramBuckets []float64
 }
 
-func (m *metricCollector) collectHistogram(ch chan<- prometheus.Metric, name string, histogram metrics.Histogram) error {
-	var metric prometheus.Metric
-	var desc *prometheus.Desc
-	var err error
+func (m *metricConst) putMeter(desc *prometheus.Desc, name []string, label []string) {
+	for i, n := range name {
+		if data, ok := m.meter[n]; ok {
+			metric, err := prometheus.NewConstMetric(
+				desc,
+				prometheus.CounterValue,
+				float64(data.Snapshot().Count()),
+				label[i],
+			)
 
-	switch name {
-	case requestSizeName:
-		desc = m.brokerDesc.requestSize
-	case requestLatencyInMsName:
-		desc = m.brokerDesc.requestLatencyInMs
-	case responseSizeName:
-		desc = m.brokerDesc.responseSize
-	case batchSizeName:
-		desc = m.producerDesc.batchSize
-	case recordsPerRequestName:
-		desc = m.producerDesc.recordsPerRequest
-	case compressionRatioName:
-		desc = m.producerDesc.compressionRatio
-	default:
-		return nil
+			if err == nil {
+				m.metrics = append(m.metrics, metric)
+			} else {
+				log.Errorf("collect metric [%s] meter error: %v", name, err)
+			}
+		}
 	}
+}
 
-	buckets := make(map[float64]uint64)
-	snapshot := histogram.Snapshot()
+func (m *metricConst) putHistogram(desc *prometheus.Desc, name []string, label []string) {
+	for i, n := range name {
+		if data, ok := m.histogram[n]; ok {
+			buckets := make(map[float64]uint64)
+			snapshot := data.Snapshot()
 
-	ps := snapshot.Percentiles(m.histogramBuckets)
-	for i, b := range m.histogramBuckets {
-		buckets[b] = uint64(ps[i])
+			ps := snapshot.Percentiles(m.histogramBuckets)
+			for i, b := range m.histogramBuckets {
+				buckets[b] = uint64(ps[i])
+			}
+
+			metric, err := prometheus.NewConstHistogram(
+				desc,
+				uint64(snapshot.Count()),
+				float64(snapshot.Sum()),
+				buckets,
+				label[i],
+			)
+
+			if err == nil {
+				m.metrics = append(m.metrics, metric)
+			} else {
+				log.Errorf("collect metric [%s] histogram error: %v", name, err)
+			}
+		}
 	}
-
-	metric, err = prometheus.NewConstHistogram(
-		desc,
-		uint64(snapshot.Count()),
-		float64(snapshot.Sum()),
-		buckets,
-	)
-
-	if err == nil && metric != nil {
-		ch <- metric
-	}
-	return err
 }
 
 func nameNamespace(name string) string {

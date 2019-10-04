@@ -50,10 +50,20 @@ func NewConsumer(ctx context.Context, conf Config) *Consumer {
 	// 是否透過chan回傳error
 	config.Consumer.Return.Errors = true
 
-	group, err := sarama.NewConsumerGroup(conf.Brokers, conf.Name, config)
+	client, err := sarama.NewClient(conf.Brokers, config)
 	if err != nil {
 		panic(err)
 	}
+
+	group, err := sarama.NewConsumerGroupFromClient(conf.Name, client)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := registerConsumerMetric(client, config.MetricRegistry); err != nil {
+		panic(err)
+	}
+
 	c := &Consumer{
 		ctx:   ctx,
 		topic: conf.Topic,
