@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 4,
-  "iteration": 1570175838298,
+  "iteration": 1570248231650,
   "links": [],
   "panels": [
     {
@@ -60,13 +60,13 @@
       "targets": [
         {
           "expr": "go_memstats_alloc_bytes{job=\"$job\"}",
-          "intervalFactor": 5,
+          "intervalFactor": 2,
           "legendFormat": "bytes allocated",
           "refId": "A"
         },
         {
           "expr": "rate(go_memstats_alloc_bytes_total{job=\"$job\"}[30s])",
-          "intervalFactor": 5,
+          "intervalFactor": 2,
           "legendFormat": "alloc rate",
           "refId": "B"
         }
@@ -91,9 +91,9 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "bytes",
           "label": null,
-          "logBase": 1,
+          "logBase": 32,
           "max": null,
           "min": null,
           "show": true
@@ -153,13 +153,13 @@
       "targets": [
         {
           "expr": "go_memstats_heap_inuse_bytes{job=\"$job\"}",
-          "intervalFactor": 3,
+          "intervalFactor": 2,
           "legendFormat": "heap inuse",
           "refId": "A"
         },
         {
           "expr": "go_memstats_stack_inuse_bytes{job=\"$job\"}",
-          "intervalFactor": 5,
+          "intervalFactor": 2,
           "legendFormat": "stack inuse",
           "refId": "B"
         }
@@ -184,9 +184,9 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "bytes",
           "label": null,
-          "logBase": 1,
+          "logBase": 32,
           "max": null,
           "min": null,
           "show": true
@@ -246,12 +246,13 @@
       "targets": [
         {
           "expr": "go_memstats_heap_idle_bytes{job=\"$job\"}",
-          "intervalFactor": 5,
+          "intervalFactor": 2,
           "legendFormat": "heap idle",
           "refId": "A"
         },
         {
           "expr": "go_memstats_heap_released_bytes{job=\"$job\"}",
+          "intervalFactor": 2,
           "legendFormat": "heap released",
           "refId": "B"
         }
@@ -276,9 +277,9 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "bytes",
           "label": null,
-          "logBase": 1,
+          "logBase": 10,
           "max": null,
           "min": null,
           "show": true
@@ -306,7 +307,7 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 7,
-        "w": 8,
+        "w": 16,
         "x": 8,
         "y": 8
       },
@@ -317,6 +318,7 @@
         "current": true,
         "max": true,
         "min": false,
+        "rightSide": true,
         "show": true,
         "total": false,
         "values": true
@@ -363,94 +365,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 16,
-        "y": 8
-      },
-      "id": 10,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "max": true,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "go_goroutines{job=\"$job\"}",
-          "intervalFactor": 3,
-          "legendFormat": "goroutines",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Goroutines",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
+          "format": "s",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -512,7 +427,7 @@
       "targets": [
         {
           "expr": "time() - go_memstats_last_gc_time_seconds{job=\"$job\"}",
-          "intervalFactor": 10,
+          "intervalFactor": 2,
           "legendFormat": "sec",
           "refId": "A"
         }
@@ -537,7 +452,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "s",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -599,7 +514,7 @@
       "targets": [
         {
           "expr": "go_memstats_next_gc_bytes{job=\"$job\"}",
-          "intervalFactor": 10,
+          "intervalFactor": 2,
           "legendFormat": "bytes",
           "refId": "A"
         }
@@ -624,9 +539,96 @@
       },
       "yaxes": [
         {
+          "format": "bytes",
+          "label": null,
+          "logBase": 2,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
           "format": "short",
           "label": null,
           "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 15
+      },
+      "id": 10,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "go_goroutines{job=\"$job\"}",
+          "intervalFactor": 2,
+          "legendFormat": "goroutines",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Goroutines",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 10,
           "max": null,
           "min": null,
           "show": true
@@ -723,5 +725,5 @@
   "timezone": "",
   "title": "metrics",
   "uid": "AD8gNkpWQ",
-  "version": 2
+  "version": 4
 }

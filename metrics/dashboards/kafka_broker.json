@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 17,
-  "iteration": 1570175824269,
+  "iteration": 1570248177225,
   "links": [],
   "panels": [
     {
@@ -145,171 +145,90 @@
       "type": "bargauge"
     },
     {
-      "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
-      "description": "一個Cluster一定要有一個存活負責處理所有請求\n如果==0代表Cluster broker沒有選舉成功",
-      "format": "none",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "description": "Leader選舉次數",
+      "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
-        "h": 2,
-        "w": 4,
+        "h": 6,
+        "w": 8,
         "x": 8,
         "y": 1
       },
-      "id": 13,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "options": {},
-      "pluginVersion": "6.3.5",
-      "postfix": "",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": false,
-        "ymax": null,
-        "ymin": null
+      "id": 28,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
       },
-      "tableColumn": "",
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_controller_KafkaController_Value{name=\"ActiveControllerCount\"}",
+          "expr": "kafka_controller_ControllerStats_Count{name=\"LeaderElectionRateAndTimeMs\"}",
+          "legendFormat": "count",
           "refId": "A"
         }
       ],
-      "thresholds": "",
+      "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
-      "title": "Active Controller Count",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "avg"
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
-      "format": "decbytes",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
+      "title": "Leader election count",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
       },
-      "gridPos": {
-        "h": 2,
-        "w": 4,
-        "x": 12,
-        "y": 1
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
       },
-      "id": 24,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
+      "yaxes": [
         {
-          "name": "value to text",
-          "value": 1
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
         },
         {
-          "name": "range to text",
-          "value": 2
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
         }
       ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "options": {},
-      "postfix": "",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": false,
-        "ymax": null,
-        "ymin": null
-      },
-      "tableColumn": "",
-      "targets": [
-        {
-          "expr": "sum(kafka_log_Log_Value{name=\"Size\", topic=\"$topic\"})",
-          "legendFormat": "$topic",
-          "refId": "A"
-        }
-      ],
-      "thresholds": "",
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "\"$topic\" topic total bytes",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "avg"
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
@@ -320,7 +239,7 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 8,
+        "h": 10,
         "w": 8,
         "x": 16,
         "y": 1
@@ -404,90 +323,228 @@
       }
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "description": "Leader選舉次數",
-      "fill": 1,
-      "fillGradient": 0,
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "description": "一個Cluster一定要有一個存活負責處理所有請求\n如果==0代表Cluster broker沒有選舉成功",
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
       "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 8,
-        "y": 3
+        "h": 2,
+        "w": 4,
+        "x": 0,
+        "y": 5
       },
-      "id": 28,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
+      "id": 13,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
+      "pluginVersion": "6.3.5",
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false,
+        "ymax": null,
+        "ymin": null
       },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
+      "tableColumn": "",
       "targets": [
         {
-          "expr": "kafka_controller_ControllerStats_Count{name=\"LeaderElectionRateAndTimeMs\"}",
-          "legendFormat": "count",
+          "expr": "kafka_controller_KafkaController_Value{name=\"ActiveControllerCount\"}",
           "refId": "A"
         }
       ],
-      "thresholds": [],
+      "thresholds": "",
       "timeFrom": null,
-      "timeRegions": [],
       "timeShift": null,
-      "title": "Leader election count",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
+      "title": "Active Controller Count",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
         {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
         }
       ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+      "valueName": "avg"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "format": "decbytes",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 4,
+        "x": 4,
+        "y": 5
+      },
+      "id": 24,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "sum(kafka_log_Log_Value{name=\"Size\", topic=\"$topic\"})",
+          "legendFormat": "$topic",
+          "refId": "A"
+        }
+      ],
+      "thresholds": "",
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "\"$topic\" topic total bytes",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "avg"
+    },
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 7
+      },
+      "id": 22,
+      "options": {
+        "fieldOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "defaults": {
+            "mappings": [],
+            "max": 100,
+            "min": 0,
+            "thresholds": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 70
+              }
+            ]
+          },
+          "override": {},
+          "values": false
+        },
+        "orientation": "auto",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "6.3.5",
+      "targets": [
+        {
+          "expr": "100 - kafka_network_SocketServer_Value{name=\"NetworkProcessorAvgIdlePercent\"} * 100",
+          "legendFormat": "processor",
+          "refId": "A"
+        },
+        {
+          "expr": "100 - (kafka_server_KafkaRequestHandlerPool_MeanRate * 100)",
+          "legendFormat": "network",
+          "refId": "B"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "IO thread usage",
+      "type": "gauge"
     },
     {
       "aliasColors": {},
@@ -500,8 +557,8 @@
       "gridPos": {
         "h": 4,
         "w": 8,
-        "x": 0,
-        "y": 5
+        "x": 8,
+        "y": 7
       },
       "id": 30,
       "legend": {
@@ -581,67 +638,10 @@
     },
     {
       "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 0,
-        "y": 9
-      },
-      "id": 22,
-      "options": {
-        "fieldOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "defaults": {
-            "mappings": [],
-            "max": 100,
-            "min": 0,
-            "thresholds": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "#EAB839",
-                "value": 50
-              },
-              {
-                "color": "red",
-                "value": 70
-              }
-            ]
-          },
-          "override": {},
-          "values": false
-        },
-        "orientation": "auto",
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true
-      },
-      "pluginVersion": "6.3.5",
-      "targets": [
-        {
-          "expr": "100 - kafka_network_SocketServer_Value{name=\"NetworkProcessorAvgIdlePercent\"} * 100",
-          "legendFormat": "processor",
-          "refId": "A"
-        },
-        {
-          "expr": "100 - (kafka_server_KafkaRequestHandlerPool_MeanRate * 100)",
-          "legendFormat": "network",
-          "refId": "B"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "IO thread usage",
-      "type": "gauge"
-    },
-    {
-      "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 11
       },
       "id": 34,
       "title": "Bytes",
@@ -656,10 +656,10 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
+        "h": 8,
         "w": 8,
         "x": 0,
-        "y": 14
+        "y": 12
       },
       "id": 2,
       "legend": {
@@ -668,6 +668,7 @@
         "current": true,
         "max": true,
         "min": false,
+        "rightSide": false,
         "show": true,
         "total": false,
         "values": true
@@ -727,9 +728,9 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "Bps",
           "label": null,
-          "logBase": 1,
+          "logBase": 10,
           "max": null,
           "min": null,
           "show": true
@@ -753,14 +754,14 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "description": "kafka某topic 進出bytes的速率\u001c",
+      "description": "kafka某topic 進出bytes的累加差值",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
+        "h": 8,
         "w": 8,
         "x": 8,
-        "y": 14
+        "y": 12
       },
       "id": 7,
       "legend": {
@@ -830,7 +831,7 @@
         {
           "format": "short",
           "label": null,
-          "logBase": 1,
+          "logBase": 10,
           "max": null,
           "min": null,
           "show": true
@@ -938,9 +939,9 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "reqps",
           "label": null,
-          "logBase": 1,
+          "logBase": 10,
           "max": null,
           "min": null,
           "show": true
@@ -1038,9 +1039,9 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "wps",
           "label": null,
-          "logBase": 1,
+          "logBase": 10,
           "max": null,
           "min": null,
           "show": true
@@ -1131,9 +1132,9 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "reqps",
           "label": null,
-          "logBase": 1,
+          "logBase": 10,
           "max": null,
           "min": null,
           "show": true
@@ -1162,7 +1163,7 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 6,
-        "w": 8,
+        "w": 16,
         "x": 0,
         "y": 27
       },
@@ -1173,6 +1174,7 @@
         "current": true,
         "max": false,
         "min": false,
+        "rightSide": true,
         "show": true,
         "total": false,
         "values": true
@@ -1194,27 +1196,27 @@
       "targets": [
         {
           "expr": "kafka_network_RequestMetrics_999thPercentile{name=\"TotalTimeMs\",request=\"$request\"}",
-          "legendFormat": "99.9",
+          "legendFormat": "99.9%",
           "refId": "A"
         },
         {
           "expr": "kafka_network_RequestMetrics_99thPercentile{name=\"TotalTimeMs\",request=\"$request\"}",
-          "legendFormat": "99",
+          "legendFormat": "99%",
           "refId": "B"
         },
         {
           "expr": "kafka_network_RequestMetrics_95thPercentile{name=\"TotalTimeMs\",request=\"$request\"}",
-          "legendFormat": "95",
+          "legendFormat": "95%",
           "refId": "C"
         },
         {
           "expr": "kafka_network_RequestMetrics_75thPercentile{name=\"TotalTimeMs\",request=\"Produce\"}",
-          "legendFormat": "75",
+          "legendFormat": "75%",
           "refId": "D"
         },
         {
           "expr": "kafka_network_RequestMetrics_50thPercentile{name=\"TotalTimeMs\",request=\"Produce\"}",
-          "legendFormat": "50",
+          "legendFormat": "50%",
           "refId": "E"
         }
       ],
@@ -1240,7 +1242,7 @@
         {
           "format": "ms",
           "label": null,
-          "logBase": 1,
+          "logBase": 2,
           "max": null,
           "min": null,
           "show": true
@@ -1450,5 +1452,5 @@
   "timezone": "",
   "title": "kafka_broker",
   "uid": "jEGpSnhWz",
-  "version": 51
+  "version": 53
 }

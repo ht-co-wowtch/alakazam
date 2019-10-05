@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 23,
-  "iteration": 1570248241993,
+  "id": 24,
+  "iteration": 1570248189113,
   "links": [],
   "panels": [
     {
@@ -37,7 +37,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "description": "發送訊息與響應頻率",
+      "description": "Fetch API Request與Response 頻率",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -53,6 +53,7 @@
         "current": true,
         "max": true,
         "min": false,
+        "rightSide": false,
         "show": true,
         "total": false,
         "values": true
@@ -74,12 +75,14 @@
       "targets": [
         {
           "expr": "request_rate{broker=\"$broker\",job=\"$job\", key=\"5m\"}",
+          "hide": false,
           "intervalFactor": 2,
           "legendFormat": "request",
           "refId": "A"
         },
         {
           "expr": "response_rate{broker=\"$broker\",job=\"$job\", key=\"5m\"}",
+          "hide": false,
           "intervalFactor": 2,
           "legendFormat": "response",
           "refId": "C"
@@ -89,7 +92,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Request & Response 5m rate",
+      "title": "Fetch Request & Response 5m rate",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -105,12 +108,12 @@
       },
       "yaxes": [
         {
-          "decimals": 0,
+          "decimals": 1,
           "format": "reqps",
           "label": null,
-          "logBase": 10,
+          "logBase": 2,
           "max": null,
-          "min": "0",
+          "min": null,
           "show": true
         },
         {
@@ -132,7 +135,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "description": "發送訊息平均延遲時間分佈點",
+      "description": "Fetch API 平均延遲時間分佈點",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -177,7 +180,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Request latency in ms",
+      "title": " Fetch Request latency in ms",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -219,7 +222,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "description": "發送訊息與響應次數的累加值差異",
+      "description": "Fetch API Request與Response累加差異值",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -233,8 +236,10 @@
         "alignAsTable": true,
         "avg": false,
         "current": true,
+        "hideEmpty": false,
         "max": true,
         "min": false,
+        "rightSide": false,
         "show": true,
         "total": false,
         "values": true
@@ -271,7 +276,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Request & Response 5m increase",
+      "title": "Fetch Request & Response 5m increase",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -287,11 +292,12 @@
       },
       "yaxes": [
         {
+          "decimals": 2,
           "format": "short",
           "label": null,
-          "logBase": 10,
+          "logBase": 2,
           "max": null,
-          "min": "0",
+          "min": null,
           "show": true
         },
         {
@@ -305,7 +311,7 @@
       ],
       "yaxis": {
         "align": false,
-        "alignLevel": null
+        "alignLevel": 3
       }
     },
     {
@@ -316,7 +322,7 @@
         "x": 0,
         "y": 15
       },
-      "id": 25,
+      "id": 18,
       "panels": [],
       "title": "Record",
       "type": "row"
@@ -326,12 +332,12 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "description": "每秒發送多少訊息到某topic",
+      "description": "每次消費的訊息筆數分佈點",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
-        "w": 8,
+        "h": 7,
+        "w": 10,
         "x": 0,
         "y": 16
       },
@@ -361,96 +367,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "record_send_rate{topic=\"$topic\", job=\"$job\", key=\"5m\"}",
-          "intervalFactor": 2,
-          "legendFormat": "5m",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Record send 5m rate for topic",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "decimals": null,
-          "format": "wps",
-          "label": null,
-          "logBase": 10,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "description": "每個request發送的訊息數量大小分佈點",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 8,
-        "y": 16
-      },
-      "id": 22,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "records_per_request_bucket{topic=\"$topic\", job=\"$job\", le=~\"0.*\"}",
-          "intervalFactor": 2,
+          "expr": "consumer_batch_size_bucket{job=\"job\", le=~\"0.*\"}",
           "legendFormat": "{{le}}%",
           "refId": "A"
         }
@@ -459,7 +376,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Records per request for topic",
+      "title": "Consumer batch size",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -480,93 +397,6 @@
           "logBase": 1,
           "max": null,
           "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "description": "發送多少訊息到某topic\b累加值的差異",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 0,
-        "y": 22
-      },
-      "id": 23,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "increase(record_send_rate{topic=\"$topic\", job=\"$job\", key=\"count\"}[5m])",
-          "intervalFactor": 2,
-          "legendFormat": "5m",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Record send 5m increase for topic",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 10,
-          "max": null,
-          "min": "0",
           "show": true
         },
         {
@@ -589,7 +419,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 23
       },
       "id": 5,
       "panels": [],
@@ -608,7 +438,7 @@
         "h": 6,
         "w": 8,
         "x": 0,
-        "y": 29
+        "y": 24
       },
       "id": 2,
       "legend": {
@@ -662,7 +492,6 @@
       },
       "yaxes": [
         {
-          "decimals": null,
           "format": "Bps",
           "label": null,
           "logBase": 10,
@@ -696,7 +525,7 @@
         "h": 6,
         "w": 8,
         "x": 8,
-        "y": 29
+        "y": 24
       },
       "id": 12,
       "legend": {
@@ -776,94 +605,6 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "description": "每個請求對於partition發送的bytes大小分佈點",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 16,
-        "y": 29
-      },
-      "id": 18,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "batch_size_bucket{topic=\"$topic\", job=\"$job\", le=~\"0.*\"}",
-          "hide": false,
-          "intervalFactor": 2,
-          "legendFormat": "{{le}}%",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "bytes sent per partition per request for topics",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "bytes",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
       "description": "每秒從所有broker發送的平均傳入字節數\n\n如發送訊息",
       "fill": 1,
       "fillGradient": 0,
@@ -871,7 +612,7 @@
         "h": 6,
         "w": 8,
         "x": 0,
-        "y": 35
+        "y": 30
       },
       "id": 3,
       "legend": {
@@ -925,7 +666,6 @@
       },
       "yaxes": [
         {
-          "decimals": null,
           "format": "Bps",
           "label": null,
           "logBase": 10,
@@ -959,7 +699,7 @@
         "h": 6,
         "w": 8,
         "x": 8,
-        "y": 35
+        "y": 30
       },
       "id": 16,
       "legend": {
@@ -1069,33 +809,6 @@
       {
         "allValue": null,
         "current": {
-          "text": "logic",
-          "value": "logic"
-        },
-        "hide": 0,
-        "includeAll": false,
-        "label": null,
-        "multi": false,
-        "name": "job",
-        "options": [
-          {
-            "selected": true,
-            "text": "logic",
-            "value": "logic"
-          },
-          {
-            "selected": false,
-            "text": "admin",
-            "value": "admin"
-          }
-        ],
-        "query": "logic,admin",
-        "skipUrlSync": false,
-        "type": "custom"
-      },
-      {
-        "allValue": null,
-        "current": {
           "text": "all",
           "value": "all"
         },
@@ -1117,6 +830,33 @@
         "tagsQuery": "",
         "type": "query",
         "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "text": "logic",
+          "value": "logic"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "job",
+        "options": [
+          {
+            "selected": true,
+            "text": "job",
+            "value": "job"
+          },
+          {
+            "selected": false,
+            "text": "admin",
+            "value": "admin"
+          }
+        ],
+        "query": "job,admin",
+        "skipUrlSync": false,
+        "type": "custom"
       }
     ]
   },
@@ -1139,7 +879,7 @@
     ]
   },
   "timezone": "",
-  "title": "kafka_producer",
-  "uid": "Kxa_BN2Wk",
-  "version": 31
+  "title": "kafka_consumer",
+  "uid": "Kxa_BN2WA",
+  "version": 21
 }

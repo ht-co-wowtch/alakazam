@@ -2,7 +2,7 @@
 global:
   scrape_interval:     15s # 設定每15s取一次資料，默認是1m取一次  
   evaluation_interval: 15s # 設定每15s評估一次規則，默認是1m取一次  
-  scrape_timeout: 5s # 設定取資料超時，默認是1m取一次  
+  scrape_timeout: 5s # 設定取資料超時
 
 # Alertmanager configuration
 alerting:
