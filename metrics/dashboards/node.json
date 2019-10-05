@@ -424,7 +424,7 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
-        "w": 10,
+        "w": 12,
         "x": 0,
         "y": 5
       },
@@ -527,7 +527,7 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 10,
+        "x": 12,
         "y": 5
       },
       "id": 16,
@@ -611,7 +611,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "bytes",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -641,7 +641,7 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
-        "w": 10,
+        "w": 24,
         "x": 0,
         "y": 13
       },
@@ -652,6 +652,7 @@
         "current": true,
         "max": true,
         "min": false,
+        "rightSide": true,
         "show": true,
         "total": false,
         "values": true
@@ -673,26 +674,31 @@
       "targets": [
         {
           "expr": "avg(irate(node_cpu_seconds_total{mode=\"system\"}[1m])) by (instance)",
+          "intervalFactor": 2,
           "legendFormat": "内核操作",
           "refId": "A"
         },
         {
           "expr": "avg(irate(node_cpu_seconds_total{mode=\"user\"}[1m])) by (instance)",
+          "intervalFactor": 2,
           "legendFormat": "用户進程",
           "refId": "B"
         },
         {
           "expr": "avg(irate(node_cpu_seconds_total{instance=~\"$node\",mode=\"idle\"}[1m])) by (instance)",
+          "intervalFactor": 2,
           "legendFormat": "空閒",
           "refId": "C"
         },
         {
           "expr": "avg(irate(node_cpu_seconds_total{mode=\"iowait\"}[1m])) by (instance)",
+          "intervalFactor": 2,
           "legendFormat": "Iowait",
           "refId": "D"
         },
         {
           "expr": "irate(node_disk_io_time_seconds_total[1m])",
+          "intervalFactor": 2,
           "legendFormat": "{{device}}",
           "refId": "E"
         }
@@ -717,9 +723,9 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "s",
           "label": null,
-          "logBase": 1,
+          "logBase": 10,
           "max": null,
           "min": null,
           "show": true
@@ -747,9 +753,9 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 10,
-        "y": 13
+        "w": 24,
+        "x": 0,
+        "y": 21
       },
       "id": 20,
       "legend": {
@@ -758,6 +764,7 @@
         "current": true,
         "max": true,
         "min": false,
+        "rightSide": true,
         "show": true,
         "total": false,
         "values": true
@@ -883,5 +890,5 @@
   "timezone": "",
   "title": "node",
   "uid": "QFGpV1tZz",
-  "version": 6
+  "version": 10
 }
