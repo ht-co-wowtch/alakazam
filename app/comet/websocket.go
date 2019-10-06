@@ -353,7 +353,13 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 	// 2. 回收寫的Buffter
 failed:
 	if err != nil && err != io.EOF && err != websocket.ErrMessageClose {
-		log.Error("dispatch websocket", zap.Error(err), zap.String("uid", ch.Uid), zap.Int("step", step))
+		log.Error(
+			"dispatch websocket",
+			zap.Error(err),
+			zap.String("uid", ch.Uid),
+			zap.Int("step", step),
+			zap.Int("msg_block", len(ch.signal)),
+		)
 	}
 	ws.Close()
 	wp.Put(wb)
