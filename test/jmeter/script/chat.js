@@ -1,5 +1,5 @@
-load("encoding-indexes.js")
-load("encoding.js")
+load("https://raw.githubusercontent.com/inexorabletash/text-encoding/master/lib/encoding-indexes.js")
+load("https://raw.githubusercontent.com/inexorabletash/text-encoding/master/lib/encoding.js")
 
 var token = '{"token":"' + vars.get("token") + '", "room_id":' + vars.get("room_id") + '}';
 var headerBuf = new ArrayBuffer(10);
