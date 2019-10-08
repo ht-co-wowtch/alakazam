@@ -4,15 +4,15 @@
 
 ## 參數
 
-| 參數         | 預設 | 說明                                                         |
-| ------------ | ---- | ------------------------------------------------------------ |
-| path         |      | 本專案目錄路徑，ex: `/private/var/www/cpw/alakazam/test/jmeter` |
-| url          |      | 聊天室 web socket host                                       |
-| rapidash_url |      | 認證中心url                                                  |
-| run_sec      | 3600 | 執行多久，單位是ms(毫秒)                                     |
-| send_room_id | 2    | 發訊息至某房間，請填房間id，請不要填1，腳本默認會使用這個房間 |
-| user_total   | 10   | 同時段發送多少訊息                                           |
-| user_csv     |      | user uid等資料，csv檔需放在`data`目錄下                      |
+| 參數         | 預設                                      | 說明                                                         |
+| ------------ | ----------------------------------------- | ------------------------------------------------------------ |
+| path         | /private/var/www/cpw/alakazam/test/jmeter | 本專案目錄路徑，ex: `/private/var/www/cpw/alakazam/test/jmeter` |
+| url          | 192.168.0.138                             | 聊天室 web socket host                                       |
+| rapidash_url | 192.168.0.138                             | 認證中心url                                                  |
+| run_sec      | 3600                                      | 執行多久，單位是ms(毫秒)                                     |
+| send_room_id | 2                                         | 發訊息至某房間，請填房間id，請不要填1，腳本默認會使用這個房間 |
+| user_total   | 10                                        | 同時段發送多少訊息                                           |
+| user_csv     | members_0_1000.csv                        | user uid等資料，csv檔需放在`data`目錄下                      |
 
 # 連線
 
@@ -22,19 +22,27 @@
 
 ## 單ㄧ房間聊天
 
-壓測房間最多每秒能夠發送多少訊息，由於聊天室限制一個人每秒只能發一則訊息，所以每人每兩秒才會發一則訊息，所以當`user_total`設定成10，會分成兩組user去發送，每組之間間隔1秒，ex A組10人，B組10人，在線總共20人，A與B組都是每兩秒才執行發訊息，但是A與B之間啟動時間隔1秒，所以才能做到每1秒發送10則訊息
+1. 固定頻率聊天  `one_chat_rate_message.jmx`
 
-1. 固定頻率聊天
+   壓測房間最多每秒能夠發送多少訊息，由於聊天室限制一個人每秒只能發一則訊息，所以每人每兩秒才會發一則訊息，所以當`user_total`設定成10，會分成兩組user去發送，每組之間間隔1秒，ex A組10人，B組10人，在線總共20人，A與B組都是每兩秒才執行發訊息，但是A與B之間啟動時間隔1秒，所以才能做到每1秒發送10則訊息
 
-   Ex: 房間每1秒就有100個人同時說話
+   
+
+   Ex: 房間每1秒就有100個人同時聊天
+
+   
 
    `jmeter -n -t one_chat_rate_message.jmx -l one_chat_rate_message.jtl -e -o report -J path=<path> -J url=<alakazam websocket> -J rapidash_url=<rapidash url> -J run_sec=<sec> -J send_room_id=<room id> -J user_total=<total> -J user_csv=<user csv>`
 
    
 
-2. 隨機頻率聊天
+2. 隨機頻率聊天 `one_chat_random_message`
 
-   Ex: 房間以2 - 6秒隨機頻率就有n個人同時說話
+   Ex: 房間每人每次以1 - 3秒隨機頻率聊天
+
+   
+
+   `jmeter -n -t one_chat_random_message.jmx -l one_chat_random_message.jtl -e -o report -J path=<path> -J url=<alakazam websocket> -J rapidash_url=<rapidash url> -J run_sec=<sec> -J send_room_id=<room id> -J user_total=<total> -J user_csv=<user csv>`
 
    
 
