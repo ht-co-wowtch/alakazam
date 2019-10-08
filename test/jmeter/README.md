@@ -4,15 +4,15 @@
 
 ## 參數
 
-| 參數         | 預設                                      | 說明                                                         |
-| ------------ | ----------------------------------------- | ------------------------------------------------------------ |
-| path         | /private/var/www/cpw/alakazam/test/jmeter | 本專案目錄路徑，ex: `/private/var/www/cpw/alakazam/test/jmeter` |
-| url          | 192.168.0.138                             | 聊天室 web socket host                                       |
-| rapidash_url | 192.168.0.138                             | 認證中心url                                                  |
-| run_sec      | 3600                                      | 執行多久，單位是ms(毫秒)                                     |
-| send_room_id | 2                                         | 發訊息至某房間，請填房間id，請不要填1，腳本默認會使用這個房間 |
-| user_total   | 10                                        | 同時段發送多少訊息                                           |
-| user_csv     | members_0_1000.csv                        | user uid等資料，csv檔需放在`data`目錄下                      |
+| 參數         | 預設                                      | 說明                                                         | 適用壓測     |
+| ------------ | ----------------------------------------- | ------------------------------------------------------------ | ------------ |
+| path         | /private/var/www/cpw/alakazam/test/jmeter | 本專案目錄路徑，ex: `/private/var/www/cpw/alakazam/test/jmeter` | 全腳本       |
+| url          | 192.168.0.138                             | 聊天室 web socket host                                       | 全腳本       |
+| rapidash_url | 192.168.0.138                             | 認證中心url                                                  | 全腳本       |
+| run_sec      | 3600                                      | 執行多久，單位是ms(毫秒)                                     | 全腳本       |
+| send_room_id | 2                                         | 發訊息至某房間，請填房間id，請不要填1，腳本默認會使用這個房間 | 全腳本       |
+| user_total   | 10                                        | 同時段發送多少訊息                                           | 單ㄧ房間聊天 |
+| user_csv     | members_0_1000.csv                        | user uid等資料，csv檔需放在`data`目錄下                      | 全腳本       |
 
 # 連線
 
@@ -36,7 +36,7 @@
 
    
 
-2. 隨機頻率聊天 `one_chat_random_message`
+2. 隨機頻率聊天 `one_chat_random_message.jmx`
 
    Ex: 房間每人每次以1 - 3秒隨機頻率聊天
 
@@ -48,9 +48,15 @@
 
 3. 固定 and 隨機頻率聊天
 
+   假設`user_total`=10，則固定頻率聊天會有20人，隨機頻率聊天會有10人，總計共30人，每秒最低訊息為10～20筆
+
+   
+
    Ex: 承1,2一起執行
 
    
+
+   `jmeter -n -t one_chat_message.jmx -l one_chat_random_message.jtl -e -o report -J path=<path> -J url=<alakazam websocket> -J rapidash_url=<rapidash url> -J run_sec=<sec> -J send_room_id=<room id> -J user_total=<total> -J user_csv=<user csv>`
 
 ## 多個房間聊天
 
