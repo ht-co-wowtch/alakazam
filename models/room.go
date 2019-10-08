@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"github.com/go-xorm/xorm"
 	"time"
 )
 
@@ -53,12 +52,7 @@ func (s *Store) CreateRoom(room *Room) (int64, error) {
 }
 
 func (s *Store) UpdateRoom(room Room) (int64, error) {
-	var u *xorm.Session
-	if room.Status {
-		u = s.d.Cols("is_message", "day_limit", "deposit_limit", "dml_limit", "status")
-	} else {
-		u = s.d.Cols("is_message", "day_limit", "deposit_limit", "dml_limit")
-	}
+	u := s.d.Cols("is_message", "day_limit", "deposit_limit", "dml_limit", "status")
 	return u.Where("id = ?", room.Id).
 		Update(&room)
 }
