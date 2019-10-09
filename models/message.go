@@ -22,6 +22,7 @@ type Message struct {
 	Id       int `xorm:"pk autoincr"`
 	MsgId    int64
 	MemberId int
+	Type     string
 	Message  string
 	SendAt   time.Time
 }

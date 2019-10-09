@@ -74,7 +74,7 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 
 			switch p.Type {
 			case pb.PushMsg_USER, pb.PushMsg_ADMIN:
-				if _, e := tx.Exec(fmt.Sprintf(addMessage, p.Room[0]%50), p.Seq, p.Mid, p.Message, sendAt); e != nil {
+				if _, e := tx.Exec(fmt.Sprintf(addMessage, p.Room[0]%50), p.Seq, p.Mid, p.Type, p.Message, sendAt); e != nil {
 					err = &messageError{
 						error:   err,
 						msgId:   p.Seq,
@@ -142,7 +142,7 @@ func goroutineID() uint64 {
 }
 
 const (
-	addMessage             = "INSERT INTO `messages_%02d` (`msg_id`,`member_id`,`message`,`send_at`) VALUES (?,?,?,?);"
+	addMessage             = "INSERT INTO `messages_%02d` (`msg_id`,`member_id`,`type`,`message`,`send_at`) VALUES (?,?,?,?,?);"
 	addRedEnvelopeMessages = "INSERT INTO `red_envelope_messages` (`msg_id`,`member_id`,`message`,`red_envelopes_id`,`token`,`expire_at`,`send_at`) VALUES (?,?,?,?,?,?,?);"
 	addRoomMessage         = "INSERT INTO `room_messages_%02d` (`room_id`,`msg_id`,`type`,`send_at`) VALUES (?,?,?,?);"
 )

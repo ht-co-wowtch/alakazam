@@ -114,7 +114,23 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 				Time:      msg.Message[msgId].SendAt.Format("15:04:05"),
 				Timestamp: msg.Message[msgId].SendAt.Unix(),
 			})
+		case pb.PushMsg_ADMIN:
+			user := memberMap[msg.Message[msgId].MemberId]
+			data = append(data, Message{
+				Id:        msgId,
+				Uid:       user.Uid,
+				Name:      user.Name,
+				Type:      messageType,
+				Avatar:    avatarRoot,
+				Message:   msg.Message[msgId].Message,
+				Time:      msg.Message[msgId].SendAt.Format("15:04:05"),
+				Timestamp: msg.Message[msgId].SendAt.Unix(),
+			})
 		}
+	}
+
+	if len(data) == 0 {
+		return data, nil
 	}
 	return data, h.cache.addMessages(roomId, data)
 }
