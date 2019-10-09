@@ -161,7 +161,7 @@ func (p *Producer) toPb(msg ProducerMessage) (*logicpb.PushMsg, error) {
 	}
 	return &logicpb.PushMsg{
 		Seq:     seq.Id,
-		Type:    logicpb.PushMsg_ROOM,
+		Type:    logicpb.PushMsg_USER,
 		Room:    msg.Rooms,
 		Mid:     msg.Mid,
 		Msg:     bm,

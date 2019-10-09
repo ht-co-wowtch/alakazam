@@ -102,7 +102,7 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 					Expired: redEnvelope.ExpireAt.Format(time.RFC3339),
 				},
 			})
-		case pb.PushMsg_ROOM:
+		case pb.PushMsg_USER:
 			user := memberMap[msg.Message[msgId].MemberId]
 			data = append(data, Message{
 				Id:        msgId,
