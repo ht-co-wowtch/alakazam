@@ -579,3 +579,17 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 1. 調整kafka Consumer Config
 2. 解決 log => while consuming push-topic/0: consumer group claim read message not found
 3. 更新jmeter 腳本
+
+0.25.0
+
+1. 增加kafka client 相關監控指數
+
+0.26.0
+
+1. 新增房間壓測腳本
+2. 後台更新房間資料api 也可以關閉房間
+
+0.27.0
+
+1. 廢棄`admin_messages table`
+2. `messages` table 增加種類欄位做判斷
