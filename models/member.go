@@ -40,20 +40,6 @@ type Member struct {
 	CreateAt   time.Time `json:"-"`
 }
 
-func (r *Member) Status() int {
-	if r.IsBlockade {
-		return Blockade
-	}
-	var status int
-	switch r.Type {
-	case Guest:
-		status = MessageStatus
-	case Player, Marketing:
-		status = PlayStatus
-	}
-	return status
-}
-
 func (r *Member) TableName() string {
 	return "members"
 }

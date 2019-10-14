@@ -20,17 +20,3 @@ func toAvatarName(code int) string {
 	}
 	return avatarOther
 }
-
-func ToAvatarCode(name string) int {
-	switch name {
-	case avatarFemale:
-		return 0
-	case avatarMale:
-		return 1
-	case avatarOther:
-		return 2
-	case avatarRoot:
-		return 99
-	}
-	return 2
-}
