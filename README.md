@@ -10,6 +10,7 @@
 - [聊天室Web Socket協定](#protocol-body)
 - [Web Socket](#web-socket)
 - [Tag](#tag)
+- [注意事項](#precautions)
 
 ## Quick Start
 
@@ -563,6 +564,16 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 | 10020000, 15020000 | 500       | 伺服器出問題                                                 |
 
 
+
+## Precautions
+
+1. 為什麼聊天室每次連線1分鐘後會立即斷線
+
+   目前聊天室心跳是依照logic.yml做設定，默認是5分鐘，所以正常來說5分鐘沒心跳連線才會斷，但如果前端以大於等於1分鐘的頻率做心跳，發現每次要發心跳時都會失敗，可能原因是連線已斷，但正常來說5分鐘後才會斷，這種情況可能的原因是連線是使用nginx or aws alb這種代理，默認`read` and `send`都是60s，所以必須調整這些代理的timeout大於5分鐘一點即可正常．
+
+   nginx : `proxy_read_timeout` `proxy_send_timeout` 
+
+   
 
 ## Tag
 
