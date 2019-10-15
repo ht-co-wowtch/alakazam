@@ -39,3 +39,26 @@ type RedEnvelope struct {
 func (m RedEnvelope) MarshalBinary() (data []byte, err error) {
 	return json.Marshal(m)
 }
+
+type Bets struct {
+	Id        int64  `json:"id"`
+	Uid       string `json:"uid"`
+	Type      string `json:"type"`
+	Name      string `json:"name"`
+	Avatar    string `json:"avatar"`
+	Time      string `json:"time"`
+	Timestamp int64  `json:"timestamp"`
+
+	PeriodNumber     int   `json:"period_number"`
+	BetsPeriodNumber int   `json:"bets_period_number"`
+	Items            []Bet `json:"bets"`
+	Count            int   `json:"count"`
+	TotalAmount      int   `json:"total_amount"`
+}
+
+type Bet struct {
+	Name     string  `json:"name" binding:"required"`
+	Odds     float64 `json:"odds" binding:"required"`
+	OddsCode string  `json:"odds_code" binding:"required"`
+	Amount   int     `json:"amount" binding:"required"`
+}

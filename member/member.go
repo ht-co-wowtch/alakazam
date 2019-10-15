@@ -196,6 +196,28 @@ func (m *Member) GetMembers(id []int) ([]models.Member, error) {
 	return m.db.GetMembers(id)
 }
 
+func (m *Member) Fetch(uid string) (*models.Member, error) {
+	member, err := m.c.get(uid)
+	if err == nil {
+		return member, nil
+	}
+	if err != redis.Nil {
+		return nil, err
+	}
+
+	dbMember, err := m.db.Find(uid)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.ErrNoMember
+		}
+		return nil, err
+	}
+	if _, err := m.c.set(dbMember); err != nil {
+		return nil, err
+	}
+	return member, nil
+}
+
 func (m *Member) Heartbeat(uid string) error {
 	return m.c.refreshExpire(uid)
 }

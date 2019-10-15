@@ -351,6 +351,61 @@ func (p *Producer) SendRedEnvelopeForAdmin(msg ProducerAdminRedEnvelopeMessage) 
 	return pushMsg.Seq, nil
 }
 
+type ProducerBetsMessage struct {
+	Rooms  []int32
+	Mid    int64
+	Uid    string
+	Name   string
+	Avatar int
+
+	PeriodNumber     int
+	BetsPeriodNumber int
+	Bets             []Bet
+	Count            int
+	TotalAmount      int
+}
+
+func (p *Producer) SendBets(msg ProducerBetsMessage) (int64, error) {
+	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
+		Id: 1, Count: 1,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	now := time.Now()
+	bm, err := json.Marshal(Bets{
+		Id:               seq.Id,
+		Type:             betsType,
+		Uid:              msg.Uid,
+		Name:             msg.Name,
+		Avatar:           toAvatarName(msg.Avatar),
+		Time:             now.Format("15:04:05"),
+		Timestamp:        now.Unix(),
+		PeriodNumber:     msg.PeriodNumber,
+		BetsPeriodNumber: msg.BetsPeriodNumber,
+		Items:            msg.Bets,
+		Count:            msg.Count,
+		TotalAmount:      msg.TotalAmount,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	pushMsg := &logicpb.PushMsg{
+		Seq:    seq.Id,
+		Type:   logicpb.PushMsg_BETS,
+		Room:   msg.Rooms,
+		Mid:    msg.Mid,
+		Msg:    bm,
+		SendAt: now.Unix(),
+	}
+	if err := p.send(pushMsg); err != nil {
+		return 0, err
+	}
+	return pushMsg.Seq, nil
+}
+
 // 房間推送，以下為條件
 // 1. room id
 func (p *Producer) send(pushMsg *logicpb.PushMsg) error {

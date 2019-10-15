@@ -31,6 +31,8 @@ const (
 	redEnvelopeType = "red_envelope"
 	// 公告訊息
 	TopType = "top"
+	// 跟注
+	betsType = "bets"
 )
 
 func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {

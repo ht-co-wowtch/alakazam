@@ -10,6 +10,7 @@ message PushMsg {
         USER = 1;
         ADMIN = 2;
         MONEY = 3;
+        BETS = 4;
         ADMIN_TOP = 30;
         CLOSE_TOP = 31;
         Close = 100;

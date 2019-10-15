@@ -63,6 +63,50 @@ func (s *httpServer) push(c *gin.Context) error {
 	return nil
 }
 
+type betsReq struct {
+	RoomId           []int32       `json:"room_id" binding:"required"`
+	Uid              string        `json:"uid" binding:"required"`
+	PeriodNumber     int           `json:"period_number" binding:"required"`
+	BetsPeriodNumber int           `json:"bets_period_number" binding:"required"`
+	Bets             []message.Bet `json:"bets" binding:"required"`
+	Count            int           `json:"count" binding:"required"`
+	TotalAmount      int           `json:"total_amount" binding:"required"`
+}
+
+func (s *httpServer) bets(c *gin.Context) error {
+	req := new(betsReq)
+	if err := c.ShouldBindJSON(req); err != nil {
+		return err
+	}
+
+	member, err := s.member.Fetch(req.Uid)
+	if err != nil {
+		return err
+	}
+	msg := message.ProducerBetsMessage{
+		Rooms:            req.RoomId,
+		Mid:              int64(member.Id),
+		Uid:              member.Uid,
+		Name:             member.Name,
+		Avatar:           member.Gender,
+		PeriodNumber:     req.PeriodNumber,
+		BetsPeriodNumber: req.BetsPeriodNumber,
+		Bets:             req.Bets,
+		Count:            req.Count,
+		TotalAmount:      req.TotalAmount,
+	}
+
+	id, err := s.message.SendBets(msg)
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id": id,
+	})
+	return nil
+}
+
 func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

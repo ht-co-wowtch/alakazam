@@ -65,6 +65,10 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 				}))
 			}
 
+			if p.Type > pb.PushMsg_MONEY {
+				continue
+			}
+
 			sendAt := time.Unix(p.SendAt, 0)
 			tx := m.db.Master().Prepare()
 
