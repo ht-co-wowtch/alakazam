@@ -44,31 +44,22 @@ var (
 
 const (
 	NoLogin = 12014041
-	// 沒有token
-	noAuthorizationBearer = 15022001
-	// 資料格式錯誤
-	invalidParameter = 15021002
-	// 餘額不足
-	balanceCode = 12024020
-	// 房間不存在
-	roomNotFoundCode = 15025001
-	// 找不到會員資料
-	memberNotFound = 12024041
-	// 隨機紅包金額不能小於包數
-	redEnvelopeAmount = 15023001
-	// 紅包不存在
-	redEnvelopeNotFoundCode = 15024001
-	// 紅包已關閉
-	redEnvelopeIsClose = 15024002
-	// 紅包發佈時間不能小於當下
-	redEnvelopePublishTime = 15024006
-	// 紅包已發佈過
-	redEnvelopePublishExist = 15024007
-	// 紅包未發佈但已過期
-	redEnvelopePublishExpire = 15024008
-	// 紅包總金額上限
-	redEnvelopeAmountTotal = 15023004
 )
+
+var errMessage = map[int]string{
+	15022001: "无法认证身份",
+	15021002: "资料格式错误",
+	15025001: "房间不存在",
+	12024020: "余额不足",
+	12024041: "找不到会员资料",
+	15023001: "红包金额不能小于包数",
+	15024001: "红包不存在",
+	15024002: "红包不存在",
+	15024006: "红包发布时间不能小于当下",
+	15024007: "红包已发布过",
+	15024008: "红包未发布但已过期",
+	15023004: "额度最多￥100000",
+}
 
 func init() {
 	if err := errdefs.SetCode(1002); err != nil {
@@ -114,29 +105,8 @@ func (m output) GetInternalServer() string {
 }
 
 func (m output) Error(e *errdefs.Causer) string {
-	switch e.Code {
-	case noAuthorizationBearer:
-		return "无法认证身份"
-	case invalidParameter:
-		return "资料格式错误"
-	case roomNotFoundCode:
-		return "房间不存在"
-	case balanceCode:
-		return "余额不足"
-	case memberNotFound:
-		return "找不到会员资料"
-	case redEnvelopeAmount:
-		return "红包金额不能小于包数"
-	case redEnvelopeNotFoundCode, redEnvelopeIsClose:
-		return "红包不存在"
-	case redEnvelopePublishTime:
-		return "红包发布时间不能小于当下"
-	case redEnvelopePublishExist:
-		return "红包已发布过"
-	case redEnvelopePublishExpire:
-		return "红包未发布但已过期"
-	case redEnvelopeAmountTotal:
-		return "额度最多￥100000"
+	if err, ok := errMessage[e.Code]; ok {
+		return err
 	}
 	return "操作失败"
 }
