@@ -66,6 +66,8 @@ const (
 	redEnvelopePublishExist = 15024007
 	// 紅包未發佈但已過期
 	redEnvelopePublishExpire = 15024008
+	// 紅包總金額上限
+	redEnvelopeAmountTotal = 15023004
 )
 
 func init() {
@@ -133,6 +135,8 @@ func (m output) Error(e *errdefs.Causer) string {
 		return "红包已发布过"
 	case redEnvelopePublishExpire:
 		return "红包未发布但已过期"
+	case redEnvelopeAmountTotal:
+		return "额度最多￥100000"
 	}
 	return "操作失败"
 }
