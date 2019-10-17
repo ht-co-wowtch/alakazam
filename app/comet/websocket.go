@@ -124,7 +124,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 		// Writer byte
 		wr = &ch.Writer
 
-		ws *websocket.Conn
+		ws websocket.Conn
 
 		req *websocket.Request
 	)
@@ -291,7 +291,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 }
 
 // 處理Websocket訊息推送
-func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes.Buffer, ch *Channel) {
+func (s *Server) dispatchWebsocket(ws websocket.Conn, wp *bytes.Pool, wb *bytes.Buffer, ch *Channel) {
 	var (
 		err    error
 		finish bool
@@ -370,7 +370,7 @@ failed:
 }
 
 // websocket請求連線至某房間
-func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Channel, p *pb.Proto) (int32, time.Duration, error) {
+func (s *Server) authWebsocket(ctx context.Context, ws websocket.Conn, ch *Channel, p *pb.Proto) (int32, time.Duration, error) {
 	for {
 		// 如果第一次連線送的資料不是請求連接到某房間則會一直等待
 		if err := p.ReadWebsocket(ws); err != nil {
@@ -450,7 +450,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 	return c.Connect.RoomID, time.Duration(c.Heartbeat), nil
 }
 
-func authReply(ws *websocket.Conn, p *pb.Proto, b []byte) (err error) {
+func authReply(ws websocket.Conn, p *pb.Proto, b []byte) (err error) {
 	p.Op = pb.OpAuthReply
 	p.Body = b
 	if err = p.WriteWebsocket(ws); err != nil {

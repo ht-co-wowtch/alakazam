@@ -91,7 +91,7 @@ func (p *Proto) WriteTo(b *bytes.Writer) {
 }
 
 // 從websocket讀出內容
-func (p *Proto) ReadWebsocket(ws *websocket.Conn) (err error) {
+func (p *Proto) ReadWebsocket(ws websocket.Conn) (err error) {
 	var (
 		bodyLen   int
 		headerLen int16
@@ -123,7 +123,7 @@ func (p *Proto) ReadWebsocket(ws *websocket.Conn) (err error) {
 }
 
 // Websocket寫入Proto內容
-func (p *Proto) WriteWebsocket(ws *websocket.Conn) (err error) {
+func (p *Proto) WriteWebsocket(ws websocket.Conn) (err error) {
 	var (
 		buf     []byte
 		packLen int
@@ -146,7 +146,7 @@ func (p *Proto) WriteWebsocket(ws *websocket.Conn) (err error) {
 }
 
 // Websocket回覆心跳結果
-func (p *Proto) WriteWebsocketHeart(wr *websocket.Conn, online int32) (err error) {
+func (p *Proto) WriteWebsocketHeart(wr websocket.Conn, online int32) (err error) {
 	var (
 		buf     []byte
 		packLen int
