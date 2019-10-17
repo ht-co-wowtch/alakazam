@@ -29,7 +29,7 @@ bucket:
   # 每個Bucket預先管理多少個user，不夠會自動加倍開
   channel: 500
   # 每個Bucket一開始管理多少個房間，不夠會自動加倍開
-  room: 100
+  room: 10
   # 每個Bucket開幾個goroutine併發做房間推送
   routineAmount: 5
   # 每個goroutine推送管道最大緩衝量
