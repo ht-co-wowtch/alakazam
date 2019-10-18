@@ -20,6 +20,11 @@ func (m *MockMember) GetSession(uid string) (*models.Member, error) {
 	return arg.Get(0).(*models.Member), arg.Error(1)
 }
 
+func (m *MockMember) GetMessageSession(uid string) (*models.Member, error) {
+	arg := m.Called(uid)
+	return arg.Get(0).(*models.Member), arg.Error(1)
+}
+
 func (m *MockMember) Login(rid int, token, server string) (*models.Member, string, error) {
 	arg := m.Called(rid, token, server)
 	return arg.Get(0).(*models.Member), arg.String(1), arg.Error(2)

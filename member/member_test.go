@@ -10,6 +10,98 @@ import (
 	"time"
 )
 
+func TestVisitorSendMessage(t *testing.T) {
+	member := newMockNoMessageMember(false, 99)
+	_, err := member.GetMessageSession("123")
+
+	assert.Equal(t, err, errors.ErrLogin)
+}
+
+func TestGuestSendMessage(t *testing.T) {
+
+	member := newMockNoMessageMember(true, models.Guest)
+	_, err := member.GetMessageSession("123")
+
+	assert.Equal(t, err, errors.ErrLogin)
+}
+
+func TestMemberSendMessage(t *testing.T) {
+	member := newMockMember(true, true, false, models.Player)
+	_, err := member.GetMessageSession("123")
+
+	assert.Nil(t, err)
+}
+
+func TestMarketSendMessage(t *testing.T) {
+	member := newMockMember(true, true, false, models.Market)
+	_, err := member.GetMessageSession("123")
+
+	assert.Nil(t, err)
+}
+
+func TestMemberIsBannedSendMessage(t *testing.T) {
+	member := newMockMember(true, true, true, models.Player)
+	_, err := member.GetMessageSession("123")
+
+	assert.Equal(t, err, errors.ErrMemberBanned)
+}
+
+func TestMarketIsBannedSendMessage(t *testing.T) {
+	member := newMockMember(true, true, true, models.Market)
+	_, err := member.GetMessageSession("123")
+
+	assert.Equal(t, err, errors.ErrMemberBanned)
+}
+
+func TestMemberBlockadeSendMessage(t *testing.T) {
+	member := newMockBlockadeMember(models.Player)
+	_, err := member.GetMessageSession("123")
+
+	assert.Equal(t, err, errors.ErrBlockade)
+}
+
+func TestMarketBannedSendMessage(t *testing.T) {
+	member := newMockBlockadeMember(models.Market)
+	_, err := member.GetMessageSession("123")
+
+	assert.Equal(t, err, errors.ErrBlockade)
+}
+
+func newMockNoMessageMember(isLogin bool, t int) Member {
+	m, _ := newMockMemberCache(isLogin, false, false, t)
+	return m
+}
+
+func newMockBlockadeMember(t int) Member {
+	m, _ := newMockMemberCache(true, true, true, t)
+	return m
+}
+
+func newMockMember(isLogin, isMessage, isBanned bool, t int) Member {
+	m, c := newMockMemberCache(isLogin, isMessage, false, t)
+	c.On("isBanned", mock.Anything).Return(isBanned, nil)
+	return m
+}
+
+func newMockMemberCache(isLogin, isMessage, isBlockade bool, t int) (Member, *MockCache) {
+	var err error
+	cache := &MockCache{}
+	member := Member{
+		c: cache,
+	}
+
+	if !isLogin {
+		err = errors.ErrLogin
+	}
+
+	cache.On("get", mock.Anything).Return(&models.Member{
+		Type:       t,
+		IsMessage:  isMessage,
+		IsBlockade: isBlockade,
+	}, err)
+	return member, cache
+}
+
 func TestGetUserName(t *testing.T) {
 	m, db, cache := mockMember()
 	uids := []string{"1", "2", "3"}

@@ -156,6 +156,36 @@ func TestMarketBlockadeConnectionRoom(t *testing.T) {
 	assert.Equal(t, err, errors.ErrBlockade)
 }
 
+func TestVisitorCloseRoomSendMessage(t *testing.T) {
+	_, _, err := getMessageSession(newVisitorMember())
+
+	assert.Equal(t, err, errors.ErrRoomClose)
+}
+
+func TestGuestCloseRoomSendMessage(t *testing.T) {
+	_, _, err := getMessageSession(newGuestMember(true, false))
+
+	assert.Equal(t, err, errors.ErrRoomClose)
+}
+
+func TestMemberCloseRoomSendMessage(t *testing.T) {
+	_, _, err := getMessageSession(newPlayMember(true, true, false))
+
+	assert.Equal(t, err, errors.ErrRoomClose)
+}
+
+func TestMarketCloseRoomSendMessage(t *testing.T) {
+	_, _, err := getMessageSession(newMarketMember(true, true, false))
+
+	assert.Equal(t, err, errors.ErrRoomClose)
+}
+
+func getMessageSession(mc *member.MockMember) (*models.Member, models.Room, error) {
+	mc.On("GetMessageSession", mock.Anything).Return(&models.Member{}, nil)
+	chat := newRoom(false, true, mc)
+	return chat.GetUserMessageSession("123", 1)
+}
+
 func connectCloseChat(member member.Chat) (*pb.ConnectReply, error) {
 	return connectNewChat(false, true, member)
 }
@@ -177,6 +207,16 @@ func newChat(status, isMessage bool, member member.Chat) chat {
 	cache := &mockCache{}
 	room := models.Room{Status: status, IsMessage: isMessage}
 	cache.On("getChat", 1).Return(room, nil)
+	return chat{
+		cache:  cache,
+		member: member,
+	}
+}
+
+func newRoom(status, isMessage bool, member member.Chat) chat {
+	cache := &mockCache{}
+	room := models.Room{Status: status, IsMessage: isMessage}
+	cache.On("get", 1).Return(room, nil)
 	return chat{
 		cache:  cache,
 		member: member,

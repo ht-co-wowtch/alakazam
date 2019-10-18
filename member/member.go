@@ -14,6 +14,7 @@ import (
 type Chat interface {
 	Get(uid string) (*models.Member, error)
 	GetSession(uid string) (*models.Member, error)
+	GetMessageSession(uid string) (*models.Member, error)
 	Login(rid int, token, server string) (*models.Member, string, error)
 	Logout(uid, key string) (bool, error)
 	Heartbeat(uid string) error
@@ -134,6 +135,9 @@ func (m *Member) GetSession(uid string) (*models.Member, error) {
 	member, err := m.Get(uid)
 	if err != nil {
 		return nil, err
+	}
+	if member.IsBlockade {
+		return nil, errors.ErrBlockade
 	}
 	if member.Type == models.Guest {
 		return nil, errors.ErrLogin
