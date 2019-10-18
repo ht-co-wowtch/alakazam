@@ -571,9 +571,9 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 角色說明
 
 1. 遊客：非本站會員且未登入
-2. 試玩：已試玩身份登入但不是本站會員
-3. 會員：已註冊成為本站會員
-4. 帶玩(營運)：本站會員但只給少數特定人士使用未對外開放註冊，ex：營運 
+2. 試玩：以試玩身份登入但不是本站會員
+3. 會員：以註冊成為本站會員
+4. 帶玩(營運)：後台創造的會員，下注等金錢動作不計入帳務
 5. 管理員：操作後台人員
 6. 系統：由各服務系統本身商業邏輯自動產生訊息，ex：注單、開獎資訊等等
 
@@ -587,7 +587,7 @@ Boyd內容如下，Protocol Operation[參考](#operation)
    | 房間已關閉 |      |      |      |            |
    | 房間禁言   |      | Yes  | Yes  | Yes        |
    | 會員禁言   |      | Yes  | Yes  | Yes        |
-   | 會員封鎖   |      |      |      | Yes        |
+   | 會員封鎖   |      |      |      |            |
 
    
 
@@ -598,8 +598,8 @@ Boyd內容如下，Protocol Operation[參考](#operation)
    | 正常       |      |      | Yes  | Yes        | Yes    | Yes  |
    | 房間已關閉 |      |      |      |            |        |      |
    | 房間禁言   |      |      |      |            | Yes    | Yes  |
-   | 會員禁言   |      |      |      | Yes        | Yes    | Yes  |
-   | 會員封鎖   |      |      |      | Yes        | Yes    | Yes  |
+   | 會員禁言   |      |      |      |            | Yes    | Yes  |
+   | 會員封鎖   |      |      |      |            | Yes    | Yes  |
 
    
 
@@ -611,7 +611,7 @@ Boyd內容如下，Protocol Operation[參考](#operation)
    | 房間已關閉 |      |      |      |            |        |      |
    | 房間禁言   |      |      | Yes  | Yes        | Yes    | Yes  |
    | 會員禁言   |      |      | Yes  | Yes        | Yes    | Yes  |
-   | 會員封鎖   |      |      |      | Yes        | Yes    | Yes  |
+   | 會員封鎖   |      |      |      |            | Yes    | Yes  |
 
    
 
@@ -623,7 +623,7 @@ Boyd內容如下，Protocol Operation[參考](#operation)
    | 房間已關閉 |      |      |      |            |
    | 房間禁言   |      |      | Yes  | Yes        |
    | 會員禁言   |      |      | Yes  | Yes        |
-   | 會員封鎖   |      |      |      | Yes        |
+   | 會員封鎖   |      |      |      |            |
 
    
 
@@ -648,7 +648,7 @@ Boyd內容如下，Protocol Operation[參考](#operation)
    | 房間已關閉 |      |      |      |            |
    | 房間禁言   |      |      | Yes  | Yes        |
    | 會員禁言   |      |      | Yes  | Yes        |
-   | 會員封鎖   |      |      |      | Yes        |
+   | 會員封鎖   |      |      |      |            |
    | 跟投關閉   |      |      |      |            |
 
 ## Precautions
