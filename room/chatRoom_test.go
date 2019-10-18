@@ -15,14 +15,14 @@ import (
 )
 
 func TestVisitorConnectionRoom(t *testing.T) {
-	reply, err := connectChat(true, newVisitorMember(false, false))
+	reply, err := connectChat(true, newVisitorMember())
 
 	assert.Equal(t, err.(errdefs.Causer).Code, errors.NoLogin)
 	assert.Nil(t, reply)
 }
 
 func TestGuestConnectionRoom(t *testing.T) {
-	reply, err := connectChat(true, newGuestMember(true, false))
+	reply, err := connectChat(true, newGuestMember(true))
 
 	assert.Nil(t, err)
 	assert.True(t, reply.Connect.Status)
@@ -33,7 +33,7 @@ func TestGuestConnectionRoom(t *testing.T) {
 }
 
 func TestMemberConnectionRoom(t *testing.T) {
-	reply, err := connectChat(true, newPlayMember(true, false, true))
+	reply, err := connectChat(true, newPlayMember(true, true, false))
 
 	assert.Nil(t, err)
 	assert.True(t, reply.Connect.Status)
@@ -48,6 +48,30 @@ func TestMarketConnectionRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Status)
 	assert.True(t, reply.Connect.Permission.IsMessage)
 	assert.True(t, reply.Connect.Permission.IsRedEnvelope)
+}
+
+func TestVisitorConnectionCloseRoom(t *testing.T) {
+	_, err := connectChat(false, newVisitorMember())
+
+	assert.Equal(t, err, errors.ErrRoomClose)
+}
+
+func TestGuestConnectionCloseRoom(t *testing.T) {
+	_, err := connectChat(false, newGuestMember(true))
+
+	assert.Equal(t, err, errors.ErrRoomClose)
+}
+
+func TestMemberConnectionCloseRoom(t *testing.T) {
+	_, err := connectChat(false, newPlayMember(true, true, false))
+
+	assert.Equal(t, err, errors.ErrRoomClose)
+}
+
+func TestMarketConnectionCloseRoom(t *testing.T) {
+	_, err := connectChat(false, newMarketMember(true, true, false))
+
+	assert.Equal(t, err, errors.ErrRoomClose)
 }
 
 func connectChat(chatStatus bool, member member.Chat) (*pb.ConnectReply, error) {
@@ -69,15 +93,15 @@ func newChat(status, isMessage bool, member member.Chat) chat {
 	}
 }
 
-func newVisitorMember(isLogin, isBlockade bool) *member.MockMember {
-	return newMember(isLogin, isBlockade, false, 0)
+func newVisitorMember() *member.MockMember {
+	return newMember(false, false, false, 0)
 }
 
-func newGuestMember(isLogin, isBlockade bool) *member.MockMember {
-	return newMember(isLogin, isBlockade, false, models.Guest)
+func newGuestMember(isLogin bool) *member.MockMember {
+	return newMember(isLogin, false, false, models.Guest)
 }
 
-func newPlayMember(isLogin, isBlockade, isMessage bool) *member.MockMember {
+func newPlayMember(isLogin, isMessage, isBlockade bool) *member.MockMember {
 	return newMember(isLogin, isBlockade, isMessage, models.Player)
 }
 
