@@ -14,6 +14,11 @@ import (
 	"testing"
 )
 
+const (
+	noLoginMessage = "请先登入会员"
+	noSendMessage  = "聊天室目前禁言状态，无法发言"
+)
+
 func TestVisitorConnectionRoom(t *testing.T) {
 	reply, err := connectChat(true, newVisitorMember())
 
@@ -28,8 +33,8 @@ func TestGuestConnectionRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Status)
 	assert.False(t, reply.Connect.Permission.IsMessage)
 	assert.False(t, reply.Connect.Permission.IsRedEnvelope)
-	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, "请先登入会员")
-	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, "请先登入会员")
+	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, noLoginMessage)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, noLoginMessage)
 }
 
 func TestMemberConnectionRoom(t *testing.T) {
@@ -42,7 +47,7 @@ func TestMemberConnectionRoom(t *testing.T) {
 }
 
 func TestMarketConnectionRoom(t *testing.T) {
-	reply, err := connectChat(true, newMarketMember(true, false, true))
+	reply, err := connectChat(true, newMarketMember(true, true, false))
 
 	assert.Nil(t, err)
 	assert.True(t, reply.Connect.Status)
@@ -74,8 +79,51 @@ func TestMarketConnectionCloseRoom(t *testing.T) {
 	assert.Equal(t, err, errors.ErrRoomClose)
 }
 
+func TestVisitorConnectionCloseMessageRoom(t *testing.T) {
+	_, err := connectCloseMessageChat(newVisitorMember())
+
+	assert.Equal(t, err.(errdefs.Causer).Code, errors.NoLogin)
+}
+
+func TestGuestConnectionCloseMessageRoom(t *testing.T) {
+	reply, err := connectCloseMessageChat(newGuestMember(true))
+
+	assert.Nil(t, err)
+	assert.True(t, reply.Connect.Status)
+	assert.False(t, reply.Connect.Permission.IsMessage)
+	assert.False(t, reply.Connect.Permission.IsRedEnvelope)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, noLoginMessage)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, noLoginMessage)
+}
+
+func TestMemberConnectionCloseMessageRoom(t *testing.T) {
+	reply, err := connectCloseMessageChat(newPlayMember(true, true, false))
+
+	assert.Nil(t, err)
+	assert.True(t, reply.Connect.Status)
+	assert.False(t, reply.Connect.Permission.IsMessage)
+	assert.True(t, reply.Connect.Permission.IsRedEnvelope)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, noSendMessage)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, "")
+}
+
+func TestMarketConnectionCloseMessageRoom(t *testing.T) {
+	reply, err := connectCloseMessageChat(newMarketMember(true, true, false))
+
+	assert.Nil(t, err)
+	assert.True(t, reply.Connect.Status)
+	assert.False(t, reply.Connect.Permission.IsMessage)
+	assert.True(t, reply.Connect.Permission.IsRedEnvelope)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, noSendMessage)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, "")
+}
+
 func connectCloseChat(member member.Chat) (*pb.ConnectReply, error) {
 	return connectNewChat(false, true, member)
+}
+
+func connectCloseMessageChat(member member.Chat) (*pb.ConnectReply, error) {
+	return connectNewChat(true, false, member)
 }
 
 func connectChat(chatStatus bool, member member.Chat) (*pb.ConnectReply, error) {
@@ -109,7 +157,7 @@ func newPlayMember(isLogin, isMessage, isBlockade bool) *member.MockMember {
 	return newMember(isLogin, isBlockade, isMessage, models.Player)
 }
 
-func newMarketMember(isLogin, isBlockade, isMessage bool) *member.MockMember {
+func newMarketMember(isLogin, isMessage, isBlockade bool) *member.MockMember {
 	return newMember(isLogin, isBlockade, isMessage, models.Market)
 }
 
