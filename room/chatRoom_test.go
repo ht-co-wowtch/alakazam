@@ -27,7 +27,7 @@ func TestVisitorConnectionRoom(t *testing.T) {
 }
 
 func TestGuestConnectionRoom(t *testing.T) {
-	reply, err := connectChat(true, newGuestMember(true))
+	reply, err := connectChat(true, newGuestMember(true, false))
 
 	assert.Nil(t, err)
 	assert.True(t, reply.Connect.Status)
@@ -62,7 +62,7 @@ func TestVisitorConnectionCloseRoom(t *testing.T) {
 }
 
 func TestGuestConnectionCloseRoom(t *testing.T) {
-	_, err := connectCloseChat(newGuestMember(true))
+	_, err := connectCloseChat(newGuestMember(true, false))
 
 	assert.Equal(t, err, errors.ErrRoomClose)
 }
@@ -86,7 +86,7 @@ func TestVisitorConnectionCloseMessageRoom(t *testing.T) {
 }
 
 func TestGuestConnectionCloseMessageRoom(t *testing.T) {
-	reply, err := connectCloseMessageChat(newGuestMember(true))
+	reply, err := connectCloseMessageChat(newGuestMember(true, false))
 
 	assert.Nil(t, err)
 	assert.True(t, reply.Connect.Status)
@@ -138,6 +138,24 @@ func TestMarketCloseMessageConnectionRoom(t *testing.T) {
 	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, "您在永久禁言状态，无法发言")
 }
 
+func TestGuestBlockadeConnectionRoom(t *testing.T) {
+	_, err := connectChat(true, newGuestMember(true, true))
+
+	assert.Equal(t, err, errors.ErrBlockade)
+}
+
+func TestMemberBlockadeConnectionRoom(t *testing.T) {
+	_, err := connectChat(true, newPlayMember(true, true, true))
+
+	assert.Equal(t, err, errors.ErrBlockade)
+}
+
+func TestMarketBlockadeConnectionRoom(t *testing.T) {
+	_, err := connectChat(true, newMarketMember(true, true, true))
+
+	assert.Equal(t, err, errors.ErrBlockade)
+}
+
 func connectCloseChat(member member.Chat) (*pb.ConnectReply, error) {
 	return connectNewChat(false, true, member)
 }
@@ -169,8 +187,8 @@ func newVisitorMember() *member.MockMember {
 	return newMember(false, false, false, 0)
 }
 
-func newGuestMember(isLogin bool) *member.MockMember {
-	return newMember(isLogin, false, false, models.Guest)
+func newGuestMember(isLogin, isBlockade bool) *member.MockMember {
+	return newMember(isLogin, isBlockade, false, models.Guest)
 }
 
 func newPlayMember(isLogin, isMessage, isBlockade bool) *member.MockMember {
