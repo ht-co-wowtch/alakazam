@@ -14,7 +14,7 @@ func TestGetUserName(t *testing.T) {
 	m, db, cache := mockMember()
 	uids := []string{"1", "2", "3"}
 
-	cache.m.On("getName", uids).
+	cache.On("getName", uids).
 		Return(map[string]string{
 			"1": "1",
 			"3": "3",
@@ -24,7 +24,7 @@ func TestGetUserName(t *testing.T) {
 		models.Member{Uid: "2", Name: "2"},
 	}, nil)
 
-	cache.m.On("setName", map[string]string{"2": "2"}).Return(nil)
+	cache.On("setName", map[string]string{"2": "2"}).Return(nil)
 
 	name, err := m.GetUserNames(uids)
 
@@ -38,9 +38,9 @@ func TestGetUserName(t *testing.T) {
 
 func TestGetUserNameNoRows(t *testing.T) {
 	m, db, cache := mockMember()
-	cache.m.On("getName", mock.Anything).Return(map[string]string{}, redis.Nil)
+	cache.On("getName", mock.Anything).Return(map[string]string{}, redis.Nil)
 	db.m.On("GetMembersByUid", []string{}).Once().Return([]models.Member{}, nil)
-	cache.m.On("setName", mock.Anything).Return(nil)
+	cache.On("setName", mock.Anything).Return(nil)
 
 	_, err := m.GetUserNames([]string{})
 
@@ -51,15 +51,15 @@ func TestGetUserNameNoRows(t *testing.T) {
 
 func TestGetUserNameError(t *testing.T) {
 	m, _, cache := mockMember()
-	cache.m.On("getName", mock.Anything).Return(map[string]string{}, errors.New(""))
+	cache.On("getName", mock.Anything).Return(map[string]string{}, errors.New(""))
 	_, err := m.GetUserNames([]string{})
 
 	assert.Equal(t, errors.New(""), err)
 }
 
-func mockMember() (*Member, *mockDb, *mockCache) {
+func mockMember() (*Member, *mockDb, *MockCache) {
 	db := new(mockDb)
-	cache := new(mockCache)
+	cache := new(MockCache)
 	return &Member{
 		db: db,
 		c:  cache,
