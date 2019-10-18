@@ -23,7 +23,7 @@ const (
 	Guest = 0
 
 	// 營銷
-	Marketing = 1
+	Market = 1
 
 	// 玩家
 	Player = 2

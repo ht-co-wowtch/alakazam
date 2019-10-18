@@ -6,6 +6,7 @@ import (
 	"github.com/alicebob/miniredis"
 	goRedis "github.com/go-redis/redis"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
@@ -165,4 +166,53 @@ func TestAddServerOnline(t *testing.T) {
 	o, err := c.getOnline("123")
 
 	assert.Equal(t, server, o)
+}
+
+type mockCache struct {
+	mock.Mock
+}
+
+func (m *mockCache) set(room models.Room) error {
+	arg := m.Called(room)
+	return arg.Error(0)
+}
+
+func (m *mockCache) get(id int) (models.Room, error) {
+	arg := m.Called(id)
+	return arg.Get(0).(models.Room), arg.Error(1)
+}
+
+func (m *mockCache) setChat(room models.Room, message []byte) error {
+	arg := m.Called(room, message)
+	return arg.Error(0)
+}
+
+func (m *mockCache) getChat(id int) (models.Room, error) {
+	arg := m.Called(id)
+	return arg.Get(0).(models.Room), arg.Error(1)
+}
+
+func (m *mockCache) addOnline(server string, online *Online) error {
+	arg := m.Called(server, online)
+	return arg.Error(0)
+}
+
+func (m *mockCache) getOnline(server string) (*Online, error) {
+	arg := m.Called(server)
+	return arg.Get(0).(*Online), arg.Error(1)
+}
+
+func (m *mockCache) setChatTopMessage(rids []int32, message []byte) error {
+	arg := m.Called(rids, message)
+	return arg.Error(0)
+}
+
+func (m *mockCache) getChatTopMessage(rid int) ([]byte, error) {
+	arg := m.Called(rid)
+	return arg.Get(0).([]byte), arg.Error(1)
+}
+
+func (m *mockCache) deleteChatTopMessage(rids []int32) error {
+	arg := m.Called(rids)
+	return arg.Error(0)
 }
