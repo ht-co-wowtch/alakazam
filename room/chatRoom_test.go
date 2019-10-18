@@ -118,6 +118,26 @@ func TestMarketConnectionCloseMessageRoom(t *testing.T) {
 	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, "")
 }
 
+func TestMemberCloseMessageConnectionRoom(t *testing.T) {
+	reply, err := connectChat(true, newPlayMember(true, false, false))
+
+	assert.Nil(t, err)
+	assert.True(t, reply.Connect.Status)
+	assert.False(t, reply.Connect.Permission.IsMessage)
+	assert.True(t, reply.Connect.Permission.IsRedEnvelope)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, "您在永久禁言状态，无法发言")
+}
+
+func TestMarketCloseMessageConnectionRoom(t *testing.T) {
+	reply, err := connectChat(true, newMarketMember(true, false, false))
+
+	assert.Nil(t, err)
+	assert.True(t, reply.Connect.Status)
+	assert.False(t, reply.Connect.Permission.IsMessage)
+	assert.True(t, reply.Connect.Permission.IsRedEnvelope)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, "您在永久禁言状态，无法发言")
+}
+
 func connectCloseChat(member member.Chat) (*pb.ConnectReply, error) {
 	return connectNewChat(false, true, member)
 }
