@@ -11,7 +11,7 @@ func (tf transportFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return tf(req)
 }
 
-func newMockClient(doer func(req *http.Request) (resp *http.Response, err error)) *Client {
+func NewMockClient(doer func(req *http.Request) (resp *http.Response, err error)) *Client {
 	return &Client{
 		c: client.Create(
 			&client.Conf{

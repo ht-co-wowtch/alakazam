@@ -1,68 +1,77 @@
 package member
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/go-redis/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"io/ioutil"
+	"net/http"
 	"testing"
 	"time"
 )
 
+func init() {
+	log.Default()
+}
+
 func TestVisitorSendMessage(t *testing.T) {
-	member := newMockNoMessageMember(false, 99)
-	_, err := member.GetMessageSession("123")
+	m := newMockNoMessageMember(false, 99)
+	_, err := m.GetMessageSession("123")
 
 	assert.Equal(t, err, errors.ErrLogin)
 }
 
 func TestGuestSendMessage(t *testing.T) {
-
-	member := newMockNoMessageMember(true, models.Guest)
-	_, err := member.GetMessageSession("123")
+	m := newMockNoMessageMember(true, models.Guest)
+	_, err := m.GetMessageSession("123")
 
 	assert.Equal(t, err, errors.ErrLogin)
 }
 
 func TestMemberSendMessage(t *testing.T) {
-	member := newMockMember(true, true, false, models.Player)
-	_, err := member.GetMessageSession("123")
+	m := newMockMember(true, true, false, models.Player)
+	_, err := m.GetMessageSession("123")
 
 	assert.Nil(t, err)
 }
 
 func TestMarketSendMessage(t *testing.T) {
-	member := newMockMember(true, true, false, models.Market)
-	_, err := member.GetMessageSession("123")
+	m := newMockMember(true, true, false, models.Market)
+	_, err := m.GetMessageSession("123")
 
 	assert.Nil(t, err)
 }
 
 func TestMemberIsBannedSendMessage(t *testing.T) {
-	member := newMockMember(true, true, true, models.Player)
-	_, err := member.GetMessageSession("123")
+	m := newMockMember(true, true, true, models.Player)
+	_, err := m.GetMessageSession("123")
 
 	assert.Equal(t, err, errors.ErrMemberBanned)
 }
 
 func TestMarketIsBannedSendMessage(t *testing.T) {
-	member := newMockMember(true, true, true, models.Market)
-	_, err := member.GetMessageSession("123")
+	m := newMockMember(true, true, true, models.Market)
+	_, err := m.GetMessageSession("123")
 
 	assert.Equal(t, err, errors.ErrMemberBanned)
 }
 
 func TestMemberBlockadeSendMessage(t *testing.T) {
-	member := newMockBlockadeMember(models.Player)
-	_, err := member.GetMessageSession("123")
+	m := newMockBlockadeMember(models.Player)
+	_, err := m.GetMessageSession("123")
 
 	assert.Equal(t, err, errors.ErrBlockade)
 }
 
 func TestMarketBannedSendMessage(t *testing.T) {
-	member := newMockBlockadeMember(models.Market)
-	_, err := member.GetMessageSession("123")
+	m := newMockBlockadeMember(models.Market)
+	_, err := m.GetMessageSession("123")
 
 	assert.Equal(t, err, errors.ErrBlockade)
 }
@@ -100,6 +109,83 @@ func newMockMemberCache(isLogin, isMessage, isBlockade bool, t int) (Member, *Mo
 		IsBlockade: isBlockade,
 	}, err)
 	return member, cache
+}
+
+func TestVisitorGiveRedEnvelope(t *testing.T) {
+	m := newMockMember(false, false, false, 99)
+	_, _, err := m.GiveRedEnvelope("", "", RedEnvelope{})
+
+	assert.Equal(t, err, errors.ErrLogin)
+}
+
+func TestGuestGiveRedEnvelope(t *testing.T) {
+	m := newMockMember(true, false, false, models.Guest)
+	_, _, err := m.GiveRedEnvelope("", "", RedEnvelope{})
+
+	assert.Equal(t, err, errors.ErrLogin)
+}
+
+func TestMemberGiveRedEnvelope(t *testing.T) {
+	m := newMockMember(true, true, false, models.Player)
+	m.cli = mockRedEnvelopeClient()
+
+	_, _, err := m.GiveRedEnvelope("", "", RedEnvelope{})
+
+	assert.Nil(t, err)
+}
+
+func TestMarketGiveRedEnvelope(t *testing.T) {
+	m := newMockMember(true, true, false, models.Market)
+	m.cli = mockRedEnvelopeClient()
+
+	_, _, err := m.GiveRedEnvelope("", "", RedEnvelope{})
+
+	assert.Nil(t, err)
+}
+
+func TestMemberBannedGiveRedEnvelope(t *testing.T) {
+	m := newMockMember(true, true, true, models.Player)
+	m.cli = mockRedEnvelopeClient()
+	_, _, err := m.GiveRedEnvelope("", "", RedEnvelope{})
+
+	assert.Nil(t, err)
+}
+
+func TestMarketBannedGiveRedEnvelope(t *testing.T) {
+	m := newMockMember(true, true, true, models.Market)
+	m.cli = mockRedEnvelopeClient()
+	_, _, err := m.GiveRedEnvelope("", "", RedEnvelope{})
+
+	assert.Nil(t, err)
+}
+
+func TestMemberBlockadeGiveRedEnvelope(t *testing.T) {
+	m := newMockBlockadeMember(models.Player)
+	m.cli = mockRedEnvelopeClient()
+	_, _, err := m.GiveRedEnvelope("", "", RedEnvelope{})
+
+	assert.Equal(t, err, errors.ErrBlockade)
+}
+
+func TestMarketBlockadeGiveRedEnvelope(t *testing.T) {
+	m := newMockBlockadeMember(models.Market)
+	m.cli = mockRedEnvelopeClient()
+	_, _, err := m.GiveRedEnvelope("", "", RedEnvelope{})
+
+	assert.Equal(t, err, errors.ErrBlockade)
+}
+
+func mockRedEnvelopeClient() *client.Client {
+	return client.NewMockClient(func(req *http.Request) (resp *http.Response, err error) {
+		body, err := json.Marshal(client.RedEnvelopeReply{})
+		if err != nil {
+			return nil, err
+		}
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(body)),
+		}, nil
+	})
 }
 
 func TestGetUserName(t *testing.T) {

@@ -3,9 +3,8 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
+	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
-	"gitlab.com/jetfueltw/cpw/micro/log"
-	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -25,27 +24,12 @@ type giveRedEnvelopeReq struct {
 }
 
 func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
-	arg := new(giveRedEnvelopeReq)
-	if err := c.ShouldBindJSON(arg); err != nil {
-		return err
-	}
-	user, err := s.member.GetSession(c.GetString("uid"))
-	if err != nil {
+	var arg member.RedEnvelope
+	if err := c.ShouldBindJSON(&arg); err != nil {
 		return err
 	}
 
-	log.Info("give red_envelope api", zap.String("uid", user.Uid), zap.Any("data", arg))
-
-	give := client.RedEnvelope{
-		RoomId:    arg.RoomId,
-		Message:   arg.Message,
-		Type:      arg.Type,
-		Amount:    arg.Amount,
-		Count:     arg.Count,
-		ExpireMin: 120,
-	}
-
-	reply, err := s.client.GiveRedEnvelope(give, c.GetString("token"))
+	user, reply, err := s.member.GiveRedEnvelope(c.GetString("uid"), c.GetString("token"), arg)
 	if err != nil {
 		return err
 	}

@@ -24,7 +24,7 @@ func TestGetDepositAndDmlByTime(t *testing.T) {
 }
 
 func newMockDepositAndDmlClient(t *testing.T, day int) *Client {
-	return newMockClient(func(req *http.Request) (resp *http.Response, err error) {
+	return NewMockClient(func(req *http.Request) (resp *http.Response, err error) {
 		query := req.URL.Query()
 		start, end, err := getTimeRange(query.Get("start_at"), query.Get("end_at"))
 		if err != nil {

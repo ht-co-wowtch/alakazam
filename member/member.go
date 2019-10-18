@@ -244,3 +244,42 @@ func (m *Member) Update(uid, name string, gender int) error {
 	}
 	return nil
 }
+
+type RedEnvelope struct {
+	RoomId int `json:"room_id" binding:"required"`
+
+	// 單包金額 or 總金額 看Type種類決定
+	Amount int `json:"amount" binding:"required"`
+
+	Count int `json:"count" binding:"required"`
+
+	// 紅包說明
+	Message string `json:"message" binding:"required,max=20"`
+
+	// 紅包種類 拼手氣 or 普通
+	Type string `json:"type" binding:"required"`
+}
+
+func (m *Member) GiveRedEnvelope(uid, token string, redEnvelope RedEnvelope) (*models.Member, client.RedEnvelopeReply, error) {
+	user, err := m.GetSession(uid)
+	if err != nil {
+		return nil, client.RedEnvelopeReply{}, err
+	}
+
+	log.Info("give red_envelope api", zap.String("uid", user.Uid), zap.Any("data", redEnvelope))
+
+	give := client.RedEnvelope{
+		RoomId:    redEnvelope.RoomId,
+		Message:   redEnvelope.Message,
+		Type:      redEnvelope.Type,
+		Amount:    redEnvelope.Amount,
+		Count:     redEnvelope.Count,
+		ExpireMin: 120,
+	}
+
+	reply, err := m.cli.GiveRedEnvelope(give, token)
+	if err != nil {
+		return nil, client.RedEnvelopeReply{}, err
+	}
+	return user, reply, nil
+}
