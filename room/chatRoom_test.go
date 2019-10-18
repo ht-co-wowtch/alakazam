@@ -51,27 +51,31 @@ func TestMarketConnectionRoom(t *testing.T) {
 }
 
 func TestVisitorConnectionCloseRoom(t *testing.T) {
-	_, err := connectChat(false, newVisitorMember())
+	_, err := connectCloseChat(newVisitorMember())
 
 	assert.Equal(t, err, errors.ErrRoomClose)
 }
 
 func TestGuestConnectionCloseRoom(t *testing.T) {
-	_, err := connectChat(false, newGuestMember(true))
+	_, err := connectCloseChat(newGuestMember(true))
 
 	assert.Equal(t, err, errors.ErrRoomClose)
 }
 
 func TestMemberConnectionCloseRoom(t *testing.T) {
-	_, err := connectChat(false, newPlayMember(true, true, false))
+	_, err := connectCloseChat(newPlayMember(true, true, false))
 
 	assert.Equal(t, err, errors.ErrRoomClose)
 }
 
 func TestMarketConnectionCloseRoom(t *testing.T) {
-	_, err := connectChat(false, newMarketMember(true, true, false))
+	_, err := connectCloseChat(newMarketMember(true, true, false))
 
 	assert.Equal(t, err, errors.ErrRoomClose)
+}
+
+func connectCloseChat(member member.Chat) (*pb.ConnectReply, error) {
+	return connectNewChat(false, true, member)
 }
 
 func connectChat(chatStatus bool, member member.Chat) (*pb.ConnectReply, error) {
