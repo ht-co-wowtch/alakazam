@@ -57,8 +57,9 @@ type Bets struct {
 }
 
 type Bet struct {
-	Name     string  `json:"name" binding:"required"`
-	Odds     float64 `json:"odds" binding:"required"`
-	OddsCode string  `json:"odds_code" binding:"required"`
-	Amount   int     `json:"amount" binding:"required"`
+	Name     string   `json:"name" binding:"required"`
+	Odds     float64  `json:"odds" binding:"required"`
+	OddsCode string   `json:"odds_code" binding:"required"`
+	Items    []string `json:"items"`
+	Amount   int      `json:"amount" binding:"required"`
 }
