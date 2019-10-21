@@ -1,5 +1,7 @@
 package member
 
+// 項目中的單元測試中對於不同會員種類有不同權限限制關係請參考 https://gitlab.com/jetfueltw/cpw/alakazam#permission
+
 import (
 	"bytes"
 	"encoding/json"

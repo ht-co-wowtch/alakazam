@@ -28,7 +28,7 @@ func TestGuestConnectionRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Status)
 	assert.False(t, reply.Connect.Permission.IsMessage)
 	assert.False(t, reply.Connect.Permission.IsRedEnvelope)
-	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, noLoginMessage)
+	assert.False(t, reply.Connect.Permission.IsBets)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.NoLoginMessage)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, errors.NoLoginMessage)
 }
@@ -40,6 +40,7 @@ func TestMemberConnectionRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Status)
 	assert.True(t, reply.Connect.Permission.IsMessage)
 	assert.True(t, reply.Connect.Permission.IsRedEnvelope)
+	assert.True(t, reply.Connect.Permission.IsBets)
 }
 
 func TestMarketConnectionRoom(t *testing.T) {
@@ -49,6 +50,7 @@ func TestMarketConnectionRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Status)
 	assert.True(t, reply.Connect.Permission.IsMessage)
 	assert.True(t, reply.Connect.Permission.IsRedEnvelope)
+	assert.True(t, reply.Connect.Permission.IsBets)
 }
 
 func TestVisitorConnectionCloseRoom(t *testing.T) {
@@ -88,6 +90,7 @@ func TestGuestConnectionCloseMessageRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Status)
 	assert.False(t, reply.Connect.Permission.IsMessage)
 	assert.False(t, reply.Connect.Permission.IsRedEnvelope)
+	assert.False(t, reply.Connect.Permission.IsBets)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.NoLoginMessage)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, errors.NoLoginMessage)
 }
@@ -99,6 +102,7 @@ func TestMemberConnectionCloseMessageRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Status)
 	assert.False(t, reply.Connect.Permission.IsMessage)
 	assert.True(t, reply.Connect.Permission.IsRedEnvelope)
+	assert.True(t, reply.Connect.Permission.IsBets)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.RoomBanned)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, "")
 }
@@ -110,6 +114,7 @@ func TestMarketConnectionCloseMessageRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Status)
 	assert.False(t, reply.Connect.Permission.IsMessage)
 	assert.True(t, reply.Connect.Permission.IsRedEnvelope)
+	assert.True(t, reply.Connect.Permission.IsBets)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.RoomBanned)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, "")
 }
@@ -121,6 +126,7 @@ func TestMemberCloseMessageConnectionRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Status)
 	assert.False(t, reply.Connect.Permission.IsMessage)
 	assert.True(t, reply.Connect.Permission.IsRedEnvelope)
+	assert.True(t, reply.Connect.Permission.IsBets)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.MemberBanned)
 }
 
@@ -131,7 +137,24 @@ func TestMarketCloseMessageConnectionRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Status)
 	assert.False(t, reply.Connect.Permission.IsMessage)
 	assert.True(t, reply.Connect.Permission.IsRedEnvelope)
+	assert.True(t, reply.Connect.Permission.IsBets)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.MemberBanned)
+}
+
+func TestMemberCloseBetsConnectionRoom(t *testing.T) {
+	reply, err := connectCloseBetsChat(newPlayMember(true, true, false))
+
+	assert.Nil(t, err)
+	assert.True(t, reply.Connect.Status)
+	assert.False(t, reply.Connect.Permission.IsBets)
+}
+
+func TestMarketCloseBetsConnectionRoom(t *testing.T) {
+	reply, err := connectCloseBetsChat(newMarketMember(true, true, false))
+
+	assert.Nil(t, err)
+	assert.True(t, reply.Connect.Status)
+	assert.False(t, reply.Connect.Permission.IsBets)
 }
 
 func TestGuestBlockadeConnectionRoom(t *testing.T) {
@@ -183,25 +206,29 @@ func getMessageSession(mc *member.MockMember) (*models.Member, models.Room, erro
 }
 
 func connectCloseChat(member member.Chat) (*pb.ConnectReply, error) {
-	return connectNewChat(false, true, member)
+	return connectNewChat(false, true, true, member)
 }
 
 func connectCloseMessageChat(member member.Chat) (*pb.ConnectReply, error) {
-	return connectNewChat(true, false, member)
+	return connectNewChat(true, false, true, member)
+}
+
+func connectCloseBetsChat(member member.Chat) (*pb.ConnectReply, error) {
+	return connectNewChat(true, false, false, member)
 }
 
 func connectChat(chatStatus bool, member member.Chat) (*pb.ConnectReply, error) {
-	return connectNewChat(chatStatus, true, member)
+	return connectNewChat(chatStatus, true, true, member)
 }
 
-func connectNewChat(chatStatus, chatIsMessage bool, member member.Chat) (*pb.ConnectReply, error) {
-	c := newChat(chatStatus, chatIsMessage, member)
+func connectNewChat(chatStatus, chatIsMessage, isBets bool, member member.Chat) (*pb.ConnectReply, error) {
+	c := newChat(chatStatus, chatIsMessage, isBets, member)
 	return c.Connect("", []byte(`{"token":"test", "room_id":1}`))
 }
 
-func newChat(status, isMessage bool, member member.Chat) chat {
+func newChat(status, isMessage, isBets bool, member member.Chat) chat {
 	cache := &mockCache{}
-	room := models.Room{Status: status, IsMessage: isMessage}
+	room := models.Room{Status: status, IsMessage: isMessage, IsBets: isBets}
 	cache.On("getChat", 1).Return(room, nil)
 	return chat{
 		cache:  cache,

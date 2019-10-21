@@ -17,7 +17,7 @@ type Room struct {
 	IsMessage bool
 
 	// 是否可發/跟注
-	IsFollow bool
+	IsBets bool
 
 	// 聊天打碼與充值量天數限制
 	DayLimit int
