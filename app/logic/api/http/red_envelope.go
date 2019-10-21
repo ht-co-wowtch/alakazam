@@ -2,7 +2,6 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"net/http"
@@ -71,33 +70,11 @@ func (s *httpServer) takeRedEnvelope(c *gin.Context) error {
 		return err
 	}
 
-	_, err := s.member.GetSession(c.GetString("uid"))
+	reply, err := s.member.TakeRedEnvelope(c.GetString("uid"), c.GetString("token"), arg.Token)
 	if err != nil {
 		return err
 	}
 
-	reply, err := s.client.TakeRedEnvelope(arg.Token, c.GetString("token"))
-	if err != nil {
-		return err
-	}
-	if reply.Name == "" && reply.Uid != "" {
-		if reply.Name, err = s.member.GetUserName(reply.Uid); err != nil {
-			return err
-		}
-	}
-
-	switch reply.Status {
-	case client.TakeEnvelopeSuccess:
-		reply.StatusMessage = "获得红包"
-	case client.TakeEnvelopeReceived:
-		reply.StatusMessage = "已经抢过了"
-	case client.TakeEnvelopeGone:
-		reply.StatusMessage = "手慢了，红包派完了"
-	case client.TakeEnvelopeExpired:
-		reply.StatusMessage = "红包已过期，不能抢"
-	default:
-		reply.StatusMessage = "不存在的红包"
-	}
 	c.JSON(http.StatusOK, reply)
 	return nil
 }

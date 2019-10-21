@@ -175,6 +175,38 @@ func TestMarketBlockadeGiveRedEnvelope(t *testing.T) {
 	assert.Equal(t, err, errors.ErrBlockade)
 }
 
+func TestVisitorTaskRedEnvelope(t *testing.T) {
+	m := newMockMember(false, false, false, 99)
+	m.cli = mockRedEnvelopeClient()
+	_, err := m.TakeRedEnvelope("", "", "")
+
+	assert.Equal(t, err, errors.ErrLogin)
+}
+
+func TestGuestTaskRedEnvelope(t *testing.T) {
+	m := newMockMember(true, false, false, models.Guest)
+	m.cli = mockRedEnvelopeClient()
+	_, err := m.TakeRedEnvelope("", "", "")
+
+	assert.Equal(t, err, errors.ErrLogin)
+}
+
+func TestMemberTaskRedEnvelope(t *testing.T) {
+	m := newMockMember(true, true, false, models.Player)
+	m.cli = mockRedEnvelopeClient()
+	_, err := m.TakeRedEnvelope("", "", "")
+
+	assert.Nil(t, err)
+}
+
+func TestMarketTaskRedEnvelope(t *testing.T) {
+	m := newMockMember(true, true, false, models.Market)
+	m.cli = mockRedEnvelopeClient()
+	_, err := m.TakeRedEnvelope("", "", "")
+
+	assert.Nil(t, err)
+}
+
 func mockRedEnvelopeClient() *client.Client {
 	return client.NewMockClient(func(req *http.Request) (resp *http.Response, err error) {
 		body, err := json.Marshal(client.RedEnvelopeReply{})

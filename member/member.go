@@ -283,3 +283,34 @@ func (m *Member) GiveRedEnvelope(uid, token string, redEnvelope RedEnvelope) (*m
 	}
 	return user, reply, nil
 }
+
+func (m *Member) TakeRedEnvelope(uid, token, redEnvelopeToken string) (client.TakeEnvelopeReply, error) {
+	_, err := m.GetSession(uid)
+	if err != nil {
+		return client.TakeEnvelopeReply{}, err
+	}
+	reply, err := m.cli.TakeRedEnvelope(redEnvelopeToken, token)
+	if err != nil {
+		return client.TakeEnvelopeReply{}, err
+	}
+
+	if reply.Name == "" && reply.Uid != "" {
+		if reply.Name, err = m.GetUserName(reply.Uid); err != nil {
+			return client.TakeEnvelopeReply{}, err
+		}
+	}
+
+	switch reply.Status {
+	case client.TakeEnvelopeSuccess:
+		reply.StatusMessage = "获得红包"
+	case client.TakeEnvelopeReceived:
+		reply.StatusMessage = "已经抢过了"
+	case client.TakeEnvelopeGone:
+		reply.StatusMessage = "手慢了，红包派完了"
+	case client.TakeEnvelopeExpired:
+		reply.StatusMessage = "红包已过期，不能抢"
+	default:
+		reply.StatusMessage = "不存在的红包"
+	}
+	return reply, nil
+}
