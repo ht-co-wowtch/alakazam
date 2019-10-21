@@ -43,11 +43,13 @@ TODO
 - [x] 紅包時效
 - [x] 用戶查詢紅包明細
 - [x] 自動返還過期紅包剩餘金額
+- [x] 跟投訊息
+- [x] 發送跟投訊息
 - [x] 管理員多房間推送訊息
 - [x] 公告(置頂)多房間推送訊息
 - [x] 管理員發紅包
 - [x] 預定時間發佈紅包
-- [x] 建立/更新房間(禁言,紅包,聊天限制)
+- [x] 建立/更新房間(禁言,跟投,紅包,聊天限制)
 - [x] 關閉房間
 - [x] 房間在線人數
 - [x] 遮蔽敏感詞
@@ -343,6 +345,7 @@ Operation = `6`=> 單筆訊息
 | message      | 普通訊息       |
 | red_envelope | 紅包訊息       |
 | top          | 公告(置頂)訊息 |
+| bets         | 跟投訊息       |
 
 普通訊息 or 公告(置頂)訊息
 
@@ -390,19 +393,58 @@ Operation = `6`=> 單筆訊息
 }
 ```
 
-| name                 | 說明                     | 格式          |
-| -------------------- | ------------------------ | ------------- |
-| Id                   | 訊息id                   | Int           |
-| uid                  | 發紅包人的uid            | string        |
-| type                 | 訊息種類                 | string        |
-| name                 | 發紅包人名稱             | string        |
-| avatar               | 頭像名稱 [類型](#avatar) | 名稱          |
-| message              | 紅包說明                 | string        |
-| time                 | 發送時間                 | 時:分:秒      |
-| timestamp            | 訊息發送時間             | 時間戳記(int) |
-| red_envelope.id      | 紅包id                   | string        |
-| red_envelope.token   | 搶紅包的token            | string        |
-| red_envelope.expired | 紅包過期時間             | RF3339        |
+| name                 | 說明          | 格式   |
+| -------------------- | ------------- | ------ |
+| message              | 紅包說明      | string |
+| red_envelope.id      | 紅包id        | string |
+| red_envelope.token   | 搶紅包的token | string |
+| red_envelope.expired | 紅包過期時間  | RF3339 |
+
+跟投訊息
+
+```json
+{
+   "id":9801,
+   "uid":"0d641b03d4d548dbb3a73a2197811261",
+   "type":"bets",
+   "name":"Sam",
+   "avatar":"other",
+   "time":"11:08:11",
+   "timestamp":1571627291,
+   "period_number":1234,
+   "bets_period_number":4567,
+   "bets":[
+      {
+         "name":"冠軍",
+         "odds":9.88,
+         "odds_code":"1.pos.1",
+         "items":[],
+         "amount":15
+      },
+      {
+         "name":"亞軍",
+         "odds":9.88,
+         "odds_code":"2.pos.1",
+         "items":[],
+         "amount":10
+      }
+   ],
+   "count":2,
+   "total_amount":25
+}
+```
+
+| name               | 說明         | 格式     |
+| ------------------ | ------------ | -------- |
+| period_number      | 遊戲 id      | string   |
+| bets_period_number | 本注期號     | int      |
+| bets.name          | 下注號碼名稱 | string   |
+| bets.odds          | 賠率         | float    |
+| bets.odds_code     | 賠率代號     | string   |
+| bets.items         | 組合號碼     | []string |
+| bets.amount        | 下注金額     | int      |
+| count              | 下注總筆數   | Int      |
+| total_amount       | 下注總金額   | int      |
 
 
 
