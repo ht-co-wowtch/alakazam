@@ -4,23 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 	"net/http"
 )
-
-type giveRedEnvelopeReq struct {
-	RoomId int `json:"room_id" binding:"required"`
-
-	// 單包金額 or 總金額 看Type種類決定
-	Amount int `json:"amount" binding:"required"`
-
-	Count int `json:"count" binding:"required"`
-
-	// 紅包說明
-	Message string `json:"message" binding:"required,max=20"`
-
-	// 紅包種類 拼手氣 or 普通
-	Type string `json:"type" binding:"required"`
-}
 
 func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	var arg member.RedEnvelope
