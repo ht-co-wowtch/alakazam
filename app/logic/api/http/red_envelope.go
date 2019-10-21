@@ -50,7 +50,11 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	msgId, err := s.message.SendRedEnvelope(msg)
 
 	if err != nil {
-		return err
+		log.Error("send red envelope message error",
+			zap.Error(err),
+			zap.String("uid", user.Uid),
+			zap.String("order", reply.Order),
+		)
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"id":         reply.Order,
