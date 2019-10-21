@@ -52,7 +52,7 @@ func (s *Store) CreateRoom(room *Room) (int64, error) {
 }
 
 func (s *Store) UpdateRoom(room Room) (int64, error) {
-	u := s.d.Cols("is_message", "day_limit", "deposit_limit", "dml_limit", "status")
+	u := s.d.Cols("is_message", "is_bets", "day_limit", "deposit_limit", "dml_limit", "status")
 	return u.Where("id = ?", room.Id).
 		Update(&room)
 }

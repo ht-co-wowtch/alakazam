@@ -62,6 +62,7 @@ func (s *httpServer) GetRoom(c *gin.Context) error {
 	c.JSON(http.StatusOK, gin.H{
 		"id":         r.Id,
 		"is_message": r.IsMessage,
+		"is_bets":    r.IsBets,
 		"limit": room.Limit{
 			Day:     r.DayLimit,
 			Deposit: r.DepositLimit,
