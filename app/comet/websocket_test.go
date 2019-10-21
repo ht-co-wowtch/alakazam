@@ -8,6 +8,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -30,8 +31,8 @@ func TestVisitorConnectionRoom(t *testing.T) {
 	_ = json.Unmarshal(conn.body[1], &connect)
 
 	assert.False(t, connect.Status)
-	assert.Equal(t, connect.Message, "请先登入会员")
-	assert.Equal(t, close.Message, "请先登入会员")
+	assert.Equal(t, connect.Message, errors.NoLoginMessage)
+	assert.Equal(t, close.Message, errors.NoLoginMessage)
 	assert.Equal(t, err, io.EOF)
 	assert.Len(t, conn.body, 2)
 }
@@ -47,8 +48,8 @@ func TestGuestConnectionRoom(t *testing.T) {
 	assert.True(t, b.Status)
 	assert.False(t, b.Permission.IsMessage)
 	assert.False(t, b.Permission.IsRedEnvelope)
-	assert.Equal(t, b.PermissionMessage.IsMessage, "请先登入会员")
-	assert.Equal(t, b.PermissionMessage.IsRedEnvelope, "请先登入会员")
+	assert.Equal(t, b.PermissionMessage.IsMessage, errors.NoLoginMessage)
+	assert.Equal(t, b.PermissionMessage.IsRedEnvelope, errors.NoLoginMessage)
 	assert.Len(t, conn.body, 1)
 }
 
@@ -71,10 +72,10 @@ func TestMemberConnectionRoom(t *testing.T) {
 func newLoginSession(isLogin, isMessage, isRedEnvelope bool) *fakeLogicRpc {
 	var message, redEnvelopeMsg string
 	if !isMessage {
-		message = "请先登入会员"
+		message = errors.NoLoginMessage
 	}
 	if !isRedEnvelope {
-		redEnvelopeMsg = "请先登入会员"
+		redEnvelopeMsg = errors.NoLoginMessage
 	}
 	return &fakeLogicRpc{
 		isLogin:        isLogin,
@@ -137,7 +138,7 @@ func (f fakeLogicRpc) Ping(ctx context.Context, in *logicpb.PingReq, opts ...grp
 
 func (f fakeLogicRpc) Connect(ctx context.Context, in *logicpb.ConnectReq, opts ...grpc.CallOption) (*logicpb.ConnectReply, error) {
 	if !f.isLogin {
-		return nil, status.Error(codes.FailedPrecondition, "请先登入会员")
+		return nil, status.Error(codes.FailedPrecondition, errors.NoLoginMessage)
 	}
 	return &logicpb.ConnectReply{
 		Connect: &logicpb.Connect{

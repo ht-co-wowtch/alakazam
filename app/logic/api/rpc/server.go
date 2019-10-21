@@ -45,7 +45,7 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 		case *errdefs.Causer:
 			var msg string
 			if e.Code == errors.NoLogin {
-				msg = "请先登入会员"
+				msg = errors.NoLoginMessage
 			} else {
 				msg = e.Message
 			}
@@ -79,7 +79,7 @@ func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.Cha
 		case *errdefs.Causer:
 			var msg string
 			if e.Code == errors.NoLogin {
-				msg = "请先登入会员"
+				msg = errors.NoLoginMessage
 			} else {
 				msg = e.Message
 			}

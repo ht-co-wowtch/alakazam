@@ -244,18 +244,18 @@ func newPbConnect(user *models.Member, room models.Room, key string, roomId int3
 
 	if user.Type != models.Guest {
 		if !room.IsMessage {
-			permissionMsg.IsMessage = "聊天室目前禁言状态，无法发言"
+			permissionMsg.IsMessage = errors.RoomBanned
 			permission.IsMessage = false
 		} else if user.IsMessage {
 			permission.IsMessage = true
 		} else {
-			permissionMsg.IsMessage = "您在永久禁言状态，无法发言"
+			permissionMsg.IsMessage = errors.MemberBanned
 		}
 
 		permission.IsRedEnvelope = true
 	} else {
-		permissionMsg.IsMessage = "请先登入会员"
-		permissionMsg.IsRedEnvelope = "请先登入会员"
+		permissionMsg.IsMessage = errors.NoLoginMessage
+		permissionMsg.IsRedEnvelope = errors.NoLoginMessage
 	}
 	connect.Permission = permission
 	connect.PermissionMessage = permissionMsg

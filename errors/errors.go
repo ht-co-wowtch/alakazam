@@ -7,6 +7,12 @@ import (
 	"gopkg.in/go-playground/validator.v8"
 )
 
+const (
+	NoLoginMessage = "请先登入会员"
+	RoomBanned     = "聊天室目前禁言状态，无法发言"
+	MemberBanned   = "您在永久禁言状态，无法发言"
+)
+
 var (
 	// 								例外	00**
 
@@ -21,9 +27,9 @@ var (
 	ErrValidationToken = errdefs.Unauthorized(2003, "用户认证失败")
 	ErrClaimsToken     = errdefs.Unauthorized(2004, "用户认证失败")
 	ErrValidToken      = errdefs.Unauthorized(2005, "用户认证失败")
-	ErrLogin           = errdefs.Unauthorized(2006, "请先登入会员")
+	ErrLogin           = errdefs.Unauthorized(2006, NoLoginMessage)
 	ErrAuthorization   = errdefs.Unauthorized(2007, "Unauthorized")
-	ErrMemberNoMessage = errdefs.Unauthorized(2008, "您在永久禁言状态，无法发言")
+	ErrMemberNoMessage = errdefs.Unauthorized(2008, MemberBanned)
 	ErrMemberBanned    = errdefs.Unauthorized(2009, "您在禁言状态，无法发言")
 	ErrBlockade        = errdefs.Unauthorized(2010, "您在封鎖状态，无法进入聊天室")
 
@@ -39,7 +45,7 @@ var (
 	ErrRateSameMsg = errdefs.TooManyRequests(5004, "10秒内相同讯息3次，自动禁言10分钟")
 	// 5005
 	ErrRoomLimit     = "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元"
-	ErrRoomNoMessage = errdefs.Unauthorized(5006, "聊天室目前禁言状态，无法发言")
+	ErrRoomNoMessage = errdefs.Unauthorized(5006, RoomBanned)
 )
 
 const (

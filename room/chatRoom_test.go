@@ -14,11 +14,6 @@ import (
 	"testing"
 )
 
-const (
-	noLoginMessage = "请先登入会员"
-	noSendMessage  = "聊天室目前禁言状态，无法发言"
-)
-
 func TestVisitorConnectionRoom(t *testing.T) {
 	reply, err := connectChat(true, newVisitorMember())
 
@@ -34,7 +29,8 @@ func TestGuestConnectionRoom(t *testing.T) {
 	assert.False(t, reply.Connect.Permission.IsMessage)
 	assert.False(t, reply.Connect.Permission.IsRedEnvelope)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, noLoginMessage)
-	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, noLoginMessage)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.NoLoginMessage)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, errors.NoLoginMessage)
 }
 
 func TestMemberConnectionRoom(t *testing.T) {
@@ -92,8 +88,8 @@ func TestGuestConnectionCloseMessageRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Status)
 	assert.False(t, reply.Connect.Permission.IsMessage)
 	assert.False(t, reply.Connect.Permission.IsRedEnvelope)
-	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, noLoginMessage)
-	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, noLoginMessage)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.NoLoginMessage)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, errors.NoLoginMessage)
 }
 
 func TestMemberConnectionCloseMessageRoom(t *testing.T) {
@@ -103,7 +99,7 @@ func TestMemberConnectionCloseMessageRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Status)
 	assert.False(t, reply.Connect.Permission.IsMessage)
 	assert.True(t, reply.Connect.Permission.IsRedEnvelope)
-	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, noSendMessage)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.RoomBanned)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, "")
 }
 
@@ -114,7 +110,7 @@ func TestMarketConnectionCloseMessageRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Status)
 	assert.False(t, reply.Connect.Permission.IsMessage)
 	assert.True(t, reply.Connect.Permission.IsRedEnvelope)
-	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, noSendMessage)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.RoomBanned)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, "")
 }
 
@@ -125,7 +121,7 @@ func TestMemberCloseMessageConnectionRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Status)
 	assert.False(t, reply.Connect.Permission.IsMessage)
 	assert.True(t, reply.Connect.Permission.IsRedEnvelope)
-	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, "您在永久禁言状态，无法发言")
+	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.MemberBanned)
 }
 
 func TestMarketCloseMessageConnectionRoom(t *testing.T) {
@@ -135,7 +131,7 @@ func TestMarketCloseMessageConnectionRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Status)
 	assert.False(t, reply.Connect.Permission.IsMessage)
 	assert.True(t, reply.Connect.Permission.IsRedEnvelope)
-	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, "您在永久禁言状态，无法发言")
+	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.MemberBanned)
 }
 
 func TestGuestBlockadeConnectionRoom(t *testing.T) {

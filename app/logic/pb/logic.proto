@@ -46,6 +46,7 @@ message Connect {
 message Permission {
     bool isMessage = 1 [(gogoproto.jsontag) = "is_message"];
 	bool isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
+	bool isBets = 3 [(gogoproto.jsontag) = "is_bets"];
 }
 
 message PermissionMessage {
