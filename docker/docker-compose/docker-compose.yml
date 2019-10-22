@@ -289,3 +289,15 @@ services:
       - ./wait-for:/usr/local/bin/wait-for
     depends_on:
       - mysql
+
+  # https://github.com/linkedin/Burrow
+  burrow:
+    build:
+      context: ./burrow
+    environment:
+      - burrow_zookeeper_servers=zookeeper:2181
+      - burrow_cluster_local=kafka:9092
+      - burrow_consumer_local=kafka:9092
+      - burrow_logging_filename=""
+    ports:
+      - "1111:8080"

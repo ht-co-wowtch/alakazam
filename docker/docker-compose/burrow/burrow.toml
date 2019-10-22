@@ -1,0 +1,73 @@
+[general]
+# 放置pid的檔案
+pidfile="burrow.pid"
+stdout-logfile=""
+access-control-allow-origin="*"
+
+[logging]
+# log檔案位置
+filename=""
+# log輸出最低等級
+level="info"
+# 每個log檔案最大容量(mb)
+maxsize=100
+# 每個log檔案最多儲存多少個備份
+maxbackups=30
+# 每個log檔案最多儲存多少天
+maxage=10
+# 時間是否使用當地時間
+use-localtime=true
+# 是否壓縮
+use-compression=true
+
+[zookeeper]
+servers=[ "zookeeper:2181" ]
+timeout=6
+root-path="/burrow"
+
+[cluster.local]
+# 實作kafka cluster module name，目前只有這個，不能更改成其他名稱
+class-name="kafka"
+# kafka broker
+servers=[ "kafka:9092" ]
+# sarama 相關配置，會以client-profile.test設置值做設置，test如果改成別的名稱client-profile.*也需要跟著改
+client-profile="test"
+# 多久(秒)刷新一次topic列表
+topic-refresh=120
+# 多久(秒)刷新一次broker offset列表
+offset-refresh=30
+
+[client-profile.test]
+# kafka client id，隨著request送至kafka broker做log用
+client-id="consumer-log"
+# 版本
+kafka-version="2.3.0"
+
+[consumer.local]
+# 實作kafka consumer client name，目前只有這個，不能更改成其他名稱
+class-name="kafka"
+cluster="local"
+# kafka broker
+servers=[ "kafka:9092" ]
+# sarama 相關配置，會以client-profile.test設置值做設置，test如果改成別的名稱client-profile.*也需要跟著改
+client-profile="test"
+group-blacklist=""
+group-whitelist=""
+start-latest=true
+
+[httpserver.default]
+address=":8080"
+
+[storage.default]
+# 監控資料存放在名為"inmemory"module上，目前只有這個，不能更改成其他名稱
+class-name="inmemory"
+# 預先準備多少個request worker(goroutine)，用於http request or 內部採樣request
+workers=20
+# 每個 topic下的各個分區最多保存幾個offset資料
+intervals=5
+# offset接收到時已過期太久(秒)則丟棄 and 消費者多久(秒)沒提交offset就移除
+expire-group=604800
+# 每個request worker chan buffer 大小，瞬間最大接受的request數量
+min-distance=1
+
+
