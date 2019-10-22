@@ -1,0 +1,20 @@
+# 文件: https://github.com/prometheus/jmx_exporter
+
+# 延遲啟動開始監控kafka，因為kafka啟動也是需要時間，這段啟動時間內是無法提供任何metrics，對於監控程式則會一直error
+startDelaySeconds: 0
+
+# jmx host
+hostPort: 127.0.0.1:9091
+
+# JMX username
+username:
+
+# JMX password
+password:
+
+# 跟hostPort一樣的意思只是協定不一定，擇一即可
+# jmxUrl: service:jmx:rmi:///jndi/rmi://127.0.0.1:9091/jmxrmi
+
+# JMX 是否開啟ssl
+ssl: false
+

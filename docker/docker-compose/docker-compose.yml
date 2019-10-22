@@ -1,0 +1,291 @@
+version: "3"
+
+services:
+  #### MySQL ####
+  mysql:
+    build:
+      context: ./mysql
+      args:
+        - MYSQL_VERSION=${MYSQL_VERSION}
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASS}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASS}
+      - TZ=UTC
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - "${MYSQL_PORT}:3306"
+
+  #### Redis ####
+  redis:
+    image: redis:${REDIS_VERSION}
+    volumes:
+      - ./data/redis:/data
+    ports:
+      - "${REDIS_PORT}:6379"
+
+  #### Rapidash 認證中心 ####
+  rapidash:
+    image: registry.gitlab.com/jetfueltw/cpw/rapidash:${RAPIDASH_VERSION}
+    environment:
+      - HTTP_SERVE_ADDR=:80
+      - LOG_LEVEL=info
+      - LOG_CONSOLE=false
+      - REDIS_ADDRESS=${RAPIDASH_REDIS_ADDRESS}
+      - SESSION_TTL=30m
+      - TICKET_TTL=1m
+      - JWT_SECRET=AxQxVJ3bEqLvzzWejkFxrhKkavQhY4Am
+    ports:
+      - "${RAPIDASH_PORT}:80"
+    depends_on:
+      - redis
+
+  #### Ponyta 錢包 ####
+  ponyta:
+    image: registry.gitlab.com/jetfueltw/cpw/ponyta:${PONYTA_VERSION}
+    environment:
+      - HTTP_SERVE_ADDR=:80
+      - LOG_LEVEL=info
+      - LOG_CONSOLE=false
+      - DB_DRIVER=${PONYTA_DB_DRIVER}
+      - DB_MASTER_USERNAME=${PONYTA_DB_USERNAME}
+      - DB_MASTER_PASSWORD=${PONYTA_DB_PASSWORD}
+      - DB_MASTER_ADDRESS=${PONYTA_DB_ADDRESS}
+      - DB_SLAVE_USERNAME=${PONYTA_DB_USERNAME}
+      - DB_SLAVE_PASSWORD=${PONYTA_DB_PASSWORD}
+      - DB_SLAVE_ADDRESS=${PONYTA_DB_ADDRESS}
+      - DB_DATABASE=${PONYTA_DB_DATABASE}
+      - DB_DIAL_TIMEOUT=10s
+      - DB_READ_TIMEOUT=30s
+      - DB_WRITE_TIMEOUT=60s
+      - DB_CONN_MAX_LIFE_TIME=0s
+      - DB_MAX_IDLE_CONNS=2
+      - DB_MAX_OPEN_CONNS=0
+    ports:
+      - "${PONYTA_PORT}:80"
+    depends_on:
+      - mysql
+
+  #### Nidoran 版給聊天室的接口 ####
+  nidoran:
+    image: registry.gitlab.com/jetfueltw/cpw/nidoran:${NIDORAN_VERSION}
+    environment:
+      - NIDORAN_DATABASE_DATABASE=${NIDORAN_DATABASE_DATABASE}
+      - NIDORAN_DATABASE_HOST=${NIDORAN_DATABASE_HOST}
+      - NIDORAN_DATABASE_PORT=${NIDORAN_DATABASE_PORT}
+      - NIDORAN_DATABASE_USER=${NIDORAN_DATABASE_USER}
+      - NIDORAN_DATABASE_PASSWORD=${NIDORAN_DATABASE_PASSWORD}s
+      - NIDORAN_REDIS_ADDR=${NIDORAN_REDIS_ADDR}
+      - NIDORAN_AUTH_HOST=${NIDORAN_RAPIDASH_HOST}
+      - NIDORAN_WALLET_HOST=${NIDORAN_PONTTA_HOST}
+    ports:
+      - "${NIDORAN_PORT}:3005"
+    depends_on:
+      - mysql
+      - redis
+      - rapidash
+      - ponyta
+
+  #### Alakazam 聊天室 (web socket) ####
+  # 3102 port: web socket
+  # 3031 port: metrics
+  alakazam:
+    image: registry.gitlab.com/jetfueltw/cpw/alakazam/comet:${ALAKAZAM_VERSION}
+    environment:
+      - ALAKAZAM_GRPC_LOGIC_ADDR=alakazam_logic:3119
+    ports:
+      - "${ALAKAZAM_COMET_WEBSOCKET_PORT}:3102"
+      - "3031:3031"
+    depends_on:
+      - alakazam_logic
+      - alakazam_job
+      - alakazam_admin
+      - alakazam_seq
+      - alakazam_message
+
+  #### Alakazam 聊天室 Logic (http server) ####
+  # 3111 port: http
+  # 3030 port: metrics
+  alakazam_logic:
+    image: registry.gitlab.com/jetfueltw/cpw/alakazam/logic:${ALAKAZAM_VERSION}
+    environment:
+      - ALAKAZAM_DATABASE_HOST=${ALAKAZAM_DATABASE_HOST}
+      - ALAKAZAM_DATABASE_PORT=${ALAKAZAM_DATABASE_PORT}
+      - ALAKAZAM_DATABASE_DATABASE=${ALAKAZAM_DATABASE_DATABASE}
+      - ALAKAZAM_DATABASE_USER=${ALAKAZAM_DATABASE_USER}
+      - ALAKAZAM_DATABASE_PASSWORD=${ALAKAZAM_DATABASE_PASSWORD}
+      - ALAKAZAM_REDIS_ADDR=${ALAKAZAM_REDIS_ADDR}
+      - ALAKAZAM_KAFKA_BROKERS=${ALAKAZAM_KAFKA_BROKERS}
+      - ALAKAZAM_JWT_AUTHSECRET=AxQxVJ3bEqLvzzWejkFxrhKkavQhY4Am
+      - ALAKAZAM_NIDORAN_HOST=${ALAKAZAM_NIDORAN_API_HOST}
+      - ALAKAZAM_GRPC_SEQ_ADDR=alakazam_seq:3120
+    ports:
+      - "${ALAKAZAM_LOGIC_API_PORT}:3111"
+      - "3030:3030"
+    command: sh -c 'wait-for -t 300 kafka:9092 -- logic -c config.yml'
+    volumes:
+      - ./wait-for:/usr/local/bin/wait-for
+    depends_on:
+      - mysql
+      - redis
+      - kafka
+      - nidoran
+
+  #### Alakazam 聊天室 Job (kafka 處理) ####
+  # 3032 port: metrics
+  alakazam_job:
+    image: registry.gitlab.com/jetfueltw/cpw/alakazam/job:${ALAKAZAM_VERSION}
+    environment:
+      - ALAKAZAM_KAFKA_BROKERS=${ALAKAZAM_KAFKA_BROKERS}
+      - ALAKAZAM_GRPC_COMET_ADDR=alakazam:3109
+    ports:
+      - "3032:3032"
+    command: sh -c 'wait-for -t 300 kafka:9092 -- job -c config.yml'
+    volumes:
+      - ./wait-for:/usr/local/bin/wait-for
+    depends_on:
+      - kafka
+
+  #### Alakazam 聊天室 Admin (http server) ####
+  # 3112 port: http
+  # 3035 port: metrics
+  alakazam_admin:
+    image: registry.gitlab.com/jetfueltw/cpw/alakazam/admin:${ALAKAZAM_VERSION}
+    environment:
+      - ALAKAZAM_DATABASE_HOST=${ALAKAZAM_DATABASE_HOST}
+      - ALAKAZAM_DATABASE_PORT=${ALAKAZAM_DATABASE_PORT}
+      - ALAKAZAM_DATABASE_DATABASE=${ALAKAZAM_DATABASE_DATABASE}
+      - ALAKAZAM_DATABASE_USER=${ALAKAZAM_DATABASE_USER}
+      - ALAKAZAM_DATABASE_PASSWORD=${ALAKAZAM_DATABASE_PASSWORD}
+      - ALAKAZAM_REDIS_ADDR=${ALAKAZAM_REDIS_ADDR}
+      - ALAKAZAM_KAFKA_BROKERS=${ALAKAZAM_KAFKA_BROKERS}
+      - ALAKAZAM_GRPC_SEQ_ADDR=alakazam_seq:3120
+      - ALAKAZAM_NIDORAN_HOST=${ALAKAZAM_NIDORAN_API_HOST}
+    ports:
+      - "${ALAKAZAM_ADMIN_API_PORT}:3112"
+      - "3035:3035"
+    command: sh -c 'wait-for -t 300 kafka:9092 -- admin -c config.yml'
+    volumes:
+      - ./wait-for:/usr/local/bin/wait-for
+    depends_on:
+      - mysql
+      - redis
+      - kafka
+
+  #### Alakazam 聊天室 Seq (message id 產生器) ####
+  # 3034 port: metrics
+  alakazam_seq:
+    image: registry.gitlab.com/jetfueltw/cpw/alakazam/seq:${ALAKAZAM_VERSION}
+    environment:
+      - ALAKAZAM_DATABASE_HOST=${ALAKAZAM_DATABASE_HOST}
+      - ALAKAZAM_DATABASE_PORT=${ALAKAZAM_DATABASE_PORT}
+      - ALAKAZAM_DATABASE_DATABASE=${ALAKAZAM_DATABASE_DATABASE}
+      - ALAKAZAM_DATABASE_USER=${ALAKAZAM_DATABASE_USER}
+      - ALAKAZAM_DATABASE_PASSWORD=${ALAKAZAM_DATABASE_PASSWORD}
+      - ALAKAZAM_REDIS_ADDR=${ALAKAZAM_REDIS_ADDR}
+    ports:
+      - "3034:3034"
+    depends_on:
+      - mysql
+      - redis
+
+  #### Alakazam 聊天室 Message (message 持久化處理) ####
+  # 3033 port: metrics
+  alakazam_message:
+    image: registry.gitlab.com/jetfueltw/cpw/alakazam/message:${ALAKAZAM_VERSION}
+    environment:
+      - ALAKAZAM_DATABASE_HOST=${ALAKAZAM_DATABASE_HOST}
+      - ALAKAZAM_DATABASE_PORT=${ALAKAZAM_DATABASE_PORT}
+      - ALAKAZAM_DATABASE_DATABASE=${ALAKAZAM_DATABASE_DATABASE}
+      - ALAKAZAM_DATABASE_USER=${ALAKAZAM_DATABASE_USER}
+      - ALAKAZAM_DATABASE_PASSWORD=${ALAKAZAM_DATABASE_PASSWORD}
+      - ALAKAZAM_REDIS_ADDR=${ALAKAZAM_REDIS_ADDR}
+      - ALAKAZAM_KAFKA_BROKERS=${ALAKAZAM_KAFKA_BROKERS}
+    ports:
+      - "3033:3033"
+    command: sh -c 'wait-for -t 300 kafka:9092 -- message -c config.yml'
+    volumes:
+      - ./wait-for:/usr/local/bin/wait-for
+    depends_on:
+      - mysql
+      - redis
+      - kafka
+
+  #### Alakazam kafka ####
+  # 9094 port kafka broker
+  # 9091 port: jmx
+  # 3036 port: metrics
+  kafka:
+    image: wurstmeister/kafka:2.12-2.3.0
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG_DIRS: "/var/lib/kafka"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/kafka_cluster_1
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: "INSIDE"
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_ACKS: 1
+      KAFKA_MESSAGE_MAX_BYTES: 1048576
+      KAFKA_CREATE_TOPICS: push-topic:3:1
+      # 參考 JMX 監控參數
+      # JMX參考 https://docs.oracle.com/javase/10/management/monitoring-and-management-using-jmx-technology.htm#JSMGM-GUID-F08985BB-629A-4FBF-A0CB-8762DF7590E0
+      # kafka JMX 參考 https://github.com/apache/kafka/blob/trunk/bin/kafka-run-class.sh#L178
+      # JMX_PORT跟Dcom.sun.management.jmxremote.rmi.port需一樣 https://stackoverflow.com/questions/22306363/spring-cannot-connect-to-a-jmx-server-using-rmi-from-behind-a-firewall
+      # Djava.rmi.server.hostname需要設定成監控系統ip
+      KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.rmi.port=9091 -Djava.rmi.server.hostname=127.0.0.1
+      # https://github.com/prometheus/jmx_exporter
+      # https://kafka.apache.org/documentation/#remote_jmx
+      KAFKA_OPTS: "-javaagent:/opt/kafka/jmx/jmx_prometheus_javaagent-0.12.0.jar=3036:/opt/kafka/jmx/config.yaml"
+      JMX_PORT: 9091
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./kafka/jmx:/opt/kafka/jmx
+      - ./kafka/data:/var/lib/kafka
+    ports:
+      - "9094:9094"
+      - "9091:9091"
+      - "3036:3036"
+    depends_on:
+      - zookeeper
+
+  #### kafka 用的 zookeeper ####
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+
+  #### Migration platform ####
+  mig-platform:
+    image: registry.gitlab.com/jetfueltw/cpw/mig-platform:${MIG_PLATFORM_VERSION}
+    environment:
+      - LOCAL_HOST=${MIG_PLATFORM_DB_HOST}
+      - LOCAL_PORT=${MIG_PLATFORM_DB_PORT}
+      - LOCAL_DATABASE=${MIG_PLATFORM_DB_DATABASE}
+      - LOCAL_USERNAME=${MIG_PLATFORM_DB_USERNAME}
+      - LOCAL_PASSWORD=${MIG_PLATFORM_DB_PASSWORD}
+    volumes:
+      - ./wait-for:/usr/local/bin/wait-for
+    depends_on:
+      - mysql
+
+  #### Migration Alakazam ####
+  mig-alakazam:
+    image: registry.gitlab.com/jetfueltw/cpw/mig-alakazam:${MIG_ALAKAZAM_VERSION}
+    environment:
+      - LOCAL_HOST=${MIG_ALAKAZAM_DB_HOST}
+      - LOCAL_PORT=${MIG_ALAKAZAM_DB_PORT}
+      - LOCAL_DATABASE=${MIG_ALAKAZAM_DB_DATABASE}
+      - LOCAL_USERNAME=${MIG_ALAKAZAM_DB_USERNAME}
+      - LOCAL_PASSWORD=${MIG_ALAKAZAM_DB_PASSWORD}
+    volumes:
+      - ./wait-for:/usr/local/bin/wait-for
+    depends_on:
+      - mysql

@@ -1,0 +1,3 @@
+*.sql
+!platform.sql
+!alakazam.sql
