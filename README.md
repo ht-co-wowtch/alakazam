@@ -719,20 +719,30 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 2. 解決 log => while consuming push-topic/0: consumer group claim read message not found
 3. 更新jmeter 腳本
 
-0.25.0
+`0.25.0`
 
 1. 增加kafka client 相關監控指數
 
-0.26.0
+`0.26.0`
 
 1. 新增房間壓測腳本
 2. 後台更新房間資料api 也可以關閉房間
 
-0.27.0
+`0.27.0`
 
 1. 廢棄`admin_messages table`
 2. `messages` table 增加種類欄位做判斷
 
-0.28.0
+`0.28.0`
 
 1. 初版下注API
+2. 紅包總金額上限100000
+
+`0.29.0`
+
+1. 完善下注API
+2. Fix: 發紅包扣錢完成即便產生訊息也要告知用戶已成功
+3. job 新增推送跟投訊息
+4. 後台房間設定API新增跟注設定
+5. 廢棄取房間頂置訊息API
+6. 會員權限與進入房間、禁言、封鎖、發紅包、搶紅包、發跟投、跟投行為對照的單元測試
