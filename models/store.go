@@ -27,6 +27,19 @@ func init() {
 	)
 }
 
+type Chat interface {
+	Find(uid string) (*Member, error)
+	CreateUser(member *Member) (bool, error)
+	UpdateUser(member *Member) (bool, error)
+	GetMembers(ids []int) ([]Member, error)
+	GetMembersByUid(uid []string) ([]Member, error)
+	SetBlockade(uid string) (int64, error)
+	DeleteBanned(uid string) (int64, error)
+	SetBannedLog(memberId int, sec time.Duration, isSystem bool) (bool, error)
+	GetTodaySystemBannedLog(memberId int) ([]BannedLog, error)
+	UpdateIsMessage(memberId int, isMessage bool) (bool, error)
+}
+
 type Store struct {
 	d *xorm.EngineGroup
 }
@@ -36,10 +49,27 @@ func Table() []interface{} {
 }
 
 func NewStore(c *database.Conf) *Store {
-	// TODO 處理error
-	d, _ := database.NewORM(c)
-	d.SetTZDatabase(time.Local)
 	return &Store{
-		d: d,
+		d: NewORM(c),
 	}
+}
+
+func NewChat(c *database.Conf) Chat {
+	return NewStore(c)
+}
+
+func NewORM(c *database.Conf) *xorm.EngineGroup {
+	d, err := database.NewORM(c)
+	if err != nil {
+		panic(err)
+	}
+
+	l, err := time.LoadLocation(c.Master.Local)
+	if err != nil {
+		panic(err)
+	}
+
+	d.Master().SetTZDatabase(l)
+	d.Slave().SetTZDatabase(l)
+	return d
 }

@@ -3,13 +3,14 @@ package comet
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/encoding/gzip"
+	"google.golang.org/grpc/status"
 )
 
 // 告知logic service有人想要進入某個房間
@@ -58,8 +59,6 @@ type changeRoom struct {
 	RoomId int32 `json:"room_id"`
 }
 
-var changeRoomReply = `{"room_id":%d, "status":%t}`
-
 // 處理Proto相關邏輯
 func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *Bucket) error {
 	switch p.Op {
@@ -69,29 +68,43 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 		var r changeRoom
 
 		if err := json.Unmarshal(p.Body, &r); err != nil {
-			p.Body = []byte(fmt.Sprintf(changeRoomReply, r.RoomId, false))
+			re := newConnect()
+			re.Message = "切换房间失败"
+			p.Body, _ = json.Marshal(re)
 			return nil
 		}
 
-		if err := b.ChangeRoom(r.RoomId, ch); err != nil {
-			p.Body = []byte(fmt.Sprintf(changeRoomReply, r.RoomId, false))
-			log.Error("change room", zap.Error(err), zap.Binary("data", p.Body))
-			return nil
-		}
-
-		room, err := s.logic.ChangeRoom(ctx, &logicpb.ChangeRoomReq{
+		reply, err := s.logic.ChangeRoom(ctx, &logicpb.ChangeRoomReq{
 			Uid:    ch.Uid,
 			Key:    ch.Key,
 			RoomID: r.RoomId,
 		})
 
 		if err != nil {
-			p.Body = []byte(fmt.Sprintf(changeRoomReply, r.RoomId, false))
-			log.Error("change room for logic", zap.Error(err), zap.Binary("data", p.Body))
+			re := newConnect()
+			s, _ := status.FromError(err)
+			if s.Code() != codes.FailedPrecondition {
+				log.Error("change room for logic", zap.Error(err), zap.String("data", string(p.Body)))
+				re.Message = "切换房间失败"
+			} else {
+				re.Message = s.Message()
+			}
+			p.Body, _ = json.Marshal(re)
 			return nil
 		}
-		if room.HeaderMessage != nil {
-			p.Body = []byte(fmt.Sprintf(changeRoomReply, r.RoomId, true))
+
+		if err := b.ChangeRoom(r.RoomId, ch); err != nil {
+			log.Error("change room", zap.Error(err), zap.String("data", string(p.Body)))
+			re := newConnect()
+			re.Message = "切换房间失败"
+			p.Body, _ = json.Marshal(re)
+			return nil
+		}
+
+		reply.Connect.Key = ch.Key
+		p.Body, _ = json.Marshal(reply.Connect)
+
+		if reply.HeaderMessage != nil {
 			ch.protoRing.SetAdv()
 			ch.Signal()
 
@@ -102,11 +115,18 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 			}
 
 			p1.Op = cometpb.OpRaw
-			p1.Body = room.HeaderMessage
+			p1.Body = reply.HeaderMessage
 		}
 	default:
 		// TODO error
 		p.Body = nil
 	}
 	return nil
+}
+
+func newConnect() *logicpb.Connect {
+	return &logicpb.Connect{
+		Permission:        new(logicpb.Permission),
+		PermissionMessage: new(logicpb.PermissionMessage),
+	}
 }

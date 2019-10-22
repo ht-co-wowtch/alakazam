@@ -14,9 +14,10 @@ var (
 
 // Config is job config.
 type Config struct {
-	Kafka *Kafka
-	Comet *Comet
-	Room  *Room
+	Kafka       *Kafka
+	Comet       *Comet
+	Room        *Room
+	MetricsAddr string
 }
 
 // 房間消息聚合
@@ -64,6 +65,8 @@ func Read(path string) error {
 	}
 
 	Conf = new(Config)
+	Conf.MetricsAddr = v.GetString("metrics.addr")
+
 	comet, _ := grpc.ReadViper(v.Sub("grpc.comet"))
 	co := v.Sub("comet")
 	Conf.Comet = &Comet{

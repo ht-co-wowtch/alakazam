@@ -2,58 +2,34 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/client"
+	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 	"net/http"
 )
 
-type giveRedEnvelopeReq struct {
-	RoomId int `json:"room_id" binding:"required"`
-
-	// 單包金額 or 總金額 看Type種類決定
-	Amount int `json:"amount" binding:"required"`
-
-	Count int `json:"count" binding:"required"`
-
-	// 紅包說明
-	Message string `json:"message" binding:"required,max=20"`
-
-	// 紅包種類 拼手氣 or 普通
-	Type string `json:"type" binding:"required"`
-}
-
 func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
-	arg := new(giveRedEnvelopeReq)
-	if err := c.ShouldBindJSON(arg); err != nil {
+	var arg member.RedEnvelope
+	if err := c.ShouldBindJSON(&arg); err != nil {
 		return err
-	}
-	user, err := s.member.GetSession(c.GetString("uid"))
-	if err != nil {
-		return err
-	}
-	give := client.RedEnvelope{
-		RoomId:    arg.RoomId,
-		Message:   arg.Message,
-		Type:      arg.Type,
-		Amount:    arg.Amount,
-		Count:     arg.Count,
-		ExpireMin: 120,
 	}
 
-	reply, err := s.client.GiveRedEnvelope(give, c.GetString("token"))
+	user, reply, err := s.member.GiveRedEnvelope(c.GetString("uid"), c.GetString("token"), arg)
 	if err != nil {
 		return err
 	}
 
-	msg := message.RedEnvelopeMessage{
-		Messages: message.Messages{
+	msg := message.ProducerRedEnvelopeMessage{
+		ProducerMessage: message.ProducerMessage{
 			Rooms:   []int32{int32(arg.RoomId)},
 			Mid:     int64(user.Id),
 			Uid:     user.Uid,
 			Name:    user.Name,
 			Message: arg.Message,
+			Avatar:  user.Gender,
 		},
-		RedEnvelopeId: reply.Uid,
+		RedEnvelopeId: reply.Order,
 		Token:         reply.Token,
 		Expired:       reply.ExpireAt,
 	}
@@ -61,7 +37,11 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	msgId, err := s.message.SendRedEnvelope(msg)
 
 	if err != nil {
-		return err
+		log.Error("send red envelope message error",
+			zap.Error(err),
+			zap.String("uid", user.Uid),
+			zap.String("order", reply.Order),
+		)
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"id":         reply.Order,
@@ -81,30 +61,11 @@ func (s *httpServer) takeRedEnvelope(c *gin.Context) error {
 		return err
 	}
 
-	user, err := s.member.GetSession(c.GetString("uid"))
+	reply, err := s.member.TakeRedEnvelope(c.GetString("uid"), c.GetString("token"), arg.Token)
 	if err != nil {
 		return err
 	}
 
-	reply, err := s.client.TakeRedEnvelope(arg.Token, c.GetString("token"))
-	if err != nil {
-		return err
-	}
-
-	reply.Name = user.Name
-
-	switch reply.Status {
-	case client.TakeEnvelopeSuccess:
-		reply.StatusMessage = "获得红包"
-	case client.TakeEnvelopeReceived:
-		reply.StatusMessage = "已经抢过了"
-	case client.TakeEnvelopeGone:
-		reply.StatusMessage = "手慢了，红包派完了"
-	case client.TakeEnvelopeExpired:
-		reply.StatusMessage = "红包已过期，不能抢"
-	default:
-		reply.StatusMessage = "不存在的红包"
-	}
 	c.JSON(http.StatusOK, reply)
 	return nil
 }
@@ -119,30 +80,18 @@ func (s *httpServer) getRedEnvelopeDetail(c *gin.Context) error {
 	for i, v := range reply.Members {
 		name[i+1] = v.Uid
 	}
-	n, err := s.member.GetUserName(name)
-	if err != nil {
-		return err
-	}
-	reply.Name = n[0]
-	for i, v := range n[1:] {
-		reply.Members[i].Name = v
-	}
-	c.JSON(http.StatusOK, reply)
-	return nil
-}
 
-func (s *httpServer) getRedEnvelope(c *gin.Context) error {
-	reply, err := s.client.GetRedEnvelope(c.Param("id"), c.GetString("token"))
+	names, err := s.member.GetUserNames(name)
 	if err != nil {
 		return err
 	}
-	if reply.Amount != 0 {
-		name, err := s.member.GetUserName([]string{reply.Uid})
-		if err != nil {
-			return err
-		}
-		reply.Name = name[0]
+
+	reply.Name = names[reply.Uid]
+
+	for i, v := range reply.Members {
+		reply.Members[i].Name = names[v.Uid]
 	}
+
 	c.JSON(http.StatusOK, reply)
 	return nil
 }

@@ -1,6 +1,9 @@
 package conf
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/spf13/viper"
 	"gitlab.com/jetfueltw/cpw/micro/config"
 	"gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -14,12 +17,13 @@ var (
 
 // Config is comet config.
 type Config struct {
-	Websocket *Websocket
-	TCP       *TCP
-	Protocol  *Protocol
-	Bucket    *Bucket
-	Logic     *grpc.Conf
-	RPCServer *grpc.Conf
+	Websocket   *Websocket
+	TCP         *TCP
+	Protocol    *Protocol
+	Bucket      *Bucket
+	Logic       *grpc.Conf
+	RPCServer   *grpc.Conf
+	MetricsAddr string
 }
 
 // tcp config
@@ -107,6 +111,23 @@ type Bucket struct {
 func init() {
 	config.SetEnvReplace(true)
 	config.SetEnvPrefix("alakazam")
+
+	viper.SetDefault("websocket.addr", ":3102")
+	viper.SetDefault("grpc.server.addr", ":3109")
+	viper.SetDefault("grpc.logic.addr", ":3119")
+	viper.SetDefault("metrics.addr", ":3031")
+
+	viper.SetDefault("protocol.timer", 16)
+	viper.SetDefault("protocol.timerSize", 1024)
+	viper.SetDefault("protocol.receiveProtoBuffer", 10)
+	viper.SetDefault("protocol.clientProto", 6)
+	viper.SetDefault("protocol.handshakeTimeout", "8s")
+
+	viper.SetDefault("bucket.size", 16)
+	viper.SetDefault("bucket.channel", 500)
+	viper.SetDefault("bucket.room", 10)
+	viper.SetDefault("bucket.routineAmount", 5)
+	viper.SetDefault("bucket.routineSize", 1024)
 }
 
 func Read(path string) error {
@@ -114,10 +135,27 @@ func Read(path string) error {
 	if err != nil {
 		return err
 	}
-	Conf = new(Config)
-	Conf.Logic, _ = grpc.ReadViper(v.Sub("grpc.logic"))
-	Conf.RPCServer, _ = grpc.ReadViper(v.Sub("grpc.server"))
-	Conf.TCP = &TCP{
+	Conf, err = New(v)
+	if err != nil {
+		return err
+	}
+
+	l, err := log.ReadViper(v.Sub("log"))
+	if err != nil {
+		return err
+	}
+
+	b, _ := json.Marshal(Conf)
+	fmt.Println(string(b))
+	return log.Start(l)
+}
+
+func New(v *viper.Viper) (*Config, error) {
+	conf := new(Config)
+	conf.MetricsAddr = v.GetString("metrics.addr")
+	conf.Logic, _ = grpc.ReadViper(v.Sub("grpc.logic"))
+	conf.RPCServer, _ = grpc.ReadViper(v.Sub("grpc.server"))
+	conf.TCP = &TCP{
 		Sndbuf:       4096,
 		Rcvbuf:       4096,
 		KeepAlive:    false,
@@ -128,16 +166,18 @@ func Read(path string) error {
 		WriteBuf:     512,
 		WriteBufSize: 4096,
 	}
-	Conf.Websocket = &Websocket{
+
+	conf.Websocket = &Websocket{
 		Addr: v.GetString("websocket.addr"),
 	}
 
 	p := v.Sub("protocol")
 	ht, err := time.ParseDuration(p.GetString("handshakeTimeout"))
 	if err != nil {
-		return err
+		return nil, err
 	}
-	Conf.Protocol = &Protocol{
+
+	conf.Protocol = &Protocol{
 		Timer:            p.GetInt("timer"),
 		TimerSize:        p.GetInt("timerSize"),
 		ProtoSize:        p.GetInt("clientProto"),
@@ -145,16 +185,12 @@ func Read(path string) error {
 		HandshakeTimeout: ht,
 	}
 	b := v.Sub("bucket")
-	Conf.Bucket = &Bucket{
+	conf.Bucket = &Bucket{
 		Size:          b.GetInt("size"),
 		Channel:       b.GetInt("channel"),
 		Room:          b.GetInt("room"),
 		RoutineAmount: uint64(b.GetInt("routineAmount")),
 		RoutineSize:   b.GetInt("routineSize"),
 	}
-	l, err := log.ReadViper(v.Sub("log"))
-	if err != nil {
-		return err
-	}
-	return log.Start(l)
+	return conf, nil
 }

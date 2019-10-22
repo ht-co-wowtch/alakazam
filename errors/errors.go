@@ -7,66 +7,65 @@ import (
 	"gopkg.in/go-playground/validator.v8"
 )
 
+const (
+	NoLoginMessage = "请先登入会员"
+	RoomBanned     = "聊天室目前禁言状态，无法发言"
+	MemberBanned   = "您在永久禁言状态，无法发言"
+)
+
 var (
-	// 沒有資料
-	ErrNoMember  = errdefs.NotFound(New("没有会员资料"), 4041)
-	ErrNoRoom    = errdefs.NotFound(New("没有房间资料"), 4042)
-	ErrRoomClose = errdefs.NotFound(New("目前房间已关闭"), 4043)
+	// 								例外	00**
 
-	// 限速
-	ErrRateMsg     = errdefs.TooManyRequests(New("1秒内只能发一则消息"), 4291)
-	ErrRateSameMsg = errdefs.TooManyRequests(New("10秒内相同讯息3次，自动禁言10分钟"), 4292)
+	// 								通用	10**
+	ErrNoRows  = errdefs.NotFound(1001, "没有资料")
+	ErrExist   = errdefs.Conflict(1002, "资料已存在")
+	ErrIllegal = errdefs.InvalidParameter(1003, "消息包含被禁止的内容")
 
-	// 身份認證
-	ErrValidationToken = errdefs.Forbidden(New("用户认证失败"), 4031)
-	ErrClaimsToken     = errdefs.Forbidden(New("用户认证失败"), 4032)
-	ErrValidToken      = errdefs.Forbidden(New("用户认证失败"), 4033)
-	ErrLogin           = errdefs.Forbidden(New("请先登入会员"), 4034)
-	// 4035
-	ErrRoomLimit       = "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元"
-	ErrMemberNoMessage = errdefs.Forbidden(New("您在永久禁言状态，无法发言"), 4036)
-	ErrMemberBanned    = errdefs.Forbidden(New("您在禁言状态，无法发言"), 4037)
-	ErrRoomNoMessage   = errdefs.Forbidden(New("聊天室目前禁言状态，无法发言"), 4038)
+	// 								認證/會員	20**
+	ErrNoMember        = errdefs.NotFound(2001, "没有会员资料")
+	ErrTokenUid        = errdefs.Unauthorized(2002, "帐号资料认证失败")
+	ErrValidationToken = errdefs.Unauthorized(2003, "用户认证失败")
+	ErrClaimsToken     = errdefs.Unauthorized(2004, "用户认证失败")
+	ErrValidToken      = errdefs.Unauthorized(2005, "用户认证失败")
+	ErrLogin           = errdefs.Unauthorized(2006, NoLoginMessage)
+	ErrAuthorization   = errdefs.Unauthorized(2007, "Unauthorized")
+	ErrMemberNoMessage = errdefs.Unauthorized(2008, MemberBanned)
+	ErrMemberBanned    = errdefs.Unauthorized(2009, "您在禁言状态，无法发言")
+	ErrBlockade        = errdefs.Unauthorized(2010, "您在封鎖状态，无法进入聊天室")
 
-	// 系統異常
-	ErrInternalServer = errdefs.InternalServer(New("操作失败，系统异常"), 5000)
+	// 								金額	30**
 
-	ErrPublishAt = errdefs.InvalidParameter(New("预定发送时间不能大于现在"), 0)
-	ErrExist     = errdefs.InvalidParameter(New("资料已存在"), 1)
+	// 								紅包	40**
+	ErrPublishAt = errdefs.InvalidParameter(4001, "预定发送时间不能大于现在")
 
-	ErrAuthorization = errdefs.Unauthorized(New("Unauthorized"), 3)
-
-	ErrNoRows = errdefs.NotFound(New("没有资料"), 1)
-
-	ErrTokenUid = errdefs.Forbidden(New("帐号资料认证失败"), 1)
+	// 								房間	50**
+	ErrNoRoom      = errdefs.NotFound(5001, "没有房间资料")
+	ErrRoomClose   = errdefs.NotFound(5002, "目前房间已关闭")
+	ErrRateMsg     = errdefs.TooManyRequests(5003, "1秒内只能发一则消息")
+	ErrRateSameMsg = errdefs.TooManyRequests(5004, "10秒内相同讯息3次，自动禁言10分钟")
+	// 5005
+	ErrRoomLimit     = "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元"
+	ErrRoomNoMessage = errdefs.Unauthorized(5006, RoomBanned)
 )
 
 const (
-	// 沒有token
-	noAuthorizationBearer = 15024031
-	// 資料格式錯誤
-	invalidParameter = 15024220
-	// 餘額不足
-	balanceCode = 12024020
-	// 房間不存在
-	roomNotFoundCode = 15024042
-	// 找不到會員資料
-	memberNotFound = 12024041
-	// 隨機紅包金額不能小於包數
-	redEnvelopeAmount = 15021001
-	// 紅包已過期
-	TakeEnvelopeExpiredCode = 15024031
-	// 紅包不存在
-	redEnvelopeNotFoundCode = 15024044
-	// 紅包已關閉
-	redEnvelopeIsClose = 15024045
-	// 紅包發佈時間不能小於當下
-	redEnvelopePublishTime = 15024047
-	// 紅包已發佈過
-	redEnvelopePublishExist = 15024091
-	// 紅包未發佈但已過期
-	redEnvelopePublishExpire = 15024048
+	NoLogin = 12014041
 )
+
+var errMessage = map[int]string{
+	15022001: "无法认证身份",
+	15021002: "资料格式错误",
+	15025001: "房间不存在",
+	12024020: "余额不足",
+	12024041: "找不到会员资料",
+	15023001: "红包金额不能小于包数",
+	15024001: "红包不存在",
+	15024002: "红包不存在",
+	15024006: "红包发布时间不能小于当下",
+	15024007: "红包已发布过",
+	15024008: "红包未发布但已过期",
+	15023004: "额度最多￥100000",
+}
 
 func init() {
 	if err := errdefs.SetCode(1002); err != nil {
@@ -75,6 +74,7 @@ func init() {
 	errdefs.SetOutput(output{})
 	errdefs.SetJsonOut(output{})
 	errdefs.SetValidationOut(output{})
+	errdefs.SetErrorCode(1002, 1003, 0000)
 
 	validation.Set(validation.Required, "栏位必填")
 	validation.Set(validation.Min, "栏位最大值或长度至少")
@@ -110,28 +110,9 @@ func (m output) GetInternalServer() string {
 	return "应用程序错误"
 }
 
-func (m output) Error(e *errdefs.Error) string {
-	switch e.Code {
-	case noAuthorizationBearer:
-		return "无法认证身份"
-	case invalidParameter:
-		return "资料格式错误"
-	case roomNotFoundCode:
-		return "房间不存在"
-	case balanceCode:
-		return "余额不足"
-	case memberNotFound:
-		return "找不到会员资料"
-	case redEnvelopeAmount:
-		return "红包金额不能小于包数"
-	case redEnvelopeNotFoundCode, redEnvelopeIsClose:
-		return "红包不存在"
-	case redEnvelopePublishTime:
-		return "红包发布时间不能小于当下"
-	case redEnvelopePublishExist:
-		return "红包已发布过"
-	case redEnvelopePublishExpire:
-		return "红包未发布但已过期"
+func (m output) Error(e *errdefs.Causer) string {
+	if err, ok := errMessage[e.Code]; ok {
+		return err
 	}
 	return "操作失败"
 }

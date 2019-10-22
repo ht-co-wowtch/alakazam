@@ -27,7 +27,8 @@ type Config struct {
 	Seq        *grpc.Conf
 	JwtSecret  []byte
 	// comet連線用戶心跳，server會清除在線紀錄
-	Heartbeat int64
+	Heartbeat   int64
+	MetricsAddr string
 }
 
 // Kafka
@@ -51,6 +52,7 @@ func Read(path string) error {
 	}
 
 	Conf = new(Config)
+	Conf.MetricsAddr = v.GetString("metrics.addr")
 	Conf.HTTPServer, err = http.ReadViper(v.Sub("http"))
 	if err != nil {
 		return err

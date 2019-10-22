@@ -41,41 +41,41 @@ func TestPerSec(t *testing.T) {
 
 func TestIsSameMsg(t *testing.T) {
 	rate := newRateLimit(r)
-	msgA := Messages{
+	msgA := ProducerMessage{
 		Uid:     "1",
 		Message: "test",
 	}
-	msgB := Messages{
+	msgB := ProducerMessage{
 		Uid:     "2",
 		Message: "test",
 	}
-	msgC := Messages{
+	msgC := ProducerMessage{
 		Uid:     "3",
 		Message: "test",
 	}
-	msgD := Messages{
+	msgD := ProducerMessage{
 		Uid:     "4",
 		Message: "test",
 	}
 
 	testCase := []struct {
-		msg       []Messages
+		msg       []ProducerMessage
 		IsSameMsg []error
 	}{
 		{
-			msg:       []Messages{msgA},
+			msg:       []ProducerMessage{msgA},
 			IsSameMsg: []error{nil},
 		},
 		{
-			msg:       []Messages{msgB, msgB},
+			msg:       []ProducerMessage{msgB, msgB},
 			IsSameMsg: []error{nil, nil},
 		},
 		{
-			msg:       []Messages{msgC, msgC, msgC},
+			msg:       []ProducerMessage{msgC, msgC, msgC},
 			IsSameMsg: []error{nil, nil, errors.ErrRateSameMsg},
 		},
 		{
-			msg:       []Messages{msgD, msgD, msgD, msgD},
+			msg:       []ProducerMessage{msgD, msgD, msgD, msgD},
 			IsSameMsg: []error{nil, nil, errors.ErrRateSameMsg, errors.ErrRateSameMsg},
 		},
 	}

@@ -16,12 +16,13 @@ var (
 )
 
 type Config struct {
-	HTTPServer *http.Conf
-	DB         *database.Conf
-	Kafka      *conf.Kafka
-	Redis      *redis.Conf
-	Nidoran    *client.Conf
-	Seq        *grpc.Conf
+	HTTPServer  *http.Conf
+	DB          *database.Conf
+	Kafka       *conf.Kafka
+	Redis       *redis.Conf
+	Nidoran     *client.Conf
+	Seq         *grpc.Conf
+	MetricsAddr string
 }
 
 func init() {
@@ -36,6 +37,7 @@ func Read(path string) error {
 	}
 
 	Conf = new(Config)
+	Conf.MetricsAddr = v.GetString("metrics.addr")
 	Conf.HTTPServer, err = http.ReadViper(v.Sub("http"))
 	if err != nil {
 		return err

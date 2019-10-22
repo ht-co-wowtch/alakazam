@@ -66,11 +66,15 @@ func handler(e *gin.Engine, s *httpServer) {
 
 	e.POST("/red-envelope", api.ErrHandler(s.giveRedEnvelope))
 
+	e.POST("/bets", api.ErrHandler(s.bets))
+
 	e.DELETE("/kick/:uid", api.ErrHandler(s.kick))
 
 	e.POST("/shield", api.ErrHandler(s.CreateShield))
 	e.PUT("/shield", api.ErrHandler(s.UpdateShield))
 	e.DELETE("/shield/:id", api.ErrHandler(s.DeleteShield))
+
+	e.PUT("/profile/:token/renew", api.ErrHandler(s.renew))
 }
 
 func (s *httpServer) Close() error {

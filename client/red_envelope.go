@@ -2,8 +2,6 @@ package client
 
 import (
 	"encoding/json"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"time"
 )
 
@@ -29,6 +27,9 @@ type RedEnvelope struct {
 
 type RedEnvelopeAdmin struct {
 	RedEnvelope
+
+	// 紅包人名稱
+	Name string `json:"name"`
 
 	// 什麼時候發佈
 	PublishAt time.Time `json:"publish_at"`
@@ -157,12 +158,6 @@ func (c *Client) TakeRedEnvelope(redEnvelopeToken, token string) (TakeEnvelopeRe
 	}
 	defer resp.Body.Close()
 	if err := checkResponse(resp); err != nil {
-		switch e := err.(type) {
-		case *errdefs.Error:
-			if e.Code == errors.TakeEnvelopeExpiredCode {
-				return TakeEnvelopeReply{Status: TakeEnvelopeExpired}, nil
-			}
-		}
 		return TakeEnvelopeReply{}, err
 	}
 	var u TakeEnvelopeReply

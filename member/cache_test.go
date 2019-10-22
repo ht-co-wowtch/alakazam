@@ -16,7 +16,7 @@ import (
 
 var (
 	r *goRedis.Client
-	c *Cache
+	c *cache
 )
 
 func TestMain(m *testing.M) {
@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 	r = redis.New(&redis.Conf{
 		Addr: s.Addr(),
 	})
-	c = &Cache{
+	c = &cache{
 		c:      r,
 		expire: time.Second * 10,
 	}
@@ -101,7 +101,7 @@ func TestLogin(t *testing.T) {
 	member := &models.Member{Id: 1, Uid: uid, Name: name, Type: models.Player, IsMessage: true}
 	err := c.login(member, key, server)
 
-	u := r.Get(keyUid(uid)).Val()
+	u := r.HMGet(keyUid(uid), uidJsonKey, uidNameKey).Val()
 
 	b, err := json.Marshal(member)
 	if err != nil {
@@ -109,7 +109,8 @@ func TestLogin(t *testing.T) {
 	}
 
 	assert.Nil(t, err)
-	assert.Equal(t, string(b), u)
+	assert.Equal(t, string(b), u[0])
+	assert.Equal(t, name, u[1])
 
 	keys, err := r.HGetAll(keyUidWs(member.Uid)).Result()
 
@@ -186,7 +187,7 @@ func TestGetNil(t *testing.T) {
 	assert.Equal(t, goRedis.Nil, err)
 }
 
-func TestGetUserName(t *testing.T) {
+func TestCache_GetUserName(t *testing.T) {
 	uid := []string{"1", "2", "3", "4"}
 	for _, v := range uid {
 		if err := c.login(&models.Member{Uid: v, Name: v}, v, v); err != nil {
@@ -197,5 +198,5 @@ func TestGetUserName(t *testing.T) {
 	name, err := c.getName(uid)
 
 	assert.Nil(t, err)
-	assert.Equal(t, uid, name)
+	assert.Equal(t, map[string]string{"1": "1", "2": "2", "3": "3", "4": "4"}, name)
 }

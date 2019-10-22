@@ -22,6 +22,9 @@ room:
   # 消息聚合goroutine(每個房間一個)等待多久都沒收到訊息自動close
   idle: 15m
 
+metrics:
+  addr: :3032
+
 log:
   # 開啟debug模式只會紀錄Info Level以上的log
   # 使用DPanic level時會Panic

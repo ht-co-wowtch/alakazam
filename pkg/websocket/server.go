@@ -23,7 +23,7 @@ var (
 )
 
 // Upgrade Switching Protocols
-func Upgrade(rwc io.ReadWriteCloser, rr *bufio.Reader, wr *bufio.Writer, req *Request) (conn *Conn, err error) {
+func Upgrade(rwc io.ReadWriteCloser, rr *bufio.Reader, wr *bufio.Writer, req *Request) (conn Conn, err error) {
 	if req.Method != "GET" {
 		return nil, ErrBadRequestMethod
 	}

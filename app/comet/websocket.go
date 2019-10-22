@@ -3,12 +3,16 @@ package comet
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
+	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	xtime "gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"io"
 	"net"
 	"strings"
@@ -18,21 +22,6 @@ import (
 const (
 	maxInt = 1<<31 - 1
 )
-
-var blockadeMessage []byte
-
-func init() {
-	errBlockade := struct {
-		Message string `json:"message"`
-	}{
-		Message: "您在封鎖状态，无法进入聊天室",
-	}
-	b, err := json.Marshal(errBlockade)
-	if err != nil {
-		panic(err)
-	}
-	blockadeMessage = b
-}
 
 // 開始監聽Websocket
 func InitWebsocket(server *Server, host string, accept int) (err error) {
@@ -135,7 +124,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 		// Writer byte
 		wr = &ch.Writer
 
-		ws *websocket.Conn
+		ws websocket.Conn
 
 		req *websocket.Request
 	)
@@ -243,9 +232,11 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 
 	for {
 		if p, err = ch.protoRing.Set(); err != nil {
+			step = 6
 			break
 		}
 		if err = p.ReadWebsocket(ws); err != nil {
+			step = 7
 			break
 		}
 		if p.Op == pb.OpHeartbeat {
@@ -262,14 +253,15 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 			p.Body = nil
 			if now := time.Now(); now.Sub(lastHB) > serverHeartbeat {
 				if err = s.Heartbeat(ctx, ch); err != nil {
+					step = 8
 					break
 				}
 				lastHB = now
 			}
-			step++
 		} else {
 			// 非心跳動作
 			if err = s.Operate(ctx, p, ch, b); err != nil {
+				step = 9
 				break
 			}
 		}
@@ -299,11 +291,12 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 }
 
 // 處理Websocket訊息推送
-func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes.Buffer, ch *Channel) {
+func (s *Server) dispatchWebsocket(ws websocket.Conn, wp *bytes.Pool, wb *bytes.Buffer, ch *Channel) {
 	var (
 		err    error
 		finish bool
 		online int32
+		step   int
 	)
 
 	for {
@@ -314,6 +307,7 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 		// websocket連線要關閉
 		case pb.ProtoFinish:
 			finish = true
+			step = 1
 			goto failed
 
 			// 有資料需要推送
@@ -321,6 +315,7 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 			for {
 				// 取得上次透過Set()寫入資料的Proto
 				if p, err = ch.protoRing.Get(); err != nil {
+					step = 2
 					break
 				}
 				if p.Op == pb.OpHeartbeatReply {
@@ -328,10 +323,12 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 						online = ch.Room.OnlineNum()
 					}
 					if err = p.WriteWebsocketHeart(ws, online); err != nil {
+						step = 3
 						goto failed
 					}
 				} else {
 					if err = p.WriteWebsocket(ws); err != nil {
+						step = 4
 						goto failed
 					}
 				}
@@ -341,11 +338,13 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 			}
 		default:
 			if err = p.WriteWebsocket(ws); err != nil {
+				step = 5
 				goto failed
 			}
 		}
 		// 送出資料給client
 		if err = ws.Flush(); err != nil {
+			step = 6
 			break
 		}
 	}
@@ -354,7 +353,13 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 	// 2. 回收寫的Buffter
 failed:
 	if err != nil && err != io.EOF && err != websocket.ErrMessageClose {
-		log.Error("dispatch websocket", zap.Error(err), zap.String("uid", ch.Uid))
+		log.Error(
+			"dispatch websocket",
+			zap.Error(err),
+			zap.String("uid", ch.Uid),
+			zap.Int("step", step),
+			zap.Int("msg_block", len(ch.signal)),
+		)
 	}
 	ws.Close()
 	wp.Put(wb)
@@ -365,7 +370,7 @@ failed:
 }
 
 // websocket請求連線至某房間
-func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Channel, p *pb.Proto) (int32, time.Duration, error) {
+func (s *Server) authWebsocket(ctx context.Context, ws websocket.Conn, ch *Channel, p *pb.Proto) (int32, time.Duration, error) {
 	for {
 		// 如果第一次連線送的資料不是請求連接到某房間則會一直等待
 		if err := p.ReadWebsocket(ws); err != nil {
@@ -378,76 +383,75 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, ch *Chan
 		}
 	}
 
-	// 有兩種情況會無法進入聊天室
-	// 1. 請求進入聊天室資料有誤
-	// 2. 被封鎖
 	c, err := s.Connect(ctx, p)
 	if err != nil {
-		return 0, time.Duration(0), err
-	}
-	if c.IsBlockade {
-		if e := authCloseReply(ws, p, blockadeMessage); e != nil {
-			log.Warn("auth reply", zap.Error(e), zap.String("uid", c.Uid), zap.Int32("room_id", c.RoomID))
+		s, _ := status.FromError(err)
+		connect := &logicpb.Connect{
+			Permission:        new(logicpb.Permission),
+			PermissionMessage: new(logicpb.PermissionMessage),
+		}
+
+		if s.Code() != codes.FailedPrecondition {
+			log.Error("auth connect", zap.String("error", s.Message()))
+			connect.Message = "系统异常，请稍后再试"
+		} else {
+			connect.Message = s.Message()
+		}
+
+		b, err := json.Marshal(connect)
+		if err != nil {
+			return 0, time.Duration(0), fmt.Errorf("auth reply json marshal for close error: %s", err.Error())
+		}
+		if err = authReply(ws, p, b); err != nil {
+			return 0, time.Duration(0), fmt.Errorf("auth web socket reply for close error: %s", err.Error())
+		}
+
+		msg := struct {
+			Message string `json:"message"`
+		}{
+			Message: connect.Message,
+		}
+
+		// TODO 嘗試當無法連線時應該只發送OpProtoFinish而非OpAuthReply -> OpProtoFinish
+		closeP := &pb.Proto{
+			Op: pb.OpProtoFinish,
+		}
+		closeP.Body, _ = json.Marshal(msg)
+
+		if err = closeP.WriteWebsocket(ws); err != nil {
+			return 0, time.Duration(0), fmt.Errorf("auth reply close web socket for WriteWebsocket error: %s", err.Error())
+		} else if err = ws.Flush(); err != nil {
+			return 0, time.Duration(0), fmt.Errorf("auth reply close web socket for Flush error: %s", err.Error())
 		}
 		return 0, time.Duration(0), io.EOF
 	}
 
-	// 需要回覆給client告知uid與key
-	// 因為後續發話需依靠這兩個欄位來做pk
-	reply := struct {
-		Uid        string `json:"uid"`
-		Key        string `json:"key"`
-		RoomId     int32  `json:"room_id"`
-		Permission struct {
-			IsMessage     bool `json:"is_message"`
-			IsRedEnvelope bool `json:"is_red_envelope"`
-		} `json:"permission"`
-	}{
-		Uid:    c.Uid,
-		Key:    c.Key,
-		RoomId: c.RoomID,
-	}
-
-	reply.Permission.IsMessage = c.IsMessage
-	reply.Permission.IsRedEnvelope = c.IsRedEnvelope
-
-	b, err := json.Marshal(reply)
+	b, err := json.Marshal(c.Connect)
 	if err != nil {
-		return 0, time.Duration(0), err
+		return 0, time.Duration(0), fmt.Errorf("auth reply json marshal error: %s", err.Error())
 	}
 	if err = authReply(ws, p, b); err != nil {
-		return 0, time.Duration(0), err
+		return 0, time.Duration(0), fmt.Errorf("auth web socket reply error: %s", err.Error())
 	}
 	if c.HeaderMessage != nil {
 		p.Op = pb.OpRaw
 		p.Body = c.HeaderMessage
 		if err = p.WriteWebsocket(ws); err != nil {
-			log.Error("write header message", zap.Int32("rid", c.RoomID))
+			log.Error("write header message", zap.Int32("rid", c.Connect.RoomID))
 		}
 		if err = ws.Flush(); err != nil {
-			log.Error("send header message", zap.Int32("rid", c.RoomID))
+			log.Error("send header message", zap.Int32("rid", c.Connect.RoomID))
 		}
 	}
 
-	ch.Uid = c.Uid
-	ch.Key = c.Key
+	ch.Uid = c.Connect.Uid
+	ch.Key = c.Connect.Key
 	ch.Name = c.Name
-	return c.RoomID, time.Duration(c.Heartbeat), nil
+	return c.Connect.RoomID, time.Duration(c.Heartbeat), nil
 }
 
-// 回覆連線至某房間結果
-func authReply(ws *websocket.Conn, p *pb.Proto, b []byte) (err error) {
+func authReply(ws websocket.Conn, p *pb.Proto, b []byte) (err error) {
 	p.Op = pb.OpAuthReply
-	p.Body = b
-	if err = p.WriteWebsocket(ws); err != nil {
-		return
-	}
-	err = ws.Flush()
-	return
-}
-
-func authCloseReply(ws *websocket.Conn, p *pb.Proto, b []byte) (err error) {
-	p.Op = pb.OpProtoFinish
 	p.Body = b
 	if err = p.WriteWebsocket(ws); err != nil {
 		return

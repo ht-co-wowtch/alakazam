@@ -2,13 +2,14 @@ package message
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/gogo/protobuf/proto"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"net"
+	"time"
 )
 
 type Consumer struct {
@@ -18,19 +19,58 @@ type Consumer struct {
 	handler sarama.ConsumerGroupHandler
 }
 
-func NewConsumer(ctx context.Context, topic string, name string, brokers []string) *Consumer {
+type Config struct {
+	Topic   string
+	Name    string
+	Brokers []string
+	Offsets struct {
+		Initial int64
+	}
+}
+
+func NewConsumer(ctx context.Context, conf Config) *Consumer {
 	config := sarama.NewConfig()
 	config.Version = sarama.V2_3_0_0
+
+	// 參考 https://kafka.apache.org/documentation/#consumerconfigs
+	// sarama 沒看到 max.poll.interval.ms ?
+	// enable.auto.commit 不支持
+	// connections.max.idle.ms ?
+
+	// session.timeout.ms
+	config.Consumer.Group.Session.Timeout = 10 * time.Second
+	// heartbeat.interval.ms
+	config.Consumer.Group.Heartbeat.Interval = 3 * time.Second
+	// auto.offset.reset
+	config.Consumer.Offsets.Initial = conf.Offsets.Initial
+	// fetch.min.bytes
+	config.Consumer.Fetch.Min = 1
+	// 相隔多久自動提交Offset
+	config.Consumer.Offsets.CommitInterval = time.Second
+	// 是否透過chan回傳error
 	config.Consumer.Return.Errors = true
-	group, err := sarama.NewConsumerGroup(brokers, name, config)
+
+	client, err := sarama.NewClient(conf.Brokers, config)
 	if err != nil {
 		panic(err)
 	}
-	return &Consumer{
+
+	group, err := sarama.NewConsumerGroupFromClient(conf.Name, client)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := registerConsumerMetric(client, config.MetricRegistry); err != nil {
+		panic(err)
+	}
+
+	c := &Consumer{
 		ctx:   ctx,
-		topic: topic,
+		topic: conf.Topic,
 		group: group,
 	}
+	go c.errorProc()
+	return c
 }
 
 type ConsumerGroupHandler interface {
@@ -56,9 +96,20 @@ func (c *Consumer) Run(handler ConsumerGroupHandler) {
 }
 
 func (c *Consumer) Close() {
-	c.ctx.Done()
 	if err := c.group.Close(); err != nil {
 		log.Error(err.Error())
+	}
+	c.ctx.Done()
+}
+
+func (c *Consumer) errorProc() {
+	for {
+		select {
+		case <-c.ctx.Done():
+			return
+		case err := <-c.group.Errors():
+			log.Error("consumer message", zap.Error(err))
+		}
 	}
 }
 
@@ -74,31 +125,18 @@ func (c *consumer) Cleanup(session sarama.ConsumerGroupSession) error {
 	return nil
 }
 
-var errMessageNotFound = errors.New("consumer group claim read message not found")
+//var errMessageNotFound = errors.New("consumer group claim read message not found")
 
 func (c *consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
-	select {
-	case msg, ok := <-claim.Messages():
-		if !ok {
-			return errMessageNotFound
-		}
+	for msg := range claim.Messages() {
 		session.MarkMessage(msg, "")
 		pushMsg := new(pb.PushMsg)
 		if err := proto.Unmarshal(msg.Value, pushMsg); err != nil {
-			log.Error("proto unmarshal", zap.Error(err), zap.Any("data", msg))
-			return err
+			return fmt.Errorf("proto unmarshal error:[%s] data: [%s]", err.Error(), string(msg.Value))
 		}
-		log.Info("consume",
-			zap.String("topic", msg.Topic),
-			zap.Int32("partition", msg.Partition),
-			zap.Int64("offset", msg.Offset),
-			zap.String("key", string(msg.Key)),
-			zap.Any("pushMsg", pushMsg),
-		)
 		// 開始處理推送至comet server
-		// TODO error
 		if err := c.handler.Push(pushMsg); err != nil {
-			log.Error("push", zap.Error(err))
+			return err
 		}
 	}
 	return nil

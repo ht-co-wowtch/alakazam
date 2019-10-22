@@ -18,7 +18,6 @@ type Room interface {
 	Update(id int, status Status) error
 	Delete(id int) error
 	Get(id int) (models.Room, error)
-	GetOnline(server string) (*Online, error)
 	GetTopMessage(msgId int64) ([]int32, models.Message, error)
 	AddTopMessage(rids []int32, message message.Message) error
 	DeleteTopMessage(rids []int32, msgId int64) error
@@ -44,6 +43,9 @@ type Status struct {
 	// 是否禁言
 	IsMessage bool `json:"is_message"`
 
+	// 是否打開跟注
+	IsBets bool `json:"is_bets"`
+
 	// 儲值&打碼量發話限制
 	Limit Limit `json:"limit"`
 
@@ -64,6 +66,7 @@ type Limit struct {
 func (r *room) Create(status Status) (int, error) {
 	room := models.Room{
 		IsMessage:    status.IsMessage,
+		IsBets:       status.IsBets,
 		DayLimit:     status.Limit.Day,
 		DepositLimit: status.Limit.Deposit,
 		DmlLimit:     status.Limit.Dml,
@@ -79,6 +82,7 @@ func (r *room) Update(id int, status Status) error {
 	room := models.Room{
 		Id:           id,
 		IsMessage:    status.IsMessage,
+		IsBets:       status.IsBets,
 		DayLimit:     status.Limit.Day,
 		DepositLimit: status.Limit.Deposit,
 		DmlLimit:     status.Limit.Dml,
@@ -126,10 +130,6 @@ func (r *room) Get(id int) (models.Room, error) {
 		return models.Room{}, err
 	}
 	return room, nil
-}
-
-func (r *room) GetOnline(server string) (*Online, error) {
-	return r.c.getOnline(server)
 }
 
 func (r *room) GetTopMessage(msgId int64) ([]int32, models.Message, error) {

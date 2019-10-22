@@ -47,6 +47,9 @@ redis:
   # 空閒連線多久(秒)沒做事就close
   idleTimeout: 5m
 
+metrics:
+  addr: :3033
+
 log:
   # 開啟debug模式只會紀錄Info Level以上的log
   # 使用DPanic level時會Panic

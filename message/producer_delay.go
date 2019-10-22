@@ -47,7 +47,7 @@ func (p *DelayProducer) run() {
 			for _, v := range m {
 				var err error
 				if v.Type == pb.PushMsg_MONEY {
-					var red Money
+					var red RedEnvelopeMessage
 					if err = json.Unmarshal(v.Msg, &red); err != nil {
 						log.Error("red envelope for delay send message", zap.Error(err), zap.Int64("id", v.Seq))
 						continue
@@ -67,14 +67,15 @@ func (p *DelayProducer) run() {
 	}
 }
 
-func (p *DelayProducer) SendDelayRedEnvelopeForAdmin(msg AdminRedEnvelopeMessage, publishAt time.Time) (int64, error) {
-	pushMsg, err := p.producer.toRedEnvelopePb(RedEnvelopeMessage{
-		Messages: Messages{
+func (p *DelayProducer) SendDelayRedEnvelopeForAdmin(msg ProducerAdminRedEnvelopeMessage, publishAt time.Time) (int64, error) {
+	pushMsg, err := p.producer.toRedEnvelopePb(ProducerRedEnvelopeMessage{
+		ProducerMessage: ProducerMessage{
 			Rooms:   msg.Rooms,
 			Mid:     RootMid,
 			Uid:     RootUid,
-			Name:    RootName,
+			Name:    msg.Name,
 			Message: msg.Message,
+			Avatar:  99,
 		},
 		RedEnvelopeId: msg.RedEnvelopeId,
 		Token:         msg.Token,

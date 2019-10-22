@@ -23,7 +23,7 @@ before_script:
 build:
   stage: build
   script:
-    - docker build --pull -t $REGISTRY_IMAGE .
+    - docker build --build-arg "GOPROXY=https://athens.jetfuel.com.tw" --pull -t $REGISTRY_IMAGE .
     - docker push $REGISTRY_IMAGE
   only:
     - /^v\d+\.\d+\.\d+$/

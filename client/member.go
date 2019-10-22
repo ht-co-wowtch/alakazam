@@ -10,6 +10,7 @@ type User struct {
 	Name   string `json:"name"`
 	Avatar string `json:"avatar"`
 	Type   int    `json:"type"`
+	Gender int    `json:"gender"`
 }
 
 var (

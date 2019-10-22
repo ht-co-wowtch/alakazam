@@ -6,6 +6,7 @@ import (
 	"github.com/alicebob/miniredis"
 	goRedis "github.com/go-redis/redis"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
@@ -54,11 +55,12 @@ var (
 	}
 
 	roomTopMessageTest = message.Message{
-		Id:      1,
-		Uid:     "123",
-		Name:    "test",
-		Message: "test",
-		Time:    time.Now().Format(time.RFC3339),
+		Id:        1,
+		Uid:       "123",
+		Name:      "test",
+		Message:   "test",
+		Time:      time.Now().Format(time.RFC3339),
+		Timestamp: time.Now().Unix(),
 	}
 )
 
@@ -90,16 +92,14 @@ func TestSetChatAndGetChatRoom(t *testing.T) {
 
 	b, _ := json.Marshal(roomTopMessageTest)
 
-	err := c.setChat(roomTest, string(b))
+	err := c.setChat(roomTest, b)
 	assert.Nil(t, err)
 
 	room, err := c.getChat(roomTest.Id)
-	message := room.HeaderMessage
-	room.HeaderMessage = []byte(``)
+	rt := roomTest
+	rt.HeaderMessage = b
 	assert.Nil(t, err)
-	assert.Equal(t, roomTest, room)
-
-	assert.Equal(t, string(b), message)
+	assert.Equal(t, rt, room)
 
 	expire := r.TTL(keyRoom(roomTest.Id)).Val()
 	assert.Equal(t, roomExpired, expire)
@@ -125,6 +125,33 @@ func TestGetChatMessageNil(t *testing.T) {
 	assert.Equal(t, models.Room{Id: 1}, room)
 }
 
+func TestChatTopMessage(t *testing.T) {
+	c.c.FlushAll()
+
+	msg := []byte(`{}`)
+	err := c.setChatTopMessage([]int32{1, 2, 3, 4}, msg)
+
+	assert.Nil(t, err)
+
+	b1, err := c.getChatTopMessage(1)
+
+	assert.Nil(t, err)
+	assert.Equal(t, msg, b1)
+
+	err = c.deleteChatTopMessage([]int32{2, 4})
+	assert.Nil(t, err)
+
+	b2, err := c.getChatTopMessage(3)
+
+	assert.Nil(t, err)
+	assert.Equal(t, msg, b2)
+
+	b3, err := c.getChatTopMessage(4)
+
+	assert.Equal(t, goRedis.Nil, err)
+	assert.Nil(t, b3)
+}
+
 func TestAddServerOnline(t *testing.T) {
 	unix := time.Now().Unix()
 	server := &Online{
@@ -139,4 +166,53 @@ func TestAddServerOnline(t *testing.T) {
 	o, err := c.getOnline("123")
 
 	assert.Equal(t, server, o)
+}
+
+type mockCache struct {
+	mock.Mock
+}
+
+func (m *mockCache) set(room models.Room) error {
+	arg := m.Called(room)
+	return arg.Error(0)
+}
+
+func (m *mockCache) get(id int) (models.Room, error) {
+	arg := m.Called(id)
+	return arg.Get(0).(models.Room), arg.Error(1)
+}
+
+func (m *mockCache) setChat(room models.Room, message []byte) error {
+	arg := m.Called(room, message)
+	return arg.Error(0)
+}
+
+func (m *mockCache) getChat(id int) (models.Room, error) {
+	arg := m.Called(id)
+	return arg.Get(0).(models.Room), arg.Error(1)
+}
+
+func (m *mockCache) addOnline(server string, online *Online) error {
+	arg := m.Called(server, online)
+	return arg.Error(0)
+}
+
+func (m *mockCache) getOnline(server string) (*Online, error) {
+	arg := m.Called(server)
+	return arg.Get(0).(*Online), arg.Error(1)
+}
+
+func (m *mockCache) setChatTopMessage(rids []int32, message []byte) error {
+	arg := m.Called(rids, message)
+	return arg.Error(0)
+}
+
+func (m *mockCache) getChatTopMessage(rid int) ([]byte, error) {
+	arg := m.Called(rid)
+	return arg.Get(0).([]byte), arg.Error(1)
+}
+
+func (m *mockCache) deleteChatTopMessage(rids []int32) error {
+	arg := m.Called(rids)
+	return arg.Error(0)
 }

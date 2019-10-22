@@ -30,33 +30,37 @@ type consume struct {
 
 // 訊息推送至comet server
 func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
-	var model int32
 	switch pushMsg.Type {
 	// 單一/多房間推送
-	case logicpb.PushMsg_ROOM, logicpb.PushMsg_MONEY, logicpb.PushMsg_ADMIN, logicpb.PushMsg_ADMIN_TOP:
-		model = cometpb.OpRaw
+	case logicpb.PushMsg_USER, logicpb.PushMsg_MONEY, logicpb.PushMsg_BETS, logicpb.PushMsg_ADMIN, logicpb.PushMsg_ADMIN_TOP:
+		for _, r := range pushMsg.Room {
+			if err := c.getRoom(r).Push(pushMsg.Msg, cometpb.OpRaw); err != nil {
+				return err
+			}
+		}
 	case logicpb.PushMsg_Close:
 		return c.kick(pushMsg)
 	case logicpb.PushMsg_CLOSE_TOP:
-		model = cometpb.OpCloseTopMessage
+		for _, r := range pushMsg.Room {
+			c.getRoom(r).consume.broadcastRoomRawBytes(r, pushMsg.Msg, cometpb.OpCloseTopMessage)
+		}
 	// 異常資料
 	default:
 		return fmt.Errorf("no match push type: %s", pushMsg.Type)
-	}
-	for _, r := range pushMsg.Room {
-		if err := c.getRoom(r).Push(pushMsg.Msg, model); err != nil {
-			return err
-		}
 	}
 	return nil
 }
 
 // 房間訊息推送給comet
-func (c *consume) broadcastRoomRawBytes(roomID int32, body []byte) (err error) {
+func (c *consume) broadcastRoomRawMessage(roomID int32, body []byte) {
+	c.broadcastRoomRawBytes(roomID, body, cometpb.OpBatchRaw)
+}
+
+func (c *consume) broadcastRoomRawBytes(roomID int32, body []byte, op int32) {
 	args := cometpb.BroadcastRoomReq{
 		RoomID: roomID,
 		Proto: &cometpb.Proto{
-			Op:   cometpb.OpBatchRaw,
+			Op:   op,
 			Body: body,
 		},
 	}
@@ -64,7 +68,6 @@ func (c *consume) broadcastRoomRawBytes(roomID int32, body []byte) (err error) {
 	for _, c := range comets {
 		c.BroadcastRoom(&args)
 	}
-	return
 }
 
 // 根據room id取Roomd用做房間訊息聚合

@@ -3,17 +3,12 @@ syntax = "proto3";
 package pb;
 
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/golang/protobuf/ptypes/empty/empty.proto";
 
-/*
- * v1.0.0
- * protocol
- */
 message Proto {
     int32 op = 1 [(gogoproto.jsontag) = "op"];
     bytes body = 2 [(gogoproto.jsontag) = "body"];
 }
-
-message Empty{}
 
 message BroadcastReq{
     Proto proto = 1;
@@ -43,9 +38,9 @@ message KeyReq {
 
 service Comet { 
     // Ping Service 
-    rpc Ping(Empty) returns(Empty); 
+    rpc Ping(google.protobuf.Empty) returns(google.protobuf.Empty);
     // Close websocket
-    rpc Kick(KeyReq) returns(Empty);
+    rpc Kick(KeyReq) returns(google.protobuf.Empty);
     // Broadcast send to every enrity
     rpc Broadcast(BroadcastReq) returns (BroadcastReply);
     // BroadcastRoom broadcast to one room

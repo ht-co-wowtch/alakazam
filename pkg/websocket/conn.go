@@ -55,20 +55,30 @@ var (
 	ErrMessageMaxRead = errors.New("continuation frame max read")
 )
 
+type Conn interface {
+	WriteMessage(msgType int, msg []byte) error
+	WriteHeader(msgType int, length int) error
+	WriteBody(b []byte) error
+	ReadMessage() (int, []byte, error)
+	Peek(n int) ([]byte, error)
+	Flush() error
+	Close() error
+}
+
 // Conn represents a WebSocket connection.
-type Conn struct {
+type conn struct {
 	rwc io.ReadWriteCloser
 	r   *bufio.Reader
 	w   *bufio.Writer
 }
 
 // new connection
-func newConn(rwc io.ReadWriteCloser, r *bufio.Reader, w *bufio.Writer) *Conn {
-	return &Conn{rwc: rwc, r: r, w: w}
+func newConn(rwc io.ReadWriteCloser, r *bufio.Reader, w *bufio.Writer) Conn {
+	return &conn{rwc: rwc, r: r, w: w}
 }
 
 // WriteMessage write a message by type.
-func (c *Conn) WriteMessage(msgType int, msg []byte) (err error) {
+func (c *conn) WriteMessage(msgType int, msg []byte) (err error) {
 	if err = c.WriteHeader(msgType, len(msg)); err != nil {
 		return
 	}
@@ -77,7 +87,7 @@ func (c *Conn) WriteMessage(msgType int, msg []byte) (err error) {
 }
 
 // WriteHeader write header frame.
-func (c *Conn) WriteHeader(msgType int, length int) (err error) {
+func (c *conn) WriteHeader(msgType int, length int) (err error) {
 	var h []byte
 	if h, err = c.w.Peek(2); err != nil {
 		return
@@ -110,7 +120,7 @@ func (c *Conn) WriteHeader(msgType int, length int) (err error) {
 }
 
 // WriteBody write a message body.
-func (c *Conn) WriteBody(b []byte) (err error) {
+func (c *conn) WriteBody(b []byte) (err error) {
 	if len(b) > 0 {
 		_, err = c.w.Write(b)
 	}
@@ -118,17 +128,17 @@ func (c *Conn) WriteBody(b []byte) (err error) {
 }
 
 // Peek write peek.
-func (c *Conn) Peek(n int) ([]byte, error) {
+func (c *conn) Peek(n int) ([]byte, error) {
 	return c.w.Peek(n)
 }
 
 // Flush flush writer buffer
-func (c *Conn) Flush() error {
+func (c *conn) Flush() error {
 	return c.w.Flush()
 }
 
 // ReadMessage read a message.
-func (c *Conn) ReadMessage() (op int, payload []byte, err error) {
+func (c *conn) ReadMessage() (op int, payload []byte, err error) {
 	var (
 		fin         bool
 		finOp, n    int
@@ -177,7 +187,7 @@ func (c *Conn) ReadMessage() (op int, payload []byte, err error) {
 	}
 }
 
-func (c *Conn) readFrame() (fin bool, op int, payload []byte, err error) {
+func (c *conn) readFrame() (fin bool, op int, payload []byte, err error) {
 	var (
 		b          byte
 		p          []byte
@@ -243,7 +253,7 @@ func (c *Conn) readFrame() (fin bool, op int, payload []byte, err error) {
 }
 
 // Close close the connection.
-func (c *Conn) Close() error {
+func (c *conn) Close() error {
 	return c.rwc.Close()
 }
 

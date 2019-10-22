@@ -15,7 +15,7 @@ func (s *httpServer) kick(c *gin.Context) error {
 
 	kLen := len(keys)
 	if kLen > 0 {
-		err = s.message.Kick(message.KickMessage{
+		err = s.message.Kick(message.ProducerKickMessage{
 			Message: "因为某些原因你被踢出房间",
 			Keys:    keys,
 		})

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package pb;
 
-message Empty{}
+import "github.com/golang/protobuf/ptypes/empty/empty.proto";
 
 message SeqReq {
     int64 id = 1;
@@ -22,7 +22,7 @@ message SeqCreateResp {
 }
 
 service Seq {
-    rpc Ping(Empty) returns(Empty);
+    rpc Ping(google.protobuf.Empty) returns(google.protobuf.Empty);
     rpc Id(SeqReq) returns(SeqResp);
     rpc Ids(SeqReq) returns(SeqResp);
     rpc Create(SeqCreateReq) returns(SeqCreateResp);

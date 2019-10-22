@@ -1,7 +1,9 @@
 package message
 
 import (
+	"database/sql"
 	"encoding/json"
+	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
@@ -11,11 +13,13 @@ import (
 type History struct {
 	db     *models.Store
 	member *member.Member
+	cache  Cache
 }
 
-func NewHistory(db *models.Store, member *member.Member) *History {
+func NewHistory(db *models.Store, c *redis.Client, member *member.Member) *History {
 	return &History{
 		db:     db,
+		cache:  newCache(c),
 		member: member,
 	}
 }
@@ -27,12 +31,35 @@ const (
 	redEnvelopeType = "red_envelope"
 	// 公告訊息
 	TopType = "top"
+	// 跟注
+	betsType = "bets"
 )
 
-func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
-	msg, err := h.db.GetRoomMessage(roomId, lastMsgId)
+func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
+	if time.Now().Add(-2 * time.Hour).After(at) {
+		return []interface{}{}, nil
+	}
+
+	msgs, err := h.cache.getMessage(roomId, at)
 	if err != nil {
-		return nil, err
+		return []interface{}{}, nil
+	}
+
+	if len(msgs) > 0 {
+		message := make([]interface{}, 0, len(msgs))
+		for i := len(msgs); i > 0; i-- {
+			b := msgs[i-1]
+			message = append(message, stringJson(b))
+		}
+		return message, nil
+	}
+
+	msg, err := h.db.GetRoomMessage(roomId, at)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return nil, err
+		}
+		return []interface{}{}, nil
 	}
 
 	mids := make([]int, len(msg.Message)+len(msg.RedEnvelopeMessage))
@@ -46,7 +73,7 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 
 	ms, err := h.member.GetMembers(mids)
 	if err != nil {
-		return nil, err
+		return []interface{}{}, err
 	}
 
 	memberMap := make(map[int]models.Member, len(ms))
@@ -58,43 +85,73 @@ func (h *History) Get(roomId, lastMsgId int) ([]interface{}, error) {
 	for _, msgId := range msg.List {
 		switch msg.Type[msgId] {
 		case pb.PushMsg_MONEY:
-			data = append(data, historyRedEnvelopeMessage{
-				historyMessage: historyMessage{
-					Id:      msgId,
-					Uid:     memberMap[msg.RedEnvelopeMessage[msgId].MemberId].Uid,
-					Name:    memberMap[msg.RedEnvelopeMessage[msgId].MemberId].Name,
-					Type:    redEnvelopeType,
-					Message: msg.RedEnvelopeMessage[msgId].Message,
-					Time:    msg.RedEnvelopeMessage[msgId].SendAt.Format("15:04:05"),
+			redEnvelope := msg.RedEnvelopeMessage[msgId]
+			user := memberMap[redEnvelope.MemberId]
+			data = append(data, RedEnvelopeMessage{
+				Message: Message{
+					Id:        msgId,
+					Uid:       user.Uid,
+					Name:      user.Name,
+					Type:      redEnvelopeType,
+					Avatar:    toAvatarName(user.Gender),
+					Message:   redEnvelope.Message,
+					Time:      redEnvelope.SendAt.Format("15:04:05"),
+					Timestamp: redEnvelope.SendAt.Unix(),
 				},
-				RedEnvelope: historyRedEnvelope{
-					Id:      msg.RedEnvelopeMessage[msgId].RedEnvelopesId,
-					Token:   msg.RedEnvelopeMessage[msgId].Token,
-					Expired: msg.RedEnvelopeMessage[msgId].ExpireAt.Format(time.RFC3339),
+				RedEnvelope: RedEnvelope{
+					Id:      redEnvelope.RedEnvelopesId,
+					Token:   redEnvelope.Token,
+					Expired: redEnvelope.ExpireAt.Format(time.RFC3339),
 				},
 			})
-		case pb.PushMsg_ROOM:
-			data = append(data, historyMessage{
-				Id:      msgId,
-				Uid:     memberMap[msg.Message[msgId].MemberId].Uid,
-				Name:    memberMap[msg.Message[msgId].MemberId].Name,
-				Type:    messageType,
-				Message: msg.Message[msgId].Message,
-				Time:    msg.Message[msgId].SendAt.Format("15:04:05"),
+		case pb.PushMsg_USER:
+			user := memberMap[msg.Message[msgId].MemberId]
+			data = append(data, Message{
+				Id:        msgId,
+				Uid:       user.Uid,
+				Name:      user.Name,
+				Type:      messageType,
+				Avatar:    toAvatarName(user.Gender),
+				Message:   msg.Message[msgId].Message,
+				Time:      msg.Message[msgId].SendAt.Format("15:04:05"),
+				Timestamp: msg.Message[msgId].SendAt.Unix(),
+			})
+		case pb.PushMsg_ADMIN:
+			user := memberMap[msg.Message[msgId].MemberId]
+			data = append(data, Message{
+				Id:        msgId,
+				Uid:       user.Uid,
+				Name:      user.Name,
+				Type:      messageType,
+				Avatar:    avatarRoot,
+				Message:   msg.Message[msgId].Message,
+				Time:      msg.Message[msgId].SendAt.Format("15:04:05"),
+				Timestamp: msg.Message[msgId].SendAt.Unix(),
 			})
 		}
 	}
-	return data, nil
+
+	if len(data) == 0 {
+		return data, nil
+	}
+	return data, h.cache.addMessages(roomId, data)
+}
+
+type stringJson string
+
+func (s stringJson) MarshalJSON() ([]byte, error) {
+	return []byte(s), nil
 }
 
 func RoomTopMessageToMessage(msg models.RoomTopMessage) Message {
 	return Message{
-		Id:      msg.MsgId,
-		Uid:     RootUid,
-		Type:    TopType,
-		Name:    RootName,
-		Message: msg.Message,
-		Time:    msg.SendAt.Format("15:04:05"),
+		Id:        msg.MsgId,
+		Uid:       RootUid,
+		Type:      TopType,
+		Name:      RootName,
+		Message:   msg.Message,
+		Time:      msg.SendAt.Format("15:04:05"),
+		Timestamp: msg.SendAt.Unix(),
 	}
 }
 

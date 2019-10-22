@@ -1,18 +1,33 @@
 package message
 
+import "encoding/json"
+
 type Message struct {
-	Id      int64  `json:"id"`
-	Uid     string `json:"uid"`
-	Type    string `json:"type"`
-	Name    string `json:"name"`
-	Avatar  string `json:"avatar"`
-	Message string `json:"message"`
-	Time    string `json:"time"`
+	Id        int64  `json:"id"`
+	Uid       string `json:"uid"`
+	Type      string `json:"type"`
+	Name      string `json:"name"`
+	Avatar    string `json:"avatar"`
+	Message   string `json:"message"`
+	Time      string `json:"time"`
+	Timestamp int64  `json:"timestamp"`
 }
 
-type Money struct {
+func (m Message) MarshalBinary() (data []byte, err error) {
+	return json.Marshal(m)
+}
+
+func (m Message) Score() float64 {
+	return float64(m.Timestamp)
+}
+
+type RedEnvelopeMessage struct {
 	Message
 	RedEnvelope RedEnvelope `json:"red_envelope"`
+}
+
+func (m RedEnvelopeMessage) Score() float64 {
+	return float64(m.Message.Timestamp)
 }
 
 type RedEnvelope struct {
@@ -21,23 +36,30 @@ type RedEnvelope struct {
 	Expired string `json:"expired"`
 }
 
-type historyMessage struct {
-	Id      int64  `json:"id"`
-	Uid     string `json:"uid"`
-	Type    string `json:"type"`
-	Name    string `json:"name"`
-	Avatar  string `json:"avatar"`
-	Message string `json:"message"`
-	Time    string `json:"time"`
+func (m RedEnvelope) MarshalBinary() (data []byte, err error) {
+	return json.Marshal(m)
 }
 
-type historyRedEnvelopeMessage struct {
-	historyMessage
-	RedEnvelope historyRedEnvelope `json:"red_envelope"`
+type Bets struct {
+	Id        int64  `json:"id"`
+	Uid       string `json:"uid"`
+	Type      string `json:"type"`
+	Name      string `json:"name"`
+	Avatar    string `json:"avatar"`
+	Time      string `json:"time"`
+	Timestamp int64  `json:"timestamp"`
+
+	PeriodNumber     int   `json:"period_number"`
+	BetsPeriodNumber int   `json:"bets_period_number"`
+	Items            []Bet `json:"bets"`
+	Count            int   `json:"count"`
+	TotalAmount      int   `json:"total_amount"`
 }
 
-type historyRedEnvelope struct {
-	Id      string `json:"id"`
-	Token   string `json:"token"`
-	Expired string `json:"expired"`
+type Bet struct {
+	Name     string   `json:"name" binding:"required"`
+	Odds     float64  `json:"odds" binding:"required"`
+	OddsCode string   `json:"odds_code" binding:"required"`
+	Items    []string `json:"items"`
+	Amount   int      `json:"amount" binding:"required"`
 }

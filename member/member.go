@@ -12,6 +12,9 @@ import (
 )
 
 type Chat interface {
+	Get(uid string) (*models.Member, error)
+	GetSession(uid string) (*models.Member, error)
+	GetMessageSession(uid string) (*models.Member, error)
 	Login(rid int, token, server string) (*models.Member, string, error)
 	Logout(uid, key string) (bool, error)
 	Heartbeat(uid string) error
@@ -19,11 +22,11 @@ type Chat interface {
 
 type Member struct {
 	cli *client.Client
-	db  *models.Store
-	c   *Cache
+	db  models.Chat
+	c   Cache
 }
 
-func New(db *models.Store, cache *redis.Client, cli *client.Client) *Member {
+func New(db models.Chat, cache *redis.Client, cli *client.Client) *Member {
 	return &Member{
 		db:  db,
 		cli: cli,
@@ -50,7 +53,7 @@ func (m *Member) Login(rid int, token, server string) (*models.Member, string, e
 		u = &models.Member{
 			Uid:    user.Uid,
 			Name:   user.Name,
-			Avatar: user.Avatar,
+			Gender: user.Gender,
 			Type:   user.Type,
 		}
 		ok, err := m.db.CreateUser(u)
@@ -65,9 +68,9 @@ func (m *Member) Login(rid int, token, server string) (*models.Member, string, e
 		return u, "", nil
 	}
 
-	if u.Name != user.Name || u.Avatar != user.Avatar {
+	if u.Name != user.Name || u.Gender != user.Gender {
 		u.Name = user.Name
-		u.Avatar = user.Avatar
+		u.Gender = user.Gender
 		if ok, err := m.db.UpdateUser(u); err != nil || !ok {
 			log.Error("update user", zap.String("uid", user.Uid), zap.Bool("action", ok), zap.Error(err))
 		}
@@ -100,7 +103,6 @@ func (m *Member) Kick(uid string) ([]string, error) {
 	}
 	ok, err := m.c.delete(uid)
 	if !ok {
-		// TODO error
 		return nil, err
 	}
 	return keys, err
@@ -111,15 +113,9 @@ func (m *Member) GetKeys(uid string) ([]string, error) {
 }
 
 func (m *Member) GetMessageSession(uid string) (*models.Member, error) {
-	member, err := m.c.get(uid)
+	member, err := m.GetSession(uid)
 	if err != nil {
-		if err == redis.Nil {
-			return nil, errors.ErrLogin
-		}
 		return nil, err
-	}
-	if member.Type == models.Guest {
-		return nil, errors.ErrLogin
 	}
 	if !member.IsMessage {
 		return nil, errors.ErrMemberNoMessage
@@ -136,12 +132,12 @@ func (m *Member) GetMessageSession(uid string) (*models.Member, error) {
 }
 
 func (m *Member) GetSession(uid string) (*models.Member, error) {
-	member, err := m.c.get(uid)
+	member, err := m.Get(uid)
 	if err != nil {
-		if err == redis.Nil {
-			return nil, errors.ErrLogin
-		}
 		return nil, err
+	}
+	if member.IsBlockade {
+		return nil, errors.ErrBlockade
 	}
 	if member.Type == models.Guest {
 		return nil, errors.ErrLogin
@@ -149,10 +145,53 @@ func (m *Member) GetSession(uid string) (*models.Member, error) {
 	return member, nil
 }
 
-func (m *Member) GetUserName(uid []string) ([]string, error) {
+func (m *Member) Get(uid string) (*models.Member, error) {
+	member, err := m.c.get(uid)
+	if err != nil {
+		if err == redis.Nil {
+			return nil, errors.ErrLogin
+		}
+		return nil, err
+	}
+	return member, nil
+}
+
+func (m *Member) GetUserName(uid string) (string, error) {
+	members, err := m.GetUserNames([]string{uid})
+	if err != nil {
+		return "", err
+	}
+	return members[uid], nil
+}
+
+func (m *Member) GetUserNames(uid []string) (map[string]string, error) {
 	name, err := m.c.getName(uid)
-	if err == redis.Nil {
-		return nil, errors.ErrNoRows
+	if err != nil && err != redis.Nil {
+		return nil, err
+	}
+
+	selectUid := make([]string, 0)
+	for _, id := range uid {
+		if _, ok := name[id]; !ok {
+			selectUid = append(selectUid, id)
+		}
+	}
+
+	member, err := m.db.GetMembersByUid(selectUid)
+	if err != nil {
+		return nil, err
+	}
+	if name == nil {
+		name = make(map[string]string, len(member))
+	}
+
+	cacheName := make(map[string]string, len(member))
+	for _, v := range member {
+		cacheName[v.Uid] = v.Name
+		name[v.Uid] = v.Name
+	}
+	if err := m.c.setName(cacheName); err != nil {
+		log.Error("set name cache for GetUserName", zap.Error(err), zap.Any("name", name))
 	}
 	return name, nil
 }
@@ -161,6 +200,117 @@ func (m *Member) GetMembers(id []int) ([]models.Member, error) {
 	return m.db.GetMembers(id)
 }
 
+func (m *Member) Fetch(uid string) (*models.Member, error) {
+	member, err := m.c.get(uid)
+	if err == nil {
+		return member, nil
+	}
+	if err != redis.Nil {
+		return nil, err
+	}
+
+	dbMember, err := m.db.Find(uid)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.ErrNoMember
+		}
+		return nil, err
+	}
+	if _, err := m.c.set(dbMember); err != nil {
+		return nil, err
+	}
+	return member, nil
+}
+
 func (m *Member) Heartbeat(uid string) error {
 	return m.c.refreshExpire(uid)
+}
+
+func (m *Member) Update(uid, name string, gender int) error {
+	u, err := m.db.Find(uid)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.ErrNoMember
+		}
+		return err
+	}
+
+	if u.Name != name || u.Gender != gender {
+		u.Name = name
+		u.Gender = gender
+		if _, err := m.db.UpdateUser(u); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+type RedEnvelope struct {
+	RoomId int `json:"room_id" binding:"required"`
+
+	// 單包金額 or 總金額 看Type種類決定
+	Amount int `json:"amount" binding:"required"`
+
+	Count int `json:"count" binding:"required"`
+
+	// 紅包說明
+	Message string `json:"message" binding:"required,max=20"`
+
+	// 紅包種類 拼手氣 or 普通
+	Type string `json:"type" binding:"required"`
+}
+
+func (m *Member) GiveRedEnvelope(uid, token string, redEnvelope RedEnvelope) (*models.Member, client.RedEnvelopeReply, error) {
+	user, err := m.GetSession(uid)
+	if err != nil {
+		return nil, client.RedEnvelopeReply{}, err
+	}
+
+	log.Info("give red_envelope api", zap.String("uid", user.Uid), zap.Any("data", redEnvelope))
+
+	give := client.RedEnvelope{
+		RoomId:    redEnvelope.RoomId,
+		Message:   redEnvelope.Message,
+		Type:      redEnvelope.Type,
+		Amount:    redEnvelope.Amount,
+		Count:     redEnvelope.Count,
+		ExpireMin: 120,
+	}
+
+	reply, err := m.cli.GiveRedEnvelope(give, token)
+	if err != nil {
+		return nil, client.RedEnvelopeReply{}, err
+	}
+	return user, reply, nil
+}
+
+func (m *Member) TakeRedEnvelope(uid, token, redEnvelopeToken string) (client.TakeEnvelopeReply, error) {
+	_, err := m.GetSession(uid)
+	if err != nil {
+		return client.TakeEnvelopeReply{}, err
+	}
+	reply, err := m.cli.TakeRedEnvelope(redEnvelopeToken, token)
+	if err != nil {
+		return client.TakeEnvelopeReply{}, err
+	}
+
+	if reply.Name == "" && reply.Uid != "" {
+		if reply.Name, err = m.GetUserName(reply.Uid); err != nil {
+			return client.TakeEnvelopeReply{}, err
+		}
+	}
+
+	switch reply.Status {
+	case client.TakeEnvelopeSuccess:
+		reply.StatusMessage = "获得红包"
+	case client.TakeEnvelopeReceived:
+		reply.StatusMessage = "已经抢过了"
+	case client.TakeEnvelopeGone:
+		reply.StatusMessage = "手慢了，红包派完了"
+	case client.TakeEnvelopeExpired:
+		reply.StatusMessage = "红包已过期，不能抢"
+	default:
+		reply.StatusMessage = "不存在的红包"
+	}
+	return reply, nil
 }

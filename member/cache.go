@@ -10,20 +10,38 @@ import (
 )
 
 const (
-	uidKey    = "uid_%s"
-	uidWsKey  = "uid_ws_%s"
+	uidKey    = "uid_h_%s"
+	uidWsKey  = "uid_h_ws_%s"
 	bannedKey = "b_%s"
+
+	uidJsonKey = "json"
+	uidNameKey = "name"
 
 	OK = "OK"
 )
 
-type Cache struct {
+type Cache interface {
+	login(member *models.Member, key, server string) error
+	set(member *models.Member) (bool, error)
+	get(uid string) (*models.Member, error)
+	getKey(uid string) ([]string, error)
+	logout(uid, key string) (bool, error)
+	delete(uid string) (bool, error)
+	refreshExpire(uid string) error
+	setName(name map[string]string) error
+	getName(uid []string) (map[string]string, error)
+	setBanned(uid string, expired time.Duration) (bool, error)
+	isBanned(uid string) (bool, error)
+	delBanned(uid string) (bool, error)
+}
+
+type cache struct {
 	c      *redis.Client
 	expire time.Duration
 }
 
-func newCache(client *redis.Client) *Cache {
-	return &Cache{
+func newCache(client *redis.Client) Cache {
+	return &cache{
 		c:      client,
 		expire: time.Minute * 30,
 	}
@@ -47,7 +65,7 @@ var (
 	errExpire      = errors.New("set expire")
 )
 
-func (c *Cache) login(member *models.Member, key, server string) error {
+func (c *cache) login(member *models.Member, key, server string) error {
 	b, err := json.Marshal(member)
 	if err != nil {
 		return err
@@ -55,11 +73,16 @@ func (c *Cache) login(member *models.Member, key, server string) error {
 
 	tx := c.c.Pipeline()
 
-	c1 := tx.Set(keyUid(member.Uid), b, c.expire)
+	uidKey := keyUid(member.Uid)
+	c1 := tx.HMSet(uidKey, map[string]interface{}{
+		uidJsonKey: b,
+		uidNameKey: member.Name,
+	})
 
 	uidWsKey := keyUidWs(member.Uid)
 	c2 := tx.HSet(uidWsKey, key, server)
-	c3 := tx.Expire(uidWsKey, c.expire)
+	c3 := tx.Expire(uidKey, c.expire)
+	c4 := tx.Expire(uidWsKey, c.expire)
 
 	_, err = tx.Exec()
 	if err != nil {
@@ -71,23 +94,22 @@ func (c *Cache) login(member *models.Member, key, server string) error {
 	if !c2.Val() {
 		return errSetUidWsKey
 	}
-	if !c3.Val() {
+	if !c3.Val() || !c4.Val() {
 		return errExpire
 	}
 	return err
 }
 
-func (c *Cache) set(member *models.Member) (bool, error) {
+func (c *cache) set(member *models.Member) (bool, error) {
 	b, err := json.Marshal(member)
 	if err != nil {
 		return false, err
 	}
-	ok, err := c.c.Set(keyUid(member.Uid), b, c.expire).Result()
-	return ok == OK, err
+	return c.c.HSet(keyUid(member.Uid), uidJsonKey, b).Result()
 }
 
-func (c *Cache) get(uid string) (*models.Member, error) {
-	b, err := c.c.Get(keyUid(uid)).Bytes()
+func (c *cache) get(uid string) (*models.Member, error) {
+	b, err := c.c.HGet(keyUid(uid), uidJsonKey).Bytes()
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +120,7 @@ func (c *Cache) get(uid string) (*models.Member, error) {
 	return &m, nil
 }
 
-func (c *Cache) getKey(uid string) ([]string, error) {
+func (c *cache) getKey(uid string) ([]string, error) {
 	maps, err := c.c.HGetAll(keyUidWs(uid)).Result()
 	if err != nil {
 		return nil, err
@@ -110,12 +132,12 @@ func (c *Cache) getKey(uid string) ([]string, error) {
 	return keys, nil
 }
 
-func (c *Cache) logout(uid, key string) (bool, error) {
+func (c *cache) logout(uid, key string) (bool, error) {
 	aff, err := c.c.HDel(keyUidWs(uid), key).Result()
 	return aff == 1, err
 }
 
-func (c *Cache) delete(uid string) (bool, error) {
+func (c *cache) delete(uid string) (bool, error) {
 	tx := c.c.Pipeline()
 	d1 := tx.Del(keyUid(uid))
 	d2 := tx.Del(keyUidWs(uid))
@@ -132,7 +154,7 @@ func (c *Cache) delete(uid string) (bool, error) {
 	return true, nil
 }
 
-func (c *Cache) refreshExpire(uid string) error {
+func (c *cache) refreshExpire(uid string) error {
 	tx := c.c.Pipeline()
 	tx.Expire(keyUid(uid), c.expire)
 	tx.Expire(keyUidWs(uid), c.expire)
@@ -140,29 +162,33 @@ func (c *Cache) refreshExpire(uid string) error {
 	return err
 }
 
-func (c *Cache) getName(uid []string) ([]string, error) {
+func (c *cache) setName(name map[string]string) error {
 	tx := c.c.Pipeline()
-	cmd := make([]*redis.StringCmd, len(uid))
-	for i, id := range uid {
-		cmd[i] = tx.Get(keyUid(id))
+	for id, na := range name {
+		tx.HSet(keyUid(id), uidNameKey, na)
+	}
+	_, err := tx.Exec()
+	return err
+}
+
+func (c *cache) getName(uid []string) (map[string]string, error) {
+	tx := c.c.Pipeline()
+	cmd := make(map[string]*redis.StringCmd, len(uid))
+	for _, id := range uid {
+		cmd[id] = tx.HGet(keyUid(id), uidNameKey)
 	}
 	_, err := tx.Exec()
 	if err != nil {
 		return nil, err
 	}
-	name := make([]string, len(uid))
-	for i, v := range cmd {
-		var m models.Member
-		b, _ := v.Bytes()
-		if err = json.Unmarshal(b, &m); err != nil {
-			return nil, err
-		}
-		name[i] = m.Name
+	name := make(map[string]string, len(uid))
+	for id, na := range cmd {
+		name[id] = na.Val()
 	}
 	return name, nil
 }
 
-func (c *Cache) setBanned(uid string, expired time.Duration) (bool, error) {
+func (c *cache) setBanned(uid string, expired time.Duration) (bool, error) {
 	ok, err := c.c.Set(keyBanned(uid), time.Now().Add(expired).Unix(), expired).Result()
 	if err != nil {
 		return false, err
@@ -170,12 +196,12 @@ func (c *Cache) setBanned(uid string, expired time.Duration) (bool, error) {
 	return ok == OK, nil
 }
 
-func (c *Cache) isBanned(uid string) (bool, error) {
+func (c *cache) isBanned(uid string) (bool, error) {
 	aff, err := c.c.Exists(keyBanned(uid)).Result()
 	return aff == 1, err
 }
 
-func (c *Cache) delBanned(uid string) (bool, error) {
+func (c *cache) delBanned(uid string) (bool, error) {
 	aff, err := c.c.Del(keyBanned(uid)).Result()
 	return aff == 1, err
 }

@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"github.com/golang/protobuf/ptypes/empty"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/seq/api/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/seq/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
@@ -50,8 +51,8 @@ type rpcServer struct {
 	db models.ISeq
 }
 
-func (s *rpcServer) Ping(context.Context, *pb.Empty) (*pb.Empty, error) {
-	return &pb.Empty{}, nil
+func (s *rpcServer) Ping(context.Context, *empty.Empty) (*empty.Empty, error) {
+	return &empty.Empty{}, nil
 }
 
 func (s *rpcServer) Id(ctx context.Context, arg *pb.SeqReq) (*pb.SeqResp, error) {

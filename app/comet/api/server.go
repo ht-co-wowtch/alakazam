@@ -2,15 +2,14 @@ package api
 
 import (
 	"context"
-	"net"
-	"time"
-
+	"github.com/golang/protobuf/ptypes/empty"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
-
 	"google.golang.org/grpc"
+	"net"
+	"time"
 )
 
 // New comet grpc server.
@@ -36,12 +35,12 @@ type server struct {
 var _ pb.CometServer = &server{}
 
 // Ping Service
-func (s *server) Ping(ctx context.Context, req *pb.Empty) (*pb.Empty, error) {
-	return &pb.Empty{}, nil
+func (s *server) Ping(ctx context.Context, req *empty.Empty) (*empty.Empty, error) {
+	return &empty.Empty{}, nil
 }
 
 // 踢人
-func (s *server) Kick(ctx context.Context, req *pb.KeyReq) (*pb.Empty, error) {
+func (s *server) Kick(ctx context.Context, req *pb.KeyReq) (*empty.Empty, error) {
 	for _, key := range req.Key {
 		if b := s.srv.Bucket(key); b != nil {
 			if ch := b.Channel(key); ch != nil {
@@ -50,7 +49,7 @@ func (s *server) Kick(ctx context.Context, req *pb.KeyReq) (*pb.Empty, error) {
 			}
 		}
 	}
-	return &pb.Empty{}, nil
+	return &empty.Empty{}, nil
 }
 
 // 所有房間做推送

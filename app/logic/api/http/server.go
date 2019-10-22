@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/conf"
@@ -21,12 +22,12 @@ import (
 )
 
 type httpServer struct {
-	member        *member.Member
-	message       *message.Producer
-	history       *message.History
-	room          room.Chat
-	client        *client.Client
-	jwt           *member.Jwt
+	member  *member.Member
+	message *message.Producer
+	history *message.History
+	room    room.Chat
+	client  *client.Client
+	jwt     *member.Jwt
 }
 
 func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, room room.Chat, client *client.Client, history *message.History) *http.Server {
@@ -35,8 +36,6 @@ func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, 
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	engine := web.NewHandler()
-	engine.Use(RecoverHandler)
 
 	srv := httpServer{
 		member:  me,
@@ -54,9 +53,18 @@ func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, 
 		AllowHeaders:     conf.HTTPServer.Cors.Headers,
 		MaxAge:           time.Minute * 5,
 	}
-	engine.Use(cors.New(c), authenticationHandler)
+
+	engine := web.NewHandler()
+	engine.Use(RecoverHandler, cors.New(c), authenticationHandler)
 	handler(engine, srv)
-	return web.NewServer(conf.HTTPServer, engine)
+	server := web.NewServer(conf.HTTPServer, engine)
+
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Error(err.Error())
+		}
+	}()
+	return server
 }
 
 func handler(e *gin.Engine, s httpServer) {
@@ -64,9 +72,7 @@ func handler(e *gin.Engine, s httpServer) {
 	e.POST("/red-envelope", s.authUid, ErrHandler(s.giveRedEnvelope))
 	e.PUT("/red-envelope", s.authUid, ErrHandler(s.takeRedEnvelope))
 	e.GET("/red-envelope/:id", ErrHandler(s.getRedEnvelopeDetail))
-	//e.GET("/red-envelope-consume/:id", ErrHandler(s.getRedEnvelope))
 	e.GET("/message/:room", ErrHandler(s.getMessage))
-	e.GET("/top/message/:room", s.authUid, ErrHandler(s.getTopMessage))
 }
 
 func authenticationHandler(c *gin.Context) {
@@ -101,6 +107,13 @@ func (h *httpServer) authUid(c *gin.Context) {
 	c.Set("uid", uid.(string))
 }
 
+func (s *httpServer) Close() error {
+	if err := s.message.Close(); err != nil {
+		return fmt.Errorf("message producer close error(%v)", err)
+	}
+	return nil
+}
+
 var errInternalServer = errdefs.New(0, 0, "应用程序错误")
 
 // try catch log
@@ -132,13 +145,16 @@ func ErrHandler(f handlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := f(c); err != nil {
 			e := errdefs.Err(err)
-			log.Error(
-				"api error",
-				zap.String("path", c.Request.URL.Path),
-				zap.String("rawQuery", c.Request.URL.RawQuery),
-				zap.String("method", c.Request.Method),
-				zap.Error(err),
-			)
+			if e.Err != nil {
+				log.Error(
+					"api error",
+					zap.Int("code", e.Code),
+					zap.String("path", c.Request.URL.Path),
+					zap.String("rawQuery", c.Request.URL.RawQuery),
+					zap.String("method", c.Request.Method),
+					zap.Error(e.Err),
+				)
+			}
 			if e.Errors == nil {
 				e.Errors = map[string]string{}
 			}

@@ -3,7 +3,6 @@ package room
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
@@ -11,7 +10,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"gopkg.in/go-playground/validator.v8"
@@ -29,9 +27,11 @@ type Chat interface {
 	Disconnect(uid, key string) (bool, error)
 	Heartbeat(uid, key, name, server string) error
 	RenewOnline(server string, roomCount map[int32]int32) (map[int32]int32, error)
-	IsMessage(rid int, uid string) error
-	ChangeRoom(rid int) (*pb.ChangeRoomReply, error)
+	GetRoom(rid int) (models.Room, error)
+	GetUserMessageSession(uid string, rid int) (*models.Member, models.Room, error)
+	ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error)
 	GetTopMessage(rid int) (message.Message, error)
+	GetOnline(server string) (*Online, error)
 }
 
 type chat struct {
@@ -80,16 +80,55 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 	if err != nil {
 		return nil, err
 	}
+	if user.IsBlockade {
+		return nil, errors.ErrBlockade
+	}
+
+	connect := newPbConnect(user, room, key, int32(params.RoomID))
+	connect.Status = true
+
 	return &pb.ConnectReply{
-		Uid:           user.Uid,
-		Key:           key,
 		Name:          user.Name,
-		RoomID:        int32(params.RoomID),
 		Heartbeat:     c.heartbeatNanosec,
-		IsBlockade:    user.IsBlockade,
-		IsMessage:     user.IsMessage,
-		IsRedEnvelope: user.Type == models.Player,
 		HeaderMessage: room.HeaderMessage,
+		Connect:       connect,
+	}, nil
+}
+
+func (c *chat) GetUserMessageSession(uid string, rid int) (*models.Member, models.Room, error) {
+	user, err := c.member.GetMessageSession(uid)
+	if err != nil {
+		return nil, models.Room{}, err
+	}
+	room, err := c.GetRoom(rid)
+	if err != nil {
+		return nil, models.Room{}, err
+	}
+	return user, room, nil
+}
+
+func (c *chat) ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error) {
+	room, err := c.getChat(rid)
+	if err != nil {
+		return nil, err
+	}
+	if !room.Status {
+		return nil, errors.ErrRoomClose
+	}
+
+	user, err := c.member.Get(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	if user.IsBlockade {
+		return nil, errors.ErrBlockade
+	}
+	connect := newPbConnect(user, room, "", int32(rid))
+	connect.Status = true
+	return &pb.ChangeRoomReply{
+		HeaderMessage: room.HeaderMessage,
+		Connect:       connect,
 	}, nil
 }
 
@@ -163,26 +202,18 @@ func (c *chat) RenewOnline(server string, roomCount map[int32]int32) (map[int32]
 	return roomCount, err
 }
 
-func (c *chat) IsMessage(rid int, uid string) error {
+func (c *chat) GetRoom(rid int) (models.Room, error) {
 	room, err := c.get(rid)
 	if err != nil {
-		return err
+		return room, err
 	}
 	if !room.Status {
-		return errors.ErrRoomClose
+		return room, errors.ErrRoomClose
 	}
 	if !room.IsMessage {
-		return errors.ErrRoomNoMessage
+		return room, errors.ErrRoomNoMessage
 	}
-	money, err := c.cli.GetDepositAndDml(room.DayLimit, uid)
-	if err != nil {
-		return err
-	}
-	if float64(room.DmlLimit) > money.Dml || float64(room.DepositLimit) > money.Deposit {
-		msg := fmt.Sprintf(errors.ErrRoomLimit, room.DayLimit, room.DepositLimit, room.DmlLimit)
-		return errdefs.Forbidden(errors.New(msg), 4035)
-	}
-	return nil
+	return room, nil
 }
 
 func (c *chat) GetTopMessage(rid int) (message.Message, error) {
@@ -196,21 +227,40 @@ func (c *chat) GetTopMessage(rid int) (message.Message, error) {
 	return message.ToMessage(msg)
 }
 
-func (c *chat) ChangeRoom(rid int) (*pb.ChangeRoomReply, error) {
-	msg, err := c.cache.getChatTopMessage(rid)
-	if err != nil {
-		if err != redis.Nil {
-			return nil, err
-		}
+func (c *chat) GetOnline(server string) (*Online, error) {
+	return c.cache.getOnline(server)
+}
 
-		room, err := c.reloadChat(rid)
-		if err != nil {
-			return nil, err
-		}
-
-		msg = room.HeaderMessage
+func newPbConnect(user *models.Member, room models.Room, key string, roomId int32) *pb.Connect {
+	connect := &pb.Connect{
+		Uid:    user.Uid,
+		Key:    key,
+		Status: true,
+		RoomID: roomId,
 	}
-	return &pb.ChangeRoomReply{
-		HeaderMessage: msg,
-	}, err
+
+	permission := new(pb.Permission)
+	permissionMsg := new(pb.PermissionMessage)
+
+	if user.Type != models.Guest {
+		if !room.IsMessage {
+			permissionMsg.IsMessage = errors.RoomBanned
+			permission.IsMessage = false
+		} else if user.IsMessage {
+			permission.IsMessage = true
+		} else {
+			permissionMsg.IsMessage = errors.MemberBanned
+		}
+		if room.IsBets {
+			permission.IsBets = true
+		}
+
+		permission.IsRedEnvelope = true
+	} else {
+		permissionMsg.IsMessage = errors.NoLoginMessage
+		permissionMsg.IsRedEnvelope = errors.NoLoginMessage
+	}
+	connect.Permission = permission
+	connect.PermissionMessage = permissionMsg
+	return connect
 }

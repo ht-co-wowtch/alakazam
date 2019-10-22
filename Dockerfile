@@ -1,6 +1,8 @@
 FROM golang:1.12-alpine AS build_module
 
 ENV GO111MODULE=on
+ARG GOPROXY
+ENV GOPROXY=${GOPROXY}
 
 RUN set -ex && apk add --no-cache git
 
@@ -46,5 +48,7 @@ COPY --from=build /job .
 COPY --from=build /admin .
 COPY --from=build /message .
 COPY --from=build /seq .
+
+COPY --from=build /usr/local/go/lib/time/zoneinfo.zip /usr/local/go/lib/time/zoneinfo.zip
 
 CMD ["/bin/sh"]

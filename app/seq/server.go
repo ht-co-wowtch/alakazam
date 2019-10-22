@@ -22,9 +22,10 @@ func New(c *conf.Config) *Server {
 	if err != nil {
 		panic(err)
 	}
+
 	go func() {
 		if err := srv.Serve(lis); err != nil {
-			panic(err)
+			log.Error(err.Error())
 		}
 	}()
 	log.Infof("rpc server port [%s]", c.RPCServer.Addr)

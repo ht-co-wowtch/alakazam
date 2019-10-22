@@ -4,6 +4,8 @@ import (
 	"flag"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/job"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"os"
 	"os/signal"
@@ -16,6 +18,8 @@ var (
 )
 
 func main() {
+	cmd.LoadTimeZone()
+
 	flag.StringVar(&confPath, "c", "job.yml", "default config path")
 	flag.Parse()
 	if err := conf.Read(confPath); err != nil {
@@ -25,6 +29,7 @@ func main() {
 
 	j := job.New(conf.Conf)
 	j.Run()
+	metrics.RunHttp(conf.Conf.MetricsAddr)
 
 	log.Info("start success")
 

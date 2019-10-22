@@ -16,7 +16,10 @@ type redEnvelope struct {
 	// 紅包訊息
 	Message string `json:"message" binding:"required,max=20"`
 
-	// 紅包種類
+	// 紅包人名稱
+	Name string `json:"name"`
+
+	// 紅包種類	Name string `json:"name"`
 	Type string `json:"type" binding:"required"`
 
 	// 紅包金額 看種類決定
@@ -37,6 +40,9 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	if err := c.ShouldBindJSON(&o); err != nil {
 		return err
 	}
+	if o.Name == "" {
+		o.Name = message.RootName
+	}
 	result, err := s.nidoran.GiveRedEnvelopeForAdmin(client.RedEnvelopeAdmin{
 		RedEnvelope: client.RedEnvelope{
 			RoomId:    o.RoomId,
@@ -46,15 +52,17 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 			Count:     o.Count,
 			ExpireMin: o.ExpireMin,
 		},
+		Name:      o.Name,
 		PublishAt: o.PublishAt,
 	})
 	if err != nil {
 		return err
 	}
 
-	msg := message.AdminRedEnvelopeMessage{
-		AdminMessage: message.AdminMessage{
+	msg := message.ProducerAdminRedEnvelopeMessage{
+		ProducerAdminMessage: message.ProducerAdminMessage{
 			Rooms:   []int32{int32(o.RoomId)},
+			Name:    o.Name,
 			Message: o.Message,
 		},
 		RedEnvelopeId: result.Order,
@@ -78,12 +86,14 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		TotalAmount int       `json:"total_amount"`
 		PublishAt   time.Time `json:"publish_at"`
 		ExpireAt    time.Time `json:"expire_at"`
+		Token       string    `json:"token"`
 	}{
 		Id:          result.Order,
 		MsgId:       msgId,
 		TotalAmount: result.TotalAmount,
 		PublishAt:   result.PublishAt,
 		ExpireAt:    result.ExpireAt,
+		Token:       result.Token,
 	}
 
 	c.JSON(http.StatusOK, json)

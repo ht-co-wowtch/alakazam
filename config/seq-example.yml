@@ -44,6 +44,9 @@ database:
     idle: 4
     idleTimeout: 2m
 
+metrics:
+  addr: :3034
+
 log:
   # 開啟debug模式只會紀錄Info Level以上的log
   # 使用DPanic level時會Panic

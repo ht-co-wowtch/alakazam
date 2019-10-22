@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"fmt"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"time"
@@ -21,6 +22,7 @@ type Message struct {
 	Id       int `xorm:"pk autoincr"`
 	MsgId    int64
 	MemberId int
+	Type     string
 	Message  string
 	SendAt   time.Time
 }
@@ -55,21 +57,20 @@ const (
 	messageLimit = 20
 )
 
-func (s *Store) GetRoomMessage(roomId, lastMsgId int) (*Messages, error) {
+func (s *Store) GetRoomMessage(roomId int32, start time.Time) (*Messages, error) {
 	rms := make([]RoomMessage, 0)
 
-	query := s.d.Table(fmt.Sprintf("room_messages_%02d", roomId%50)).
-		Where("`room_id` = ?", roomId)
-
-	if lastMsgId > 0 {
-		query = query.Where("`msg_id` < ?", lastMsgId)
-	}
-
-	err := query.Limit(messageLimit).
+	err := s.d.Table(fmt.Sprintf("room_messages_%02d", roomId%50)).
+		Where("`room_id` = ?", roomId).
+		Where("send_at >= ? and send_at < ?", time.Now().Add(-2*time.Hour), start).
+		Limit(messageLimit).
 		Desc("msg_id").
 		Find(&rms)
 	if err != nil {
 		return nil, err
+	}
+	if len(rms) == 0 {
+		return nil, sql.ErrNoRows
 	}
 
 	var msgId []int64
