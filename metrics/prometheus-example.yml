@@ -44,6 +44,6 @@ scrape_configs:
     static_configs:
       - targets: ['127.0.0.1:3035']
 
-  - job_name: 'kafka_broker'
+  - job_name: 'kafka_broker_jmx'
     static_configs:
       - targets: ['127.0.0.1:3036']
