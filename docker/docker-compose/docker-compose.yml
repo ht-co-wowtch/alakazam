@@ -300,4 +300,4 @@ services:
       - burrow_consumer_local=kafka:9092
       - burrow_logging_filename=""
     ports:
-      - "1111:8080"
+      - "3400:8080"

@@ -20,7 +20,7 @@ var (
 
 func main() {
 	flag.StringVar(&addr, "addr", ":3037", "prometheus Address for burrow")
-	flag.StringVar(&burrowAddr, "burrowAddr", "http://127.0.0.1:1111", "Address that burrow is listening on")
+	flag.StringVar(&burrowAddr, "burrowAddr", "http://127.0.0.1:3400", "Address that burrow is listening on")
 	flag.StringVar(&interval, "interval", "30s", "The interval(seconds) specifies how often to scrape burrow")
 	flag.Parse()
 
