@@ -39,7 +39,7 @@
           "value": "avg"
         }
       ],
-      "description": "消費者群組負責消費的各partition狀態",
+      "description": "消費者群組負責消費的各partition狀態\n\n各狀態如下\n1 :  找不到消費者群組\n2 :  ok\n3 :  lag中\n4:  消費群組(不適用partition)內有5 ~ 7號的狀態\n5:  消費者很久沒有提交offset\n6:  消費者已提交offset但卻沒有增加(partition error)\n7:  消費者提交offset 比Broker ofset 還小 (非趨勢遞增)\n\n\n\nhttps://github.com/linkedin/Burrow/wiki/Consumer-Lag-Evaluation-Rules\n\nhttps://github.com/linkedin/Burrow/wiki/http-request-consumer-group-status#response",
       "fontSize": "100%",
       "gridPos": {
         "h": 9,
@@ -85,6 +85,11 @@
           "instant": false,
           "legendFormat": "{{group}}_{{topic}}_{{partition}}",
           "refId": "A"
+        },
+        {
+          "expr": "kafka_burrow_consumer_status",
+          "legendFormat": "{{group}}",
+          "refId": "B"
         }
       ],
       "timeFrom": null,
@@ -1460,5 +1465,5 @@
   "timezone": "",
   "title": "kafka_consumer",
   "uid": "Kxa_BN2WA",
-  "version": 27
+  "version": 29
 }
