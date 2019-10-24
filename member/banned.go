@@ -115,25 +115,26 @@ func (m *Member) RemoveBanned(uid string) error {
 	if err != nil {
 		return err
 	}
-	if !ok {
-		return errFailure
+
+	// 如果redis內沒有禁言時效資料且用戶發言狀態為true
+	if me.IsMessage && !ok {
+		return nil
 	}
+
 	if !me.IsMessage {
 		ok, err := m.db.UpdateIsMessage(me.Id, true)
 		if err != nil {
 			return err
 		}
-		if !ok {
-			return errFailure
-		}
-
-		me.IsMessage = true
-		ok, err = m.c.set(me)
-		if err != nil {
-			return err
-		}
-		if !ok {
-			return errFailure
+		if ok {
+			me.IsMessage = true
+			ok, err = m.c.set(me)
+			if err != nil {
+				return err
+			}
+			if !ok {
+				return errors.New("remove banned in set redis for admin api")
+			}
 		}
 	}
 	return nil

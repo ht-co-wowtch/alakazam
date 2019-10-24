@@ -5,9 +5,9 @@ import (
 	"net/http"
 )
 
-type transportFunc func(req *http.Request) (resp *http.Response, err error)
+type TransportFunc func(req *http.Request) (resp *http.Response, err error)
 
-func (tf transportFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+func (tf TransportFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return tf(req)
 }
 
@@ -19,7 +19,7 @@ func NewMockClient(doer func(req *http.Request) (resp *http.Response, err error)
 				Host:   "127.0.0.1",
 			},
 			&http.Client{
-				Transport: transportFunc(doer),
+				Transport: TransportFunc(doer),
 			},
 		),
 	}
