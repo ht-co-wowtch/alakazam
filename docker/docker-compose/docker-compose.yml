@@ -240,7 +240,7 @@ services:
       # kafka JMX 參考 https://github.com/apache/kafka/blob/trunk/bin/kafka-run-class.sh#L178
       # JMX_PORT跟Dcom.sun.management.jmxremote.rmi.port需一樣 https://stackoverflow.com/questions/22306363/spring-cannot-connect-to-a-jmx-server-using-rmi-from-behind-a-firewall
       # Djava.rmi.server.hostname需要設定成監控系統ip
-      KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.rmi.port=9091 -Djava.rmi.server.hostname=127.0.0.1
+      KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.rmi.port=9091 -Djava.rmi.server.hostname=${KAFKA_JMX_SERVER_HOST}
       # https://github.com/prometheus/jmx_exporter
       # https://kafka.apache.org/documentation/#remote_jmx
       KAFKA_OPTS: "-javaagent:/opt/kafka/jmx/jmx_prometheus_javaagent-0.12.0.jar=3036:/opt/kafka/jmx/config.yaml"
@@ -297,6 +297,9 @@ services:
       - ./metrics/prometheus:/prometheus
     ports:
       - "9090:9090"
+    depends_on:
+      - burrow_prometheus
+      - grafana
 
   grafana:
     image: grafana/grafana
@@ -306,9 +309,6 @@ services:
       - ./metrics/grafana:/var/lib/grafana
     ports:
       - "3000:3000"
-    depends_on:
-      - prometheus
-      - burrow
 
   # https://github.com/linkedin/Burrow
   burrow:
