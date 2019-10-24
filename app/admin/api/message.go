@@ -64,13 +64,13 @@ func (s *httpServer) push(c *gin.Context) error {
 }
 
 type betsReq struct {
-	RoomId           []int32       `json:"room_id" binding:"required"`
-	Uid              string        `json:"uid" binding:"required"`
-	PeriodNumber     int           `json:"period_number" binding:"required"`
-	BetsPeriodNumber int           `json:"bets_period_number" binding:"required"`
-	Bets             []message.Bet `json:"bets" binding:"required"`
-	Count            int           `json:"count" binding:"required"`
-	TotalAmount      int           `json:"total_amount" binding:"required"`
+	RoomId       []int32       `json:"room_id" binding:"required"`
+	Uid          string        `json:"uid" binding:"required"`
+	GameId       int           `json:"game_id" binding:"required"`
+	PeriodNumber int           `json:"period_number" binding:"required"`
+	Bets         []message.Bet `json:"bets" binding:"required"`
+	Count        int           `json:"count" binding:"required"`
+	TotalAmount  int           `json:"total_amount" binding:"required"`
 }
 
 func (s *httpServer) bets(c *gin.Context) error {
@@ -84,16 +84,16 @@ func (s *httpServer) bets(c *gin.Context) error {
 		return err
 	}
 	msg := message.ProducerBetsMessage{
-		Rooms:            req.RoomId,
-		Mid:              int64(member.Id),
-		Uid:              member.Uid,
-		Name:             member.Name,
-		Avatar:           member.Gender,
-		PeriodNumber:     req.PeriodNumber,
-		BetsPeriodNumber: req.BetsPeriodNumber,
-		Bets:             req.Bets,
-		Count:            req.Count,
-		TotalAmount:      req.TotalAmount,
+		Rooms:        req.RoomId,
+		Mid:          int64(member.Id),
+		Uid:          member.Uid,
+		Name:         member.Name,
+		Avatar:       member.Gender,
+		GameId:       req.GameId,
+		PeriodNumber: req.PeriodNumber,
+		Bets:         req.Bets,
+		Count:        req.Count,
+		TotalAmount:  req.TotalAmount,
 	}
 
 	id, err := s.message.SendBets(msg)

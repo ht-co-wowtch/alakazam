@@ -358,11 +358,11 @@ type ProducerBetsMessage struct {
 	Name   string
 	Avatar int
 
-	PeriodNumber     int
-	BetsPeriodNumber int
-	Bets             []Bet
-	Count            int
-	TotalAmount      int
+	GameId       int
+	PeriodNumber int
+	Bets         []Bet
+	Count        int
+	TotalAmount  int
 }
 
 func (p *Producer) SendBets(msg ProducerBetsMessage) (int64, error) {
@@ -375,18 +375,18 @@ func (p *Producer) SendBets(msg ProducerBetsMessage) (int64, error) {
 
 	now := time.Now()
 	bm, err := json.Marshal(Bets{
-		Id:               seq.Id,
-		Type:             betsType,
-		Uid:              msg.Uid,
-		Name:             msg.Name,
-		Avatar:           toAvatarName(msg.Avatar),
-		Time:             now.Format("15:04:05"),
-		Timestamp:        now.Unix(),
-		PeriodNumber:     msg.PeriodNumber,
-		BetsPeriodNumber: msg.BetsPeriodNumber,
-		Items:            msg.Bets,
-		Count:            msg.Count,
-		TotalAmount:      msg.TotalAmount,
+		Id:           seq.Id,
+		Type:         betsType,
+		Uid:          msg.Uid,
+		Name:         msg.Name,
+		Avatar:       toAvatarName(msg.Avatar),
+		Time:         now.Format("15:04:05"),
+		Timestamp:    now.Unix(),
+		GameId:       msg.GameId,
+		PeriodNumber: msg.PeriodNumber,
+		Items:        msg.Bets,
+		Count:        msg.Count,
+		TotalAmount:  msg.TotalAmount,
 	})
 	if err != nil {
 		return 0, err

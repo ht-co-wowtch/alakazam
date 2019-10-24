@@ -415,8 +415,8 @@ Operation = `6`=> 單筆訊息
    "avatar":"other",
    "time":"11:08:11",
    "timestamp":1571627291,
+   "game_id":4567,
    "period_number":1234,
-   "bets_period_number":4567,
    "bets":[
       {
          "name":"冠軍",
@@ -438,17 +438,17 @@ Operation = `6`=> 單筆訊息
 }
 ```
 
-| name               | 說明         | 格式     |
-| ------------------ | ------------ | -------- |
-| period_number      | 遊戲 id      | string   |
-| bets_period_number | 本注期號     | int      |
-| bets.name          | 下注號碼名稱 | string   |
-| bets.odds          | 賠率         | float    |
-| bets.odds_code     | 賠率代號     | string   |
-| bets.items         | 組合號碼     | []string |
-| bets.amount        | 下注金額     | int      |
-| count              | 下注總筆數   | Int      |
-| total_amount       | 下注總金額   | int      |
+| name           | 說明         | 格式     |
+| -------------- | ------------ | -------- |
+| game_id        | 遊戲 id      | int      |
+| period_number  | 本注期號     | int      |
+| bets.name      | 下注號碼名稱 | string   |
+| bets.odds      | 賠率         | float    |
+| bets.odds_code | 賠率代號     | string   |
+| bets.items     | 組合號碼     | []string |
+| bets.amount    | 下注金額     | int      |
+| count          | 下注總筆數   | Int      |
+| total_amount   | 下注總金額   | int      |
 
 
 
@@ -467,11 +467,13 @@ Operation = `8`=> 回覆更換房間結果
     "status": false,
     "permission": {
         "is_message": false,
-        "is_red_envelope": false
+        "is_red_envelope": false,
+        "is_bets": false
     },
     "permission_message": {
         "is_message": "聊天室目前禁言状态，无法发言",
-        "is_red_envelope": "请先登入会员"
+        "is_red_envelope": "请先登入会员",
+        "is_bets": "请先登入会员"
     }
 }
 ```
@@ -485,8 +487,10 @@ Operation = `8`=> 回覆更換房間結果
 | status                             | 進入房間是否成功，只代表進入不代表任何權限   |
 | permission.is_message              | true: 可聊天，false: 不可聊天                |
 | permission.is_red_envelope         | true: 可發/搶紅包，false: 不可發/搶紅包      |
+| permission.is_bets                 | true: 可跟注，false: 不可跟注                |
 | permission_message.is_message      | 進入房間後關於發言相關提示訊息               |
 | permission_message.is_red_envelope | 進入房間後關於搶/發紅包相關提示訊息          |
+| permission_message.is_bets         | 進入房間後關於跟注相關提示訊息               |
 
 #### Cancle Header Message Reply
 

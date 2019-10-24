@@ -49,11 +49,11 @@ type Bets struct {
 	Time      string `json:"time"`
 	Timestamp int64  `json:"timestamp"`
 
-	PeriodNumber     int   `json:"period_number"`
-	BetsPeriodNumber int   `json:"bets_period_number"`
-	Items            []Bet `json:"bets"`
-	Count            int   `json:"count"`
-	TotalAmount      int   `json:"total_amount"`
+	GameId       int   `json:"game_id"`
+	PeriodNumber int   `json:"period_number"`
+	Items        []Bet `json:"bets"`
+	Count        int   `json:"count"`
+	TotalAmount  int   `json:"total_amount"`
 }
 
 type Bet struct {
