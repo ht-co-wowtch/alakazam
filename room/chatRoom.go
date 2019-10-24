@@ -253,12 +253,15 @@ func newPbConnect(user *models.Member, room models.Room, key string, roomId int3
 		}
 		if room.IsBets {
 			permission.IsBets = true
+		} else {
+			permissionMsg.IsBets = errors.NoLoginMessage
 		}
 
 		permission.IsRedEnvelope = true
 	} else {
 		permissionMsg.IsMessage = errors.NoLoginMessage
 		permissionMsg.IsRedEnvelope = errors.NoLoginMessage
+		permissionMsg.IsBets = errors.NoLoginMessage
 	}
 	connect.Permission = permission
 	connect.PermissionMessage = permissionMsg

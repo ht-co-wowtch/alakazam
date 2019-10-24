@@ -52,6 +52,7 @@ message Permission {
 message PermissionMessage {
     string isMessage = 1 [(gogoproto.jsontag) = "is_message"];
    	string isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
+    string isBets = 3 [(gogoproto.jsontag) = "is_bets"];
 }
 
 message ConnectReq {

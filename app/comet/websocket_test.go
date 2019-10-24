@@ -19,7 +19,7 @@ import (
 
 func TestVisitorConnectionRoom(t *testing.T) {
 	conn := &fakeWsConn{}
-	session := newLoginSession(false, false, false)
+	session := newLoginSession(false, false, false, false)
 	err := connectionWebSocket(session, conn, t)
 
 	var close struct {
@@ -39,7 +39,7 @@ func TestVisitorConnectionRoom(t *testing.T) {
 
 func TestGuestConnectionRoom(t *testing.T) {
 	conn := &fakeWsConn{}
-	session := newLoginSession(true, false, false)
+	session := newLoginSession(true, false, false, false)
 	_ = connectionWebSocket(session, conn, t)
 
 	var b logicpb.Connect
@@ -48,14 +48,16 @@ func TestGuestConnectionRoom(t *testing.T) {
 	assert.True(t, b.Status)
 	assert.False(t, b.Permission.IsMessage)
 	assert.False(t, b.Permission.IsRedEnvelope)
+	assert.False(t, b.Permission.IsBets)
 	assert.Equal(t, b.PermissionMessage.IsMessage, errors.NoLoginMessage)
 	assert.Equal(t, b.PermissionMessage.IsRedEnvelope, errors.NoLoginMessage)
+	assert.Equal(t, b.PermissionMessage.IsBets, errors.NoLoginMessage)
 	assert.Len(t, conn.body, 1)
 }
 
 func TestMemberConnectionRoom(t *testing.T) {
 	conn := &fakeWsConn{}
-	session := newLoginSession(true, true, true)
+	session := newLoginSession(true, true, true, true)
 	_ = connectionWebSocket(session, conn, t)
 
 	var b logicpb.Connect
@@ -64,25 +66,32 @@ func TestMemberConnectionRoom(t *testing.T) {
 	assert.True(t, b.Status)
 	assert.True(t, b.Permission.IsMessage)
 	assert.True(t, b.Permission.IsRedEnvelope)
+	assert.True(t, b.Permission.IsBets)
 	assert.Equal(t, b.PermissionMessage.IsMessage, "")
 	assert.Equal(t, b.PermissionMessage.IsRedEnvelope, "")
+	assert.Equal(t, b.PermissionMessage.IsBets, "")
 	assert.Len(t, conn.body, 1)
 }
 
-func newLoginSession(isLogin, isMessage, isRedEnvelope bool) *fakeLogicRpc {
-	var message, redEnvelopeMsg string
+func newLoginSession(isLogin, isMessage, isRedEnvelope, isBets bool) *fakeLogicRpc {
+	var message, redEnvelopeMsg, betsMsg string
 	if !isMessage {
 		message = errors.NoLoginMessage
 	}
 	if !isRedEnvelope {
 		redEnvelopeMsg = errors.NoLoginMessage
 	}
+	if !isBets {
+		betsMsg = errors.NoLoginMessage
+	}
 	return &fakeLogicRpc{
 		isLogin:        isLogin,
 		isMessage:      isMessage,
 		isRedEnvelope:  isRedEnvelope,
+		isBets:         isBets,
 		message:        message,
 		redEnvelopeMsg: redEnvelopeMsg,
+		betsMsg:        betsMsg,
 	}
 }
 
@@ -128,8 +137,10 @@ type fakeLogicRpc struct {
 	isLogin        bool
 	isMessage      bool
 	isRedEnvelope  bool
+	isBets         bool
 	message        string
 	redEnvelopeMsg string
+	betsMsg        string
 }
 
 func (f fakeLogicRpc) Ping(ctx context.Context, in *logicpb.PingReq, opts ...grpc.CallOption) (*logicpb.PingReply, error) {
@@ -149,10 +160,12 @@ func (f fakeLogicRpc) Connect(ctx context.Context, in *logicpb.ConnectReq, opts 
 			Permission: &logicpb.Permission{
 				IsMessage:     f.isMessage,
 				IsRedEnvelope: f.isRedEnvelope,
+				IsBets:        f.isBets,
 			},
 			PermissionMessage: &logicpb.PermissionMessage{
 				IsMessage:     f.message,
 				IsRedEnvelope: f.redEnvelopeMsg,
+				IsBets:        f.betsMsg,
 			},
 		},
 	}, nil
