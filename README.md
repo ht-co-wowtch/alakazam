@@ -2,7 +2,8 @@
 
 # 聊天室
 
-- [快速開始使用服務](#quick-reference)
+- [啟動聊天室](./docker/docker-compose/README.md)
+- [快速開始介接聊天室](#quick-reference)
 - [快速建置聊天室服務](#quick-start)
 - [依賴工具](#dependencies)
 - [架構圖](#architecture)
@@ -10,7 +11,7 @@
 - [聊天室Web Socket協定](#protocol-body)
 - [Web Socket](#web-socket)
 - [會員權限動作](#permission)
-- [監控](./docker/docker-compose/README.md)
+- [監控](./docker/docker-compose/README.md#metrics)
 - [注意事項](#precautions)
 - [Tag](#tag)
 
@@ -60,15 +61,15 @@ TODO
 TODO
 
 - [ ] json改用msgp
-- [ ] Metrics監控
+- [x] Metrics監控
 - [ ] 註冊中心(etcd or zk)
 - [ ] 整合測試 bash shell
-- [ ] golang pprof
-- [ ] 歷史訊息redis
+- [x] golang pprof
+- [x] 歷史訊息redis
 - [ ] 歷史訊息 mongodb
 - [ ] Kafka and zk config 調整
 - [ ] 訊息壓縮
-- [ ] cache 優化
+- [x] cache 優化
 
 ## Quick Reference
 
