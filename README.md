@@ -10,6 +10,7 @@
 - [聊天室Web Socket協定](#protocol-body)
 - [Web Socket](#web-socket)
 - [會員權限動作](#permission)
+- [監控](./docker/docker-compose/README.md)
 - [注意事項](#precautions)
 - [Tag](#tag)
 
@@ -754,3 +755,11 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 4. 後台房間設定API新增跟注設定
 5. 廢棄取房間頂置訊息API
 6. 會員權限與進入房間、禁言、封鎖、發紅包、搶紅包、發跟投、跟投行為對照的單元測試
+
+`v0.30.0`
+
+1. 增加跟注相關設定訊息參數
+
+`v0.30.1`
+
+1. fix 搞錯跟注欄位意思，誤解彩票API`period_number`欄位意義
