@@ -1,0 +1,53 @@
+# my global config
+global:
+  scrape_interval:     30s # 設定每15s取一次資料，默認是1m取一次
+  evaluation_interval: 30s # 設定每15s評估一次規則，默認是1m取一次
+  scrape_timeout: 5s # 設定取資料超時
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets:
+    # - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+# - "first_rules.yml"
+# - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'logic'
+    static_configs:
+      - targets: ['127.0.0.1:3030']
+
+  - job_name: 'comet'
+    static_configs:
+      - targets: ['127.0.0.1:3031']
+
+  - job_name: 'job'
+    static_configs:
+      - targets: ['127.0.0.1:3032']
+
+  - job_name: 'message'
+    static_configs:
+      - targets: ['127.0.0.1:3033']
+
+  - job_name: 'seq'
+    static_configs:
+      - targets: ['127.0.0.1:3034']
+
+  - job_name: 'admin'
+    static_configs:
+      - targets: ['127.0.0.1:3035']
+
+  - job_name: 'kafka_broker_jmx'
+    static_configs:
+      - targets: ['127.0.0.1:3036']
+
+  - job_name: 'kafka_consumer_lag'
+    static_configs:
+      - targets: ['127.0.0.1:3037']

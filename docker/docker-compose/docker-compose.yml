@@ -290,14 +290,46 @@ services:
     depends_on:
       - mysql
 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./metrics/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./metrics/prometheus:/prometheus
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./metrics/grafana:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - burrow
+
   # https://github.com/linkedin/Burrow
   burrow:
     build:
-      context: ./burrow
+      context: ./metrics/burrow
     environment:
-      - burrow_zookeeper_servers=zookeeper:2181
-      - burrow_cluster_local=kafka:9092
-      - burrow_consumer_local=kafka:9092
-      - burrow_logging_filename=""
+      - BURROW_ZOOKEEPER_SERVERS=zookeeper:2181
+      - BURROW_CLUSTER_LOCAL_SERVERS=kafka:9092
+      - BURROW_CONSUMER_LOCAL_SERVERS=kafka:9092
+      - BURROW_CONSUMER_LOCAL_BACKFILL_EARLIEST=false
+      - BURROW_CONSUMER_LOCAL_START_LATEST=true
     ports:
       - "3400:8080"
+
+  burrow_prometheus:
+    build:
+      context: ./metrics/burrow/prometheus
+    environment:
+      - BURROW_PROMETHEUS_BURROW_ADDR=http://burrow:8080
+      - BURROW_PROMETHEUS_INTERVAL=${PROMETHEUS_INTERVAL}
+    ports:
+      - "3037:3037"
+    depends_on:
+      - burrow
