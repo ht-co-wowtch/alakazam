@@ -270,11 +270,13 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
     "status": false,
     "permission": {
         "is_message": false,
-        "is_red_envelope": false
+        "is_red_envelope": false,
+        "is_bets": false,
     },
     "permission_message": {
         "is_message": "聊天室目前禁言状态，无法发言",
-        "is_red_envelope": "请先登入会员"
+        "is_red_envelope": "请先登入会员",
+        "is_bets": "请先登入会员"
     }
 }
 ```
@@ -288,8 +290,10 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 | status                             | 進入房間是否成功，只代表進入不代表任何權限   |
 | permission.is_message              | true: 可聊天，false: 不可聊天                |
 | permission.is_red_envelope         | true: 可發/搶紅包，false: 不可發/搶紅包      |
+| permission.is_bets                 | true: 可跟注，false: 不可跟注                |
 | permission_message.is_message      | 進入房間後關於發言相關提示訊息               |
 | permission_message.is_red_envelope | 進入房間後關於搶/發紅包相關提示訊息          |
+| permission_message.is_bets         | 進入房間後關於跟注相關提示訊息               |
 
 進入房間有幾種狀況，原因都會寫在`message`
 
