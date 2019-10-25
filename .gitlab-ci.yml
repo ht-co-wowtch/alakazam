@@ -25,6 +25,10 @@ build:
   script:
     - docker build --build-arg "GOPROXY=$GOPROXY" --pull -t $REGISTRY_IMAGE .
     - docker push $REGISTRY_IMAGE
+  only:
+    - /^v\d+\.\d+\.\d+$/
+  except:
+    - branches
 
 logic:
   stage: build_service
