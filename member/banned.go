@@ -128,12 +128,9 @@ func (m *Member) RemoveBanned(uid string) error {
 		}
 		if ok {
 			me.IsMessage = true
-			ok, err = m.c.set(me)
+			_, err = m.c.set(me)
 			if err != nil {
 				return err
-			}
-			if !ok {
-				return errors.New("remove banned in set redis for admin api")
 			}
 		}
 	}

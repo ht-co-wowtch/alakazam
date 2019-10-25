@@ -200,7 +200,7 @@ func newMockRedEnvelopeBlockadeMember(t int) mockMember {
 }
 
 func newMockMemberStatus(isLogin, isMessage, isBlockade bool, t int, httpFunc client.TransportFunc) mockMember {
-	return newMemberMockFunc(func(cache *MockCache) {
+	return newMemberMockFunc(func(cache *MockCache, db *models.MockDB) {
 		var err error
 		if !isLogin {
 			err = errors.ErrLogin
@@ -215,24 +215,29 @@ func newMockMemberStatus(isLogin, isMessage, isBlockade bool, t int, httpFunc cl
 	}, httpFunc)
 }
 
-func newMemberMockFunc(m func(cache *MockCache), httpFunc client.TransportFunc) mockMember {
+func newMemberMockFunc(m func(cache *MockCache, db *models.MockDB), httpFunc client.TransportFunc) mockMember {
 	cache := &MockCache{}
-	member := newMockMember(cache, nil, httpFunc)
-	m(cache)
+	db := &models.MockDB{}
+	member := newMockMember(cache, db, httpFunc)
+	m(cache, db)
 	return member
 }
 
 type mockMember struct {
 	Member
+	mCache *MockCache
+	mDb    *models.MockDB
 }
 
-func newMockMember(cache *MockCache, db models.Chat, httpFunc client.TransportFunc) mockMember {
+func newMockMember(cache *MockCache, db *models.MockDB, httpFunc client.TransportFunc) mockMember {
 	return mockMember{
-		Member{
+		Member: Member{
 			c:   cache,
 			db:  db,
 			cli: client.NewMockClient(httpFunc),
 		},
+		mCache: cache,
+		mDb:    db,
 	}
 }
 
