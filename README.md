@@ -13,7 +13,6 @@
 - [會員權限動作](#permission)
 - [監控](./docker/docker-compose/README.md#metrics)
 - [注意事項](#precautions)
-- [Tag](#tag)
 
 ## Quick Start
 
@@ -67,7 +66,7 @@ TODO
 - [x] golang pprof
 - [x] 歷史訊息redis
 - [ ] 歷史訊息 mongodb
-- [ ] Kafka and zk config 調整
+- [x] Kafka and zk config 調整
 - [ ] 訊息壓縮
 - [x] cache 優化
 
@@ -711,56 +710,3 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 
    nginx : `proxy_read_timeout` `proxy_send_timeout` 
 
-   
-
-## Tag
-
-`0.24.0`
-
-1. 調整kafka Producer and Consumer Config
-2. 增加發紅包API動作Log
-3. 更新jmeter 腳本
-4. 更新監控儀表板
-5. fix feat: http://mantis.jetfuel.com.tw/view.php?id=3004
-
-`0.24.1`
-
-1. 調整kafka Consumer Config
-2. 解決 log => while consuming push-topic/0: consumer group claim read message not found
-3. 更新jmeter 腳本
-
-`0.25.0`
-
-1. 增加kafka client 相關監控指數
-
-`0.26.0`
-
-1. 新增房間壓測腳本
-2. 後台更新房間資料api 也可以關閉房間
-
-`0.27.0`
-
-1. 廢棄`admin_messages table`
-2. `messages` table 增加種類欄位做判斷
-
-`0.28.0`
-
-1. 初版下注API
-2. 紅包總金額上限100000
-
-`0.29.0`
-
-1. 完善下注API
-2. Fix: 發紅包扣錢完成即便產生訊息也要告知用戶已成功
-3. job 新增推送跟投訊息
-4. 後台房間設定API新增跟注設定
-5. 廢棄取房間頂置訊息API
-6. 會員權限與進入房間、禁言、封鎖、發紅包、搶紅包、發跟投、跟投行為對照的單元測試
-
-`v0.30.0`
-
-1. 增加跟注相關設定訊息參數
-
-`v0.30.1`
-
-1. fix 搞錯跟注欄位意思，誤解彩票API`period_number`欄位意義
