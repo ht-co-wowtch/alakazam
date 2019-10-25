@@ -25,10 +25,6 @@ build:
   script:
     - docker build --build-arg --pull -t $REGISTRY_IMAGE .
     - docker push $REGISTRY_IMAGE
-  only:
-    - /^v\d+\.\d+\.\d+$/
-  except:
-    - branches
 
 logic:
   stage: build_service
