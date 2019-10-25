@@ -8,10 +8,6 @@ import (
 	"time"
 )
 
-var (
-	errFailure = errors.New("失敗")
-)
-
 func (m *Member) SetBanned(uid string, sec int, isSystem bool) error {
 	me, err := m.db.Find(uid)
 	if err != nil {
@@ -28,30 +24,24 @@ func (m *Member) SetBanned(uid string, sec int, isSystem bool) error {
 			return err
 		}
 		if !ok {
-			return errFailure
+			return errors.New("set banned cache failure")
 		}
 	} else if sec == -1 {
 		if !me.IsMessage {
 			return nil
 		}
 
-		ok, err := m.db.UpdateIsMessage(me.Id, false)
+		_, err := m.db.UpdateIsMessage(me.Id, false)
 		if err != nil {
 			return err
-		}
-		if !ok {
-			return errFailure
 		}
 
 		expire = time.Duration(0)
 
 		me.IsMessage = false
-		ok, err = m.c.set(me)
+		_, err = m.c.set(me)
 		if err != nil {
 			return err
-		}
-		if !ok {
-			return errFailure
 		}
 	}
 
