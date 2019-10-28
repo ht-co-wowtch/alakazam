@@ -375,8 +375,10 @@ func (m *metricConst) putMeter(desc *prometheus.Desc, name []string, label []str
 			snapshot := data.Snapshot()
 
 			data := map[string]float64{
-				"count": float64(snapshot.Count()),
-				"5m":    snapshot.Rate5(),
+				"1m":   snapshot.Rate1(),
+				"5m":   snapshot.Rate5(),
+				"15m":  snapshot.Rate15(),
+				"mean": snapshot.RateMean(),
 			}
 
 			for key, value := range data {
