@@ -11,6 +11,12 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	RootMid  = 1
+	RootUid  = "root"
+	RootName = "管理员"
+)
+
 type Chat interface {
 	Get(uid string) (*models.Member, error)
 	GetSession(uid string) (*models.Member, error)

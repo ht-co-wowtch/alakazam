@@ -10,6 +10,7 @@ import (
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	seqpb "gitlab.com/jetfueltw/cpw/alakazam/app/seq/api/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	shield "gitlab.com/jetfueltw/cpw/alakazam/pkg/filter"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -111,12 +112,6 @@ func (p *Producer) Close() error {
 	return p.producer.Close()
 }
 
-const (
-	RootMid  = 1
-	RootUid  = "root"
-	RootName = "管理员"
-)
-
 type ProducerMessage struct {
 	Rooms   []int32
 	Mid     int64
@@ -204,9 +199,9 @@ func (p *Producer) SendForAdmin(msg ProducerAdminMessage) (int64, error) {
 	}
 	pushMsg, err := p.toPb(ProducerMessage{
 		Rooms:   msg.Rooms,
-		Mid:     RootMid,
-		Uid:     RootUid,
-		Name:    RootName,
+		Mid:     member.RootMid,
+		Uid:     member.RootUid,
+		Name:    member.RootName,
 		Avatar:  99,
 		Message: msg.Message,
 		Type:    ty,
@@ -332,8 +327,8 @@ func (p *Producer) SendRedEnvelopeForAdmin(msg ProducerAdminRedEnvelopeMessage) 
 	pushMsg, err := p.toRedEnvelopePb(ProducerRedEnvelopeMessage{
 		ProducerMessage: ProducerMessage{
 			Rooms:   msg.Rooms,
-			Mid:     RootMid,
-			Uid:     RootUid,
+			Mid:     member.RootMid,
+			Uid:     member.RootUid,
 			Name:    msg.Name,
 			Message: msg.Message,
 			Avatar:  99,

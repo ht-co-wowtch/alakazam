@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -43,9 +44,9 @@ func (s *httpServer) push(c *gin.Context) error {
 		now := time.Now()
 		m := message.Message{
 			Id:        id,
-			Uid:       message.RootUid,
+			Uid:       member.RootUid,
 			Type:      message.TopType,
-			Name:      message.RootName,
+			Name:      member.RootName,
 			Message:   p.Message,
 			Time:      now.Format("15:04:05"),
 			Timestamp: now.Unix(),

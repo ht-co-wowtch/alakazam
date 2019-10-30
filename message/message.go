@@ -146,9 +146,9 @@ func (s stringJson) MarshalJSON() ([]byte, error) {
 func RoomTopMessageToMessage(msg models.RoomTopMessage) Message {
 	return Message{
 		Id:        msg.MsgId,
-		Uid:       RootUid,
+		Uid:       member.RootUid,
 		Type:      TopType,
-		Name:      RootName,
+		Name:      member.RootName,
 		Message:   msg.Message,
 		Time:      msg.SendAt.Format("15:04:05"),
 		Timestamp: msg.SendAt.Unix(),
