@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"net/http"
 	"time"
@@ -15,9 +16,6 @@ type redEnvelope struct {
 
 	// 紅包訊息
 	Message string `json:"message" binding:"required,max=20"`
-
-	// 紅包人名稱
-	Name string `json:"name"`
 
 	// 紅包種類	Name string `json:"name"`
 	Type string `json:"type" binding:"required"`
@@ -40,9 +38,6 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	if err := c.ShouldBindJSON(&o); err != nil {
 		return err
 	}
-	if o.Name == "" {
-		o.Name = message.RootName
-	}
 	result, err := s.nidoran.GiveRedEnvelopeForAdmin(client.RedEnvelopeAdmin{
 		RedEnvelope: client.RedEnvelope{
 			RoomId:    o.RoomId,
@@ -52,7 +47,6 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 			Count:     o.Count,
 			ExpireMin: o.ExpireMin,
 		},
-		Name:      o.Name,
 		PublishAt: o.PublishAt,
 	})
 	if err != nil {
@@ -62,7 +56,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	msg := message.ProducerAdminRedEnvelopeMessage{
 		ProducerAdminMessage: message.ProducerAdminMessage{
 			Rooms:   []int32{int32(o.RoomId)},
-			Name:    o.Name,
+			Name:    member.RootName,
 			Message: o.Message,
 		},
 		RedEnvelopeId: result.Order,

@@ -71,27 +71,11 @@ func (s *httpServer) takeRedEnvelope(c *gin.Context) error {
 }
 
 func (s *httpServer) getRedEnvelopeDetail(c *gin.Context) error {
-	reply, err := s.client.GetRedEnvelopeDetail(c.Param("id"), c.GetString("token"))
-	if err != nil {
-		return err
-	}
-	name := make([]string, len(reply.Members)+1)
-	name[0] = reply.Uid
-	for i, v := range reply.Members {
-		name[i+1] = v.Uid
-	}
-
-	names, err := s.member.GetUserNames(name)
+	detail, err := s.member.GetRedEnvelopeDetail(c.Param("id"), c.GetString("token"))
 	if err != nil {
 		return err
 	}
 
-	reply.Name = names[reply.Uid]
-
-	for i, v := range reply.Members {
-		reply.Members[i].Name = names[v.Uid]
-	}
-
-	c.JSON(http.StatusOK, reply)
+	c.JSON(http.StatusOK, detail)
 	return nil
 }

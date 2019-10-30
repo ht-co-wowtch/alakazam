@@ -183,6 +183,10 @@ func (m *Member) GetUserNames(uid []string) (map[string]string, error) {
 		}
 	}
 
+	if len(selectUid) == 0 {
+		return name, nil
+	}
+
 	member, err := m.db.GetMembersByUid(selectUid)
 	if err != nil {
 		return nil, err
@@ -290,19 +294,29 @@ func (m *Member) GiveRedEnvelope(uid, token string, redEnvelope RedEnvelope) (*m
 	return user, reply, nil
 }
 
-func (m *Member) TakeRedEnvelope(uid, token, redEnvelopeToken string) (client.TakeEnvelopeReply, error) {
+type TakeResult struct {
+	Name string `json:"name"`
+
+	client.TakeEnvelopeReply
+}
+
+func (m *Member) TakeRedEnvelope(uid, token, redEnvelopeToken string) (TakeResult, error) {
 	_, err := m.GetSession(uid)
 	if err != nil {
-		return client.TakeEnvelopeReply{}, err
+		return TakeResult{}, err
 	}
 	reply, err := m.cli.TakeRedEnvelope(redEnvelopeToken, token)
 	if err != nil {
-		return client.TakeEnvelopeReply{}, err
+		return TakeResult{}, err
 	}
 
-	if reply.Name == "" && reply.Uid != "" {
-		if reply.Name, err = m.GetUserName(reply.Uid); err != nil {
-			return client.TakeEnvelopeReply{}, err
+	var name string
+
+	if reply.IsAdmin {
+		name = RootName
+	} else if reply.Uid != "" {
+		if name, err = m.GetUserName(reply.Uid); err != nil {
+			return TakeResult{}, err
 		}
 	}
 
@@ -318,5 +332,70 @@ func (m *Member) TakeRedEnvelope(uid, token, redEnvelopeToken string) (client.Ta
 	default:
 		reply.StatusMessage = "不存在的红包"
 	}
-	return reply, nil
+	return TakeResult{
+		Name:              name,
+		TakeEnvelopeReply: reply,
+	}, nil
+}
+
+type RedEnvelopeDetail struct {
+	client.RedEnvelopeInfo
+
+	// 發紅包的會員名稱
+	Name string `json:"name"`
+
+	Members []MemberDetail `json:"members"`
+}
+
+type MemberDetail struct {
+	client.MemberDetail
+
+	// 搶走紅包會員的姓名
+	Name string `json:"name"`
+}
+
+func (m *Member) GetRedEnvelopeDetail(orderId, authToken string) (RedEnvelopeDetail, error) {
+	reply, err := m.cli.GetRedEnvelopeDetail(orderId, authToken)
+	if err != nil {
+		return RedEnvelopeDetail{}, err
+	}
+
+	var names map[string]string
+	uids := make([]string, 0, len(reply.Members)+1)
+
+	for _, v := range reply.Members {
+		uids = append(uids, v.Uid)
+	}
+	if !reply.IsAdmin {
+		uids = append(uids, reply.Uid)
+	}
+
+	members := []MemberDetail{}
+
+	if len(uids) > 0 {
+		members = make([]MemberDetail, 0, len(reply.Members)+1)
+		if names, err = m.GetUserNames(uids); err != nil {
+			return RedEnvelopeDetail{}, err
+		}
+		for _, v := range reply.Members {
+			members = append(members, MemberDetail{
+				MemberDetail: v,
+				Name:         names[v.Uid],
+			})
+		}
+	}
+
+	var name string
+
+	if reply.IsAdmin {
+		name = RootName
+	} else {
+		name = names[reply.Uid]
+	}
+
+	return RedEnvelopeDetail{
+		RedEnvelopeInfo: reply.RedEnvelopeInfo,
+		Name:            name,
+		Members:         members,
+	}, nil
 }

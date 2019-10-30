@@ -20,6 +20,8 @@ func init() {
 	log.Default()
 }
 
+// 會員操作權限
+
 func TestVisitorSendMessage(t *testing.T) {
 	m := newMockNoMessageMember(false, 99)
 	_, err := m.GetMessageSession("123")
@@ -91,28 +93,28 @@ func TestGuestGiveRedEnvelope(t *testing.T) {
 }
 
 func TestMemberGiveRedEnvelope(t *testing.T) {
-	m := newMockRedEnvelopeMember(true, true, false, models.Player)
+	m := newMockRedEnvelopeMemberStatus(true, true, false, models.Player)
 	_, _, err := m.GiveRedEnvelope("", "", RedEnvelope{})
 
 	assert.Nil(t, err)
 }
 
 func TestMarketGiveRedEnvelope(t *testing.T) {
-	m := newMockRedEnvelopeMember(true, true, false, models.Market)
+	m := newMockRedEnvelopeMemberStatus(true, true, false, models.Market)
 	_, _, err := m.GiveRedEnvelope("", "", RedEnvelope{})
 
 	assert.Nil(t, err)
 }
 
 func TestMemberBannedGiveRedEnvelope(t *testing.T) {
-	m := newMockRedEnvelopeMember(true, true, true, models.Player)
+	m := newMockRedEnvelopeMemberStatus(true, true, true, models.Player)
 	_, _, err := m.GiveRedEnvelope("", "", RedEnvelope{})
 
 	assert.Nil(t, err)
 }
 
 func TestMarketBannedGiveRedEnvelope(t *testing.T) {
-	m := newMockRedEnvelopeMember(true, true, true, models.Market)
+	m := newMockRedEnvelopeMemberStatus(true, true, true, models.Market)
 	_, _, err := m.GiveRedEnvelope("", "", RedEnvelope{})
 
 	assert.Nil(t, err)
@@ -133,32 +135,115 @@ func TestMarketBlockadeGiveRedEnvelope(t *testing.T) {
 }
 
 func TestVisitorTaskRedEnvelope(t *testing.T) {
-	m := newMockRedEnvelopeMember(false, false, false, 99)
+	m := newMockRedEnvelopeMemberStatus(false, false, false, 99)
 	_, err := m.TakeRedEnvelope("", "", "")
 
 	assert.Equal(t, err, errors.ErrLogin)
 }
 
 func TestGuestTaskRedEnvelope(t *testing.T) {
-	m := newMockRedEnvelopeMember(true, false, false, models.Guest)
+	m := newMockRedEnvelopeMemberStatus(true, false, false, models.Guest)
 	_, err := m.TakeRedEnvelope("", "", "")
 
 	assert.Equal(t, err, errors.ErrLogin)
 }
 
 func TestMemberTaskRedEnvelope(t *testing.T) {
-	m := newMockRedEnvelopeMember(true, true, false, models.Player)
+	m := newMockRedEnvelopeMemberStatus(true, true, false, models.Player)
 	_, err := m.TakeRedEnvelope("", "", "")
 
 	assert.Nil(t, err)
 }
 
 func TestMarketTaskRedEnvelope(t *testing.T) {
-	m := newMockRedEnvelopeMember(true, true, false, models.Market)
+	m := newMockRedEnvelopeMemberStatus(true, true, false, models.Market)
 	_, err := m.TakeRedEnvelope("", "", "")
 
 	assert.Nil(t, err)
 }
+
+// 紅包
+
+func TestGetRedEnvelopeDetailByMemberName(t *testing.T) {
+	m := newMemberMockFunc(func(cache *MockCache, db *models.MockDB) {
+		cache.On("getName", []string{"B", "C", "A"}).Return(map[string]string{
+			"A": "test1",
+			"B": "test2",
+			"C": "test3",
+		}, nil)
+
+	}, func(req *http.Request) (resp *http.Response, err error) {
+		body, err := json.Marshal(client.RedEnvelopeDetail{
+			RedEnvelopeInfo: client.RedEnvelopeInfo{Uid: "A"},
+			Members: []client.MemberDetail{
+				client.MemberDetail{
+					Uid: "B",
+				},
+				client.MemberDetail{
+					Uid: "C",
+				},
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(body)),
+		}, nil
+	})
+
+	detail, err := m.GetRedEnvelopeDetail("aa641b03d4d548d233a73a219781gy61", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NzI0Mjk4ODYsImlkIjoiNTE2OTQ3N2I3OGRhNDg1ZDlhZjU3YjE1NzNkYmY2NWYiLCJ1aWQiOiIwZDY0MWIwM2Q0ZDU0OGRiYjNhNzNhMjE5NzgxMTI2MSJ9.PBaDJp6e8lc7r75VdUV2sPgka7IR3ScfbvhMlvAiJvY")
+
+	assert.Nil(t, err)
+	assert.Equal(t, "test1", detail.Name)
+	assert.Equal(t, "test2", detail.Members[0].Name)
+	assert.Equal(t, "test3", detail.Members[1].Name)
+
+	m.mCache.AssertExpectations(t)
+	m.mDb.AssertExpectations(t)
+}
+
+func TestGetRedEnvelopeDetailByAdminName(t *testing.T) {
+	m := newMemberMockFunc(func(cache *MockCache, db *models.MockDB) {
+		cache.On("getName", []string{"B", "C"}).Return(map[string]string{
+			"B": "test2",
+			"C": "test3",
+		}, nil)
+
+	}, func(req *http.Request) (resp *http.Response, err error) {
+		body, err := json.Marshal(client.RedEnvelopeDetail{
+			RedEnvelopeInfo: client.RedEnvelopeInfo{Uid: "", IsAdmin: true},
+			Members: []client.MemberDetail{
+				client.MemberDetail{
+					Uid: "B",
+				},
+				client.MemberDetail{
+					Uid: "C",
+				},
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(body)),
+		}, nil
+	})
+
+	detail, err := m.GetRedEnvelopeDetail("aa641b03d4d548d233a73a219781gy61", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NzI0Mjk4ODYsImlkIjoiNTE2OTQ3N2I3OGRhNDg1ZDlhZjU3YjE1NzNkYmY2NWYiLCJ1aWQiOiIwZDY0MWIwM2Q0ZDU0OGRiYjNhNzNhMjE5NzgxMTI2MSJ9.PBaDJp6e8lc7r75VdUV2sPgka7IR3ScfbvhMlvAiJvY")
+
+	assert.Nil(t, err)
+	assert.Equal(t, RootName, detail.Name)
+	assert.Equal(t, "test2", detail.Members[0].Name)
+	assert.Equal(t, "test3", detail.Members[1].Name)
+
+	m.mCache.AssertExpectations(t)
+	m.mDb.AssertExpectations(t)
+}
+
+// =====================================================================================================================
 
 func newMockNoMessageMember(isLogin bool, t int) mockMember {
 	return newMockMemberStatus(isLogin, false, false, t, nil)
@@ -187,7 +272,7 @@ var mockRedEnvelopeHttpFunc = func(req *http.Request) (resp *http.Response, err 
 	}, nil
 }
 
-func newMockRedEnvelopeMember(isLogin, isMessage, isBanned bool, t int) mockMember {
+func newMockRedEnvelopeMemberStatus(isLogin, isMessage, isBanned bool, t int) mockMember {
 	m := newMockMessagesMember(isLogin, isMessage, isBanned, t)
 	m.mockHttpFunc(mockRedEnvelopeHttpFunc)
 	return m
