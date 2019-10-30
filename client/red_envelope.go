@@ -235,31 +235,3 @@ func (c *Client) GetRedEnvelopeDetail(id, token string) (RedEnvelopeDetail, erro
 	}
 	return u, nil
 }
-
-type TakeRedEnvelopeAmount struct {
-	// 發紅包的會員uid
-	Uid string `json:"uid"`
-
-	// 搶走紅包會員的姓名
-	Name string `json:"name"`
-
-	// 搶到的金額
-	Amount float64 `json:"amount"`
-}
-
-// 領取該紅包多少錢
-func (c *Client) GetRedEnvelope(id, token string) (TakeRedEnvelopeAmount, error) {
-	resp, err := c.c.Get("/red-envelope-consume/"+id, nil, bearer(token))
-	if err != nil {
-		return TakeRedEnvelopeAmount{}, err
-	}
-	defer resp.Body.Close()
-	if err := checkResponse(resp); err != nil {
-		return TakeRedEnvelopeAmount{}, err
-	}
-	var u TakeRedEnvelopeAmount
-	if err := json.NewDecoder(resp.Body).Decode(&u); err != nil {
-		return TakeRedEnvelopeAmount{}, err
-	}
-	return u, nil
-}
