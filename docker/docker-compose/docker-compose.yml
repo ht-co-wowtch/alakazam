@@ -243,7 +243,9 @@ services:
       KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.rmi.port=9091 -Djava.rmi.server.hostname=${KAFKA_JMX_SERVER_HOST}
       # https://github.com/prometheus/jmx_exporter
       # https://kafka.apache.org/documentation/#remote_jmx
-      KAFKA_OPTS: "-javaagent:/opt/kafka/jmx/jmx_prometheus_javaagent-0.12.0.jar=3036:/opt/kafka/jmx/config.yaml"
+      # 不使用KAFKA_OPTS原因 https://github.com/wurstmeister/kafka-docker/wiki#why-do-kafka-tools-fail-when-jmx-is-enabled
+      # KAFKA_OPTS: "-javaagent:/opt/kafka/jmx/jmx_prometheus_javaagent-0.12.0.jar=3036:/opt/kafka/jmx/config.yaml"
+      EXTRA_ARGS: "-javaagent:/opt/kafka/jmx/jmx_prometheus_javaagent-0.12.0.jar=3036:/opt/kafka/jmx/config.yaml"
       JMX_PORT: 9091
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -298,7 +300,6 @@ services:
     ports:
       - "9090:9090"
     depends_on:
-      - burrow_prometheus
       - grafana
 
   grafana:
@@ -333,3 +334,4 @@ services:
       - "3037:3037"
     depends_on:
       - burrow
+      - prometheus
