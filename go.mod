@@ -1,5 +1,7 @@
 module gitlab.com/jetfueltw/cpw/alakazam
 
+go 1.13
+
 require (
 	github.com/Shopify/sarama v1.23.0
 	github.com/alicebob/gopher-json v0.0.0-20180125190556-5a6b3ba71ee6 // indirect
