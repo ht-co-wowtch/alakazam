@@ -60,7 +60,12 @@ func (c *cache) addMessages(rid int32, msg []interface{}) error {
 }
 
 func (c *cache) addMessage(msg *pb.PushMsg) error {
-	return c.c.ZAdd(keyMessage(msg.Room[0]), redis.Z{Score: float64(msg.SendAt), Member: msg.Msg}).Err()
+	for _, rid := range msg.Room {
+		if err := c.c.ZAdd(keyMessage(rid), redis.Z{Score: float64(msg.SendAt), Member: msg.Msg}).Err(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *cache) getMessage(rid int32, at time.Time) ([]string, error) {
