@@ -60,7 +60,9 @@ TODO
 TODO
 
 - [ ] json改用msgp
-- [x] Metrics監控
+- [x] 各服務監控
+- [x] kafka監控
+- [ ] zk監控
 - [ ] 註冊中心(etcd or zk)
 - [ ] 整合測試 bash shell
 - [x] golang pprof
@@ -69,6 +71,12 @@ TODO
 - [x] Kafka and zk config 調整
 - [ ] 訊息壓縮
 - [x] cache 優化
+- [ ] 訊息持久化速度慢(透過監控offset lag發現)
+- [ ] 架構圖
+- [ ] 壓測資料
+- [ ] 完成壓測腳本
+- [ ] websocket替換成原生
+- [ ] time替換成原生
 
 ## Quick Reference
 
@@ -421,14 +429,12 @@ Operation = `6`=> 單筆訊息
    "bets":[
       {
          "name":"冠軍",
-         "odds":9.88,
          "odds_code":"1.pos.1",
          "items":[],
          "amount":15
       },
       {
          "name":"亞軍",
-         "odds":9.88,
          "odds_code":"2.pos.1",
          "items":[],
          "amount":10
@@ -444,14 +450,11 @@ Operation = `6`=> 單筆訊息
 | game_id        | 遊戲 id      | int      |
 | period_number  | 本注期號     | int      |
 | bets.name      | 下注號碼名稱 | string   |
-| bets.odds      | 賠率         | float    |
 | bets.odds_code | 賠率代號     | string   |
 | bets.items     | 組合號碼     | []string |
 | bets.amount    | 下注金額     | int      |
 | count          | 下注總筆數   | Int      |
 | total_amount   | 下注總金額   | int      |
-
-
 
 #### Change Room Reply
 
