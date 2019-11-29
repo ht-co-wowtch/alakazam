@@ -430,13 +430,15 @@ Operation = `6`=> 單筆訊息
       {
          "name":"冠軍",
          "odds_code":"1.pos.1",
-         "items":[],
+         "items": ["9", "tiger"],
+         "trans_items": ["9", "虎"],
          "amount":15
       },
       {
          "name":"亞軍",
          "odds_code":"2.pos.1",
-         "items":[],
+         "items": [],
+         "trans_items": [],
          "amount":10
       }
    ],
