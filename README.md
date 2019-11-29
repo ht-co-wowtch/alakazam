@@ -454,6 +454,7 @@ Operation = `6`=> 單筆訊息
 | bets.name      | 下注號碼名稱 | string   |
 | bets.odds_code | 賠率代號     | string   |
 | bets.items     | 組合號碼     | []string |
+| bets.trans_items     | 組合號碼(中文)     | []string |
 | bets.amount    | 下注金額     | int      |
 | count          | 下注總筆數   | Int      |
 | total_amount   | 下注總金額   | int      |
