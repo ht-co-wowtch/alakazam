@@ -372,6 +372,8 @@ func (p *Producer) SendBets(msg ProducerBetsMessage) (int64, error) {
 	for i, v := range msg.Bets {
 		if len(v.Items) == 0 {
 			msg.Bets[i].Items = []string{}
+		}
+		if len(v.TransItems) == 0 {
 			msg.Bets[i].TransItems = []string{}
 		}
 	}
