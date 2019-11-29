@@ -235,6 +235,8 @@ services:
       KAFKA_ACKS: 1
       KAFKA_MESSAGE_MAX_BYTES: 1048576
       KAFKA_CREATE_TOPICS: push-topic:3:1
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 6000
+      KAFKA_ZOOKEEPER_SESSION_TIMEOUT_MS: 30000
       # 參考 JMX 監控參數
       # JMX參考 https://docs.oracle.com/javase/10/management/monitoring-and-management-using-jmx-technology.htm#JSMGM-GUID-F08985BB-629A-4FBF-A0CB-8762DF7590E0
       # kafka JMX 參考 https://github.com/apache/kafka/blob/trunk/bin/kafka-run-class.sh#L178
