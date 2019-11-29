@@ -368,6 +368,14 @@ func (p *Producer) SendBets(msg ProducerBetsMessage) (int64, error) {
 		return 0, err
 	}
 
+	// 避免Items與TransItems欄位json Marshal後出現null
+	for i, v := range msg.Bets {
+		if len(v.Items) == 0 {
+			msg.Bets[i].Items = []string{}
+			msg.Bets[i].TransItems = []string{}
+		}
+	}
+
 	now := time.Now()
 	bm, err := json.Marshal(Bets{
 		Id:           seq.Id,
