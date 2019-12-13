@@ -313,10 +313,8 @@ services:
     ports:
       - "3000:3000"
 
-  # https://github.com/linkedin/Burrow
   burrow:
-    build:
-      context: ./metrics/burrow
+    image: registry.gitlab.com/jetfueltw/cpw/kafka-lag/burrow
     environment:
       - BURROW_ZOOKEEPER_SERVERS=zookeeper:2181
       - BURROW_CLUSTER_LOCAL_SERVERS=kafka:9092
@@ -327,9 +325,9 @@ services:
       - "3400:8080"
 
   burrow_prometheus:
-    build:
-      context: ./metrics/burrow/prometheus
+    image: registry.gitlab.com/jetfueltw/cpw/kafka-lag/prometheus:${BURROW_PROMETHEUS_VERSION}
     environment:
+      - BURROW_PROMETHEUS_ADDR=:3037
       - BURROW_PROMETHEUS_BURROW_ADDR=http://burrow:8080
       - BURROW_PROMETHEUS_INTERVAL=${PROMETHEUS_INTERVAL}
     ports:

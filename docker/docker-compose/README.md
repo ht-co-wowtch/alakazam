@@ -13,9 +13,6 @@
   - [kafka broker](#kafka broker)
   - [kafka consumer lag](#kafka consumer lag)
   - [grafana](#grafana)
-- [kafka](#kafka)
-
-
 
 ## 目錄解說
 
@@ -63,19 +60,12 @@ metrics
 
 ```bash
 ├── README.md
-├── burrow
 ├── dashboards
 ├── doc
 ├── grafana
 ├── prometheus
 └── prometheus-example.yml
 ```
-
-burrow
-
-[burrow](https://github.com/linkedin/Burrow)的prometheus代碼與設定檔
-
-
 
 dashboards
 
@@ -258,13 +248,3 @@ $ docker-compose up -d burrow_prometheus
 打開`127.0.0.1:3000`瀏覽器確認grafana狀況，[dashboards](https://gitlab.com/jetfueltw/cpw/alakazam/tree/develop/docker/docker-compose/metrics/dashboards) 目錄有多個監控dashboard可以匯入`grafana`
 
 ![arch](./metrics/doc/grafana.png)
-
-
-
-## kafka 
-
-介紹kafka jmx監控設定
-
-1. 設定jmx
-
-   
