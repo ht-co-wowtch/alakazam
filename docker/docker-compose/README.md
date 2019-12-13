@@ -6,9 +6,9 @@
 - [開始使用](#開始使用)
   - [登入 GitLab Container Registry](#登入 GitLab Container Registry)
   - [Database Migration](#Database Migration)
-  - [啟動與停止服務](#啟動與停止服務)
   - [MySQL initdb](#MySQL initdb)
-- [Metrics](./metrics/README.md)
+  - [啟動與停止服務](#啟動與停止服務)
+  - [啟動metrics](#啟動metrics)
 
 
 
@@ -58,6 +58,7 @@ metrics
 
 ```bash
 ├── README.md
+├── .env.example
 ├── dashboards
 ├── doc
 ├── grafana
@@ -103,7 +104,7 @@ MYSQL_ROOT_PASS=root
 
 絕大多數的服務都依賴於資料庫，與正確的 schema 版本，在開始開發前，你需要先初始化資料庫。  
 第一次會預設建立 `platform`、`alakazam` 兩個資料庫，如果你在 .env 使用其他名字的話，你必須手動新增資料庫再跑 migrate。
-```
+```bash
 // 撤銷所有 migration
 make platform.rollback
 
@@ -115,20 +116,6 @@ make platform.seed
 
 // 重設整個資料庫，等同於：rollback + migration + seed
 make platform.reset
-```
-
-
-
-### 啟動與停止服務
-
-請指定你要啟動的服務，不然會全部啟動，可以配合 alias 節省打字時間。
-
-```
-// 啟動 alakazam，他會自動把依賴的服務也跑起來
-docker-compose up -d alakazam
-
-// 停止所有服務
-docker-compose down
 ```
 
 
@@ -146,4 +133,27 @@ docker-compose up -d mysql
 
 
 
+### 啟動與停止服務
 
+請指定你要啟動的服務，不然會全部啟動，可以配合 alias 節省打字時間。
+
+```bash
+// 啟動 
+docker-compose up -d kafka 
+docker-compose up -d alakazam 
+
+// 停止所有服務
+docker-compose down
+```
+
+
+
+### 啟動metrics
+
+實際作法[參考](./metrics/README.md)
+
+```bash
+cp ./metrics/prometheus-example.yml ./metrics/prometheus.yml 
+
+docker-compose up -d burrow_prometheus 
+```
