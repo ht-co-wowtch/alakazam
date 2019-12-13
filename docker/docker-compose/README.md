@@ -8,11 +8,9 @@
   - [Database Migration](#Database Migration)
   - [啟動與停止服務](#啟動與停止服務)
   - [MySQL initdb](#MySQL initdb)
-- [Metrics](#Metrics)
-  - [prometheus](#prometheus)
-  - [kafka broker](#kafka broker)
-  - [kafka consumer lag](#kafka consumer lag)
-  - [grafana](#grafana)
+- [Metrics](./metrics/README.md)
+
+
 
 ## 目錄解說
 
@@ -148,103 +146,4 @@ docker-compose up -d mysql
 
 
 
-## Metrics
 
-設定各個服務的metrics入口
-
-
-
-### prometheus
-
-1. 先copy prometheus-example.yml 
-
-```bash
-$ cd metrics
-$ cp prometheus-example.yml prometheus.yml
-```
-
-2. 設定prometheus.yml內所有job targets，請自行更改targets指向各個服務
-
-```yml
-scrape_configs:
-  - job_name: 'logic'
-    static_configs:
-      - targets: ['alakazam_logic:3030']
-
-  - job_name: 'comet'
-    static_configs:
-      - targets: ['alakazam:3031']
-
-  - job_name: 'job'
-    static_configs:
-      - targets: ['alakazam_job:3032']
-
-  - job_name: 'message'
-    static_configs:
-      - targets: ['alakazam_message:3033']
-
-  - job_name: 'seq'
-    static_configs:
-      - targets: ['alakazam_seq:3034']
-
-  - job_name: 'admin'
-    static_configs:
-      - targets: ['alakazam_admin:3035']
-
-  - job_name: 'kafka_broker_jmx'
-    static_configs:
-      - targets: ['kafka:3036']
-
-  - job_name: 'kafka_consumer_lag'
-    static_configs:
-      - targets: ['burrow_prometheus:3037']
-```
-
-| 服務               | metrics port                                                 |
-| ------------------ | ------------------------------------------------------------ |
-| logic              | https://gitlab.com/jetfueltw/cpw/alakazam/blob/develop/config/logic-example.yml#L89 |
-| comet              | https://gitlab.com/jetfueltw/cpw/alakazam/blob/develop/config/comet-example.yml#L39 |
-| job                | https://gitlab.com/jetfueltw/cpw/alakazam/blob/develop/config/job-example.yml#L26 |
-| message            | https://gitlab.com/jetfueltw/cpw/alakazam/blob/develop/config/message-example.yml#L51 |
-| seq                | https://gitlab.com/jetfueltw/cpw/alakazam/blob/develop/config/seq-example.yml#L48 |
-| admin              | https://gitlab.com/jetfueltw/cpw/alakazam/blob/develop/config/admin-example.yml#L70 |
-| Kafka broker       | https://gitlab.com/jetfueltw/cpw/alakazam/blob/develop/docker/docker-compose/docker-compose.yml#L250 |
-| kafka consumer lag | https://gitlab.com/jetfueltw/cpw/alakazam/blob/develop/docker/docker-compose/metrics/burrow/prometheus/main.go#L24 |
-
-3. 啟動 prometheus，打開`127.0.0.1:9090`確認聊天室各個服務狀態是否正常
-
-   ```bash
-   $ docker-compose up -d prometheus
-   ```
-
-   ![arch](./metrics/doc/prometheus_status.png)
-
-
-
-### kafka broker
-
-kafka server 確認是否正常啟動
-
-![arch](./metrics/doc/kafka.png)
-
-
-
-### kafka consumer lag
-
-1. 啟動kafka message consumer lag狀態並確認是否正常
-
-```bash
-$ docker-compose up -d burrow_prometheus    
-```
-
-2. 確認kafka consumer lag狀態是否正常
-
-![arch](./metrics/doc/kafka_consumer_lag.png)
-
-
-
-### grafana
-
-打開`127.0.0.1:3000`瀏覽器確認grafana狀況，[dashboards](https://gitlab.com/jetfueltw/cpw/alakazam/tree/develop/docker/docker-compose/metrics/dashboards) 目錄有多個監控dashboard可以匯入`grafana`
-
-![arch](./metrics/doc/grafana.png)
