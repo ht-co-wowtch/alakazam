@@ -5,15 +5,13 @@
 - [目錄解說](目錄解說)
 - [prometheus](#prometheus)
 - [kafka](#kafka)
-- [burrow][#burrow]
+- [burrow](#burrow)
 - [grafana](#grafana)
 - [總結](#總結)
 
 
 
 ## 目錄解說
-
-[目錄](https://gitlab.com/jetfueltw/cpw/alakazam/tree/develop/docker/docker-compose/metrics)
 
 ```bash
 ├── README.md
@@ -24,21 +22,11 @@
 └── prometheus-example.yml
 ```
 
-dashboards
+`dashboards` : grafana的dashboard資料
 
-grafana的dashboard資料
+`grafana` : grafana docker資料位置
 
-
-
-grafana
-
-grafana docker資料位置
-
-
-
-prometheus
-
-prometheus docker資料位置
+`prometheus` : prometheus docker資料位置
 
 
 
@@ -47,7 +35,6 @@ prometheus docker資料位置
 1. 先copy prometheus-example.yml 
 
 ```bash
-$ cd metrics
 $ cp prometheus-example.yml prometheus.yml
 ```
 
@@ -133,12 +120,10 @@ scrape_configs:
 
 kafka配置jmx方式如下
 
-1. 首先docker需要增加對應的env，KAFKA_JMX_OPTS是告知kafka啟動需要jmx，可以參考[kafka](https://github.com/apache/kafka/blob/trunk/bin/kafka-run-class.sh#L182)，`Dcom.sun.management.jmxremote.rmi.port`是利用java rmi綁定一個port讓其可以對外讀取，`Djava.rmi.server.hostname`同樣是java rmi綁定一個可以讓外部讀取jmx資料的host
+1. 首先docker需要增加對應的env，KAFKA_JMX_OPTS是告知kafka啟動需要jmx，可以參考[kafka](https://github.com/apache/kafka/blob/trunk/bin/kafka-run-class.sh#L182)，`Dcom.sun.management.jmxremote.rmi.port`是利用java rmi綁定一個port讓其可以對外讀取，`Djava.rmi.server.hostname`同樣是java rmi綁定一個可以讓外部讀取jmx資料的host，請設定為kafka Container ip
 
    ```yml
    KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.rmi.port=9091 -Djava.rmi.server.hostname=${KAFKA_JMX_SERVER_HOST}
-   
-   
    ```
 
    
@@ -202,6 +187,13 @@ kafka配置jmx方式如下
       - "3400:8080"
 ```
 
+| env                                | 介紹                                  | 值             |
+| ---------------------------------- | ------------------------------------- | -------------- |
+| BURROW_ZOOKEEPER_SERVERS           | zookeeper connection host             | zookeeper:2181 |
+| BURROW_CLUSTER_LOCAL_SERVERS       | kafka cluster connection broker host  | kafka:9092     |
+| BURROW_CONSUMER_LOCAL_SERVERS      | kafka consumer connection broker host | kafka:9092     |
+| BURROW_CONSUMER_LOCAL_START_LATEST | Kafka auto.offset.reset設定           | true           |
+
 
 
 由於監控UI是`grafana`，所以要透過`prometheus`收集metrics就需要再部署一個`burrow`專用的`prometheus`，如下範例，目前版本是[v1.0.0](https://gitlab.com/jetfueltw/cpw/kafka-lag/container_registry)
@@ -210,15 +202,21 @@ kafka配置jmx方式如下
   burrow_prometheus:
     image: registry.gitlab.com/jetfueltw/cpw/kafka-lag/prometheus:${BURROW_PROMETHEUS_VERSION}
     environment:
-      - BURROW_PROMETHEUS_ADDR=:3037
-      - BURROW_PROMETHEUS_BURROW_ADDR=http://burrow:8080
-      - BURROW_PROMETHEUS_INTERVAL=30s
+      - BURROW_PROMETHEUS_ADDR=${PROMETHEUS_ADDR}
+      - BURROW_PROMETHEUS_BURROW_ADDR=${BURROW_ADDR}
+      - BURROW_PROMETHEUS_INTERVAL=${PROMETHEUS_INTERVAL}
     ports:
       - "3037:3037"
     depends_on:
       - burrow
       - prometheus
 ```
+
+| env                 | 介紹                        | 值                 |
+| ------------------- | --------------------------- | ------------------ |
+| PROMETHEUS_ADDR     | 該prometheus metrics port   | :3037              |
+| BURROW_ADDR         | burrow metrics api endpoint | http://burrow:8080 |
+| PROMETHEUS_INTERVAL | prometheus metrics頻率      | 30s                |
 
 
 

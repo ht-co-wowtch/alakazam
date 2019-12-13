@@ -327,6 +327,10 @@ services:
   burrow_prometheus:
     image: registry.gitlab.com/jetfueltw/cpw/kafka-lag/prometheus:${BURROW_PROMETHEUS_VERSION}
     environment:
+      - BURROW_PROMETHEUS_ADDR=${PROMETHEUS_ADDR}
+      - BURROW_PROMETHEUS_BURROW_ADDR=${BURROW_ADDR}
+      - BURROW_PROMETHEUS_INTERVAL=${PROMETHEUS_INTERVAL}
+
       - BURROW_PROMETHEUS_ADDR=:3037
       - BURROW_PROMETHEUS_BURROW_ADDR=http://burrow:8080
       - BURROW_PROMETHEUS_INTERVAL=${PROMETHEUS_INTERVAL}
