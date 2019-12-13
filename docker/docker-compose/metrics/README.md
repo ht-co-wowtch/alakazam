@@ -35,7 +35,7 @@
 1. 先copy prometheus-example.yml 
 
 ```bash
-$ cp prometheus-example.yml prometheus.yml
+cp prometheus-example.yml prometheus.yml
 ```
 
 2. 設定prometheus.yml內所有job targets，請自行更改targets指向各個服務
@@ -120,7 +120,7 @@ scrape_configs:
 
 kafka配置jmx方式如下
 
-1. 首先docker需要增加對應的env，KAFKA_JMX_OPTS是告知kafka啟動需要jmx，可以參考[kafka](https://github.com/apache/kafka/blob/trunk/bin/kafka-run-class.sh#L182)，`Dcom.sun.management.jmxremote.rmi.port`是利用java rmi綁定一個port讓其可以對外讀取，`Djava.rmi.server.hostname`同樣是java rmi綁定一個可以讓外部讀取jmx資料的host，請設定為kafka Container ip
+1. 首先docker需要增加對應的env，[KAFKA_JMX_OPTS](https://github.com/apache/kafka/blob/trunk/bin/kafka-run-class.sh#L182)是告知kafka啟動需要jmx，`Dcom.sun.management.jmxremote.rmi.port`是利用java rmi綁定一個port讓其可以對外讀取，`Djava.rmi.server.hostname`同樣是java rmi綁定一個可以讓外部讀取jmx資料的host，請設定為kafka Container ip
 
    ```yml
    KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.rmi.port=9091 -Djava.rmi.server.hostname=${KAFKA_JMX_SERVER_HOST}
@@ -134,7 +134,7 @@ kafka配置jmx方式如下
    EXTRA_ARGS: "-javaagent:/opt/kafka/jmx/jmx_prometheus_javaagent-0.12.0.jar=3036:/opt/kafka/jmx/config.yaml"
    ```
 
-   上述指令可以看到kafka啟動時需一並指定`jmx_exporter.jar`，而kafka是包在docker內執行，所以`jmx_exporter`相關檔案也需要一並放入docker中一起執行，關於`jmx_exporter`則有一個`jar`與`config.yaml`位置在[這](https://gitlab.com/jetfueltw/cpw/alakazam/tree/develop/docker/docker-compose/kafka/jmx)，`3036`就是kafka jmx的port
+   上述指令可以看到kafka啟動時需一並指定`jmx_exporter.jar`，而kafka是包在docker內執行，所以`jmx_exporter`相關檔案也需要一並放入docker中一起執行，關於`jmx_exporter`則有一個`jar`與`config.yaml`位置在[這](https://gitlab.com/jetfueltw/cpw/alakazam/tree/develop/docker/docker-compose/kafka/jmx)`．3036`就是kafka jmx的port
 
    
 
@@ -212,11 +212,12 @@ kafka配置jmx方式如下
       - prometheus
 ```
 
-| env                 | 介紹                        | 值                 |
-| ------------------- | --------------------------- | ------------------ |
-| PROMETHEUS_ADDR     | 該prometheus metrics port   | :3037              |
-| BURROW_ADDR         | burrow metrics api endpoint | http://burrow:8080 |
-| PROMETHEUS_INTERVAL | prometheus metrics頻率      | 30s                |
+| env                       | 介紹                        | 值                 |
+| ------------------------- | --------------------------- | ------------------ |
+| PROMETHEUS_ADDR           | 該prometheus metrics port   | :3037              |
+| BURROW_ADDR               | burrow metrics api endpoint | http://burrow:8080 |
+| PROMETHEUS_INTERVAL       | prometheus metrics頻率      | 30s                |
+| BURROW_PROMETHEUS_VERSION | burrow_prometheus版本       | 1.0.0              |
 
 
 
