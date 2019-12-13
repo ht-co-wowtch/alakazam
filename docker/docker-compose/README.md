@@ -28,59 +28,13 @@
 └── wait-for
 ```
 
-Makefile
+`Makefile` : 提供關於database `migrate` `rollback` `seed` `reset`指令來操作mysql docker，詳情看Makefile內容
 
-提供關於database `migrate` `rollback` `seed` `reset`指令來操作mysql docker，詳情看Makefile內容
+`data` : mysql與redis位於docker內保存的資料目錄
 
+`kafka` : 存放 kafka docker的資料與jmx設定檔目錄
 
-
-data
-
-mysql與redis位於docker內保存的資料目錄
-
-
-
-kafka
-
-存放 kafka docker的資料與jmx設定檔目錄
-
-
-
-mysql
-
-存放mysql Dockerfile與初始化sql資料
-
-
-
-metrics
-
-[目錄](https://gitlab.com/jetfueltw/cpw/alakazam/tree/develop/docker/docker-compose/metrics)
-
-```bash
-├── README.md
-├── .env.example
-├── dashboards
-├── doc
-├── grafana
-├── prometheus
-└── prometheus-example.yml
-```
-
-dashboards
-
-grafana的dashboard資料
-
-
-
-grafana
-
-grafana docker資料位置
-
-
-
-prometheus
-
-prometheus docker資料位置
+`mysql` : 存放mysql Dockerfile與初始化sql資料
 
 
 
