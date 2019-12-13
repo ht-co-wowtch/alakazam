@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 17,
-  "iteration": 1570248177225,
+  "id": 4,
+  "iteration": 1576218732266,
   "links": [],
   "panels": [
     {
@@ -34,7 +34,14 @@
     },
     {
       "cacheTimeout": null,
+      "columns": [
+        {
+          "text": "Avg",
+          "value": "avg"
+        }
+      ],
       "description": "Offline partitions count: 不能寫與讀的分區數量，不可大於0\n\nUnder replicated partitions: cluster中副本處於同步失敗或失效狀態的分區數，UnderReplicatedPartitions的值持續大於0時，意味著集群中有Broker處於異常狀態",
+      "fontSize": "100%",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -43,34 +50,37 @@
       },
       "id": 14,
       "links": [],
-      "options": {
-        "displayMode": "lcd",
-        "fieldOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "defaults": {
-            "mappings": [],
-            "max": 1,
-            "min": 0,
-            "thresholds": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ],
-            "unit": "none"
-          },
-          "override": {},
-          "values": false
-        },
-        "orientation": "horizontal"
-      },
+      "options": {},
+      "pageSize": null,
       "pluginVersion": "6.3.5",
+      "scroll": true,
+      "showHeader": true,
+      "sort": {
+        "col": 0,
+        "desc": true
+      },
+      "styles": [
+        {
+          "alias": "Time",
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "pattern": "Time",
+          "type": "date"
+        },
+        {
+          "alias": "",
+          "colorMode": null,
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "decimals": 2,
+          "pattern": "/.*/",
+          "thresholds": [],
+          "type": "number",
+          "unit": "short"
+        }
+      ],
       "targets": [
         {
           "expr": "kafka_controller_KafkaController_Value{name=\"OfflinePartitionsCount\"}",
@@ -86,11 +96,19 @@
       "timeFrom": null,
       "timeShift": null,
       "title": "Error partitions count",
-      "type": "bargauge"
+      "transform": "timeseries_aggregations",
+      "type": "table"
     },
     {
       "cacheTimeout": null,
+      "columns": [
+        {
+          "text": "Current",
+          "value": "current"
+        }
+      ],
       "description": "Leader partitions count:  某broter分區leader總數，其中有50個是內建topic __consumer_offsets持有",
+      "fontSize": "100%",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -99,34 +117,37 @@
       },
       "id": 18,
       "links": [],
-      "options": {
-        "displayMode": "lcd",
-        "fieldOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "defaults": {
-            "mappings": [],
-            "max": 1,
-            "min": 0,
-            "thresholds": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ],
-            "unit": "none"
-          },
-          "override": {},
-          "values": false
-        },
-        "orientation": "horizontal"
-      },
+      "options": {},
+      "pageSize": null,
       "pluginVersion": "6.3.5",
+      "scroll": true,
+      "showHeader": true,
+      "sort": {
+        "col": 0,
+        "desc": true
+      },
+      "styles": [
+        {
+          "alias": "Time",
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "pattern": "Time",
+          "type": "date"
+        },
+        {
+          "alias": "",
+          "colorMode": null,
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "decimals": 2,
+          "pattern": "/.*/",
+          "thresholds": [],
+          "type": "number",
+          "unit": "short"
+        }
+      ],
       "targets": [
         {
           "expr": "kafka_server_ReplicaManager_Value{name=\"LeaderCount\"}",
@@ -142,7 +163,8 @@
       "timeFrom": null,
       "timeShift": null,
       "title": "Partitions count",
-      "type": "bargauge"
+      "transform": "timeseries_aggregations",
+      "type": "table"
     },
     {
       "aliasColors": {},
@@ -231,96 +253,61 @@
       }
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "description": "ISR執行速率，最好都是0，不要過度頻繁變動會影響效能",
-      "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
-        "h": 10,
+        "h": 6,
         "w": 8,
         "x": 16,
         "y": 1
       },
-      "id": 20,
-      "legend": {
-        "alignAsTable": false,
-        "avg": false,
-        "current": false,
-        "max": true,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
+      "id": 22,
       "options": {
-        "dataLinks": []
+        "fieldOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "defaults": {
+            "mappings": [],
+            "max": 100,
+            "min": 0,
+            "thresholds": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 70
+              }
+            ]
+          },
+          "override": {},
+          "values": false
+        },
+        "orientation": "auto",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
       },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
+      "pluginVersion": "6.3.5",
       "targets": [
         {
-          "expr": "kafka_server_ReplicaManager_MeanRate{name=\"IsrExpandsPerSec\"}",
-          "legendFormat": "expand",
+          "expr": "100 - kafka_network_SocketServer_Value{name=\"NetworkProcessorAvgIdlePercent\"} * 100",
+          "legendFormat": "processor",
           "refId": "A"
         },
         {
-          "expr": "kafka_server_ReplicaManager_MeanRate{name=\"IsrShrinksPerSec\"}",
-          "legendFormat": "shrink",
+          "expr": "100 - (kafka_server_KafkaRequestHandlerPool_MeanRate * 100)",
+          "legendFormat": "network",
           "refId": "B"
         }
       ],
-      "thresholds": [],
       "timeFrom": null,
-      "timeRegions": [],
       "timeShift": null,
-      "title": "ISR",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+      "title": "IO thread usage",
+      "type": "gauge"
     },
     {
       "cacheTimeout": null,
@@ -487,398 +474,25 @@
           "value": "null"
         }
       ],
-      "valueName": "avg"
+      "valueName": "current"
     },
     {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "description": "ISR執行速率，最好都是0，不要過度頻繁變動會影響效能",
+      "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
-        "h": 4,
+        "h": 7,
         "w": 8,
         "x": 0,
         "y": 7
       },
-      "id": 22,
-      "options": {
-        "fieldOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "defaults": {
-            "mappings": [],
-            "max": 100,
-            "min": 0,
-            "thresholds": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "#EAB839",
-                "value": 50
-              },
-              {
-                "color": "red",
-                "value": 70
-              }
-            ]
-          },
-          "override": {},
-          "values": false
-        },
-        "orientation": "auto",
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true
-      },
-      "pluginVersion": "6.3.5",
-      "targets": [
-        {
-          "expr": "100 - kafka_network_SocketServer_Value{name=\"NetworkProcessorAvgIdlePercent\"} * 100",
-          "legendFormat": "processor",
-          "refId": "A"
-        },
-        {
-          "expr": "100 - (kafka_server_KafkaRequestHandlerPool_MeanRate * 100)",
-          "legendFormat": "network",
-          "refId": "B"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "IO thread usage",
-      "type": "gauge"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "description": "follower落後leader replica的最大的消息數量\n",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 4,
-        "w": 8,
-        "x": 8,
-        "y": 7
-      },
-      "id": 30,
+      "id": 20,
       "legend": {
-        "avg": false,
-        "current": true,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "kafka_server_ReplicaFetcherManager_Value{name=\"MaxLag\"}",
-          "legendFormat": "max lag",
-          "refId": "A"
-        },
-        {
-          "expr": "kafka_server_FetcherLagMetrics",
-          "refId": "B"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Replica Lag Message",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 11
-      },
-      "id": 34,
-      "title": "Bytes",
-      "type": "row"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "description": "kafka某topic 進出bytes的速率\u001c",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 12
-      },
-      "id": 2,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "max": true,
-        "min": false,
-        "rightSide": false,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "rate(kafka_server_BrokerTopicMetrics_Count{name=\"BytesInPerSec\",topic=\"$topic\"}[$rate])",
-          "hide": false,
-          "intervalFactor": 2,
-          "legendFormat": "bytes in rate",
-          "refId": "A"
-        },
-        {
-          "expr": "rate(kafka_server_BrokerTopicMetrics_Count{name=\"BytesOutPerSec\",topic=\"$topic\"}[$rate])/$consumer_group_num",
-          "hide": false,
-          "legendFormat": "bytes out rate",
-          "refId": "B"
-        },
-        {
-          "expr": "rate(kafka_server_BrokerTopicMetrics_Count{name=\"BytesOutPerSec\",topic=\"$topic\"}[$rate])",
-          "hide": false,
-          "legendFormat": "bytes all out rate",
-          "refId": "C"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Bytes input/output $rate rate",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "Bps",
-          "label": null,
-          "logBase": 10,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "description": "kafka某topic 進出bytes的累加差值",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 12
-      },
-      "id": 7,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "max": true,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "increase(kafka_server_BrokerTopicMetrics_Count{name=\"BytesInPerSec\",topic=\"$topic\"}[$rate])",
-          "hide": false,
-          "intervalFactor": 2,
-          "legendFormat": "bytes in rate",
-          "refId": "A"
-        },
-        {
-          "expr": "increase(kafka_server_BrokerTopicMetrics_Count{name=\"BytesOutPerSec\",topic=\"$topic\"}[$rate])/$consumer_group_num",
-          "hide": false,
-          "legendFormat": "bytes out rate",
-          "refId": "B"
-        },
-        {
-          "expr": "increase(kafka_server_BrokerTopicMetrics_Count{name=\"BytesOutPerSec\",topic=\"$topic\"}[$rate])",
-          "hide": false,
-          "legendFormat": "bytes all out rate",
-          "refId": "C"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Bytes input/output $rate increase",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 10,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 20
-      },
-      "id": 32,
-      "panels": [],
-      "title": "Request",
-      "type": "row"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "description": "Request速率",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 0,
-        "y": 21
-      },
-      "id": 11,
-      "legend": {
+        "alignAsTable": false,
         "avg": false,
         "current": false,
         "max": false,
@@ -903,27 +517,22 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(kafka_server_BrokerTopicMetrics_Count{name=\"TotalFetchRequestsPerSec\", topic=\"$topic\"}[$rate])",
-          "intervalFactor": 2,
-          "legendFormat": "fetch rate",
+          "expr": "kafka_server_ReplicaManager_FiveMinuteRate{name=\"IsrExpandsPerSec\"}",
+          "hide": false,
+          "legendFormat": "expands",
           "refId": "A"
         },
         {
-          "expr": "rate(kafka_server_BrokerTopicMetrics_Count{name=\"TotalProduceRequestsPerSec\",topic=\"$topic\"}[$rate])",
-          "legendFormat": "produce rate",
-          "refId": "B"
-        },
-        {
-          "expr": "increase(kafka_server_BrokerTopicMetrics_Count{name=\"TotalProduceRequestsPerSec\",topic=\"$topic\"}[$rate])",
-          "legendFormat": "produce increase",
-          "refId": "C"
+          "expr": "kafka_server_ReplicaManager_FiveMinuteRate{name=\"IsrShrinksPerSec\"}",
+          "legendFormat": "shrinks",
+          "refId": "F"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Request $rate rate",
+      "title": "ISR 5m rate",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -939,9 +548,9 @@
       },
       "yaxes": [
         {
-          "format": "reqps",
+          "format": "short",
           "label": null,
-          "logBase": 10,
+          "logBase": 1,
           "max": null,
           "min": null,
           "show": true
@@ -965,219 +574,25 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "description": "topic接收訊息的速率",
+      "description": "ISR執行速率，最好都是0，不要過度頻繁變動會影響效能",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
+        "h": 7,
         "w": 8,
         "x": 8,
-        "y": 21
+        "y": 7
       },
-      "id": 6,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "max": true,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "increase(kafka_server_BrokerTopicMetrics_Count{name=\"MessagesInPerSec\",topic=\"$topic\"}[$rate])",
-          "hide": false,
-          "intervalFactor": 2,
-          "legendFormat": "message increase",
-          "refId": "A"
-        },
-        {
-          "expr": "rate(kafka_server_BrokerTopicMetrics_Count{name=\"MessagesInPerSec\",topic=\"$topic\"}[$rate])",
-          "hide": false,
-          "legendFormat": "message rate",
-          "refId": "B"
-        },
-        {
-          "expr": "kafka_server_BrokerTopicMetrics_Count{name=\"MessagesInPerSec\",topic=\"$topic\"}",
-          "hide": true,
-          "refId": "C"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Message input $rate rate",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "wps",
-          "label": null,
-          "logBase": 10,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 16,
-        "y": 21
-      },
-      "id": 9,
+      "id": 37,
       "legend": {
         "alignAsTable": false,
         "avg": false,
-        "current": true,
-        "max": true,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "kafka_server_BrokerTopicMetrics_Count{name=\"FailedFetchRequestsPerSec\", topic=\"$topic\"}",
-          "hide": false,
-          "legendFormat": "fetch",
-          "refId": "A"
-        },
-        {
-          "expr": "kafka_server_BrokerTopicMetrics_Count{name=\"FailedProduceRequestsPerSec\", topic=\"$topic\"}",
-          "hide": false,
-          "legendFormat": "produce",
-          "refId": "B"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Failed request",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "reqps",
-          "label": null,
-          "logBase": 10,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "description": "Request請求總時間",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 16,
-        "x": 0,
-        "y": 27
-      },
-      "id": 26,
-      "legend": {
-        "alignAsTable": false,
-        "avg": false,
-        "current": true,
+        "current": false,
         "max": false,
         "min": false,
-        "rightSide": true,
         "show": true,
         "total": false,
-        "values": true
+        "values": false
       },
       "lines": true,
       "linewidth": 1,
@@ -1195,36 +610,22 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_network_RequestMetrics_999thPercentile{name=\"TotalTimeMs\",request=\"$request\"}",
-          "legendFormat": "99.9%",
+          "expr": "kafka_server_ReplicaManager_Count{name=\"IsrExpandsPerSec\"}",
+          "hide": false,
+          "legendFormat": "expands",
           "refId": "A"
         },
         {
-          "expr": "kafka_network_RequestMetrics_99thPercentile{name=\"TotalTimeMs\",request=\"$request\"}",
-          "legendFormat": "99%",
-          "refId": "B"
-        },
-        {
-          "expr": "kafka_network_RequestMetrics_95thPercentile{name=\"TotalTimeMs\",request=\"$request\"}",
-          "legendFormat": "95%",
-          "refId": "C"
-        },
-        {
-          "expr": "kafka_network_RequestMetrics_75thPercentile{name=\"TotalTimeMs\",request=\"Produce\"}",
-          "legendFormat": "75%",
-          "refId": "D"
-        },
-        {
-          "expr": "kafka_network_RequestMetrics_50thPercentile{name=\"TotalTimeMs\",request=\"Produce\"}",
-          "legendFormat": "50%",
-          "refId": "E"
+          "expr": "kafka_server_ReplicaManager_Count{name=\"IsrShrinksPerSec\"}",
+          "legendFormat": "shrinks",
+          "refId": "F"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "$request Request total time\t",
+      "title": "ISR count",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1240,9 +641,9 @@
       },
       "yaxes": [
         {
-          "format": "ms",
+          "format": "short",
           "label": null,
-          "logBase": 2,
+          "logBase": 1,
           "max": null,
           "min": null,
           "show": true
@@ -1260,6 +661,905 @@
         "align": false,
         "alignLevel": null
       }
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 34,
+      "panels": [],
+      "title": "Bytes",
+      "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "description": "kafka某topic 輸出bytes的速率\u001c",
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 11,
+        "x": 0,
+        "y": 15
+      },
+      "id": 38,
+      "legend": {
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "rightSide": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "kafka_server_BrokerTopicMetrics_OneMinuteRate{name=\"BytesOutPerSec\",topic=\"$topic\"}",
+          "hide": false,
+          "instant": true,
+          "intervalFactor": 2,
+          "legendFormat": "1m",
+          "refId": "B"
+        },
+        {
+          "expr": "kafka_server_BrokerTopicMetrics_FiveMinuteRate{name=\"BytesOutPerSec\",topic=\"$topic\"}",
+          "hide": false,
+          "intervalFactor": 2,
+          "legendFormat": "5m",
+          "refId": "A"
+        },
+        {
+          "expr": "kafka_server_BrokerTopicMetrics_FifteenMinuteRate{name=\"BytesOutPerSec\",topic=\"$topic\"}",
+          "hide": false,
+          "intervalFactor": 2,
+          "legendFormat": "15m",
+          "refId": "C"
+        },
+        {
+          "expr": "kafka_server_BrokerTopicMetrics_MeanRate{name=\"BytesOutPerSec\",topic=\"$topic\"}",
+          "hide": false,
+          "intervalFactor": 2,
+          "legendFormat": "meam",
+          "refId": "D"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Bytes output rate for $topic topic",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "Bps",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "description": "kafka某topic 輸入bytes的速率\u001c",
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 11,
+        "x": 11,
+        "y": 15
+      },
+      "id": 2,
+      "legend": {
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "rightSide": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "kafka_server_BrokerTopicMetrics_OneMinuteRate{name=\"BytesInPerSec\",topic=\"$topic\"}",
+          "hide": false,
+          "instant": true,
+          "intervalFactor": 2,
+          "legendFormat": "1m",
+          "refId": "B"
+        },
+        {
+          "expr": "kafka_server_BrokerTopicMetrics_FiveMinuteRate{name=\"BytesInPerSec\",topic=\"$topic\"}",
+          "hide": false,
+          "intervalFactor": 2,
+          "legendFormat": "5m",
+          "refId": "A"
+        },
+        {
+          "expr": "kafka_server_BrokerTopicMetrics_FifteenMinuteRate{name=\"BytesInPerSec\",topic=\"$topic\"}",
+          "hide": false,
+          "intervalFactor": 2,
+          "legendFormat": "15m",
+          "refId": "C"
+        },
+        {
+          "expr": "kafka_server_BrokerTopicMetrics_MeanRate{name=\"BytesInPerSec\",topic=\"$topic\"}",
+          "hide": false,
+          "intervalFactor": 2,
+          "legendFormat": "meam",
+          "refId": "D"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Bytes input rate for $topic topic",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "Bps",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 32,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "description": "topic接收訊息的速率",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 16,
+            "x": 0,
+            "y": 3
+          },
+          "id": 6,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_OneMinuteRate{name=\"MessagesInPerSec\",topic=\"$topic\"}",
+              "hide": false,
+              "legendFormat": "1m",
+              "refId": "B"
+            },
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_FiveMinuteRate{name=\"MessagesInPerSec\",topic=\"$topic\"}",
+              "hide": false,
+              "legendFormat": "5m",
+              "refId": "A"
+            },
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_FifteenMinuteRate{name=\"MessagesInPerSec\",topic=\"$topic\"}",
+              "hide": false,
+              "legendFormat": "15m",
+              "refId": "C"
+            },
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_MeanRate{name=\"MessagesInPerSec\",topic=\"$topic\"}",
+              "hide": false,
+              "legendFormat": "mean",
+              "refId": "D"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Message input rate for $topic topic",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 1,
+              "format": "wps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "description": "Fetch Request速率",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 11
+          },
+          "id": 11,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_OneMinuteRate{name=\"TotalFetchRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "1m",
+              "refId": "A"
+            },
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_FiveMinuteRate{name=\"TotalFetchRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "5m",
+              "refId": "B"
+            },
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_FifteenMinuteRate{name=\"TotalFetchRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "15m",
+              "refId": "C"
+            },
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_MeanRate{name=\"TotalFetchRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "mean",
+              "refId": "D"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Fetch request rate for $topic topic",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "reqps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "description": "Produce Request速率",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 11
+          },
+          "id": 40,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_OneMinuteRate{name=\"TotalProduceRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "1m",
+              "refId": "A"
+            },
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_FiveMinuteRate{name=\"TotalProduceRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "5m",
+              "refId": "B"
+            },
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_FifteenMinuteRate{name=\"TotalProduceRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "15m",
+              "refId": "C"
+            },
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_MeanRate{name=\"TotalProduceRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "mean",
+              "refId": "D"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Produce request rate for $topic topic ",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "reqps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "description": "",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 19
+          },
+          "id": 9,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_OneMinuteRate{name=\"FailedFetchRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "legendFormat": "1m",
+              "refId": "A"
+            },
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_FiveMinuteRate{name=\"FailedFetchRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "legendFormat": "5m",
+              "refId": "B"
+            },
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_FifteenMinuteRate{name=\"FailedFetchRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "legendFormat": "15m",
+              "refId": "C"
+            },
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_MeanRate{name=\"FailedFetchRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "legendFormat": "mean",
+              "refId": "D"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Failed fetch request for $topic topic",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 1,
+              "format": "reqps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "description": "",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 19
+          },
+          "id": 41,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_OneMinuteRate{name=\"FailedProduceRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "legendFormat": "1m",
+              "refId": "A"
+            },
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_FiveMinuteRate{name=\"FailedProduceRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "legendFormat": "5m",
+              "refId": "B"
+            },
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_FifteenMinuteRate{name=\"FailedProduceRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "legendFormat": "15m",
+              "refId": "C"
+            },
+            {
+              "expr": "kafka_server_BrokerTopicMetrics_MeanRate{name=\"FailedProduceRequestsPerSec\", topic=\"$topic\"}",
+              "hide": false,
+              "legendFormat": "mean",
+              "refId": "D"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Failed produce request for $topic topic",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 1,
+              "format": "reqps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "description": "Request請求總時間",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 6,
+            "w": 16,
+            "x": 0,
+            "y": 27
+          },
+          "id": 26,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "kafka_network_RequestMetrics_999thPercentile{name=\"TotalTimeMs\",request=\"$request\"}",
+              "legendFormat": "99.9%",
+              "refId": "A"
+            },
+            {
+              "expr": "kafka_network_RequestMetrics_99thPercentile{name=\"TotalTimeMs\",request=\"$request\"}",
+              "legendFormat": "99%",
+              "refId": "B"
+            },
+            {
+              "expr": "kafka_network_RequestMetrics_95thPercentile{name=\"TotalTimeMs\",request=\"$request\"}",
+              "legendFormat": "95%",
+              "refId": "C"
+            },
+            {
+              "expr": "kafka_network_RequestMetrics_75thPercentile{name=\"TotalTimeMs\",request=\"Produce\"}",
+              "legendFormat": "75%",
+              "refId": "D"
+            },
+            {
+              "expr": "kafka_network_RequestMetrics_50thPercentile{name=\"TotalTimeMs\",request=\"Produce\"}",
+              "legendFormat": "50%",
+              "refId": "E"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "$request Request total time\t",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 0,
+              "format": "ms",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": "",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        }
+      ],
+      "title": "Request",
+      "type": "row"
     }
   ],
   "refresh": "10s",
@@ -1292,104 +1592,6 @@
         "tagsQuery": "",
         "type": "query",
         "useTags": false
-      },
-      {
-        "allValue": null,
-        "current": {
-          "text": "2",
-          "value": "2"
-        },
-        "datasource": "Alakazam",
-        "definition": "query_result(kafka_coordinator_group_GroupMetadataManager_Value{name=\"NumGroupsStable\"}) ",
-        "hide": 0,
-        "includeAll": false,
-        "label": null,
-        "multi": false,
-        "name": "consumer_group_num",
-        "options": [],
-        "query": "query_result(kafka_coordinator_group_GroupMetadataManager_Value{name=\"NumGroupsStable\"}) ",
-        "refresh": 2,
-        "regex": "/.* ([^\\ ]*) .*/",
-        "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "auto": false,
-        "auto_count": 30,
-        "auto_min": "10s",
-        "current": {
-          "text": "5m",
-          "value": "5m"
-        },
-        "hide": 0,
-        "label": null,
-        "name": "rate",
-        "options": [
-          {
-            "selected": false,
-            "text": "1m",
-            "value": "1m"
-          },
-          {
-            "selected": true,
-            "text": "5m",
-            "value": "5m"
-          },
-          {
-            "selected": false,
-            "text": "10m",
-            "value": "10m"
-          },
-          {
-            "selected": false,
-            "text": "30m",
-            "value": "30m"
-          },
-          {
-            "selected": false,
-            "text": "1h",
-            "value": "1h"
-          },
-          {
-            "selected": false,
-            "text": "6h",
-            "value": "6h"
-          },
-          {
-            "selected": false,
-            "text": "12h",
-            "value": "12h"
-          },
-          {
-            "selected": false,
-            "text": "1d",
-            "value": "1d"
-          },
-          {
-            "selected": false,
-            "text": "7d",
-            "value": "7d"
-          },
-          {
-            "selected": false,
-            "text": "14d",
-            "value": "14d"
-          },
-          {
-            "selected": false,
-            "text": "30d",
-            "value": "30d"
-          }
-        ],
-        "query": "1m,5m,10m,30m,1h,6h,12h,1d,7d,14d,30d",
-        "refresh": 2,
-        "skipUrlSync": false,
-        "type": "interval"
       },
       {
         "allValue": null,
@@ -1452,5 +1654,5 @@
   "timezone": "",
   "title": "kafka_broker",
   "uid": "jEGpSnhWz",
-  "version": 53
+  "version": 14
 }

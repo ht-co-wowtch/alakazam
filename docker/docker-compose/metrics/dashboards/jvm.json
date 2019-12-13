@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 18,
-  "iteration": 1570248159093,
+  "id": 1,
+  "iteration": 1576218974934,
   "links": [],
   "panels": [
     {
@@ -871,5 +871,5 @@
   "timezone": "",
   "title": "jvm",
   "uid": "NhN5tNhZz",
-  "version": 12
+  "version": 1
 }

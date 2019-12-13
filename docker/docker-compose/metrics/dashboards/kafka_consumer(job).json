@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 24,
-  "iteration": 1576202542113,
+  "id": 5,
+  "iteration": 1576219054369,
   "links": [],
   "panels": [
     {
@@ -200,7 +200,8 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_burrow_consumer_partition_lag{topic=\"$topic\", group=\"$consumer\"}",
+          "expr": "kafka_burrow_consumer_partition_lag{group=\"$consumer\"}",
+          "hide": false,
           "intervalFactor": 2,
           "legendFormat": "{{topic}}_{{partition}}",
           "refId": "A"
@@ -210,7 +211,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Consumer partition lag",
+      "title": "Consumer partition lag for $consumer",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -287,7 +288,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_burrow_consumer_total_lag",
+          "expr": "kafka_burrow_consumer_total_lag{group=\"$consumer\"}",
           "legendFormat": "{{group}}",
           "refId": "A"
         }
@@ -296,7 +297,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Consumer total lag",
+      "title": "Consumer total lag for $consumer",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -400,21 +401,23 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "description": "各topic下partition 5分鐘內offsets增長速率",
+      "description": "各topic下partition offsets增長速率",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 9,
+        "w": 24,
         "x": 0,
         "y": 10
       },
       "id": 24,
       "legend": {
+        "alignAsTable": true,
         "avg": false,
         "current": false,
         "max": false,
         "min": false,
+        "rightSide": true,
         "show": true,
         "total": false,
         "values": false
@@ -435,17 +438,32 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(kafka_burrow_topic_partition_offset{topic=\"$topic\"}[5m])",
+          "expr": "rate(kafka_burrow_topic_partition_offset{topic=\"$topic\"}[1m])",
+          "hide": false,
           "intervalFactor": 2,
-          "legendFormat": "{{topic}}_{{partition}}",
+          "legendFormat": "{{topic}}_{{partition}}_1m",
           "refId": "A"
+        },
+        {
+          "expr": "rate(kafka_burrow_topic_partition_offset{topic=\"$topic\"}[5m])",
+          "hide": false,
+          "intervalFactor": 2,
+          "legendFormat": "{{topic}}_{{partition}}_5m",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(kafka_burrow_topic_partition_offset{topic=\"$topic\"}[15m])",
+          "hide": false,
+          "intervalFactor": 2,
+          "legendFormat": "{{topic}}_{{partition}}_15m",
+          "refId": "C"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Topic partition offset 5m rate",
+      "title": "Topic partition offset rate for $topic topic",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -464,7 +482,7 @@
           "decimals": 1,
           "format": "short",
           "label": null,
-          "logBase": 10,
+          "logBase": 1,
           "max": null,
           "min": null,
           "show": true
@@ -489,21 +507,23 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "description": "消費者群組5分鐘內消費各partition offsets速率\n\n",
+      "description": "消費者群組 消費各partition offsets速率\n\n",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 10
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 19
       },
       "id": 25,
       "legend": {
+        "alignAsTable": true,
         "avg": false,
         "current": false,
         "max": false,
         "min": false,
+        "rightSide": true,
         "show": true,
         "total": false,
         "values": false
@@ -524,17 +544,32 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(kafka_burrow_consumer_partition_current_offset{topic=\"$topic\", group=\"$consumer\"}[5m])",
+          "expr": "rate(kafka_burrow_consumer_partition_current_offset{group=\"$consumer\"}[1m])",
+          "hide": false,
           "intervalFactor": 2,
-          "legendFormat": "{{topic}}_{{partition}}",
+          "legendFormat": "{{topic}}_{{partition}}_1m",
           "refId": "A"
+        },
+        {
+          "expr": "rate(kafka_burrow_consumer_partition_current_offset{group=\"$consumer\"}[5m])",
+          "hide": false,
+          "intervalFactor": 2,
+          "legendFormat": "{{topic}}_{{partition}}_5m",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(kafka_burrow_consumer_partition_current_offset{group=\"$consumer\"}[15m])",
+          "hide": false,
+          "intervalFactor": 2,
+          "legendFormat": "{{topic}}_{{partition}}_15m",
+          "refId": "C"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Consumer partition offset 5m rate",
+      "title": "Consumer partition offset rate for $consumer",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -553,7 +588,7 @@
           "decimals": 1,
           "format": "short",
           "label": null,
-          "logBase": 10,
+          "logBase": 1,
           "max": null,
           "min": null,
           "show": true
@@ -579,7 +614,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 28
       },
       "id": 9,
       "panels": [],
@@ -591,26 +626,26 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "description": "Fetch API Request與Response 頻率",
+      "description": "Fetch API Request",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
         "h": 7,
-        "w": 8,
+        "w": 12,
         "x": 0,
-        "y": 19
+        "y": 29
       },
       "id": 7,
       "legend": {
-        "alignAsTable": true,
+        "alignAsTable": false,
         "avg": false,
-        "current": true,
-        "max": true,
+        "current": false,
+        "max": false,
         "min": false,
         "rightSide": false,
         "show": true,
         "total": false,
-        "values": true
+        "values": false
       },
       "lines": true,
       "linewidth": 1,
@@ -628,25 +663,18 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "request_rate{broker=\"$broker\",job=\"$job\", key=\"5m\"}",
+          "expr": "request_rate{broker=\"$broker\",job=\"$job\"}",
           "hide": false,
           "intervalFactor": 2,
-          "legendFormat": "request",
+          "legendFormat": "{{key}}",
           "refId": "A"
-        },
-        {
-          "expr": "response_rate{broker=\"$broker\",job=\"$job\", key=\"5m\"}",
-          "hide": false,
-          "intervalFactor": 2,
-          "legendFormat": "response",
-          "refId": "C"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Fetch Request & Response 5m rate",
+      "title": "Fetch request rate for $job",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -665,7 +693,98 @@
           "decimals": 1,
           "format": "reqps",
           "label": null,
-          "logBase": 2,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "description": "Fetch API Response 頻率",
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 29
+      },
+      "id": 36,
+      "legend": {
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "rightSide": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "response_rate{broker=\"$broker\",job=\"$job\"}",
+          "hide": false,
+          "intervalFactor": 2,
+          "legendFormat": "{{key}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Fetch response rate for $job",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": 1,
+          "format": "reqps",
+          "label": null,
+          "logBase": 1,
           "max": null,
           "min": null,
           "show": true
@@ -694,9 +813,9 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 7,
-        "w": 8,
-        "x": 8,
-        "y": 19
+        "w": 12,
+        "x": 0,
+        "y": 36
       },
       "id": 15,
       "legend": {
@@ -750,6 +869,7 @@
       },
       "yaxes": [
         {
+          "decimals": 0,
           "format": "ms",
           "label": null,
           "logBase": 1,
@@ -772,109 +892,12 @@
       }
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "description": "Fetch API Request與Response累加差異值",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 0,
-        "y": 26
-      },
-      "id": 10,
-      "legend": {
-        "alignAsTable": true,
-        "avg": false,
-        "current": true,
-        "hideEmpty": false,
-        "max": true,
-        "min": false,
-        "rightSide": false,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "increase(request_rate{broker=\"$broker\",job=\"$job\", key=\"count\"}[5m])",
-          "intervalFactor": 2,
-          "legendFormat": "request",
-          "refId": "A"
-        },
-        {
-          "expr": "increase(response_rate{broker=\"$broker\",job=\"$job\", key=\"count\"}[5m])",
-          "intervalFactor": 2,
-          "legendFormat": "response",
-          "refId": "C"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Fetch Request & Response 5m increase",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "decimals": 2,
-          "format": "short",
-          "label": null,
-          "logBase": 2,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": 3
-      }
-    },
-    {
       "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 33
+        "y": 43
       },
       "id": 18,
       "panels": [
@@ -890,7 +913,7 @@
             "h": 7,
             "w": 10,
             "x": 0,
-            "y": 20
+            "y": 3
           },
           "id": 20,
           "legend": {
@@ -927,7 +950,7 @@
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Consumer batch size",
+          "title": "Consumer batch size for $job",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -974,7 +997,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 44
       },
       "id": 5,
       "panels": [
@@ -987,20 +1010,20 @@
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
-            "h": 6,
-            "w": 8,
+            "h": 7,
+            "w": 12,
             "x": 0,
-            "y": 3
+            "y": 11
           },
           "id": 2,
           "legend": {
             "avg": false,
-            "current": true,
+            "current": false,
             "max": false,
             "min": false,
             "show": true,
             "total": false,
-            "values": true
+            "values": false
           },
           "lines": true,
           "linewidth": 1,
@@ -1018,9 +1041,9 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "incoming_byte_rate{broker=\"$broker\", job=\"$job\", key=\"5m\"}",
+              "expr": "incoming_byte_rate{broker=\"$broker\", job=\"$job\"}",
               "intervalFactor": 2,
-              "legendFormat": "logic",
+              "legendFormat": "{{key}}",
               "refId": "A"
             }
           ],
@@ -1028,7 +1051,95 @@
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Bytes/second read 5m rate off broker",
+          "title": "Bytes/second read rate off broker for $job",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 1,
+              "format": "Bps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "description": "每秒從所有broker發送的平均傳入字節數\n\n如發送訊息",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 11
+          },
+          "id": 3,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "outgoing_byte_rate{broker=\"$broker\", job=\"$job\"}",
+              "intervalFactor": 2,
+              "legendFormat": "{{key}}",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Bytes/second writte rate off broker for $job",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1046,7 +1157,7 @@
             {
               "format": "Bps",
               "label": null,
-              "logBase": 10,
+              "logBase": 1,
               "max": null,
               "min": null,
               "show": true
@@ -1074,10 +1185,10 @@
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
-            "h": 6,
-            "w": 8,
-            "x": 8,
-            "y": 3
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 18
           },
           "id": 12,
           "legend": {
@@ -1115,7 +1226,7 @@
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Request bytes off broker",
+          "title": "Request bytes off broker for $job",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1131,96 +1242,10 @@
           },
           "yaxes": [
             {
+              "decimals": 1,
               "format": "bytes",
               "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "description": "每秒從所有broker發送的平均傳入字節數\n\n如發送訊息",
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 6,
-            "w": 8,
-            "x": 0,
-            "y": 9
-          },
-          "id": 3,
-          "legend": {
-            "avg": false,
-            "current": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "dataLinks": []
-          },
-          "percentage": false,
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "outgoing_byte_rate{broker=\"$broker\", job=\"$job\", key=\"5m\"}",
-              "intervalFactor": 2,
-              "legendFormat": "logic",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Bytes/second written 5m rate off broker",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "Bps",
-              "label": null,
-              "logBase": 10,
               "max": null,
               "min": null,
               "show": true
@@ -1248,10 +1273,10 @@
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
-            "h": 6,
-            "w": 8,
-            "x": 8,
-            "y": 9
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 18
           },
           "id": 16,
           "legend": {
@@ -1289,7 +1314,7 @@
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Response bytes off broker",
+          "title": "Response bytes off broker for $job",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1305,6 +1330,7 @@
           },
           "yaxes": [
             {
+              "decimals": 1,
               "format": "bytes",
               "label": null,
               "logBase": 1,
@@ -1331,7 +1357,7 @@
       "type": "row"
     }
   ],
-  "refresh": "30s",
+  "refresh": false,
   "schemaVersion": 19,
   "style": "dark",
   "tags": [],
@@ -1340,8 +1366,8 @@
       {
         "allValue": null,
         "current": {
-          "text": "all",
-          "value": "all"
+          "text": "1",
+          "value": "1"
         },
         "datasource": "Alakazam",
         "definition": "label_values(incoming_byte_rate, broker)",
@@ -1365,19 +1391,20 @@
       {
         "allValue": null,
         "current": {
-          "text": "push-topic",
-          "value": "push-topic"
+          "isNone": true,
+          "text": "None",
+          "value": ""
         },
         "datasource": "Alakazam",
-        "definition": "label_values(kafka_burrow_consumer_partition_status, topic)",
+        "definition": "label_values(batch_size_bucket, topic)",
         "hide": 0,
         "includeAll": false,
         "label": null,
         "multi": false,
         "name": "topic",
         "options": [],
-        "query": "label_values(kafka_burrow_consumer_partition_status, topic)",
-        "refresh": 2,
+        "query": "label_values(batch_size_bucket, topic)",
+        "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -1418,9 +1445,9 @@
       {
         "allValue": null,
         "current": {
-          "selected": true,
-          "text": "push-group-job",
-          "value": "push-group-job"
+          "isNone": true,
+          "text": "None",
+          "value": ""
         },
         "datasource": "Alakazam",
         "definition": "label_values(kafka_burrow_consumer_status, group)",
@@ -1444,7 +1471,7 @@
     ]
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {
@@ -1462,7 +1489,7 @@
     ]
   },
   "timezone": "",
-  "title": "kafka_consumer",
+  "title": "kafka_consumer(job)",
   "uid": "Kxa_BN2WA",
-  "version": 29
+  "version": 10
 }
