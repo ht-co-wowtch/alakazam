@@ -110,7 +110,7 @@ scrape_configs:
 
 4. 聊天室本身的服務只要架設好，prometheus.yml設定好就可以拿到metrics
 
-5. kafka metrics則需要另外安裝相對應服務才能獲取metrics，請參考[kafka](kafka)
+5. kafka metrics則需要另外安裝相對應服務才能獲取metrics，請參考[kafka](#kafka)
 
    
 
@@ -134,7 +134,7 @@ kafka配置jmx方式如下
    EXTRA_ARGS: "-javaagent:/opt/kafka/jmx/jmx_prometheus_javaagent-0.12.0.jar=3036:/opt/kafka/jmx/config.yaml"
    ```
 
-   上述指令可以看到kafka啟動時需一並指定`jmx_exporter.jar`，而kafka是包在docker內執行，所以`jmx_exporter`相關檔案也需要一並放入docker中一起執行，關於`jmx_exporter`則有一個`jar`與`config.yaml`位置在[這](https://gitlab.com/jetfueltw/cpw/alakazam/tree/develop/docker/docker-compose/kafka/jmx)`．3036`就是kafka jmx的port
+   上述指令可以看到kafka啟動時需一並指定`jmx_exporter.jar`，而kafka是包在docker內執行，所以`jmx_exporter`相關檔案也需要一並放入docker中一起執行，關於`jmx_exporter`則有一個`jar`與`config.yaml`位置在[這](https://gitlab.com/jetfueltw/cpw/alakazam/tree/develop/docker/docker-compose/kafka/jmx)，`3036`就是kafka jmx的port
 
    
 

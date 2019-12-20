@@ -1,6 +1,6 @@
 # Kafka JMX
 
-以dockerfile做範例如何啟動kafka jmx採樣kafka監控指標
+以dockerfile做範例如何啟動kafka jmx採樣kafka metrics
 
 ```dockerfile
 kafka:
@@ -23,8 +23,8 @@ kafka:
    | Dcom.sun.management.jmxremote              | 要啟動jmx                                                    |
    | Dcom.sun.management.jmxremote.authenticate | 不需要帳密認證                                               |
    | Dcom.sun.management.jmxremote.ssl          | 不需要ssl                                                    |
-   | Dcom.sun.management.jmxremote.port         | 監控指標的port，可以利用[JMX_PORT](https://github.com/apache/kafka/blob/trunk/bin/kafka-run-class.sh#L182) env做設定 |
-   | Dcom.sun.management.jmxremote.rmi.port     | 對外採樣監控指標的port                                       |
+   | Dcom.sun.management.jmxremote.port         | metrics port，可以利用[JMX_PORT](https://github.com/apache/kafka/blob/trunk/bin/kafka-run-class.sh#L182) env做設定 |
+   | Dcom.sun.management.jmxremote.rmi.port     | 對外port                                                     |
    | Djava.rmi.server.hostname                  | kafka所在的ip                                                |
 
    更多參數請[參考](https://docs.oracle.com/javase/9/management/monitoring-and-management-using-jmx-technology.htm#JSMGM-GUID-096EA656-4D07-4B09-A493-9EDEF83ABF28)
@@ -42,8 +42,8 @@ kafka:
 
 4. 驗證
 
-   9091 jmx 可以透過 [jconsole](https://docs.oracle.com/javase/7/docs/technotes/guides/management/jconsole.html) 做監控UI
+   jmx可以透過[jconsole](https://docs.oracle.com/javase/7/docs/technotes/guides/management/jconsole.html)觀看metrics，host是 127.0.0.1:9091 
 
-​      3036 則可以[配置](https://gitlab.com/jetfueltw/cpw/alakazam/blob/develop/metrics/prometheus-example.yml#L47)並運行docker打開`prometheus`觀看
+  `prometheus`啟動完成後​http://127.0.0.1:3036 則可以看到`prometheus` metrics
 
-5. [懶人包](https://gitlab.com/jetfueltw/cpw/cpwbox/blob/master/docker-compose.yml#L439)
+5. [完整範例](https://gitlab.com/jetfueltw/cpw/cpwbox/blob/master/docker-compose.yml#L446)
