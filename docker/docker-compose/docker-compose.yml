@@ -262,7 +262,7 @@ services:
 
   #### kafka 用的 zookeeper ####
   zookeeper:
-    image: wurstmeister/zookeeper
+    image: zookeeper
     ports:
       - "2181:2181"
 
