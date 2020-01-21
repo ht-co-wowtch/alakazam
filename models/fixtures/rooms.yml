@@ -1,6 +1,8 @@
 - id: 1
   is_message: 1
-  is_follow: 1
+  is_bets: 1
+  member_id:
+  type: 1
   day_limit: 1
   deposit_limit: 100
   dml_limit: 1000
@@ -10,7 +12,9 @@
 
 - id: 2
   is_message: 1
-  is_follow: 1
+  is_bets: 1
+  member_id:
+  type: 1
   day_limit: 1
   deposit_limit: 100
   dml_limit: 1000

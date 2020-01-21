@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+const (
+	LOTTERY_TYPE = 1
+	LIVE_TYPE    = 2
+)
+
 type IChat interface {
 	GetChat(id int) (Room, RoomTopMessage, error)
 }
@@ -18,6 +23,12 @@ type Room struct {
 
 	// 是否可發/跟注
 	IsBets bool
+
+	// 屬於哪個會員的房間
+	MemberId sql.NullInt64
+
+	// 房間種類 1:彩票 2:直播
+	Type int
 
 	// 聊天打碼與充值量天數限制
 	DayLimit int
@@ -52,8 +63,8 @@ func (s *Store) CreateRoom(room *Room) (int64, error) {
 }
 
 func (s *Store) UpdateRoom(room Room) (int64, error) {
-	u := s.d.Cols("is_message", "is_bets", "day_limit", "deposit_limit", "dml_limit", "status")
-	return u.Where("id = ?", room.Id).
+	return s.d.Cols("type", "member_id", "is_message", "is_bets", "day_limit", "deposit_limit", "dml_limit", "status", "update_at").
+		Where("id = ?", room.Id).
 		Update(&room)
 }
 

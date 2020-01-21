@@ -43,6 +43,7 @@ var (
 	ErrRoomClose   = errdefs.NotFound(5002, "目前房间已关闭")
 	ErrRateMsg     = errdefs.TooManyRequests(5003, "1秒内只能发一则消息")
 	ErrRateSameMsg = errdefs.TooManyRequests(5004, "10秒内相同讯息3次，自动禁言10分钟")
+	ErrRoomType    = errdefs.InvalidParameter(5005, "房间种类错误")
 	// 5005
 	ErrRoomLimit     = "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元"
 	ErrRoomNoMessage = errdefs.Unauthorized(5006, RoomBanned)
