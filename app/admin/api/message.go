@@ -231,3 +231,39 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	c.JSON(http.StatusOK, json)
 	return nil
 }
+
+type giftReq struct {
+	RoomId int32 `json:"room_id" binding:"required"`
+
+	Message string `json:"message" binding:"required,max=250"`
+
+	Animation string `json:"animation" binding:"required"`
+
+	AnimationId int `json:"animation_id" binding:"required"`
+}
+
+// 發禮物
+func (s *httpServer) gift(c *gin.Context) error {
+	p := new(giftReq)
+	if err := c.ShouldBindJSON(p); err != nil {
+		return err
+	}
+
+	msg := message.ProducerGiftMessage{
+		Room:        p.RoomId,
+		Name:        member.System,
+		Message:     p.Message,
+		Animation:   p.Animation,
+		AnimationId: p.AnimationId,
+	}
+
+	id, err := s.message.SendGift(msg)
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id": id,
+	})
+	return nil
+}

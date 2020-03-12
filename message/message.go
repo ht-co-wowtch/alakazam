@@ -26,13 +26,22 @@ func NewHistory(db *models.Store, c *redis.Client, member *member.Member) *Histo
 
 const (
 	// 普通訊息
-	messageType = "message"
+	MessageType = "message"
+
 	// 紅包訊息
-	redEnvelopeType = "red_envelope"
+	RedEnvelopeType = "red_envelope"
+
 	// 公告訊息
 	TopType = "top"
+
 	// 跟注
-	betsType = "bets"
+	BetsType = "bets"
+
+	// 禮物
+	GiftType = "gift"
+
+	// 打賞
+	RewardType = "reward"
 )
 
 func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
@@ -92,7 +101,7 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 					Id:        msgId,
 					Uid:       user.Uid,
 					Name:      user.Name,
-					Type:      redEnvelopeType,
+					Type:      RedEnvelopeType,
 					Avatar:    toAvatarName(user.Gender),
 					Message:   redEnvelope.Message,
 					Time:      redEnvelope.SendAt.Format("15:04:05"),
@@ -110,7 +119,7 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 				Id:        msgId,
 				Uid:       user.Uid,
 				Name:      user.Name,
-				Type:      messageType,
+				Type:      MessageType,
 				Avatar:    toAvatarName(user.Gender),
 				Message:   msg.Message[msgId].Message,
 				Time:      msg.Message[msgId].SendAt.Format("15:04:05"),
@@ -122,7 +131,7 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 				Id:        msgId,
 				Uid:       user.Uid,
 				Name:      user.Name,
-				Type:      messageType,
+				Type:      MessageType,
 				Avatar:    avatarRoot,
 				Message:   msg.Message[msgId].Message,
 				Time:      msg.Message[msgId].SendAt.Format("15:04:05"),

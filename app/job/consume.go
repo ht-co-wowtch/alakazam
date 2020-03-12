@@ -32,7 +32,7 @@ type consume struct {
 func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 	switch pushMsg.Type {
 	// 單一/多房間推送
-	case logicpb.PushMsg_USER, logicpb.PushMsg_MONEY, logicpb.PushMsg_BETS, logicpb.PushMsg_ADMIN, logicpb.PushMsg_ADMIN_TOP:
+	case logicpb.PushMsg_USER, logicpb.PushMsg_MONEY, logicpb.PushMsg_BETS, logicpb.PushMsg_ADMIN, logicpb.PushMsg_ADMIN_TOP, logicpb.PushMsg_SYSTEM:
 		for _, r := range pushMsg.Room {
 			if err := c.getRoom(r).Push(pushMsg.Msg, cometpb.OpRaw); err != nil {
 				return err

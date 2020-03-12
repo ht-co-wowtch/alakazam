@@ -173,7 +173,7 @@ func (p *Producer) Send(msg ProducerMessage) (int64, error) {
 		return 0, err
 	}
 
-	msg.Type = messageType
+	msg.Type = MessageType
 	pushMsg, err := p.toPb(msg)
 	if err != nil {
 		return 0, err
@@ -193,7 +193,7 @@ type ProducerAdminMessage struct {
 
 // 所有房間推送
 func (p *Producer) SendForAdmin(msg ProducerAdminMessage) (int64, error) {
-	ty := messageType
+	ty := MessageType
 	if msg.IsTop {
 		ty = TopType
 	}
@@ -277,7 +277,7 @@ func (p *Producer) toRedEnvelopePb(msg ProducerRedEnvelopeMessage) (*logicpb.Pus
 	bm, err := json.Marshal(RedEnvelopeMessage{
 		Message: Message{
 			Id:        seq.Id,
-			Type:      redEnvelopeType,
+			Type:      RedEnvelopeType,
 			Uid:       msg.Uid,
 			Name:      msg.Name,
 			Avatar:    toAvatarName(msg.Avatar),
@@ -381,7 +381,7 @@ func (p *Producer) SendBets(msg ProducerBetsMessage) (int64, error) {
 	now := time.Now()
 	bm, err := json.Marshal(Bets{
 		Id:           seq.Id,
-		Type:         betsType,
+		Type:         BetsType,
 		Uid:          msg.Uid,
 		Name:         msg.Name,
 		Avatar:       toAvatarName(msg.Avatar),
@@ -402,6 +402,50 @@ func (p *Producer) SendBets(msg ProducerBetsMessage) (int64, error) {
 		Type:   logicpb.PushMsg_BETS,
 		Room:   msg.Rooms,
 		Mid:    msg.Mid,
+		Msg:    bm,
+		SendAt: now.Unix(),
+	}
+	if err := p.send(pushMsg); err != nil {
+		return 0, err
+	}
+	return pushMsg.Seq, nil
+}
+
+type ProducerGiftMessage struct {
+	Room        int32
+	Message     string
+	Animation   string
+	AnimationId int
+	Name        string
+}
+
+// 禮物
+func (p *Producer) SendGift(msg ProducerGiftMessage) (int64, error) {
+	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
+		Id: 1, Count: 1,
+	})
+	if err != nil {
+		return 0, err
+	}
+	now := time.Now()
+	bm, err := json.Marshal(Gift{
+		Id:          seq.Id,
+		Type:        GiftType,
+		Name:        msg.Name,
+		Message:     msg.Message,
+		Animation:   msg.Animation,
+		AnimationId: msg.AnimationId,
+		Time:        now.Format("15:04:05"),
+		Timestamp:   now.Unix(),
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	pushMsg := &logicpb.PushMsg{
+		Seq:    seq.Id,
+		Type:   logicpb.PushMsg_SYSTEM,
+		Room:   []int32{msg.Room},
 		Msg:    bm,
 		SendAt: now.Unix(),
 	}

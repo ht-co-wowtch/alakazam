@@ -56,6 +56,10 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 	for {
 		select {
 		case p := <-msg:
+			if p.Type == pb.PushMsg_SYSTEM {
+				continue
+			}
+
 			if err := m.cache.addMessage(p); err != nil {
 				log.Error("consumer message", zap.Error(messageError{
 					msgId:   p.Seq,
