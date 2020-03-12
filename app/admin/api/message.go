@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
@@ -74,22 +75,23 @@ type betsReq struct {
 	TotalAmount  int           `json:"total_amount" binding:"required"`
 }
 
+// 跟投
 func (s *httpServer) bets(c *gin.Context) error {
 	req := new(betsReq)
 	if err := c.ShouldBindJSON(req); err != nil {
 		return err
 	}
 
-	member, err := s.member.Fetch(req.Uid)
+	m, err := s.member.Fetch(req.Uid)
 	if err != nil {
 		return err
 	}
 	msg := message.ProducerBetsMessage{
 		Rooms:        req.RoomId,
-		Mid:          int64(member.Id),
-		Uid:          member.Uid,
-		Name:         member.Name,
-		Avatar:       member.Gender,
+		Mid:          int64(m.Id),
+		Uid:          m.Uid,
+		Name:         m.Name,
+		Avatar:       m.Gender,
 		GameId:       req.GameId,
 		PeriodNumber: req.PeriodNumber,
 		Bets:         req.Bets,
@@ -108,6 +110,7 @@ func (s *httpServer) bets(c *gin.Context) error {
 	return nil
 }
 
+// 取消置頂訊息
 func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -141,5 +144,90 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 		"message": msg.Message,
 		"room_id": rid,
 	})
+	return nil
+}
+
+type redEnvelope struct {
+	// 房間id
+	RoomId int `json:"room_id" binding:"required"`
+
+	// 紅包訊息
+	Message string `json:"message" binding:"required,max=20"`
+
+	// 紅包種類	Name string `json:"name"`
+	Type string `json:"type" binding:"required"`
+
+	// 紅包金額 看種類決定
+	Amount int `json:"amount" binding:"required,min=1"`
+
+	// 紅包數量
+	Count int `json:"count" binding:"required,min=1,max=100"`
+
+	// 紅包多久過期(分鐘)
+	ExpireMin int `json:"expire_min" binding:"required,min=1,max=120"`
+
+	// 什麼時候發佈
+	PublishAt time.Time `json:"publish_at"`
+}
+
+// 紅包
+func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
+	var o redEnvelope
+	if err := c.ShouldBindJSON(&o); err != nil {
+		return err
+	}
+	result, err := s.nidoran.GiveRedEnvelopeForAdmin(client.RedEnvelopeAdmin{
+		RedEnvelope: client.RedEnvelope{
+			RoomId:    o.RoomId,
+			Message:   o.Message,
+			Type:      o.Type,
+			Amount:    o.Amount,
+			Count:     o.Count,
+			ExpireMin: o.ExpireMin,
+		},
+		PublishAt: o.PublishAt,
+	})
+	if err != nil {
+		return err
+	}
+
+	msg := message.ProducerAdminRedEnvelopeMessage{
+		ProducerAdminMessage: message.ProducerAdminMessage{
+			Rooms:   []int32{int32(o.RoomId)},
+			Name:    member.RootName,
+			Message: o.Message,
+		},
+		RedEnvelopeId: result.Order,
+		Token:         result.Token,
+		Expired:       result.ExpireAt,
+	}
+	var msgId int64
+	if o.PublishAt.IsZero() {
+		if msgId, err = s.message.SendRedEnvelopeForAdmin(msg); err != nil {
+			return err
+		}
+	} else if result.PublishAt.Before(time.Now()) {
+		return errors.ErrPublishAt
+	} else if msgId, err = s.delayMessage.SendDelayRedEnvelopeForAdmin(msg, result.PublishAt); err != nil {
+		return err
+	}
+
+	json := struct {
+		Id          string    `json:"id"`
+		MsgId       int64     `json:"message_id"`
+		TotalAmount int       `json:"total_amount"`
+		PublishAt   time.Time `json:"publish_at"`
+		ExpireAt    time.Time `json:"expire_at"`
+		Token       string    `json:"token"`
+	}{
+		Id:          result.Order,
+		MsgId:       msgId,
+		TotalAmount: result.TotalAmount,
+		PublishAt:   result.PublishAt,
+		ExpireAt:    result.ExpireAt,
+		Token:       result.Token,
+	}
+
+	c.JSON(http.StatusOK, json)
 	return nil
 }
