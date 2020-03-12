@@ -359,6 +359,7 @@ Operation = `6`=> 單筆訊息
 | red_envelope | 紅包訊息       |
 | top          | 公告(置頂)訊息 |
 | bets         | 跟投訊息       |
+| gift         | 禮物訊息       |
 
 普通訊息 or 公告(置頂)訊息
 
@@ -458,6 +459,26 @@ Operation = `6`=> 單筆訊息
 | bets.amount    | 下注金額     | int      |
 | count          | 下注總筆數   | Int      |
 | total_amount   | 下注總金額   | int      |
+
+禮物訊息
+
+```json
+{
+   "id":6404,
+   "type":"gift",
+   "name":"系统",
+   "message":"小明贈送一份禮物",
+   "animation":"http://legox.yy.com/svga/svga-me/angel.svga",
+   "animation_id":123,
+   "time":"17:15:28",
+   "timestamp":1584004528
+}
+```
+
+| name                 | 說明          | 格式   |
+| -------------------- | ------------- | ------ |
+| animation            | 禮物動畫      | string |
+| animation_id         | 禮物唯一id        | string |
 
 #### Change Room Reply
 
