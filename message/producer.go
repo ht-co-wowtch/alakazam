@@ -220,6 +220,47 @@ func (p *Producer) SendForAdmin(msg ProducerAdminMessage) (int64, error) {
 	return pushMsg.Seq, nil
 }
 
+type ProducerSystemMessage struct {
+	RoomId  []int32                `json:"room_id" binding:"required"`
+	Message string                 `json:"message" binding:"required,max=250"`
+	Type    string                 `json:"type" binding:"required"`
+	Body    map[string]interface{} `json:"body" binding:"required"`
+}
+
+func (p *Producer) SendForSystem(msg ProducerSystemMessage) (int64, error) {
+	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
+		Id: 1, Count: 1,
+	})
+	if err != nil {
+		return 0, err
+	}
+	now := time.Now()
+	bm, err := json.Marshal(System{
+		Id:        seq.Id,
+		Type:      msg.Type,
+		Name:      member.System,
+		Message:   msg.Message,
+		Time:      now.Format("15:04:05"),
+		Timestamp: now.Unix(),
+		Data:      msg.Body,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	pushMsg := &logicpb.PushMsg{
+		Seq:    seq.Id,
+		Type:   logicpb.PushMsg_SYSTEM,
+		Room:   msg.RoomId,
+		Msg:    bm,
+		SendAt: now.Unix(),
+	}
+	if err := p.send(pushMsg); err != nil {
+		return 0, err
+	}
+	return pushMsg.Seq, nil
+}
+
 type ProducerKickMessage struct {
 	Message string
 	Keys    []string
@@ -437,6 +478,46 @@ func (p *Producer) SendGift(msg ProducerGiftMessage) (int64, error) {
 		AnimationId: msg.AnimationId,
 		Time:        now.Format("15:04:05"),
 		Timestamp:   now.Unix(),
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	pushMsg := &logicpb.PushMsg{
+		Seq:    seq.Id,
+		Type:   logicpb.PushMsg_SYSTEM,
+		Room:   []int32{msg.Room},
+		Msg:    bm,
+		SendAt: now.Unix(),
+	}
+	if err := p.send(pushMsg); err != nil {
+		return 0, err
+	}
+	return pushMsg.Seq, nil
+}
+
+type ProducerRewardMessage struct {
+	Room    int32
+	Message string
+	Name    string
+}
+
+// 打賞
+func (p *Producer) SendReward(msg ProducerRewardMessage) (int64, error) {
+	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
+		Id: 1, Count: 1,
+	})
+	if err != nil {
+		return 0, err
+	}
+	now := time.Now()
+	bm, err := json.Marshal(Reward{
+		Id:        seq.Id,
+		Type:      RewardType,
+		Name:      msg.Name,
+		Message:   msg.Message,
+		Time:      now.Format("15:04:05"),
+		Timestamp: now.Unix(),
 	})
 	if err != nil {
 		return 0, err

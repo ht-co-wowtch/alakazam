@@ -61,6 +61,7 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.GET("/room/:id", api.ErrHandler(s.GetRoom))
 	e.DELETE("/room/:id", api.ErrHandler(s.DeleteRoom))
 
+	e.POST("/system", api.ErrHandler(s.system))
 	e.POST("/push", api.ErrHandler(s.push))
 	e.DELETE("/push/:id", api.ErrHandler(s.deleteTopMessage))
 

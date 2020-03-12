@@ -14,6 +14,23 @@ import (
 	"time"
 )
 
+func (s *httpServer) system(c *gin.Context) error {
+	var p message.ProducerSystemMessage
+	if err := c.ShouldBindJSON(&p); err != nil {
+		return err
+	}
+
+	id, err := s.message.SendForSystem(p)
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id": id,
+	})
+	return nil
+}
+
 type pushRoomForm struct {
 	// 要廣播的房間
 	RoomId []int32 `json:"room_id" binding:"required"`

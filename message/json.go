@@ -2,6 +2,16 @@ package message
 
 import "encoding/json"
 
+type System struct {
+	Id        int64                  `json:"id"`
+	Type      string                 `json:"type"`
+	Name      string                 `json:"name"`
+	Message   string                 `json:"message"`
+	Time      string                 `json:"time"`
+	Timestamp int64                  `json:"timestamp"`
+	Data      map[string]interface{} `json:"data"`
+}
+
 type Message struct {
 	Id        int64  `json:"id"`
 	Uid       string `json:"uid"`
@@ -73,4 +83,13 @@ type Gift struct {
 	AnimationId int    `json:"animation_id"`
 	Time        string `json:"time"`
 	Timestamp   int64  `json:"timestamp"`
+}
+
+type Reward struct {
+	Id        int64  `json:"id"`
+	Type      string `json:"type"`
+	Name      string `json:"name"`
+	Message   string `json:"message"`
+	Time      string `json:"time"`
+	Timestamp int64  `json:"timestamp"`
 }
