@@ -24,12 +24,6 @@ type Room struct {
 	// 是否可發/跟注
 	IsBets bool
 
-	// 屬於哪個會員的房間
-	MemberId sql.NullInt64
-
-	// 房間種類 1:彩票 2:直播
-	Type int
-
 	// 聊天打碼與充值量天數限制
 	DayLimit int
 
@@ -70,7 +64,9 @@ func (s *Store) UpdateRoom(room Room) (int64, error) {
 
 func (s *Store) GetRoom(roomId int) (Room, error) {
 	r := Room{}
-	ok, err := s.d.Where("id = ?", roomId).Get(&r)
+	ok, err := s.d.Where("id = ?", roomId).
+		Where("status = ?", true).
+		Get(&r)
 	if !ok {
 		return r, sql.ErrNoRows
 	}
@@ -79,7 +75,9 @@ func (s *Store) GetRoom(roomId int) (Room, error) {
 
 func (s *Store) GetRoomTopMessage(id int) (RoomTopMessage, error) {
 	top := RoomTopMessage{}
-	ok, err := s.d.Where("`room_id` = ?", id).Get(&top)
+	ok, err := s.d.Where("`room_id` = ?", id).
+		Where("status = ?", true).
+		Get(&top)
 	if err != nil {
 		return top, err
 	}
@@ -93,7 +91,10 @@ func (s *Store) GetChat(id int) (Room, RoomTopMessage, error) {
 	tx := s.d.Prepare()
 	defer tx.Rollback()
 	room := Room{}
-	ok, _ := tx.Where("id = ?", id).Get(&room)
+
+	ok, _ := tx.Where("id = ?", id).
+		Where("status = ?", true).
+		Get(&room)
 
 	top := RoomTopMessage{}
 	tx.Where("`room_id` = ?", id).Get(&top)

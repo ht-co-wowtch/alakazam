@@ -13,14 +13,6 @@ import (
 	"time"
 )
 
-const (
-	// 彩票房間
-	LOTTERY_TYPE = "lottery"
-
-	// 直播房間
-	LIVE_TYPE    = "live"
-)
-
 type Room interface {
 	Create(status Status) (int, error)
 	Update(id int, status Status) error
@@ -57,9 +49,6 @@ type Status struct {
 	// 儲值&打碼量發話限制
 	Limit Limit `json:"limit"`
 
-	// 房間種類
-	Type string `json:"type"`
-
 	// 房間屬於誰
 	Uid string `json:"uid"`
 
@@ -79,12 +68,9 @@ type Limit struct {
 }
 
 func (r *room) Create(status Status) (int, error) {
-	model, err := r.newRoomModel(status)
-	if err != nil {
-		return 0, err
-	}
-
+	model := r.newRoomModel(status)
 	model.Status = true
+
 	if _, err := r.db.CreateRoom(&model); err != nil {
 		return 0, err
 	}
@@ -92,51 +78,27 @@ func (r *room) Create(status Status) (int, error) {
 }
 
 func (r *room) Update(id int, status Status) error {
-	model, err := r.newRoomModel(status)
-	if err != nil {
-		return err
-	}
-
+	model := r.newRoomModel(status)
 	model.Id = id
 	model.Status = status.Status
-	if _, err = r.db.UpdateRoom(model); err != nil {
+
+	if _, err := r.db.UpdateRoom(model); err != nil {
 		return err
 	}
-	if err = r.c.set(model); err != nil {
+	if err := r.c.set(model); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *room) newRoomModel(status Status) (models.Room, error) {
-	room := models.Room{
+func (r *room) newRoomModel(status Status) models.Room {
+	return models.Room{
 		IsMessage:    status.IsMessage,
 		IsBets:       status.IsBets,
 		DayLimit:     status.Limit.Day,
 		DepositLimit: status.Limit.Deposit,
 		DmlLimit:     status.Limit.Dml,
 	}
-
-	switch status.Type {
-	case LOTTERY_TYPE:
-		room.Type = models.LOTTERY_TYPE
-		room.MemberId = sql.NullInt64{Valid: false}
-	case LIVE_TYPE:
-		room.Type = models.LIVE_TYPE
-
-		m, err := r.member.Fetch(status.Uid)
-		if err != nil {
-			return models.Room{}, err
-		}
-
-		room.MemberId = sql.NullInt64{
-			Int64: int64(m.Id),
-			Valid: true,
-		}
-	default:
-		return models.Room{}, errors.ErrRoomType
-	}
-	return room, nil
 }
 
 func (r *room) Delete(id int) error {
