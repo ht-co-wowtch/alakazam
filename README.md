@@ -360,6 +360,7 @@ Operation = `6`=> 單筆訊息
 | top          | 公告(置頂)訊息 |
 | bets         | 跟投訊息       |
 | gift         | 禮物訊息       |
+| system       | 系統訊息       |
 
 普通訊息 or 公告(置頂)訊息
 
@@ -464,21 +465,37 @@ Operation = `6`=> 單筆訊息
 
 ```json
 {
-   "id":6404,
+   "id":7002,
    "type":"gift",
    "name":"系统",
    "message":"小明贈送一份禮物",
-   "animation":"http://legox.yy.com/svga/svga-me/angel.svga",
-   "animation_id":123,
-   "time":"17:15:28",
-   "timestamp":1584004528
+   "time":"09:57:08",
+   "timestamp":1584064628,
+   "data":{
+      "animation":"http://uedfe.yypm.com/assets/svga-samples/angel.svga",
+      "animation_id":123
+   }
 }
 ```
 
 | name                 | 說明          | 格式   |
 | -------------------- | ------------- | ------ |
-| animation            | 禮物動畫      | string |
-| animation_id         | 禮物唯一id        | string |
+| data.animation            | 動畫下載網址      | string |
+| data.animation_id         | 動畫一id        | int |
+
+打賞訊息
+
+```json
+{
+   "id":7002,
+   "type":"system",
+   "name":"系统",
+   "message":"小明打賞10元",
+   "time":"09:57:08",
+   "timestamp":1584064628,
+   "data":{}
+}
+```
 
 #### Change Room Reply
 
