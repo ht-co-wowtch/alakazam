@@ -69,8 +69,6 @@ func handler(e *gin.Engine, s *httpServer) {
 
 	e.POST("/bets", api.ErrHandler(s.bets))
 
-	e.POST("/gift", api.ErrHandler(s.gift))
-
 	e.DELETE("/kick/:uid", api.ErrHandler(s.kick))
 
 	e.POST("/shield", api.ErrHandler(s.CreateShield))

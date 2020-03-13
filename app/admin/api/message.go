@@ -258,29 +258,3 @@ type giftReq struct {
 
 	AnimationId int `json:"animation_id" binding:"required"`
 }
-
-// 發禮物
-func (s *httpServer) gift(c *gin.Context) error {
-	p := new(giftReq)
-	if err := c.ShouldBindJSON(p); err != nil {
-		return err
-	}
-
-	msg := message.ProducerGiftMessage{
-		Room:        p.RoomId,
-		Name:        member.System,
-		Message:     p.Message,
-		Animation:   p.Animation,
-		AnimationId: p.AnimationId,
-	}
-
-	id, err := s.message.SendGift(msg)
-	if err != nil {
-		return err
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"id": id,
-	})
-	return nil
-}

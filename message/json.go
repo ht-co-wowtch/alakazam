@@ -73,23 +73,3 @@ type Bet struct {
 	TransItems []string `json:"trans_items"`
 	Amount     int      `json:"amount"`
 }
-
-type Gift struct {
-	Id          int64  `json:"id"`
-	Type        string `json:"type"`
-	Name        string `json:"name"`
-	Message     string `json:"message"`
-	Animation   string `json:"animation"`
-	AnimationId int    `json:"animation_id"`
-	Time        string `json:"time"`
-	Timestamp   int64  `json:"timestamp"`
-}
-
-type Reward struct {
-	Id        int64  `json:"id"`
-	Type      string `json:"type"`
-	Name      string `json:"name"`
-	Message   string `json:"message"`
-	Time      string `json:"time"`
-	Timestamp int64  `json:"timestamp"`
-}
