@@ -224,7 +224,7 @@ type ProducerSystemMessage struct {
 	RoomId  []int32                `json:"room_id" binding:"required"`
 	Message string                 `json:"message" binding:"required,max=250"`
 	Type    string                 `json:"type" binding:"required"`
-	Body    map[string]interface{} `json:"body" binding:"required"`
+	Body    map[string]interface{} `json:"body"`
 }
 
 func (p *Producer) SendForSystem(msg ProducerSystemMessage) (int64, error) {
