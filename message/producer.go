@@ -476,7 +476,16 @@ func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 	}
 	partition, offset, err := p.producer.SendMessage(m)
 	if err != nil {
-		log.Error("message producer send message", zap.Error(err), zap.Int32("partition", partition), zap.Int64("offset", offset))
+		log.Error(
+			"message producer send message",
+			zap.Error(err),
+			zap.Int32("partition", partition),
+			zap.Int64("offset", offset),
+			zap.String("topic", p.topic),
+			zap.String("type", pushMsg.Type.String()),
+			zap.String("msg", pushMsg.Message),
+			zap.Int32s("rooms", pushMsg.Room),
+		)
 	}
 	return err
 }
