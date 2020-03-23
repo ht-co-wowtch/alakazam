@@ -360,6 +360,9 @@ Operation = `6`=> 單筆訊息
 | top          | 公告(置頂)訊息 |
 | bets         | 跟投訊息       |
 | gift         | 禮物訊息       |
+| reward       | 打賞訊息       |
+| open_live    | 開播訊息       |
+| close_live   | 關播訊息       |
 | system       | 系統訊息       |
 
 普通訊息 or 公告(置頂)訊息
@@ -465,15 +468,15 @@ Operation = `6`=> 單筆訊息
 
 ```json
 {
-   "id":7002,
+   "id":13602,
    "type":"gift",
    "name":"系统",
-   "message":"小明贈送一份禮物",
-   "time":"09:57:08",
-   "timestamp":1584064628,
+   "message":"sam78贈送一份棒棒糖禮物",
+   "time":"16:49:46",
+   "timestamp":1584953386,
    "data":{
-      "animation":"http://uedfe.yypm.com/assets/svga-samples/angel.svga",
-      "animation_id":123
+      "animation":"https://assets.9955.tw/default/gift/lollipop.svga",
+      "animation_id":1
    }
 }
 ```
@@ -487,13 +490,55 @@ Operation = `6`=> 單筆訊息
 
 ```json
 {
-   "id":7002,
+   "id":13603,
+   "type":"reward",
+   "name":"系统",
+   "message":"sam78打賞10元",
+   "time":"16:51:25",
+   "timestamp":1584953485,
+   "data":null
+}
+```
+
+開播訊息
+
+```json
+{
+   "id":13801,
+   "type":"open_live",
+   "name":"系统",
+   "message":"主播nickname_1已開播",
+   "time":"16:53:08",
+   "timestamp":1584953588,
+   "data":null
+}
+```
+
+關播訊息
+
+```json
+{
+   "id":13802,
+   "type":"close_live",
+   "name":"系统",
+   "message":"主播nickname_1已關播",
+   "time":"16:54:21",
+   "timestamp":1584953661,
+   "data":null
+}
+```
+
+系統訊息
+
+```json
+{
+   "id":13802,
    "type":"system",
    "name":"系统",
-   "message":"小明打賞10元",
-   "time":"09:57:08",
-   "timestamp":1584064628,
-   "data":{}
+   "message":"你好",
+   "time":"16:54:21",
+   "timestamp":1584953661,
+   "data":null
 }
 ```
 
