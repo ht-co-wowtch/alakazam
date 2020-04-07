@@ -198,7 +198,28 @@ func (c *chat) RenewOnline(server string, roomCount map[int32]int32) (map[int32]
 		RoomCount: roomCount,
 		Updated:   time.Now().Unix(),
 	}
+
 	err := c.cache.addOnline(server, online)
+	if err != nil {
+		return nil, err
+	}
+
+	online, err = c.cache.getOnline(server)
+	if err != nil {
+		return nil, err
+	}
+
+	roomCount = make(map[int32]int32)
+
+	for room, count := range online.RoomCount {
+		r, err := c.cache.get(int(room))
+		if err == nil {
+			roomCount[room] = int32(r.AudienceRatio * float64(count))
+		} else {
+			roomCount[room] = count
+		}
+	}
+
 	return roomCount, err
 }
 

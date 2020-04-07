@@ -101,10 +101,12 @@ func (s *server) Heartbeat(ctx context.Context, req *pb.HeartbeatReq) (*pb.Heart
 
 // 更新每個房間線上總人數資料
 func (s *server) RenewOnline(ctx context.Context, req *pb.OnlineReq) (*pb.OnlineReply, error) {
-	//allRoomCount, err := s.room.RenewOnline(req.Server, req.RoomCount)
-	//if err != nil {
-	//	log.Error("grpc renew online", zap.Error(err), zap.String("server", req.Server))
-	//	return &pb.OnlineReply{}, err
-	//}
-	return &pb.OnlineReply{}, nil
+	allRoomCount, err := s.room.RenewOnline(req.Server, req.RoomCount)
+	if err != nil {
+		log.Error("grpc renew online", zap.Error(err), zap.String("server", req.Server))
+		return &pb.OnlineReply{}, err
+	}
+	return &pb.OnlineReply{
+		AllRoomCount: allRoomCount,
+	}, nil
 }

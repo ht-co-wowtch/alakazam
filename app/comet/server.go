@@ -118,7 +118,7 @@ func (s *Server) onlineproc() {
 			bucket.UpRoomsCount(allRoomsCount)
 		}
 
-		// 每15秒統計一次發給logic
-		time.Sleep(time.Second * 15)
+		// 每30秒統計一次發給logic
+		time.Sleep(time.Second * 30)
 	}
 }
