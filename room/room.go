@@ -52,6 +52,9 @@ type Status struct {
 	// 房間屬於誰
 	Uid string `json:"uid"`
 
+	// 觀眾數倍率
+	AudienceRatio float64 `json:"audience_ratio"`
+
 	// 房間狀態
 	Status bool `json:"status"`
 }
@@ -92,12 +95,18 @@ func (r *room) Update(id int, status Status) error {
 }
 
 func (r *room) newRoomModel(status Status) models.Room {
+	audienceRatio := 1.0
+	if status.AudienceRatio != 0 {
+		audienceRatio = status.AudienceRatio
+	}
+
 	return models.Room{
-		IsMessage:    status.IsMessage,
-		IsBets:       status.IsBets,
-		DayLimit:     status.Limit.Day,
-		DepositLimit: status.Limit.Deposit,
-		DmlLimit:     status.Limit.Dml,
+		IsMessage:     status.IsMessage,
+		IsBets:        status.IsBets,
+		DayLimit:      status.Limit.Day,
+		DepositLimit:  status.Limit.Deposit,
+		DmlLimit:      status.Limit.Dml,
+		AudienceRatio: audienceRatio,
 	}
 }
 

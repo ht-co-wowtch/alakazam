@@ -33,6 +33,9 @@ type Room struct {
 	// 打碼量限制
 	DmlLimit int
 
+	// 觀眾數倍率
+	AudienceRatio float64
+
 	// 房間狀態(開:1 關:0)
 	Status bool
 
@@ -57,7 +60,7 @@ func (s *Store) CreateRoom(room *Room) (int64, error) {
 }
 
 func (s *Store) UpdateRoom(room Room) (int64, error) {
-	return s.d.Cols("type", "member_id", "is_message", "is_bets", "day_limit", "deposit_limit", "dml_limit", "status", "update_at").
+	return s.d.Cols("type", "member_id", "is_message", "is_bets", "day_limit", "deposit_limit", "dml_limit", "audience_ratio", "status", "update_at").
 		Where("id = ?", room.Id).
 		Update(&room)
 }
