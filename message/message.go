@@ -36,12 +36,6 @@ const (
 
 	// 跟注
 	BetsType = "bets"
-
-	// 禮物
-	GiftType = "gift"
-
-	// 打賞
-	RewardType = "reward"
 )
 
 func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {

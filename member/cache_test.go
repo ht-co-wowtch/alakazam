@@ -101,7 +101,7 @@ func TestLogin(t *testing.T) {
 	member := &models.Member{Id: 1, Uid: uid, Name: name, Type: models.Player, IsMessage: true}
 	err := c.login(member, key, server)
 
-	u := r.HMGet(keyUid(uid), uidJsonKey, uidNameKey).Val()
+	u := r.HMGet(keyUid(uid), uidJsonHKey, uidNameHKey).Val()
 
 	b, err := json.Marshal(member)
 	if err != nil {

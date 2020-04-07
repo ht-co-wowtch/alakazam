@@ -10,6 +10,12 @@ import (
 	"time"
 )
 
+const (
+	rateKey = prefix + ":rate_%d_%d"
+
+	rateMsgKey = prefix + ":rate_msg_%s"
+)
+
 type rateLimit struct {
 	cache   *redis.Client
 	msgSec  time.Duration
@@ -25,7 +31,7 @@ func newRateLimit(cache *redis.Client) *rateLimit {
 }
 
 func (r *rateLimit) perSec(mid int64) error {
-	key := fmt.Sprintf("rate_%d_%d", mid, time.Now().Unix())
+	key := fmt.Sprintf(rateKey, mid, time.Now().Unix())
 	ex, err := r.cache.SetNX(key, 1, r.msgSec).Result()
 	if err != nil {
 		return err
@@ -37,7 +43,7 @@ func (r *rateLimit) perSec(mid int64) error {
 }
 
 func (r *rateLimit) sameMsg(msg ProducerMessage) error {
-	key := fmt.Sprintf("rate_msg_%s", md5.Sum([]byte(msg.Uid+msg.Message)))
+	key := fmt.Sprintf(rateMsgKey, md5.Sum([]byte(msg.Uid+msg.Message)))
 	cut, err := r.cache.Incr(key).Result()
 	if err != nil {
 		return err
