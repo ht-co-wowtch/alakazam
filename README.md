@@ -353,16 +353,16 @@ Operation = `6`=> 單筆訊息
 
 每個message json 內都有一個type來判斷訊息種類
 
-| Value        | 說明       |
-| ------------ | ---------- |
-| message      | 一般       |
-| top          | 公告(置頂) |
-| red_envelope | 紅包       |
-| bets         | 跟投       |
-| gift         | 禮物/打賞  |
-| hint         | 提示       |
-| open_live    | 開播       |
-| close_live   | 關播       |
+| Value        | 說明      |
+| ------------ | --------- |
+| message      | 一般      |
+| top          | 置頂      |
+| red_envelope | 紅包      |
+| bets         | 跟投      |
+| gift         | 禮物/打賞 |
+| hint         | 提示      |
+| open_live    | 開播      |
+| close_live   | 關播      |
 
 
 
