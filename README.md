@@ -387,7 +387,7 @@ Body
          "color":"#DF3030",
          "background_color":"#86777F"
       },
-      "identity":{
+      "title":{
          "text":"房管",
          "color":"#E5C4C4",
          "background_color":"#332121"
@@ -492,7 +492,7 @@ display.level: 發訊息人等級
 
 
 
-display.identity: 發訊息人身份
+display.title: 發訊息人身份
 
 | 欄位名稱         | 說明         | 格式    |
 | ---------------- | ------------ | ------- |
@@ -582,7 +582,7 @@ gift: 禮物
          "color":"#DF3030",
          "background_color":"#C7B9C1"
       },
-      "identity":{
+      "title":{
          "text":"房管",
          "color":"#E5C4C4",
          "background_color":"#332121"
@@ -623,7 +623,7 @@ gift: 禮物
          "color":"#DF3030",
          "background_color":"#C7B9C1"
       },
-      "identity":{
+      "title":{
          "text":"房管",
          "color":"#E5C4C4",
          "background_color":"#332121"
@@ -651,7 +651,7 @@ gift: 禮物
    "display":{
       "user":null,
       "level":null,
-      "identity":null,
+      "title":null,
       "message":{
          "text":"你好嗎？",
          "color":""
@@ -675,7 +675,7 @@ gift: 禮物
    "display":{
       "user":null,
       "level":null,
-      "identity":{
+      "title":{
          "text":"系統",
          "color":"#FFFFFF",
          "background_color":"#E5CB29"
@@ -703,7 +703,7 @@ gift: 禮物
    "display":{
       "user":null,
       "level":null,
-      "identity":{
+      "title":{
          "text":"中獎",
          "color":"#FFFFFF",
          "background_color":"#FF0000"
@@ -731,7 +731,7 @@ gift: 禮物
    "display":{
       "user":null,
       "level":null,
-      "identity":{
+      "title":{
          "text":"vip1",
          "color":"#FFFFFF",
          "background_color":"#E5CB29"
@@ -759,7 +759,7 @@ gift: 禮物
    "display":{
       "user":null,
       "level":null,
-      "identity":{
+      "title":{
          "text":"會員",
          "color":"#FFFFFF",
          "background_color":"#FF0000"
@@ -803,7 +803,7 @@ gift: 禮物
    "display":{
       "user":null,
       "level":null,
-      "identity":{
+      "title":{
          "text":"會員",
          "color":"#FFFFFF",
          "background_color":"#FF0000"
@@ -852,7 +852,7 @@ gift: 禮物
          "avatar":"female"
       },
       "level":null,
-      "identity":null,
+      "title":null,
       "message":{
          "text":"紅包",
          "color":""
@@ -890,7 +890,7 @@ gift: 禮物
          "avatar":"female"
       },
       "level":null,
-      "identity":null,
+      "title":null,
       "message":{
          "text":"跟投",
          "color":"#DF3030"
