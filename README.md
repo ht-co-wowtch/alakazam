@@ -379,7 +379,6 @@ Body
       "user":{
          "text":"sam78",
          "color":"#E9E645",
-         "background_color":"#86777F",
          "avatar":"female"
       },
       "level":{
@@ -473,12 +472,11 @@ Body
 
 display.user: 顯示用戶資料
 
-| 欄位名稱         | 說明                     | 格式    |
-| ---------------- | ------------------------ | ------- |
-| text             | 人名                     | string  |
-| color            | 字體顏色                 | #000000 |
-| background_color | 字體背景顏色             | #000000 |
-| avatar           | 頭像名稱 [類型](#avatar) | string  |
+| 欄位名稱 | 說明                     | 格式    |
+| -------- | ------------------------ | ------- |
+| text     | 人名                     | string  |
+| color    | 字體顏色                 | #000000 |
+| avatar   | 頭像名稱 [類型](#avatar) | string  |
 
 
 
@@ -574,7 +572,6 @@ gift: 禮物
       "user":{
          "text":"sam78",
          "color":"#000000",
-         "background_color":"",
          "avatar":"female"
       },
       "level":{
@@ -615,7 +612,6 @@ gift: 禮物
       "user":{
          "text":"管理員",
          "color":"",
-         "background_color":"",
          "avatar":"root"
       },
       "level":{
@@ -848,7 +844,6 @@ gift: 禮物
       "user":{
          "text":"sam78",
          "color":"",
-         "background_color":"",
          "avatar":"female"
       },
       "level":null,
@@ -886,7 +881,6 @@ gift: 禮物
       "user":{
          "text":"sam78",
          "color":"",
-         "background_color":"",
          "avatar":"female"
       },
       "level":null,
