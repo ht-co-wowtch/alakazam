@@ -442,11 +442,15 @@ Body
    "gift":{
       "gift_id":1,
       "combo":{
-         "count":9,
+         "count":1,
          "duration_ms":2000
       },
+      "hint_box":{
+         "duration_ms":3000,
+         "background_image":"https://assets.292801.com/awcp/logo/hPH6edsqSY.png"
+      },
       "show_animation":false,
-      "message":"送出跑車"
+      "message":"sam78 打賞10元"
    }
 }
 ```
