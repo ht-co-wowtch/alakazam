@@ -353,194 +353,619 @@ Operation = `6`=> 單筆訊息
 
 每個message json 內都有一個type來判斷訊息種類
 
-| Value        | 說明           |
-| ------------ | -------------- |
-| message      | 普通訊息       |
-| red_envelope | 紅包訊息       |
-| top          | 公告(置頂)訊息 |
-| bets         | 跟投訊息       |
-| gift         | 禮物訊息       |
-| reward       | 打賞訊息       |
-| open_live    | 開播訊息       |
-| close_live   | 關播訊息       |
-| system       | 系統訊息       |
+| Value        | 說明       |
+| ------------ | ---------- |
+| message      | 一般       |
+| top          | 公告(置頂) |
+| red_envelope | 紅包       |
+| bets         | 跟投       |
+| gift         | 禮物/打賞  |
+| hint         | 提示       |
+| open_live    | 開播       |
+| close_live   | 關播       |
 
-普通訊息 or 公告(置頂)訊息
 
-```json
-{
-    "id": 4001,
-    "uid": "3d641b03d4d548dbb3a73a2197811261",
-    "type": "message",
-    "name": "sam78",
-    "avatar": "female",
-    "message": "測試",
-    "time": "12:37:00",
-    "timestamp": 1567579890
-}
-```
 
-| name      | 說明                     | 格式          |
-| --------- | ------------------------ | ------------- |
-| Id        | 訊息id                   | Int           |
-| uid       | 訊息人uid                | string        |
-| type      | 訊息類型                 | string        |
-| name      | 訊息人名稱               | string        |
-| avatar    | 頭像名稱 [類型](#avatar) | string        |
-| message   | 訊息                     | string        |
-| time      | 發送時間                 | 時:分:秒      |
-| timestamp | 訊息發送時間             | 時間戳記(int) |
-
-紅包訊息
+Body 
 
 ```json
 {
-    "id": 4404,
-    "uid": "0d641b03d4d548dbb3a73a2197811261",
-    "type": "red_envelope",
-    "name": "sam78",
-    "avatar": "male",
-    "message": "發大財",
-    "time": "12:37:00",
-    "timestamp": 1567579890,
-    "red_envelope": {
-        "id": "0d641b03d4d548dbb3a73a2197811261",
-        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjY4NzkzMTMsImlkIjoiMWI5MTZiNDc4YzBjNGZjMzhmMGE0MzE1NjMwNjExMTQiLCJ1aWQiOiIwZDY0MWIwM2Q0ZDU0OGRiYjNhNzNhMjE5NzgxMTI2MSJ9.pgyltHiT11XcZySJPiuetV35OXU-wgQ4XtU_UTzwghU",
-        "expired": "2019-08-27T12:15:13+08:00"
-    }
-}
-```
-
-| name                 | 說明          | 格式   |
-| -------------------- | ------------- | ------ |
-| message              | 紅包說明      | string |
-| red_envelope.id      | 紅包id        | string |
-| red_envelope.token   | 搶紅包的token | string |
-| red_envelope.expired | 紅包過期時間  | RF3339 |
-
-跟投訊息
-
-```json
-{
-   "id":9801,
-   "uid":"0d641b03d4d548dbb3a73a2197811261",
-   "type":"bets",
-   "name":"Sam",
-   "avatar":"other",
-   "time":"11:08:11",
-   "timestamp":1571627291,
-   "game_id":4567,
-   "period_number":1234,
-   "bets":[
-      {
-         "name":"冠軍",
-         "odds_code":"1.pos.1",
-         "items": ["9", "tiger"],
-         "trans_items": ["9", "虎"],
-         "amount":15
+   "id":4001,
+   "room_id":1,
+   "type":"message",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":{
+         "text":"sam78",
+         "color":"#E9E645",
+         "background_color":"#86777F",
+         "avatar":"female"
       },
-      {
-         "name":"亞軍",
-         "odds_code":"2.pos.1",
-         "items": [],
-         "trans_items": [],
-         "amount":10
-      }
-   ],
-   "count":2,
-   "total_amount":25
-}
-```
+      "message":{
+         "text":"測試",
+         "color":"#DF3030"
+      },
+      "identity":[
+         {
+            "text":"vip1",
+            "color":"#DF3030",
+            "background_color":"#86777F"
+         },
+         {
+            "text":"房管",
+            "color":"#E5C4C4",
+            "background_color":"#332121"
+         }
+      ]
+   },
+   "user":{
+      "uid":"3d641b03d4d548dbb3a73a2197811261",
+      "name":"sam78",
+      "avatar":"female"
+   },
+   "red_envelope":{
+      "id":"0d641b03d4d548dbb3a73a2197811261",
+      "token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjY4NzkzMTMsImlkIjoiMWI5MTZiNDc4YzBjNGZjMzhmMGE0MzE1NjMwNjExMTQiLCJ1aWQiOiIwZDY0MWIwM2Q0ZDU0OGRiYjNhNzNhMjE5NzgxMTI2MSJ9.pgyltHiT11XcZySJPiuetV35OXU-wgQ4XtU_UTzwghU",
+      "expired":"2019-08-27T12:15:13+08:00"
+   },
+   "bet":{
+      "game_id":4567,
+      "period_number":1234,
+      "count":2,
+      "total_amount":25,
+      "bets":[
+         {
+            "name":"冠軍",
+            "odds_code":"1.pos.1",
+            "items":[
+               "9",
+               "tiger"
+            ],
+            "trans_items":[
+               "9",
+               "虎"
+            ],
+            "amount":15
+         },
+         {
+            "name":"亞軍",
+            "odds_code":"2.pos.1",
+            "items":[
 
-| name           | 說明         | 格式     |
-| -------------- | ------------ | -------- |
-| game_id        | 遊戲 id      | int      |
-| period_number  | 本注期號     | int      |
-| bets.name      | 下注號碼名稱 | string   |
-| bets.odds_code | 賠率代號     | string   |
-| bets.items     | 組合號碼     | []string |
-| bets.trans_items     | 組合號碼(中文)     | []string |
-| bets.amount    | 下注金額     | int      |
-| count          | 下注總筆數   | Int      |
-| total_amount   | 下注總金額   | int      |
+            ],
+            "trans_items":[
 
-禮物訊息
-
-```json
-{
-   "id":13602,
-   "type":"gift",
-   "name":"系统",
-   "message":"sam78贈送一份棒棒糖禮物",
-   "time":"16:49:46",
-   "timestamp":1584953386,
-   "data":{
-      "animation":"https://assets.9955.tw/default/gift/lollipop.svga",
-      "animation_id":1
+            ],
+            "amount":10
+         }
+      ]
+   },
+   "gift":{
+      "gift_id":1,
+      "combo":{
+         "count":9,
+         "duration_ms":2000
+      },
+      "show_animation":false,
+      "message":"送出跑車"
    }
 }
 ```
 
-| name                 | 說明          | 格式   |
-| -------------------- | ------------- | ------ |
-| data.animation            | 動畫下載網址      | string |
-| data.animation_id         | 動畫一id        | int |
+| 欄位名稱     | 說明         | 格式          |
+| ------------ | ------------ | ------------- |
+| id           | 訊息id       | int           |
+| room_id      | 房間id       | int           |
+| type         | 訊息類型     | string        |
+| time         | 發送時間     | 時:分:秒      |
+| timestamp    | 訊息發送時間 | 時間戳記(int) |
+| display      | 顯示訊息資料 |               |
+| user         | 發訊息人資料 |               |
+| red_envelope | 紅包資料     |               |
+| bet          | 跟投         |               |
+| gift         | 禮物         |               |
+| reward       | 打賞         |               |
 
-打賞訊息
+
+
+display.user: 顯示用戶資料
+
+| 欄位名稱         | 說明                     | 格式    |
+| ---------------- | ------------------------ | ------- |
+| text             | 人名                     | string  |
+| color            | 字體顏色                 | #000000 |
+| background_color | 字體背景顏色             | #000000 |
+| avatar           | 頭像名稱 [類型](#avatar) | string  |
+
+
+
+display.level: 發訊息人等級 
+
+| 欄位名稱         | 說明         | 格式    |
+| ---------------- | ------------ | ------- |
+| text             | 身份名稱     | string  |
+| color            | 字體顏色     | #000000 |
+| background_color | 字體背景顏色 | #000000 |
+
+
+
+display.identity: 發訊息人身份
+
+| 欄位名稱         | 說明         | 格式    |
+| ---------------- | ------------ | ------- |
+| text             | 身份名稱     | string  |
+| color            | 字體顏色     | #000000 |
+| background_color | 字體背景顏色 | #000000 |
+
+
+
+display.message: 訊息資料
+
+| 欄位名稱 | 說明     | 格式    |
+| -------- | -------- | ------- |
+| text     | 訊息     | string  |
+| color    | 字體顏色 | #000000 |
+
+
+
+user: 發訊息人資料
+
+| 欄位名稱 | 說明                     | 格式   |
+| -------- | ------------------------ | ------ |
+| uid      | 發訊息人 會員uuid        | string |
+| name     | 發訊息人名稱             | string |
+| avatar   | 頭像名稱 [類型](#avatar) | string |
+
+
+
+red_envelope: 紅包資料
+
+| 欄位名稱 | 說明          | 格式   |
+| -------- | ------------- | ------ |
+| id       | 紅包id        | string |
+| token    | 搶紅包的token | string |
+| expired  | 紅包過期時間  | RF3339 |
+
+
+
+bet: 跟投
+
+| 欄位名稱         | 說明           | 格式     |
+| ---------------- | -------------- | -------- |
+| game_id          | 遊戲 id        | int      |
+| period_number    | 本注期號       | int      |
+| count            | 下注總筆數     | int      |
+| total_amount     | 下注總金額     | int      |
+| bets.name        | 下注號碼名稱   | string   |
+| bets.odds_code   | 賠率代號       | string   |
+| bets.items       | 組合號碼       | []string |
+| bets.trans_items | 組合號碼(中文) | []string |
+| bets.amount      | 下注金額       | int      |
+
+
+
+gift: 禮物
+
+| 欄位名稱                  | 說明                   | 格式        |
+| ------------------------- | ---------------------- | ----------- |
+| gift_id                   | 禮物 id                | int         |
+| message                   | 送禮訊息               | string      |
+| combo.id                  | 禮物連擊次數           | int         |
+| combo.duration_ms         | 連擊訊息顯示多久(毫秒) | int         |
+| show_animation            | 是否顯示動畫           | bool        |
+| hint_box.background_image | hint box 背景圖        | string(url) |
+| hint_box.duration_ms      | hint box顯示多久(毫秒) | int         |
+
+
+
+一般訊息(用戶)
 
 ```json
 {
-   "id":13603,
-   "type":"reward",
-   "name":"系统",
-   "message":"sam78打賞10元",
-   "time":"16:51:25",
-   "timestamp":1584953485,
-   "data":null
+   "id":4001,
+   "room_id":1,
+   "type":"message",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":{
+         "text":"sam78",
+         "color":"#000000",
+         "background_color":"",
+         "avatar":"female"
+      },
+      "level":{
+         "text":"vip1",
+         "color":"#DF3030",
+         "background_color":"#C7B9C1"
+      },
+      "identity":{
+         "text":"房管",
+         "color":"#E5C4C4",
+         "background_color":"#332121"
+      },
+      "message":{
+         "text":"測試",
+         "color":"#A680B8"
+      }
+   },
+   "user":{
+      "uid":"3d641b03d4d548dbb3a73a2197811261",
+      "name":"sam78",
+      "avatar":"female"
+   }
 }
 ```
 
-開播訊息
+![arch](./doc/message/user.png)
+
+公告(管理員)
 
 ```json
 {
-   "id":13801,
-   "type":"open_live",
-   "name":"系统",
-   "message":"主播nickname_1已開播",
-   "time":"16:53:08",
-   "timestamp":1584953588,
-   "data":null
+   "id":4001,
+   "room_id":1,
+   "type":"message",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":{
+         "text":"管理員",
+         "color":"",
+         "background_color":"",
+         "avatar":"root"
+      },
+      "level":{
+         "text":"vip1",
+         "color":"#DF3030",
+         "background_color":"#C7B9C1"
+      },
+      "identity":{
+         "text":"房管",
+         "color":"#E5C4C4",
+         "background_color":"#332121"
+      },
+      "message":{
+         "text":"測試",
+         "color":"#A680B8"
+      }
+   },
+   "user":null
 }
 ```
 
-關播訊息
+![arch](./doc/message/root.png)
+
+置頂訊息
 
 ```json
 {
-   "id":13802,
-   "type":"close_live",
-   "name":"系统",
-   "message":"主播nickname_1已關播",
-   "time":"16:54:21",
-   "timestamp":1584953661,
-   "data":null
+   "id":4001,
+   "room_id":1,
+   "type":"top",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":null,
+      "level":null,
+      "identity":null,
+      "message":{
+         "text":"你好嗎？",
+         "color":""
+      }
+   },
+   "user":null
 }
 ```
+
+![arch](./doc/message/top.png)
 
 系統訊息
 
 ```json
 {
-   "id":13802,
-   "type":"system",
-   "name":"系统",
-   "message":"你好",
-   "time":"16:54:21",
-   "timestamp":1584953661,
-   "data":null
+   "id":4001,
+   "room_id":1,
+   "type":"message",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":null,
+      "level":null,
+      "identity":{
+         "text":"系統",
+         "color":"#FFFFFF",
+         "background_color":"#E5CB29"
+      },
+      "message":{
+         "text":"測試",
+         "color":"#A680B8"
+      }
+   },
+   "user":null
 }
 ```
+
+![arch](./doc/message/system.png)
+
+中獎訊息
+
+```json
+{
+   "id":4001,
+   "room_id":1,
+   "type":"message",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":null,
+      "level":null,
+      "identity":{
+         "text":"中獎",
+         "color":"#FFFFFF",
+         "background_color":"#FF0000"
+      },
+      "message":{
+         "text":"中獎訊息",
+         "color":"#A680B8"
+      }
+   },
+   "user":null
+}
+```
+
+![arch](./doc/message/will.png)
+
+進入房間訊息
+
+```json
+{
+   "id":4001,
+   "room_id":1,
+   "type":"hint",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":null,
+      "level":null,
+      "identity":{
+         "text":"vip1",
+         "color":"#FFFFFF",
+         "background_color":"#E5CB29"
+      },
+      "message":{
+         "text":"sam78 進入房間",
+         "color":"#A680B8"
+      }
+   },
+   "user":null
+}
+```
+
+<img src="./doc/message/in_room.png" alt="arch" style="zoom:80%;" />
+
+送禮訊息
+
+```json
+{
+   "id":4001,
+   "room_id":1,
+   "type":"gift",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":null,
+      "level":null,
+      "identity":{
+         "text":"會員",
+         "color":"#FFFFFF",
+         "background_color":"#FF0000"
+      },
+      "message":{
+         "text":"sam78 送出禮物x1",
+         "color":"#A680B8"
+      }
+   },
+   "user":{
+      "uid":"3d641b03d4d548dbb3a73a2197811261",
+      "name":"sam78",
+      "avatar":"female"
+   },
+   "gift":{
+      "gift_id":1,
+      "combo":{
+         "count":1,
+         "duration_ms":2000
+      },
+      "hint_box":null,
+      "show_animation":false,
+      "message":"送出跑車"
+   }
+}
+```
+
+![arch](./doc/message/gift.png)
+
+![arch](./doc/message/gift_hint.png)
+
+打賞訊息
+
+```json
+{
+   "id":4001,
+   "room_id":1,
+   "type":"reward",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":null,
+      "level":null,
+      "identity":{
+         "text":"會員",
+         "color":"#FFFFFF",
+         "background_color":"#FF0000"
+      },
+      "message":{
+         "text":"sam78 打賞10元",
+         "color":"#DF3030"
+      }
+   },
+   "user":{
+      "uid":"3d641b03d4d548dbb3a73a2197811261",
+      "name":"sam78",
+      "avatar":"female"
+   },
+   "gift":{
+      "gift_id":1,
+      "combo":null,
+      "show_animation":false,
+      "hint_box":{
+         "duration_ms":3000,
+         "background_image":"https://assets.292801.com/awcp/logo/hPH6edsqSY.png"
+      },
+      "message":"sam78 打賞10元"
+   }
+}
+```
+
+![arch](./doc/message/reward.png)
+
+![arch](./doc/message/reward_hint.png)
+
+紅包訊息
+
+```json
+{
+   "id":4001,
+   "room_id":1,
+   "type":"red_envelope",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":{
+         "text":"sam78",
+         "color":"",
+         "background_color":"",
+         "avatar":"female"
+      },
+      "level":null,
+      "identity":null,
+      "message":{
+         "text":"紅包",
+         "color":""
+      }
+   },
+   "user":{
+      "uid":"3d641b03d4d548dbb3a73a2197811261",
+      "name":"sam78",
+      "avatar":"female"
+   },
+   "red_envelope":{
+      "id":"0d641b03d4d548dbb3a73a2197811261",
+      "token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjY4NzkzMTMsImlkIjoiMWI5MTZiNDc4YzBjNGZjMzhmMGE0MzE1NjMwNjExMTQiLCJ1aWQiOiIwZDY0MWIwM2Q0ZDU0OGRiYjNhNzNhMjE5NzgxMTI2MSJ9.pgyltHiT11XcZySJPiuetV35OXU-wgQ4XtU_UTzwghU",
+      "expired":"2019-08-27T12:15:13+08:00"
+   }
+}
+```
+
+
+
+跟投訊息
+
+```json
+{
+   "id":4001,
+   "room_id":1,
+   "type":"bets",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":{
+         "text":"sam78",
+         "color":"",
+         "background_color":"",
+         "avatar":"female"
+      },
+      "level":null,
+      "identity":null,
+      "message":{
+         "text":"跟投",
+         "color":"#DF3030"
+      }
+   },
+   "user":{
+      "uid":"3d641b03d4d548dbb3a73a2197811261",
+      "name":"sam78"
+   },
+   "bet":{
+      "game_id":4567,
+      "period_number":1234,
+      "count":2,
+      "total_amount":25,
+      "bets":[
+         {
+            "name":"冠軍",
+            "odds_code":"1.pos.1",
+            "items":[
+               "9",
+               "tiger"
+            ],
+            "trans_items":[
+               "9",
+               "虎"
+            ],
+            "amount":15
+         },
+         {
+            "name":"亞軍",
+            "odds_code":"2.pos.1",
+            "items":[
+
+            ],
+            "trans_items":[
+
+            ],
+            "amount":10
+         }
+      ]
+   }
+}
+```
+
+
+
+開播訊息
+
+```json
+{
+   "id":4001,
+   "room_id":1,
+   "type":"open_live",
+   "time": "12:37:00",
+   "timestamp": 1567579890, 
+   "display":null,
+   "user":null,
+}
+```
+
+
+
+關播訊息
+
+```json
+{
+   "id":4001,
+   "room_id":1,
+   "type":"close_live",
+   "time": "12:37:00",
+   "timestamp": 1567579890, 
+   "display":null,
+   "user":null,
+}
+```
+
+
 
 #### Change Room Reply
 
