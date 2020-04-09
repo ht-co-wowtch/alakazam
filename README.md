@@ -382,22 +382,20 @@ Body
          "background_color":"#86777F",
          "avatar":"female"
       },
+      "level":{
+         "text":"vip1",
+         "color":"#DF3030",
+         "background_color":"#86777F"
+      },
+      "identity":{
+         "text":"房管",
+         "color":"#E5C4C4",
+         "background_color":"#332121"
+      },
       "message":{
          "text":"測試",
          "color":"#DF3030"
-      },
-      "identity":[
-         {
-            "text":"vip1",
-            "color":"#DF3030",
-            "background_color":"#86777F"
-         },
-         {
-            "text":"房管",
-            "color":"#E5C4C4",
-            "background_color":"#332121"
-         }
-      ]
+      }
    },
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
