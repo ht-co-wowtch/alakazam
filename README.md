@@ -456,6 +456,12 @@ Body
 }
 ```
 
+
+
+![arch](./doc/message/live_message.png)
+
+
+
 | 欄位名稱     | 說明         | 格式          |
 | ------------ | ------------ | ------------- |
 | id           | 訊息id       | int           |
@@ -816,7 +822,7 @@ live_stream: 直播
       "avatar":"female"
    },
    "gift":{
-      "gift_id":1,
+      "gift_id":0,
       "combo":null,
       "show_animation":false,
       "hint_box":{
