@@ -371,7 +371,6 @@ Body
 ```json
 {
    "id":4001,
-   "room_id":1,
    "type":"message",
    "time":"12:37:00",
    "timestamp":1567579890,
@@ -450,6 +449,9 @@ Body
       },
       "show_animation":false,
       "message":"sam78 打賞10元"
+   },
+   "live_stream": {
+  	 "chat_id": 1,    
    }
 }
 ```
@@ -457,7 +459,6 @@ Body
 | 欄位名稱     | 說明         | 格式          |
 | ------------ | ------------ | ------------- |
 | id           | 訊息id       | int           |
-| room_id      | 房間id       | int           |
 | type         | 訊息類型     | string        |
 | time         | 發送時間     | 時:分:秒      |
 | timestamp    | 訊息發送時間 | 時間戳記(int) |
@@ -466,7 +467,7 @@ Body
 | red_envelope | 紅包資料     |               |
 | bet          | 跟投         |               |
 | gift         | 禮物         |               |
-| reward       | 打賞         |               |
+| live_stream  | 直播         |               |
 
 
 
@@ -559,12 +560,19 @@ gift: 禮物
 
 
 
+live_stream: 直播
+
+| 欄位名稱 | 說明      | 格式 |
+| -------- | --------- | ---- |
+| chat_id  | 直播間 id | int  |
+
+
+
 一般訊息(用戶)
 
 ```json
 {
    "id":4001,
-   "room_id":1,
    "type":"message",
    "time":"12:37:00",
    "timestamp":1567579890,
@@ -604,7 +612,6 @@ gift: 禮物
 ```json
 {
    "id":4001,
-   "room_id":1,
    "type":"message",
    "time":"12:37:00",
    "timestamp":1567579890,
@@ -640,7 +647,6 @@ gift: 禮物
 ```json
 {
    "id":4001,
-   "room_id":1,
    "type":"top",
    "time":"12:37:00",
    "timestamp":1567579890,
@@ -664,7 +670,6 @@ gift: 禮物
 ```json
 {
    "id":4001,
-   "room_id":1,
    "type":"message",
    "time":"12:37:00",
    "timestamp":1567579890,
@@ -692,7 +697,6 @@ gift: 禮物
 ```json
 {
    "id":4001,
-   "room_id":1,
    "type":"message",
    "time":"12:37:00",
    "timestamp":1567579890,
@@ -720,7 +724,6 @@ gift: 禮物
 ```json
 {
    "id":4001,
-   "room_id":1,
    "type":"hint",
    "time":"12:37:00",
    "timestamp":1567579890,
@@ -748,7 +751,6 @@ gift: 禮物
 ```json
 {
    "id":4001,
-   "room_id":1,
    "type":"gift",
    "time":"12:37:00",
    "timestamp":1567579890,
@@ -792,7 +794,6 @@ gift: 禮物
 ```json
 {
    "id":4001,
-   "room_id":1,
    "type":"reward",
    "time":"12:37:00",
    "timestamp":1567579890,
@@ -836,7 +837,6 @@ gift: 禮物
 ```json
 {
    "id":4001,
-   "room_id":1,
    "type":"red_envelope",
    "time":"12:37:00",
    "timestamp":1567579890,
@@ -873,7 +873,6 @@ gift: 禮物
 ```json
 {
    "id":4001,
-   "room_id":1,
    "type":"bets",
    "time":"12:37:00",
    "timestamp":1567579890,
@@ -936,12 +935,14 @@ gift: 禮物
 ```json
 {
    "id":4001,
-   "room_id":1,
    "type":"open_live",
    "time": "12:37:00",
    "timestamp": 1567579890, 
    "display":null,
    "user":null,
+   "live_stream": {
+  	 "chat_id": 1,    
+   }
 }
 ```
 
@@ -952,12 +953,14 @@ gift: 禮物
 ```json
 {
    "id":4001,
-   "room_id":1,
    "type":"close_live",
    "time": "12:37:00",
    "timestamp": 1567579890, 
    "display":null,
    "user":null,
+   "live_stream": {
+  	 "chat_id": 1,    
+   }
 }
 ```
 
