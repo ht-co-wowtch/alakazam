@@ -7,7 +7,7 @@ const (
 	avatarRoot   = "root"
 )
 
-func toAvatarName(code int) string {
+func ToAvatarName(code int) string {
 	switch code {
 	case 0:
 		return avatarFemale

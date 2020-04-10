@@ -50,9 +50,13 @@ func (s *httpServer) push(c *gin.Context) error {
 	}
 
 	msg := message.ProducerAdminMessage{
-		Rooms:   p.RoomId,
-		Message: p.Message,
-		IsTop:   p.Top,
+		Rooms: p.RoomId,
+		Display: message.Display{
+			Message: message.DisplayText{
+				Text: p.Message,
+			},
+		},
+		IsTop: p.Top,
 	}
 	id, err := s.message.SendForAdmin(msg)
 	if err != nil {
@@ -104,16 +108,25 @@ func (s *httpServer) bets(c *gin.Context) error {
 		return err
 	}
 	msg := message.ProducerBetsMessage{
-		Rooms:        req.RoomId,
-		Mid:          int64(m.Id),
-		Uid:          m.Uid,
-		Name:         m.Name,
-		Avatar:       m.Gender,
-		GameId:       req.GameId,
-		PeriodNumber: req.PeriodNumber,
-		Bets:         req.Bets,
-		Count:        req.Count,
-		TotalAmount:  req.TotalAmount,
+		Rooms: req.RoomId,
+		Display: message.Display{
+			Message: message.DisplayText{
+				Text: m.Name,
+			},
+		},
+		User: message.User{
+			Id:     int64(m.Id),
+			Uid:    m.Uid,
+			Name:   m.Name,
+			Avatar: message.ToAvatarName(m.Gender),
+		},
+		Bet: message.BetInfo{
+			GameId:       req.GameId,
+			PeriodNumber: req.PeriodNumber,
+			Count:        req.Count,
+			TotalAmount:  req.TotalAmount,
+			Bets:         req.Bets,
+		},
 	}
 
 	id, err := s.message.SendBets(msg)
@@ -210,9 +223,13 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 
 	msg := message.ProducerAdminRedEnvelopeMessage{
 		ProducerAdminMessage: message.ProducerAdminMessage{
-			Rooms:   []int32{int32(o.RoomId)},
-			Name:    member.RootName,
-			Message: o.Message,
+			Rooms: []int32{int32(o.RoomId)},
+			Name:  member.RootName,
+			Display: message.Display{
+				Message: message.DisplayText{
+					Text: o.Message,
+				},
+			},
 		},
 		RedEnvelopeId: result.Order,
 		Token:         result.Token,

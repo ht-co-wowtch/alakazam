@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
@@ -42,12 +43,13 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 	}
 
 	msg := message.ProducerMessage{
-		Rooms:   []int32{int32(p.RoomId)},
-		Mid:     int64(user.Id),
-		Uid:     user.Uid,
-		Name:    user.Name,
-		Message: p.Message,
-		Avatar:  user.Gender,
+		Rooms: []int32{int32(p.RoomId)},
+		User:  toUserMessage(user),
+		Display: message.Display{
+			Message: message.DisplayText{
+				Text: p.Message,
+			},
+		},
 	}
 
 	id, err := s.message.Send(msg)
@@ -78,4 +80,13 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 		})
 	}
 	return err
+}
+
+func toUserMessage(user *models.Member) message.User {
+	return message.User{
+		Id:     int64(user.Id),
+		Uid:    user.Uid,
+		Name:   user.Name,
+		Avatar: message.ToAvatarName(user.Gender),
+	}
 }

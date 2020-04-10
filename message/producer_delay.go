@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
-	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"time"
@@ -69,14 +68,14 @@ func (p *DelayProducer) run() {
 }
 
 func (p *DelayProducer) SendDelayRedEnvelopeForAdmin(msg ProducerAdminRedEnvelopeMessage, publishAt time.Time) (int64, error) {
+	root := newRoot()
+	root.Name = msg.Name
+
 	pushMsg, err := p.producer.toRedEnvelopePb(ProducerRedEnvelopeMessage{
 		ProducerMessage: ProducerMessage{
 			Rooms:   msg.Rooms,
-			Mid:     member.RootMid,
-			Uid:     member.RootUid,
-			Name:    msg.Name,
-			Message: msg.Message,
-			Avatar:  99,
+			User:    root,
+			Display: msg.Display,
 		},
 		RedEnvelopeId: msg.RedEnvelopeId,
 		Token:         msg.Token,

@@ -22,12 +22,13 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 
 	msg := message.ProducerRedEnvelopeMessage{
 		ProducerMessage: message.ProducerMessage{
-			Rooms:   []int32{int32(arg.RoomId)},
-			Mid:     int64(user.Id),
-			Uid:     user.Uid,
-			Name:    user.Name,
-			Message: arg.Message,
-			Avatar:  user.Gender,
+			Rooms: []int32{int32(arg.RoomId)},
+			User:  toUserMessage(user),
+			Display: message.Display{
+				Message: message.DisplayText{
+					Text: arg.Message,
+				},
+			},
 		},
 		RedEnvelopeId: reply.Order,
 		Token:         reply.Token,

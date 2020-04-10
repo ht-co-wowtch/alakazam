@@ -114,17 +114,14 @@ func (p *Producer) Close() error {
 
 type ProducerMessage struct {
 	Rooms   []int32
-	Mid     int64
-	Uid     string
-	Name    string
-	Message string
+	User    User
+	Display Display
 	IsTop   bool
 	Type    string
-	Avatar  int
 }
 
 func (p *Producer) toPb(msg ProducerMessage) (*logicpb.PushMsg, error) {
-	if err := checkMessage(msg.Message); err != nil {
+	if err := checkMessage(msg.Display.Message.Text); err != nil {
 		return nil, err
 	}
 
@@ -135,21 +132,26 @@ func (p *Producer) toPb(msg ProducerMessage) (*logicpb.PushMsg, error) {
 		return nil, err
 	}
 
-	fmsg, isMatch, sensitive := p.filter.FilterFindSensitive(msg.Message)
+	fmsg, isMatch, sensitive := p.filter.FilterFindSensitive(msg.Display.Message.Text)
 	if isMatch {
 		log.Info("message filter hit", zap.Int64("msg_id", seq.Id), zap.Strings("sensitive", sensitive))
 	}
+
+	msg.Display.Message.Text = fmsg
 
 	now := time.Now()
 	bm, err := json.Marshal(Message{
 		Id:        seq.Id,
 		Type:      msg.Type,
-		Uid:       msg.Uid,
-		Name:      msg.Name,
-		Avatar:    toAvatarName(msg.Avatar),
-		Message:   fmsg,
 		Time:      now.Format("15:04:05"),
 		Timestamp: now.Unix(),
+		User:      msg.User,
+		Display:   msg.Display,
+
+		Uid:     msg.User.Uid,
+		Name:    msg.User.Name,
+		Avatar:  msg.User.Avatar,
+		Message: msg.Display.Message.Text,
 	})
 	if err != nil {
 		return nil, err
@@ -158,15 +160,15 @@ func (p *Producer) toPb(msg ProducerMessage) (*logicpb.PushMsg, error) {
 		Seq:     seq.Id,
 		Type:    logicpb.PushMsg_USER,
 		Room:    msg.Rooms,
-		Mid:     msg.Mid,
+		Mid:     msg.User.Id,
 		Msg:     bm,
-		Message: fmsg,
+		Message: msg.Display.Message.Text,
 		SendAt:  now.Unix(),
 	}, nil
 }
 
 func (p *Producer) Send(msg ProducerMessage) (int64, error) {
-	if err := p.rate.perSec(msg.Mid); err != nil {
+	if err := p.rate.perSec(msg.User.Id); err != nil {
 		return 0, err
 	}
 	if err := p.rate.sameMsg(msg); err != nil {
@@ -187,7 +189,7 @@ func (p *Producer) Send(msg ProducerMessage) (int64, error) {
 type ProducerAdminMessage struct {
 	Rooms   []int32
 	Name    string
-	Message string
+	Display Display
 	IsTop   bool
 }
 
@@ -197,15 +199,14 @@ func (p *Producer) SendForAdmin(msg ProducerAdminMessage) (int64, error) {
 	if msg.IsTop {
 		ty = TopType
 	}
+
 	pushMsg, err := p.toPb(ProducerMessage{
 		Rooms:   msg.Rooms,
-		Mid:     member.RootMid,
-		Uid:     member.RootUid,
-		Name:    member.RootName,
-		Avatar:  99,
-		Message: msg.Message,
+		User:    newRoot(),
+		Display: msg.Display,
 		Type:    ty,
 	})
+
 	if err != nil {
 		return 0, err
 	}
@@ -299,7 +300,7 @@ type ProducerRedEnvelopeMessage struct {
 }
 
 func (p *Producer) toRedEnvelopePb(msg ProducerRedEnvelopeMessage) (*logicpb.PushMsg, error) {
-	if err := checkMessage(msg.Message); err != nil {
+	if err := checkMessage(msg.Display.Message.Text); err != nil {
 		return nil, err
 	}
 	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
@@ -309,22 +310,32 @@ func (p *Producer) toRedEnvelopePb(msg ProducerRedEnvelopeMessage) (*logicpb.Pus
 		return nil, err
 	}
 
-	fmsg, isMatch, sensitive := p.filter.FilterFindSensitive(msg.Message)
+	fmsg, isMatch, sensitive := p.filter.FilterFindSensitive(msg.Display.Message.Text)
 	if isMatch {
 		log.Info("message filter hit", zap.Int64("msg_id", seq.Id), zap.Strings("sensitive", sensitive))
 	}
+
+	msg.Display.Message.Text = fmsg
 
 	now := time.Now()
 	bm, err := json.Marshal(RedEnvelopeMessage{
 		Message: Message{
 			Id:        seq.Id,
 			Type:      RedEnvelopeType,
-			Uid:       msg.Uid,
-			Name:      msg.Name,
-			Avatar:    toAvatarName(msg.Avatar),
-			Message:   fmsg,
 			Time:      now.Format("15:04:05"),
 			Timestamp: now.Unix(),
+			User: msg.User,
+			Display: Display{
+				Message: DisplayText{
+					Text: fmsg,
+
+				},
+			},
+
+			Uid:     msg.User.Uid,
+			Name:    msg.User.Name,
+			Avatar:  msg.User.Avatar,
+			Message: msg.Display.Message.Text,
 		},
 		RedEnvelope: RedEnvelope{
 			Id:      msg.RedEnvelopeId,
@@ -339,10 +350,10 @@ func (p *Producer) toRedEnvelopePb(msg ProducerRedEnvelopeMessage) (*logicpb.Pus
 		Seq:     seq.Id,
 		Type:    logicpb.PushMsg_MONEY,
 		Room:    msg.Rooms,
-		Mid:     msg.Mid,
+		Mid:     msg.User.Id,
 		Msg:     bm,
 		SendAt:  now.Unix(),
-		Message: fmsg,
+		Message: msg.Display.Message.Text,
 	}, nil
 }
 
@@ -365,14 +376,14 @@ type ProducerAdminRedEnvelopeMessage struct {
 }
 
 func (p *Producer) SendRedEnvelopeForAdmin(msg ProducerAdminRedEnvelopeMessage) (int64, error) {
+	root := newRoot()
+	root.Name = msg.Name
+
 	pushMsg, err := p.toRedEnvelopePb(ProducerRedEnvelopeMessage{
 		ProducerMessage: ProducerMessage{
 			Rooms:   msg.Rooms,
-			Mid:     member.RootMid,
-			Uid:     member.RootUid,
-			Name:    msg.Name,
-			Message: msg.Message,
-			Avatar:  99,
+			User:    root,
+			Display: msg.Display,
 		},
 		RedEnvelopeId: msg.RedEnvelopeId,
 		Token:         msg.Token,
@@ -388,17 +399,10 @@ func (p *Producer) SendRedEnvelopeForAdmin(msg ProducerAdminRedEnvelopeMessage) 
 }
 
 type ProducerBetsMessage struct {
-	Rooms  []int32
-	Mid    int64
-	Uid    string
-	Name   string
-	Avatar int
-
-	GameId       int
-	PeriodNumber int
-	Bets         []Bet
-	Count        int
-	TotalAmount  int
+	Rooms   []int32
+	User    User
+	Display Display
+	Bet     BetInfo
 }
 
 func (p *Producer) SendBets(msg ProducerBetsMessage) (int64, error) {
@@ -410,29 +414,33 @@ func (p *Producer) SendBets(msg ProducerBetsMessage) (int64, error) {
 	}
 
 	// 避免Items與TransItems欄位json Marshal後出現null
-	for i, v := range msg.Bets {
+	for i, v := range msg.Bet.Bets {
 		if len(v.Items) == 0 {
-			msg.Bets[i].Items = []string{}
+			msg.Bet.Bets[i].Items = []string{}
 		}
 		if len(v.TransItems) == 0 {
-			msg.Bets[i].TransItems = []string{}
+			msg.Bet.Bets[i].TransItems = []string{}
 		}
 	}
 
 	now := time.Now()
 	bm, err := json.Marshal(Bets{
-		Id:           seq.Id,
-		Type:         BetsType,
-		Uid:          msg.Uid,
-		Name:         msg.Name,
-		Avatar:       toAvatarName(msg.Avatar),
-		Time:         now.Format("15:04:05"),
-		Timestamp:    now.Unix(),
-		GameId:       msg.GameId,
-		PeriodNumber: msg.PeriodNumber,
-		Items:        msg.Bets,
-		Count:        msg.Count,
-		TotalAmount:  msg.TotalAmount,
+		Id:        seq.Id,
+		Type:      BetsType,
+		Time:      now.Format("15:04:05"),
+		Timestamp: now.Unix(),
+		Display:   msg.Display,
+		User:      msg.User,
+		Bet:       msg.Bet,
+
+		Uid:          msg.User.Uid,
+		Name:         msg.User.Name,
+		Avatar:       msg.User.Avatar,
+		GameId:       msg.Bet.GameId,
+		PeriodNumber: msg.Bet.PeriodNumber,
+		Items:        msg.Bet.Bets,
+		Count:        msg.Bet.Count,
+		TotalAmount:  msg.Bet.TotalAmount,
 	})
 	if err != nil {
 		return 0, err
@@ -442,7 +450,7 @@ func (p *Producer) SendBets(msg ProducerBetsMessage) (int64, error) {
 		Seq:    seq.Id,
 		Type:   logicpb.PushMsg_BETS,
 		Room:   msg.Rooms,
-		Mid:    msg.Mid,
+		Mid:    msg.User.Id,
 		Msg:    bm,
 		SendAt: now.Unix(),
 	}
