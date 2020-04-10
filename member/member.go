@@ -15,7 +15,7 @@ const (
 	RootMid  = 1
 	RootUid  = "root"
 	RootName = "管理员"
-	System = "系统"
+	System   = "系统"
 )
 
 type Chat interface {
@@ -257,18 +257,19 @@ func (m *Member) Update(uid, name string, gender int) error {
 }
 
 type RedEnvelope struct {
-	RoomId int `json:"room_id" binding:"required"`
+	RoomId int
 
-	// 單包金額 or 總金額 看Type種類決定
-	Amount int `json:"amount" binding:"required"`
+	// 單包金額 or 總金額 看Type種類決定·
+	Amount int
 
-	Count int `json:"count" binding:"required"`
+	// 數量
+	Count int
 
 	// 紅包說明
-	Message string `json:"message" binding:"required,max=20"`
+	Message string
 
 	// 紅包種類 拼手氣 or 普通
-	Type string `json:"type" binding:"required"`
+	Type string
 }
 
 func (m *Member) GiveRedEnvelope(uid, token string, redEnvelope RedEnvelope) (*models.Member, client.RedEnvelopeReply, error) {

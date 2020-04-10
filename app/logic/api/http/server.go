@@ -28,6 +28,7 @@ type httpServer struct {
 	room    room.Chat
 	client  *client.Client
 	jwt     *member.Jwt
+	msg     *msg
 }
 
 func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, room room.Chat, client *client.Client, history *message.History) *http.Server {
@@ -44,6 +45,12 @@ func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, 
 		room:    room,
 		client:  client,
 		jwt:     member.NewJwt(conf.JwtSecret),
+		msg: &msg{
+			room:    room,
+			client:  client,
+			message: message,
+			member:  me,
+		},
 	}
 
 	c := cors.Config{
