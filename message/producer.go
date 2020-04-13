@@ -311,7 +311,7 @@ func (p *Producer) SendBets(msg ProducerMessage, bet Bet) (int64, error) {
 
 	pushMsg := &logicpb.PushMsg{
 		Seq:    seq.Id,
-		Type:   logicpb.PushMsg_BETS,
+		Type:   logicpb.PushMsg_SYSTEM,
 		Room:   msg.Rooms,
 		Mid:    msg.User.Id,
 		Msg:    bm,
