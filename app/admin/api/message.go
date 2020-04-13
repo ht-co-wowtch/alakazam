@@ -14,13 +14,21 @@ import (
 	"time"
 )
 
+type systemReq struct {
+	// 訊息房間
+	RoomId []int32 `json:"room_id" binding:"required"`
+
+	// 訊息資料
+	Body string `json:"body"`
+}
+
 func (s *httpServer) system(c *gin.Context) error {
-	var p message.ProducerSystemMessage
+	var p systemReq
 	if err := c.ShouldBindJSON(&p); err != nil {
 		return err
 	}
 
-	id, err := s.message.SendForSystem(p)
+	id, err := s.message.SendRaw(p.RoomId, []byte(p.Body))
 	if err != nil {
 		return err
 	}

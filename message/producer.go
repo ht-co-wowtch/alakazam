@@ -10,7 +10,6 @@ import (
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	seqpb "gitlab.com/jetfueltw/cpw/alakazam/app/seq/api/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	shield "gitlab.com/jetfueltw/cpw/alakazam/pkg/filter"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -323,39 +322,20 @@ func (p *Producer) SendBets(msg ProducerMessage, bet Bet) (int64, error) {
 	return pushMsg.Seq, nil
 }
 
-type ProducerSystemMessage struct {
-	RoomId  []int32                `json:"room_id" binding:"required"`
-	Message string                 `json:"message" binding:"required,max=250"`
-	Type    string                 `json:"type" binding:"required"`
-	Body    map[string]interface{} `json:"body"`
-}
-
-func (p *Producer) SendForSystem(msg ProducerSystemMessage) (int64, error) {
+func (p *Producer) SendRaw(roomId []int32, body []byte) (int64, error) {
 	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
 		Id: 1, Count: 1,
 	})
 	if err != nil {
 		return 0, err
 	}
-	now := time.Now()
-	bm, err := json.Marshal(System{
-		Id:        seq.Id,
-		Type:      msg.Type,
-		Name:      member.System,
-		Message:   msg.Message,
-		Time:      now.Format("15:04:05"),
-		Timestamp: now.Unix(),
-		Data:      msg.Body,
-	})
-	if err != nil {
-		return 0, err
-	}
 
+	now := time.Now()
 	pushMsg := &logicpb.PushMsg{
 		Seq:    seq.Id,
 		Type:   logicpb.PushMsg_SYSTEM,
-		Room:   msg.RoomId,
-		Msg:    bm,
+		Room:   roomId,
+		Msg:    body,
 		SendAt: now.Unix(),
 	}
 	if err := p.send(pushMsg); err != nil {
