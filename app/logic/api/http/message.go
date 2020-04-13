@@ -11,6 +11,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
+	"time"
 )
 
 type msg struct {
@@ -37,12 +38,24 @@ func (m *msg) user(req messageReq) (int64, error) {
 		}
 	}
 
+	u := toUserMessage(user)
 	msg := message.ProducerMessage{
 		Rooms: []int32{int32(req.RoomId)},
-		User:  toUserMessage(user),
+		User:  u,
 		Display: message.Display{
+			User: message.DisplayUser{
+				Text:   u.Name,
+				Color:  "#2AB7D5",
+				Avatar: u.Avatar,
+			},
+			Level: message.DisplayText{
+				Text:            "会员",
+				Color:           "#FFFFFF",
+				BackgroundColor: "#FFC300",
+			},
 			Message: message.DisplayText{
-				Text: req.Message,
+				Text:  req.Message,
+				Color: "#FFFFFF",
 			},
 		},
 	}
@@ -60,10 +73,7 @@ func (m *msg) user(req messageReq) (int64, error) {
 				log.Error("kick member for push room", zap.Error(err), zap.String("uid", user.Uid))
 			}
 			if len(keys) > 0 {
-				err = m.message.Kick(message.ProducerKickMessage{
-					Message: "你被踢出房间，因为自动禁言达五次",
-					Keys:    keys,
-				})
+				err = m.message.Kick("你被踢出房间，因为自动禁言达五次", keys)
 				if err == nil {
 					log.Error("kick member set message for push room", zap.Error(err))
 				}
@@ -86,22 +96,35 @@ func (m *msg) redEnvelope(req giveRedEnvelopeReq) (int64, client.RedEnvelopeRepl
 		return 0, client.RedEnvelopeReply{}, err
 	}
 
-	msg := message.ProducerRedEnvelopeMessage{
-		ProducerMessage: message.ProducerMessage{
-			Rooms: []int32{int32(req.RoomId)},
-			User:  toUserMessage(user),
-			Display: message.Display{
-				Message: message.DisplayText{
-					Text: req.Message,
-				},
+	u := toUserMessage(user)
+	msg := message.ProducerMessage{
+		Rooms: []int32{int32(req.RoomId)},
+		User:  u,
+		Display: message.Display{
+			User: message.DisplayUser{
+				Text:   u.Name,
+				Color:  "#2AB7D5",
+				Avatar: u.Avatar,
+			},
+			Level: message.DisplayText{
+				Text:            "会员",
+				Color:           "#FFFFFF",
+				BackgroundColor: "#FFC300",
+			},
+			Message: message.DisplayText{
+				Text:  req.Message,
+				Color: "#FFFFFF",
 			},
 		},
-		RedEnvelopeId: reply.Order,
-		Token:         reply.Token,
-		Expired:       reply.ExpireAt,
 	}
 
-	msgId, err := m.message.SendRedEnvelope(msg)
+	redEnvelope := message.RedEnvelope{
+		Id:      reply.Order,
+		Token:   reply.Token,
+		Expired: reply.ExpireAt.Format(time.RFC3339),
+	}
+
+	msgId, err := m.message.SendRedEnvelope(msg, redEnvelope)
 
 	if err != nil {
 		log.Error("send red envelope message error",

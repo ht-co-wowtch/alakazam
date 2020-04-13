@@ -31,7 +31,7 @@ func (s *httpServer) system(c *gin.Context) error {
 	return nil
 }
 
-type pushRoomForm struct {
+type pushRoomReq struct {
 	// 要廣播的房間
 	RoomId []int32 `json:"room_id" binding:"required"`
 
@@ -42,22 +42,29 @@ type pushRoomForm struct {
 	Top bool `json:"top"`
 }
 
-// 多房間推送
 func (s *httpServer) push(c *gin.Context) error {
-	p := new(pushRoomForm)
+	p := new(pushRoomReq)
 	if err := c.ShouldBindJSON(p); err != nil {
 		return err
 	}
 
-	msg := message.ProducerAdminMessage{
+	u := message.NewRoot()
+	msg := message.ProducerMessage{
 		Rooms: p.RoomId,
 		Display: message.Display{
+			User: message.DisplayUser{
+				Text:   u.Name,
+				Color:  "#2AB7D5",
+				Avatar: u.Avatar,
+			},
 			Message: message.DisplayText{
-				Text: p.Message,
+				Text:  p.Message,
+				Color: "#FFFFFF",
 			},
 		},
 		IsTop: p.Top,
 	}
+
 	id, err := s.message.SendForAdmin(msg)
 	if err != nil {
 		return err
@@ -87,13 +94,13 @@ func (s *httpServer) push(c *gin.Context) error {
 }
 
 type betsReq struct {
-	RoomId       []int32       `json:"room_id" binding:"required"`
-	Uid          string        `json:"uid" binding:"required"`
-	GameId       int           `json:"game_id" binding:"required"`
-	PeriodNumber int           `json:"period_number" binding:"required"`
-	Bets         []message.Bet `json:"bets" binding:"required"`
-	Count        int           `json:"count" binding:"required"`
-	TotalAmount  int           `json:"total_amount" binding:"required"`
+	RoomId       []int32            `json:"room_id" binding:"required"`
+	Uid          string             `json:"uid" binding:"required"`
+	GameId       int                `json:"game_id" binding:"required"`
+	PeriodNumber int                `json:"period_number" binding:"required"`
+	Bets         []message.BetOrder `json:"bets" binding:"required"`
+	Count        int                `json:"count" binding:"required"`
+	TotalAmount  int                `json:"total_amount" binding:"required"`
 }
 
 // 跟投
@@ -107,72 +114,40 @@ func (s *httpServer) bets(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	msg := message.ProducerBetsMessage{
+
+	msg := message.ProducerMessage{
 		Rooms: req.RoomId,
-		Display: message.Display{
-			Message: message.DisplayText{
-				Text: m.Name,
-			},
-		},
 		User: message.User{
-			Id:     int64(m.Id),
-			Uid:    m.Uid,
-			Name:   m.Name,
-			Avatar: message.ToAvatarName(m.Gender),
+			Uid: req.Uid,
 		},
-		Bet: message.BetInfo{
-			GameId:       req.GameId,
-			PeriodNumber: req.PeriodNumber,
-			Count:        req.Count,
-			TotalAmount:  req.TotalAmount,
-			Bets:         req.Bets,
+		Display: message.Display{
+			User: message.DisplayUser{
+				Text:   m.Name,
+				Color:  "#2AB7D5",
+				Avatar: message.ToAvatarName(m.Gender),
+			},
+			Message: message.DisplayText{
+				Text:  m.Name,
+				Color: "#FFFFFF",
+			},
 		},
 	}
 
-	id, err := s.message.SendBets(msg)
+	bet := message.Bet{
+		GameId:       req.GameId,
+		PeriodNumber: req.PeriodNumber,
+		Count:        req.Count,
+		TotalAmount:  req.TotalAmount,
+		Orders:       req.Bets,
+	}
+
+	id, err := s.message.SendBets(msg, bet)
 	if err != nil {
 		return err
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"id": id,
-	})
-	return nil
-}
-
-// 取消置頂訊息
-func (s *httpServer) deleteTopMessage(c *gin.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return err
-	}
-
-	msgId := int64(id)
-	rid, msg, err := s.room.GetTopMessage(msgId)
-
-	if err == nil {
-		if err := s.message.CloseTop(msgId, rid); err != nil {
-			return err
-		}
-		if err := s.room.DeleteTopMessage(rid, msgId); err != nil {
-			return err
-		}
-
-		// TODO 因為後台UI介面的因素導致沒有處理`没有资料`情況，所以將`没有资料`情況視為正常
-		// 參考 http://mantis.jetfuel.com.tw/view.php?id=3004
-	} else if err == errors.ErrNoRows {
-		rid = []int32{}
-		msg = models.Message{
-			Message: "没有资料",
-		}
-	} else {
-		return err
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"id":      msgId,
-		"message": msg.Message,
-		"room_id": rid,
 	})
 	return nil
 }
@@ -221,28 +196,37 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		return err
 	}
 
-	msg := message.ProducerAdminRedEnvelopeMessage{
-		ProducerAdminMessage: message.ProducerAdminMessage{
-			Rooms: []int32{int32(o.RoomId)},
-			Name:  member.RootName,
-			Display: message.Display{
-				Message: message.DisplayText{
-					Text: o.Message,
-				},
+	u := message.NewRoot()
+
+	msg := message.ProducerMessage{
+		Rooms: []int32{int32(o.RoomId)},
+		Display: message.Display{
+			User: message.DisplayUser{
+				Text:   u.Name,
+				Color:  "#2AB7D5",
+				Avatar: u.Avatar,
+			},
+			Message: message.DisplayText{
+				Text:  o.Message,
+				Color: "#FFFFFF",
 			},
 		},
-		RedEnvelopeId: result.Order,
-		Token:         result.Token,
-		Expired:       result.ExpireAt,
 	}
+
+	redEnvelope := message.RedEnvelope{
+		Id:      result.Order,
+		Token:   result.Token,
+		Expired: result.ExpireAt.Format(time.RFC3339),
+	}
+
 	var msgId int64
 	if o.PublishAt.IsZero() {
-		if msgId, err = s.message.SendRedEnvelopeForAdmin(msg); err != nil {
+		if msgId, err = s.message.SendRedEnvelope(msg, redEnvelope); err != nil {
 			return err
 		}
 	} else if result.PublishAt.Before(time.Now()) {
 		return errors.ErrPublishAt
-	} else if msgId, err = s.delayMessage.SendDelayRedEnvelopeForAdmin(msg, result.PublishAt); err != nil {
+	} else if msgId, err = s.delayMessage.SendDelayRedEnvelopeForAdmin(msg, redEnvelope, result.PublishAt); err != nil {
 		return err
 	}
 
@@ -266,12 +250,39 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	return nil
 }
 
-type giftReq struct {
-	RoomId int32 `json:"room_id" binding:"required"`
+// 取消置頂訊息
+func (s *httpServer) deleteTopMessage(c *gin.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return err
+	}
 
-	Message string `json:"message" binding:"required,max=250"`
+	msgId := int64(id)
+	rid, msg, err := s.room.GetTopMessage(msgId)
 
-	Animation string `json:"animation" binding:"required"`
+	if err == nil {
+		if err := s.message.CloseTop(msgId, rid); err != nil {
+			return err
+		}
+		if err := s.room.DeleteTopMessage(rid, msgId); err != nil {
+			return err
+		}
 
-	AnimationId int `json:"animation_id" binding:"required"`
+		// TODO 因為後台UI介面的因素導致沒有處理`没有资料`情況，所以將`没有资料`情況視為正常
+		// 參考 http://mantis.jetfuel.com.tw/view.php?id=3004
+	} else if err == errors.ErrNoRows {
+		rid = []int32{}
+		msg = models.Message{
+			Message: "没有资料",
+		}
+	} else {
+		return err
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":      msgId,
+		"message": msg.Message,
+		"room_id": rid,
+	})
+	return nil
 }

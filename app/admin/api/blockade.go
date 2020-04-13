@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"net/http"
@@ -29,10 +28,7 @@ func (s *httpServer) setBlockade(c *gin.Context) error {
 	if len(keys) == 0 {
 		msg = "封锁成功"
 	} else {
-		err = s.message.Kick(message.ProducerKickMessage{
-			Message: "你被踢出房间，因为被封锁",
-			Keys:    keys,
-		})
+		err = s.message.Kick("你被踢出房间，因为被封锁", keys)
 
 		if err != nil {
 			log.Error("kick member message for set blockade", zap.Error(err), zap.String("uid", uid))

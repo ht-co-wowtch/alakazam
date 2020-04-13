@@ -104,7 +104,7 @@ type User struct {
 }
 
 // 管理員用戶資料
-func newRoot() User {
+func NewRoot() User {
 	return User{
 		Id:     member.RootMid,
 		Uid:    member.RootUid,
@@ -163,30 +163,30 @@ type Bets struct {
 	User User `json:"user"`
 
 	// 跟投資料
-	Bet BetInfo `json:"bet"`
+	Bet Bet `json:"bet"`
 
 	// TODO 以下待廢棄
-	Uid          string `json:"uid"`
-	Name         string `json:"name"`
-	Avatar       string `json:"avatar"`
-	GameId       int    `json:"game_id"`
-	PeriodNumber int    `json:"period_number"`
-	Items        []Bet  `json:"bets"`
-	Count        int    `json:"count"`
-	TotalAmount  int    `json:"total_amount"`
+	Uid          string     `json:"uid"`
+	Name         string     `json:"name"`
+	Avatar       string     `json:"avatar"`
+	GameId       int        `json:"game_id"`
+	PeriodNumber int        `json:"period_number"`
+	Items        []BetOrder `json:"bets"`
+	Count        int        `json:"count"`
+	TotalAmount  int        `json:"total_amount"`
 }
 
 // 跟投資料
-type BetInfo struct {
-	GameId       int   `json:"game_id"`
-	PeriodNumber int   `json:"period_number"`
-	Count        int   `json:"count"`
-	TotalAmount  int   `json:"total_amount"`
-	Bets         []Bet `json:"bets"`
+type Bet struct {
+	GameId       int        `json:"game_id"`
+	PeriodNumber int        `json:"period_number"`
+	Count        int        `json:"count"`
+	TotalAmount  int        `json:"total_amount"`
+	Orders       []BetOrder `json:"bets"`
 }
 
 // 跟投項目資料
-type Bet struct {
+type BetOrder struct {
 	Name       string   `json:"name"`
 	OddsCode   string   `json:"odds_code"`
 	Items      []string `json:"items"`

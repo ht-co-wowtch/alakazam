@@ -67,20 +67,8 @@ func (p *DelayProducer) run() {
 	}
 }
 
-func (p *DelayProducer) SendDelayRedEnvelopeForAdmin(msg ProducerAdminRedEnvelopeMessage, publishAt time.Time) (int64, error) {
-	root := newRoot()
-	root.Name = msg.Name
-
-	pushMsg, err := p.producer.toRedEnvelopePb(ProducerRedEnvelopeMessage{
-		ProducerMessage: ProducerMessage{
-			Rooms:   msg.Rooms,
-			User:    root,
-			Display: msg.Display,
-		},
-		RedEnvelopeId: msg.RedEnvelopeId,
-		Token:         msg.Token,
-		Expired:       msg.Expired,
-	})
+func (p *DelayProducer) SendDelayRedEnvelopeForAdmin(msg ProducerMessage, redEnvelope RedEnvelope, publishAt time.Time) (int64, error) {
+	pushMsg, err := p.producer.toRedEnvelopePb(msg, redEnvelope)
 	if err != nil {
 		return 0, err
 	}
