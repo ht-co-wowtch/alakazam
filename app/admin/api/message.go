@@ -15,20 +15,23 @@ import (
 )
 
 type systemReq struct {
-	// 訊息房間
-	RoomId []int32 `json:"room_id" binding:"required"`
-
-	// 訊息資料
-	Body string `json:"body"`
+	Messages []message.RawMessage `json:"messages" binding:"required"`
 }
 
 func (s *httpServer) system(c *gin.Context) error {
 	var p systemReq
-	if err := c.ShouldBindJSON(&p); err != nil {
+	var id int64
+	var err error
+	if err = c.ShouldBindJSON(&p); err != nil {
 		return err
 	}
 
-	id, err := s.message.SendRaw(p.RoomId, []byte(p.Body))
+	if len(p.Messages) > 1 {
+		id, err = s.message.SendRaws(p.Messages)
+	} else {
+		id, err = s.message.SendRaw(p.Messages[0].RoomId, []byte(p.Messages[0].Body))
+	}
+
 	if err != nil {
 		return err
 	}

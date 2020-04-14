@@ -330,18 +330,83 @@ func (p *Producer) SendRaw(roomId []int32, body []byte) (int64, error) {
 		return 0, err
 	}
 
+	var b map[string]interface{}
+	if err := json.Unmarshal(body, &b); err != nil {
+		return 0, err
+	}
+
+	b["id"] = seq.Id
+
+	bm, err := json.Marshal(b)
+	if err != nil {
+		return 0, err
+	}
+
 	now := time.Now()
 	pushMsg := &logicpb.PushMsg{
 		Seq:    seq.Id,
 		Type:   logicpb.PushMsg_SYSTEM,
 		Room:   roomId,
-		Msg:    body,
+		Msg:    bm,
 		SendAt: now.Unix(),
 	}
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
 	}
 	return pushMsg.Seq, nil
+}
+
+type RawMessage struct {
+	// 訊息房間
+	RoomId []int32 `json:"room_id" binding:"required"`
+
+	// 訊息資料
+	Body string `json:"body" binding:"required"`
+}
+
+func (p *Producer) SendRaws(raws []RawMessage) (int64, error) {
+	count := int64(len(raws))
+	seq, err := p.seq.Ids(context.Background(), &seqpb.SeqReq{
+		Id: 1, Count: count,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	now := time.Now()
+	id := seq.Id - count
+
+	for i, raw := range raws {
+		var b map[string]interface{}
+		if err := json.Unmarshal([]byte(raw.Body), &b); err != nil {
+			return 0, err
+		}
+
+		seq := id + int64(i) + 1
+		b["id"] = seq
+
+		bm, err := json.Marshal(b)
+		if err != nil {
+			return 0, err
+		}
+
+		pushMsg := &logicpb.PushMsg{
+			Seq:    seq,
+			Type:   logicpb.PushMsg_SYSTEM,
+			Room:   raw.RoomId,
+			Msg:    bm,
+			SendAt: now.Unix(),
+		}
+
+		if err := p.send(pushMsg); err != nil {
+			if i == 0 {
+				return 0, err
+			}
+			return id, err
+		}
+	}
+
+	return id, nil
 }
 
 func (p *Producer) Kick(msg string, keys []string) error {
