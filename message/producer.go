@@ -330,19 +330,21 @@ func (p *Producer) SendRaw(roomId []int32, body []byte) (int64, error) {
 		return 0, err
 	}
 
+	now := time.Now()
 	var b map[string]interface{}
 	if err := json.Unmarshal(body, &b); err != nil {
 		return 0, err
 	}
 
 	b["id"] = seq.Id
+	b["time"] = now.Format("15:04:05")
+	b["timestamp"] = now.Unix()
 
 	bm, err := json.Marshal(b)
 	if err != nil {
 		return 0, err
 	}
 
-	now := time.Now()
 	pushMsg := &logicpb.PushMsg{
 		Seq:    seq.Id,
 		Type:   logicpb.PushMsg_SYSTEM,
@@ -384,6 +386,8 @@ func (p *Producer) SendRaws(raws []RawMessage) (int64, error) {
 
 		seq := id + int64(i) + 1
 		b["id"] = seq
+		b["time"] = now.Format("15:04:05")
+		b["timestamp"] = now.Unix()
 
 		bm, err := json.Marshal(b)
 		if err != nil {
