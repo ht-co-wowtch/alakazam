@@ -43,17 +43,17 @@ func (m *msg) user(req messageReq) (int64, error) {
 		Rooms: []int32{int32(req.RoomId)},
 		User:  u,
 		Display: message.Display{
-			User: message.DisplayUser{
+			User: message.NullDisplayUser{
 				Text:   u.Name,
 				Color:  "#2AB7D5",
 				Avatar: u.Avatar,
 			},
-			Level: message.DisplayText{
+			Level: message.NullDisplayText{
 				Text:            "会员",
 				Color:           "#FFFFFF",
 				BackgroundColor: "#FFC300",
 			},
-			Message: message.DisplayText{
+			Message: message.NullDisplayText{
 				Text:  req.Message,
 				Color: "#FFFFFF",
 			},
@@ -101,17 +101,17 @@ func (m *msg) redEnvelope(req giveRedEnvelopeReq) (int64, client.RedEnvelopeRepl
 		Rooms: []int32{int32(req.RoomId)},
 		User:  u,
 		Display: message.Display{
-			User: message.DisplayUser{
+			User: message.NullDisplayUser{
 				Text:   u.Name,
 				Color:  "#2AB7D5",
 				Avatar: u.Avatar,
 			},
-			Level: message.DisplayText{
+			Level: message.NullDisplayText{
 				Text:            "会员",
 				Color:           "#FFFFFF",
 				BackgroundColor: "#FFC300",
 			},
-			Message: message.DisplayText{
+			Message: message.NullDisplayText{
 				Text:  req.Message,
 				Color: "#FFFFFF",
 			},

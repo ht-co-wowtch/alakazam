@@ -144,7 +144,7 @@ func (p *Producer) toPb(msg ProducerMessage) (*logicpb.PushMsg, error) {
 		Type:      msg.Type,
 		Time:      now.Format("15:04:05"),
 		Timestamp: now.Unix(),
-		User:      msg.User,
+		User:      NullUser(msg.User),
 		Display:   msg.Display,
 
 		Uid:     msg.User.Uid,
@@ -232,7 +232,7 @@ func (p *Producer) toRedEnvelopePb(msg ProducerMessage, redEnvelope RedEnvelope)
 			Type:      RedEnvelopeType,
 			Time:      now.Format("15:04:05"),
 			Timestamp: now.Unix(),
-			User:      msg.User,
+			User:      NullUser(msg.User),
 			Display:   msg.Display,
 
 			Uid:     msg.User.Uid,

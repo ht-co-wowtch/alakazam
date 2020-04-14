@@ -63,12 +63,12 @@ func (s *httpServer) push(c *gin.Context) error {
 	msg := message.ProducerMessage{
 		Rooms: p.RoomId,
 		Display: message.Display{
-			User: message.DisplayUser{
+			User: message.NullDisplayUser{
 				Text:   u.Name,
 				Color:  "#2AB7D5",
 				Avatar: u.Avatar,
 			},
-			Message: message.DisplayText{
+			Message: message.NullDisplayText{
 				Text:  p.Message,
 				Color: "#FFFFFF",
 			},
@@ -132,12 +132,12 @@ func (s *httpServer) bets(c *gin.Context) error {
 			Uid: req.Uid,
 		},
 		Display: message.Display{
-			User: message.DisplayUser{
+			User: message.NullDisplayUser{
 				Text:   m.Name,
 				Color:  "#2AB7D5",
 				Avatar: message.ToAvatarName(m.Gender),
 			},
-			Message: message.DisplayText{
+			Message: message.NullDisplayText{
 				Text:  m.Name,
 				Color: "#FFFFFF",
 			},
@@ -212,12 +212,12 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	msg := message.ProducerMessage{
 		Rooms: []int32{int32(o.RoomId)},
 		Display: message.Display{
-			User: message.DisplayUser{
+			User: message.NullDisplayUser{
 				Text:   u.Name,
 				Color:  "#2AB7D5",
 				Avatar: u.Avatar,
 			},
-			Message: message.DisplayText{
+			Message: message.NullDisplayText{
 				Text:  o.Message,
 				Color: "#FFFFFF",
 			},

@@ -33,7 +33,7 @@ type Message struct {
 	Display Display `json:"display"`
 
 	// 發訊息者
-	User User `json:"user"`
+	User NullUser `json:"user"`
 
 	// TODO 以下待廢棄
 	Uid     string `json:"uid"`
@@ -53,16 +53,16 @@ func (m Message) Score() float64 {
 // 顯示訊息資料格式
 type Display struct {
 	// 顯示用戶
-	User DisplayUser `json:"user"`
+	User NullDisplayUser `json:"user"`
 
 	// 顯示用戶等級
-	Level DisplayText `json:"level"`
+	Level NullDisplayText `json:"level"`
 
 	// 顯示用戶標題
-	Title DisplayText `json:"title"`
+	Title NullDisplayText `json:"title"`
 
 	// 顯示訊息內容
-	Message DisplayText `json:"message"`
+	Message NullDisplayText `json:"message"`
 }
 
 // 顯示用戶資料
@@ -77,6 +77,15 @@ type DisplayUser struct {
 	Avatar string `json:"avatar"`
 }
 
+type NullDisplayUser DisplayUser
+
+func (d NullDisplayUser) MarshalJSON() ([]byte, error) {
+	if d.Text == "" {
+		return []byte(`null`), nil
+	}
+	return json.Marshal(DisplayUser(d))
+}
+
 // 文字資料
 type DisplayText struct {
 	// 文字
@@ -87,6 +96,15 @@ type DisplayText struct {
 
 	// 字體背景
 	BackgroundColor string `json:"background_color"`
+}
+
+type NullDisplayText DisplayText
+
+func (d NullDisplayText) MarshalJSON() ([]byte, error) {
+	if d.Text == "" {
+		return []byte(`null`), nil
+	}
+	return json.Marshal(DisplayText(d))
 }
 
 // 用戶資料
@@ -101,6 +119,15 @@ type User struct {
 
 	// 頭像
 	Avatar string `json:"avatar"`
+}
+
+type NullUser User
+
+func (d NullUser) MarshalJSON() ([]byte, error) {
+	if d.Uid == "" || d.Name == "" {
+		return []byte(`null`), nil
+	}
+	return json.Marshal(User(d))
 }
 
 // 管理員用戶資料
