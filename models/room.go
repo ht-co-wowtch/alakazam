@@ -64,9 +64,7 @@ func (s *Store) UpdateRoom(room Room) (int64, error) {
 
 func (s *Store) GetRoom(roomId int) (Room, error) {
 	r := Room{}
-	ok, err := s.d.Where("id = ?", roomId).
-		Where("status = ?", true).
-		Get(&r)
+	ok, err := s.d.Where("id = ?", roomId).Get(&r)
 	if !ok {
 		return r, sql.ErrNoRows
 	}
