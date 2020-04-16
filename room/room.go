@@ -95,9 +95,8 @@ func (r *room) Update(id int, status Status) error {
 }
 
 func (r *room) newRoomModel(status Status) models.Room {
-	audienceRatio := 1.0
-	if status.AudienceRatio != 0 {
-		audienceRatio = status.AudienceRatio
+	if status.AudienceRatio < 1 {
+		status.AudienceRatio = 1
 	}
 
 	return models.Room{
@@ -106,7 +105,7 @@ func (r *room) newRoomModel(status Status) models.Room {
 		DayLimit:      status.Limit.Day,
 		DepositLimit:  status.Limit.Deposit,
 		DmlLimit:      status.Limit.Dml,
-		AudienceRatio: audienceRatio,
+		AudienceRatio: status.AudienceRatio,
 	}
 }
 
