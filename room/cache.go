@@ -171,10 +171,11 @@ type Online struct {
 func (c *cache) addOnline(server string, online *Online) error {
 	roomsMap := map[uint32]map[int32]int32{}
 	for room, count := range online.RoomCount {
-		rMap := roomsMap[cityhash.CityHash32([]byte(strconv.Itoa(int(room))), uint32(room))%8]
+		r := strconv.Itoa(int(room))
+		rMap := roomsMap[cityhash.CityHash32([]byte(r), uint32(len(r)))%8]
 		if rMap == nil {
 			rMap = make(map[int32]int32)
-			roomsMap[cityhash.CityHash32([]byte(strconv.Itoa(int(room))), uint32(room))%8] = rMap
+			roomsMap[cityhash.CityHash32([]byte(r), uint32(len(r)))%8] = rMap
 		}
 		rMap[room] = count
 	}
