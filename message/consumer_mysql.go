@@ -84,7 +84,7 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 			case pb.PushMsg_USER, pb.PushMsg_ADMIN:
 				if _, e := tx.Exec(fmt.Sprintf(addMessage, p.Room[0]%50), p.Seq, p.Mid, p.Type, p.Message, sendAt); e != nil {
 					err = &messageError{
-						error:   err,
+						error:   e,
 						msgId:   p.Seq,
 						mid:     p.Mid,
 						message: p.Message,
