@@ -12,7 +12,9 @@ import (
 const (
 	OK = "OK"
 
-	messageKey = "room_message_%d"
+	prefix = "ala"
+
+	messageKey = prefix + ":room_message_%d"
 )
 
 var (

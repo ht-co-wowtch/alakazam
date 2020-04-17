@@ -33,14 +33,16 @@ func newCache(client *redis.Client) Cache {
 }
 
 const (
-	// 房間的前綴詞，用於存儲在redis當key
-	roomKey = "room_%d"
+	prefix = "ala"
 
-	roomDataKey   = "data"
-	roomTopMsgKey = "msg"
+	// 房間的前綴詞，用於存儲在redis當key
+	roomKey = prefix + ":room_%d"
+
+	roomDataHKey   = "data"
+	roomTopMsgHKey = "msg"
 
 	// server name的前綴詞，用於存儲在redis當key
-	onlineKey = "server_%s"
+	onlineKey = prefix + ":server_%s"
 )
 
 func keyRoom(id int) string {
@@ -62,14 +64,14 @@ func (c *cache) set(room models.Room) error {
 		return err
 	}
 	key := keyRoom(room.Id)
-	tx.HSet(key, roomDataKey, b)
+	tx.HSet(key, roomDataHKey, b)
 	tx.Expire(key, roomExpired)
 	_, err = tx.Exec()
 	return err
 }
 
 func (c *cache) get(id int) (models.Room, error) {
-	b, err := c.c.HGet(keyRoom(id), roomDataKey).Bytes()
+	b, err := c.c.HGet(keyRoom(id), roomDataHKey).Bytes()
 	if err != nil {
 		return models.Room{}, err
 	}
@@ -89,8 +91,8 @@ func (c *cache) setChat(room models.Room, message []byte) error {
 	tx := c.c.Pipeline()
 	key := keyRoom(room.Id)
 	tx.HMSet(key, map[string]interface{}{
-		roomDataKey:   b1,
-		roomTopMsgKey: message,
+		roomDataHKey:   b1,
+		roomTopMsgHKey: message,
 	})
 	tx.Expire(key, roomExpired)
 	_, err = tx.Exec()
@@ -98,7 +100,7 @@ func (c *cache) setChat(room models.Room, message []byte) error {
 }
 
 func (c *cache) getChat(id int) (models.Room, error) {
-	room, err := c.c.HMGet(keyRoom(id), roomDataKey, roomTopMsgKey).Result()
+	room, err := c.c.HMGet(keyRoom(id), roomDataHKey, roomTopMsgHKey).Result()
 	if err != nil {
 		return models.Room{}, err
 	}
@@ -126,14 +128,14 @@ func (c *cache) setChatTopMessage(rids []int32, message []byte) error {
 
 	tx := c.c.Pipeline()
 	for _, k := range keys {
-		tx.HSet(k, roomTopMsgKey, message)
+		tx.HSet(k, roomTopMsgHKey, message)
 	}
 	_, err := tx.Exec()
 	return err
 }
 
 func (c *cache) getChatTopMessage(rid int) ([]byte, error) {
-	b, err := c.c.HGet(keyRoom(rid), roomTopMsgKey).Bytes()
+	b, err := c.c.HGet(keyRoom(rid), roomTopMsgHKey).Bytes()
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +153,7 @@ func (c *cache) deleteChatTopMessage(rids []int32) error {
 
 	tx := c.c.Pipeline()
 	for _, k := range keys {
-		tx.HDel(k, roomTopMsgKey)
+		tx.HDel(k, roomTopMsgHKey)
 	}
 	_, err := tx.Exec()
 	return err

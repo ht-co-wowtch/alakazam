@@ -23,11 +23,9 @@ import (
 
 type httpServer struct {
 	member  *member.Member
-	message *message.Producer
 	history *message.History
-	room    room.Chat
-	client  *client.Client
 	jwt     *member.Jwt
+	msg     *msg
 }
 
 func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, room room.Chat, client *client.Client, history *message.History) *http.Server {
@@ -39,11 +37,14 @@ func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, 
 
 	srv := httpServer{
 		member:  me,
-		message: message,
 		history: history,
-		room:    room,
-		client:  client,
 		jwt:     member.NewJwt(conf.JwtSecret),
+		msg: &msg{
+			room:    room,
+			client:  client,
+			message: message,
+			member:  me,
+		},
 	}
 
 	c := cors.Config{
@@ -108,7 +109,7 @@ func (h *httpServer) authUid(c *gin.Context) {
 }
 
 func (s *httpServer) Close() error {
-	if err := s.message.Close(); err != nil {
+	if err := s.msg.message.Close(); err != nil {
 		return fmt.Errorf("message producer close error(%v)", err)
 	}
 	return nil

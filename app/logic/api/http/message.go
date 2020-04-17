@@ -1,37 +1,147 @@
 package http
 
 import (
-	"github.com/gin-gonic/gin"
+	"fmt"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
-	"net/http"
-	"strconv"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 	"time"
 )
 
-func (s *httpServer) getMessage(c *gin.Context) error {
-	rid, err := strconv.Atoi(c.Param("room"))
+type msg struct {
+	room    room.Chat
+	client  *client.Client
+	message *message.Producer
+	member  *member.Member
+}
+
+func (m *msg) user(req messageReq) (int64, error) {
+	user, chat, err := m.room.GetUserMessageSession(req.uid, req.RoomId)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	var timestamp int64
-	timestampStr := c.Query("timestamp")
-	if timestampStr == "" {
-		timestamp = time.Now().Unix()
-	} else {
-		timestamp, err = strconv.ParseInt(timestampStr, 10, 0)
+	if chat.DayLimit >= 1 && chat.DmlLimit+chat.DepositLimit > 0 {
+		money, err := m.client.GetDepositAndDml(chat.DayLimit, user.Uid, req.token)
 		if err != nil {
-			return errdefs.InvalidParameter(4000, "时间格式错误")
+			return 0, err
+		}
+		if float64(chat.DmlLimit) > money.Dml || float64(chat.DepositLimit) > money.Deposit {
+			msg := fmt.Sprintf(errors.ErrRoomLimit, chat.DayLimit, chat.DepositLimit, chat.DmlLimit)
+			return 0, errdefs.Unauthorized(5005, msg)
 		}
 	}
 
-	msg, err := s.history.Get(int32(rid), time.Unix(timestamp, 0))
-	if err != nil {
-		return err
+	u := toUserMessage(user)
+	msg := message.ProducerMessage{
+		Rooms: []int32{int32(req.RoomId)},
+		User:  u,
+		Display: message.Display{
+			User: message.NullDisplayUser{
+				Text:   u.Name,
+				Color:  "#2AB7D5",
+				Avatar: u.Avatar,
+			},
+			Level: message.NullDisplayText{
+				Text:            "会员",
+				Color:           "#FFFFFF",
+				BackgroundColor: "#FFC300",
+			},
+			Message: message.NullDisplayText{
+				Text:  req.Message,
+				Color: "#FFFFFF",
+			},
+		},
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": msg,
+	id, err := m.message.Send(msg)
+
+	if err == errors.ErrRateSameMsg {
+		isBlockade, err := m.member.SetBannedForSystem(user.Uid, 10*60)
+		if err != nil {
+			log.Error("set banned for rate same message", zap.Error(err), zap.String("uid", user.Uid))
+		}
+		if isBlockade {
+			keys, err := m.member.Kick(user.Uid)
+			if err != nil {
+				log.Error("kick member for push room", zap.Error(err), zap.String("uid", user.Uid))
+			}
+			if len(keys) > 0 {
+				err = m.message.Kick("你被踢出房间，因为自动禁言达五次", keys)
+				if err == nil {
+					log.Error("kick member set message for push room", zap.Error(err))
+				}
+			}
+		}
+	}
+
+	return id, err
+}
+
+func (m *msg) redEnvelope(req giveRedEnvelopeReq) (int64, client.RedEnvelopeReply, error) {
+	user, reply, err := m.member.GiveRedEnvelope(req.uid, req.token, member.RedEnvelope{
+		RoomId:  req.RoomId,
+		Message: req.Message,
+		Type:    req.Type,
+		Amount:  req.Amount,
+		Count:   req.Count,
 	})
-	return nil
+	if err != nil {
+		return 0, client.RedEnvelopeReply{}, err
+	}
+
+	u := toUserMessage(user)
+	msg := message.ProducerMessage{
+		Rooms: []int32{int32(req.RoomId)},
+		User:  u,
+		Display: message.Display{
+			User: message.NullDisplayUser{
+				Text:   u.Name,
+				Color:  "#2AB7D5",
+				Avatar: u.Avatar,
+			},
+			Level: message.NullDisplayText{
+				Text:            "会员",
+				Color:           "#FFFFFF",
+				BackgroundColor: "#FFC300",
+			},
+			Message: message.NullDisplayText{
+				Text:  req.Message,
+				Color: "#FFFFFF",
+			},
+		},
+	}
+
+	redEnvelope := message.RedEnvelope{
+		Id:      reply.Order,
+		Token:   reply.Token,
+		Expired: reply.ExpireAt.Format(time.RFC3339),
+	}
+
+	msgId, err := m.message.SendRedEnvelope(msg, redEnvelope)
+
+	if err != nil {
+		log.Error("send red envelope message error",
+			zap.Error(err),
+			zap.String("uid", user.Uid),
+			zap.String("order", reply.Order),
+		)
+	}
+
+	return msgId, reply, err
+}
+
+func toUserMessage(user *models.Member) message.User {
+	return message.User{
+		Id:     int64(user.Id),
+		Uid:    user.Uid,
+		Name:   user.Name,
+		Avatar: message.ToAvatarName(user.Gender),
+	}
 }

@@ -40,22 +40,36 @@ func TestPerSec(t *testing.T) {
 }
 
 func TestIsSameMsg(t *testing.T) {
+	msg := Display{
+		Message: DisplayText{
+			Text: "test",
+		},
+	}
+
 	rate := newRateLimit(r)
 	msgA := ProducerMessage{
-		Uid:     "1",
-		Message: "test",
+		User: User{
+			Uid: "1",
+		},
+		Display: msg,
 	}
 	msgB := ProducerMessage{
-		Uid:     "2",
-		Message: "test",
+		User: User{
+			Uid: "2",
+		},
+		Display: msg,
 	}
 	msgC := ProducerMessage{
-		Uid:     "3",
-		Message: "test",
+		User: User{
+			Uid: "3",
+		},
+		Display: msg,
 	}
 	msgD := ProducerMessage{
-		Uid:     "4",
-		Message: "test",
+		User: User{
+			Uid: "4",
+		},
+		Display: msg,
 	}
 
 	testCase := []struct {

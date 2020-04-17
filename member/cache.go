@@ -10,12 +10,14 @@ import (
 )
 
 const (
-	uidKey    = "uid_h_%s"
-	uidWsKey  = "uid_h_ws_%s"
-	bannedKey = "b_%s"
+	prefix = "ala"
 
-	uidJsonKey = "json"
-	uidNameKey = "name"
+	uidKey    = prefix + ":uid_h_%s"
+	uidWsKey  = prefix + ":uid_h_ws_%s"
+	bannedKey = prefix + ":b_%s"
+
+	uidJsonHKey = "json"
+	uidNameHKey = "name"
 
 	OK = "OK"
 )
@@ -75,8 +77,8 @@ func (c *cache) login(member *models.Member, key, server string) error {
 
 	uidKey := keyUid(member.Uid)
 	c1 := tx.HMSet(uidKey, map[string]interface{}{
-		uidJsonKey: b,
-		uidNameKey: member.Name,
+		uidJsonHKey: b,
+		uidNameHKey: member.Name,
 	})
 
 	uidWsKey := keyUidWs(member.Uid)
@@ -105,11 +107,11 @@ func (c *cache) set(member *models.Member) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return c.c.HSet(keyUid(member.Uid), uidJsonKey, b).Result()
+	return c.c.HSet(keyUid(member.Uid), uidJsonHKey, b).Result()
 }
 
 func (c *cache) get(uid string) (*models.Member, error) {
-	b, err := c.c.HGet(keyUid(uid), uidJsonKey).Bytes()
+	b, err := c.c.HGet(keyUid(uid), uidJsonHKey).Bytes()
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +167,7 @@ func (c *cache) refreshExpire(uid string) error {
 func (c *cache) setName(name map[string]string) error {
 	tx := c.c.Pipeline()
 	for id, na := range name {
-		tx.HSet(keyUid(id), uidNameKey, na)
+		tx.HSet(keyUid(id), uidNameHKey, na)
 	}
 	_, err := tx.Exec()
 	return err
@@ -175,7 +177,7 @@ func (c *cache) getName(uid []string) (map[string]string, error) {
 	tx := c.c.Pipeline()
 	cmd := make(map[string]*redis.StringCmd, len(uid))
 	for _, id := range uid {
-		cmd[id] = tx.HGet(keyUid(id), uidNameKey)
+		cmd[id] = tx.HGet(keyUid(id), uidNameHKey)
 	}
 	_, err := tx.Exec()
 	if err != nil {

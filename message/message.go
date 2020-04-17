@@ -36,12 +36,6 @@ const (
 
 	// 跟注
 	BetsType = "bets"
-
-	// 禮物
-	GiftType = "gift"
-
-	// 打賞
-	RewardType = "reward"
 )
 
 func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
@@ -99,13 +93,24 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 			data = append(data, RedEnvelopeMessage{
 				Message: Message{
 					Id:        msgId,
-					Uid:       user.Uid,
-					Name:      user.Name,
 					Type:      RedEnvelopeType,
-					Avatar:    toAvatarName(user.Gender),
-					Message:   redEnvelope.Message,
 					Time:      redEnvelope.SendAt.Format("15:04:05"),
 					Timestamp: redEnvelope.SendAt.Unix(),
+					Display: Display{
+						Message: NullDisplayText{
+							Text: redEnvelope.Message,
+						},
+					},
+					User: NullUser{
+						Uid:    user.Uid,
+						Name:   user.Name,
+						Avatar: ToAvatarName(user.Gender),
+					},
+
+					Uid:     user.Uid,
+					Name:    user.Name,
+					Avatar:  ToAvatarName(user.Gender),
+					Message: redEnvelope.Message,
 				},
 				RedEnvelope: RedEnvelope{
 					Id:      redEnvelope.RedEnvelopesId,
@@ -120,7 +125,7 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 				Uid:       user.Uid,
 				Name:      user.Name,
 				Type:      MessageType,
-				Avatar:    toAvatarName(user.Gender),
+				Avatar:    ToAvatarName(user.Gender),
 				Message:   msg.Message[msgId].Message,
 				Time:      msg.Message[msgId].SendAt.Format("15:04:05"),
 				Timestamp: msg.Message[msgId].SendAt.Unix(),
