@@ -129,7 +129,9 @@ func (s *httpServer) bets(c *gin.Context) error {
 	msg := message.ProducerMessage{
 		Rooms: req.RoomId,
 		User: message.User{
-			Uid: req.Uid,
+			Name:   m.Name,
+			Uid:    req.Uid,
+			Avatar: message.ToAvatarName(m.Gender),
 		},
 		Display: message.Display{
 			User: message.NullDisplayUser{
