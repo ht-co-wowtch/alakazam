@@ -800,7 +800,7 @@ live_stream: 直播
 ```json
 {
    "id":4001,
-   "type":"reward",
+   "type":"gift",
    "time":"12:37:00",
    "timestamp":1567579890,
    "display":{
