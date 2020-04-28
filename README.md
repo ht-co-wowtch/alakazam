@@ -85,12 +85,12 @@ TODO
 1. 如何進入聊天室 [答案](#room)
 2. 進入聊天室後的回覆 or 如何知道用戶在聊天室相關權限，如聊天，發紅包等等動作 [答案](#room-reply)
 3. 如何進入聊天室有失敗會怎樣 `答案:失敗會直接close連線`
-4. 如何在聊天室發訊息 [請看前台訊息推送API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80)
+4. 如何在聊天室發訊息 [請看前台訊息推送API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80)
 5. 如何接收聊天室訊息 [答案](#message)
 6. 聊天室訊息結構 [答案](#message-reply)
 7. 封鎖狀態下進入聊天室會怎樣 [答案](#close-reply)
-8. 禁言狀態下聊天會怎樣 [請看前台訊息推送API範例-禁言中](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80)
-9. 如何在聊天室發紅包 [請看前台發紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af)
+8. 禁言狀態下聊天會怎樣 [請看前台訊息推送API範例-禁言中](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80)
+9. 如何在聊天室發紅包 [請看前台發紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af)
 10. 聊天室發紅包訊息結構 [答案](#message-reply)
 11. 如何搶紅包 [請看前台搶紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#68e59552-6c95-45ab-9f9e-3eaad7c1989d)
 12. 如何切換聊天室房間[答案](#change-room)
@@ -624,7 +624,7 @@ live_stream: 直播
    "display":{
       "user":{
          "text":"管理員",
-         "color":"",
+         "color":"#FFFFFF",
          "avatar":"root"
       },
       "level":{
@@ -662,7 +662,7 @@ live_stream: 直播
       "title":null,
       "message":{
          "text":"你好嗎？",
-         "color":""
+         "color":"#FFFFFF"
       }
    },
    "user":null
@@ -735,8 +735,8 @@ live_stream: 直播
    "timestamp":1567579890,
    "display":{
       "user":null,
-      "level":null,
-      "title":{
+      "title":null,
+      "level":{
          "text":"vip1",
          "color":"#FFFFFF",
          "background_color":"#E5CB29"
@@ -827,7 +827,7 @@ live_stream: 直播
       "show_animation":false,
       "hint_box":{
          "duration_ms":3000,
-         "background_image":"https://assets.292801.com/awcp/logo/hPH6edsqSY.png"
+         "background_color":"https://assets.292801.com/awcp/logo/hPH6edsqSY.png"
       },
       "message":"sam78 打賞10元"
    }
@@ -849,14 +849,14 @@ live_stream: 直播
    "display":{
       "user":{
          "text":"sam78",
-         "color":"",
+         "color":"#FFFFFF",
          "avatar":"female"
       },
       "level":null,
       "title":null,
       "message":{
          "text":"紅包",
-         "color":""
+         "color":"#FFFFFF"
       }
    },
    "user":{
@@ -885,7 +885,7 @@ live_stream: 直播
    "display":{
       "user":{
          "text":"sam78",
-         "color":"",
+         "color":"#FFFFFF",
          "avatar":"female"
       },
       "level":null,
