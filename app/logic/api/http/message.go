@@ -53,7 +53,7 @@ func (m *msg) user(req messageReq) (int64, error) {
 				Color:           "#FFFFFF",
 				BackgroundColor: "#FFC300",
 			},
-			Message: message.NullDisplayText{
+			Message: message.NullDisplayMessage{
 				Text:  req.Message,
 				Color: "#FFFFFF",
 			},
@@ -111,7 +111,7 @@ func (m *msg) redEnvelope(req giveRedEnvelopeReq) (int64, client.RedEnvelopeRepl
 				Color:           "#FFFFFF",
 				BackgroundColor: "#FFC300",
 			},
-			Message: message.NullDisplayText{
+			Message: message.NullDisplayMessage{
 				Text:  req.Message,
 				Color: "#FFFFFF",
 			},

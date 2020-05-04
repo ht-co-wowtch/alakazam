@@ -97,8 +97,9 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 					Time:      redEnvelope.SendAt.Format("15:04:05"),
 					Timestamp: redEnvelope.SendAt.Unix(),
 					Display: Display{
-						Message: NullDisplayText{
-							Text: redEnvelope.Message,
+						Message: NullDisplayMessage{
+							Text:  redEnvelope.Message,
+							Color: "#FFFFFF",
 						},
 					},
 					User: NullUser{

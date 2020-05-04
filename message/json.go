@@ -62,7 +62,7 @@ type Display struct {
 	Title NullDisplayText `json:"title"`
 
 	// 顯示訊息內容
-	Message NullDisplayText `json:"message"`
+	Message NullDisplayMessage `json:"message"`
 }
 
 // 顯示用戶資料
@@ -91,7 +91,7 @@ type DisplayText struct {
 	// 文字
 	Text string `json:"text"`
 
-	// 字體顏色
+	// 字體顏色(預設)
 	Color string `json:"color"`
 
 	// 字體背景
@@ -105,6 +105,32 @@ func (d NullDisplayText) MarshalJSON() ([]byte, error) {
 		return []byte(`null`), nil
 	}
 	return json.Marshal(DisplayText(d))
+}
+
+type DisplayMessage struct {
+	// 文字
+	Text string `json:"text"`
+
+	// 字體顏色(預設)
+	Color string `json:"color"`
+
+	// 各範圍文字的顏色
+	PartColor []PartColor `json:"part_color"`
+}
+
+type PartColor struct {
+	Offset int    `json:"offset"`
+	Length int    `json:"length"`
+	Value  string `json:"value"`
+}
+
+type NullDisplayMessage DisplayMessage
+
+func (d NullDisplayMessage) MarshalJSON() ([]byte, error) {
+	if d.Text == "" {
+		return []byte(`null`), nil
+	}
+	return json.Marshal(DisplayMessage(d))
 }
 
 // 用戶資料

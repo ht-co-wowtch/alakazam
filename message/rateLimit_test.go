@@ -41,7 +41,7 @@ func TestPerSec(t *testing.T) {
 
 func TestIsSameMsg(t *testing.T) {
 	msg := Display{
-		Message: DisplayText{
+		Message: NullDisplayMessage{
 			Text: "test",
 		},
 	}

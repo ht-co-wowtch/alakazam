@@ -68,7 +68,7 @@ func (s *httpServer) push(c *gin.Context) error {
 				Color:  "#2AB7D5",
 				Avatar: u.Avatar,
 			},
-			Message: message.NullDisplayText{
+			Message: message.NullDisplayMessage{
 				Text:  p.Message,
 				Color: "#FFFFFF",
 			},
@@ -139,7 +139,7 @@ func (s *httpServer) bets(c *gin.Context) error {
 				Color:  "#2AB7D5",
 				Avatar: message.ToAvatarName(m.Gender),
 			},
-			Message: message.NullDisplayText{
+			Message: message.NullDisplayMessage{
 				Text:  m.Name,
 				Color: "#FFFFFF",
 			},
@@ -219,7 +219,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 				Color:  "#2AB7D5",
 				Avatar: u.Avatar,
 			},
-			Message: message.NullDisplayText{
+			Message: message.NullDisplayMessage{
 				Text:  o.Message,
 				Color: "#FFFFFF",
 			},
