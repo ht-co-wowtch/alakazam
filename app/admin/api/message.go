@@ -73,6 +73,7 @@ func (s *httpServer) push(c *gin.Context) error {
 				Color: "#FFFFFF",
 			},
 		},
+		User:  u,
 		IsTop: p.Top,
 	}
 
@@ -224,6 +225,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 				Color: "#FFFFFF",
 			},
 		},
+		User: u,
 	}
 
 	redEnvelope := message.RedEnvelope{
