@@ -30,7 +30,7 @@ func (s *httpServer) getMessage(c *gin.Context) error {
 		return err
 	}
 
-	c.Writer.Header().Set("Cache-Control", "No-Cache")
+	c.Writer.Header().Set("Cache-Control", "no-cache")
 	c.JSON(http.StatusOK, gin.H{
 		"data": msg,
 	})
