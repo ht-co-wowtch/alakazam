@@ -51,12 +51,17 @@ func NewMysqlConsumer(ctx context.Context, db *xorm.EngineGroup, c *redis.Client
 	return mysql
 }
 
+var skip = map[pb.PushMsg_Type]bool{
+	pb.PushMsg_SYSTEM: true,
+	pb.PushMsg_RAW:    true,
+}
+
 func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 	id := goroutineID()
 	for {
 		select {
 		case p := <-msg:
-			if p.Type == pb.PushMsg_SYSTEM {
+			if _, ok := skip[p.Type]; ok {
 				continue
 			}
 

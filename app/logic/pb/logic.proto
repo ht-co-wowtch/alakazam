@@ -11,7 +11,8 @@ message PushMsg {
         ADMIN = 2;
         MONEY = 3;
         SYSTEM = 4;
-        ADMIN_TOP = 30;
+        ADMIN_TOP = 5;
+        RAW = 30;
         CLOSE_TOP = 31;
         Close = 100;
     }

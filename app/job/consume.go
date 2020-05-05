@@ -28,21 +28,26 @@ type consume struct {
 	ctx context.Context
 }
 
+var rawOP = map[logicpb.PushMsg_Type]int32{
+	logicpb.PushMsg_RAW:       cometpb.OpRaw,
+	logicpb.PushMsg_CLOSE_TOP: cometpb.OpCloseTopMessage,
+}
+
 // 訊息推送至comet server
 func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
-	switch pushMsg.Type {
+	switch t := pushMsg.Type; {
 	// 單一/多房間推送
-	case logicpb.PushMsg_USER, logicpb.PushMsg_ADMIN, logicpb.PushMsg_MONEY, logicpb.PushMsg_SYSTEM, logicpb.PushMsg_ADMIN_TOP:
+	case t <= logicpb.PushMsg_ADMIN_TOP:
 		for _, r := range pushMsg.Room {
 			if err := c.getRoom(r).Push(pushMsg.Msg, cometpb.OpRaw); err != nil {
 				return err
 			}
 		}
-	case logicpb.PushMsg_Close:
+	case t == logicpb.PushMsg_Close:
 		return c.kick(pushMsg)
-	case logicpb.PushMsg_CLOSE_TOP:
+	case t <= logicpb.PushMsg_CLOSE_TOP:
 		for _, r := range pushMsg.Room {
-			c.getRoom(r).consume.broadcastRoomRawBytes(r, pushMsg.Msg, cometpb.OpCloseTopMessage)
+			c.getRoom(r).consume.broadcastRoomRawByte(r, pushMsg.Msg, rawOP[t])
 		}
 	// 異常資料
 	default:
@@ -52,11 +57,7 @@ func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 }
 
 // 房間訊息推送給comet
-func (c *consume) broadcastRoomRawMessage(roomID int32, body []byte) {
-	c.broadcastRoomRawBytes(roomID, body, cometpb.OpBatchRaw)
-}
-
-func (c *consume) broadcastRoomRawBytes(roomID int32, body []byte, op int32) {
+func (c *consume) broadcastRoomRawByte(roomID int32, body []byte, op int32) {
 	args := cometpb.BroadcastRoomReq{
 		RoomID: roomID,
 		Proto: &cometpb.Proto{

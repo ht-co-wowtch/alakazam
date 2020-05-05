@@ -119,7 +119,7 @@ func (r *Room) pushproc(batch int, sigTime time.Duration) {
 			}
 		}
 
-		r.consume.broadcastRoomRawMessage(r.id, buf.Buffer())
+		r.consume.broadcastRoomRawByte(r.id, buf.Buffer(), comet.OpBatchRaw)
 
 		// TODO use reset buffer
 		buf = bytes.NewWriterSize(buf.Size())

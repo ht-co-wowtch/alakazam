@@ -16,6 +16,7 @@ import (
 
 type systemReq struct {
 	Messages []message.RawMessage `json:"messages" binding:"required"`
+	IsRaw    bool                 `json:"is_raw"`
 }
 
 func (s *httpServer) system(c *gin.Context) error {
@@ -27,9 +28,9 @@ func (s *httpServer) system(c *gin.Context) error {
 	}
 
 	if len(p.Messages) > 1 {
-		id, err = s.message.SendRaws(p.Messages)
+		id, err = s.message.SendRaws(p.Messages, p.IsRaw)
 	} else {
-		id, err = s.message.SendRaw(p.Messages[0].RoomId, []byte(p.Messages[0].Body))
+		id, err = s.message.SendRaw(p.Messages[0].RoomId, []byte(p.Messages[0].Body), p.IsRaw)
 	}
 
 	if err != nil {

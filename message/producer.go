@@ -322,7 +322,7 @@ func (p *Producer) SendBets(msg ProducerMessage, bet Bet) (int64, error) {
 	return pushMsg.Seq, nil
 }
 
-func (p *Producer) SendRaw(roomId []int32, body []byte) (int64, error) {
+func (p *Producer) SendRaw(roomId []int32, body []byte, IsRaw bool) (int64, error) {
 	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
 		Id: 1, Count: 1,
 	})
@@ -345,9 +345,14 @@ func (p *Producer) SendRaw(roomId []int32, body []byte) (int64, error) {
 		return 0, err
 	}
 
+	t := logicpb.PushMsg_SYSTEM
+	if IsRaw {
+		t = logicpb.PushMsg_RAW
+	}
+
 	pushMsg := &logicpb.PushMsg{
 		Seq:    seq.Id,
-		Type:   logicpb.PushMsg_SYSTEM,
+		Type:   t,
 		Room:   roomId,
 		Msg:    bm,
 		SendAt: now.Unix(),
@@ -366,7 +371,7 @@ type RawMessage struct {
 	Body string `json:"body" binding:"required"`
 }
 
-func (p *Producer) SendRaws(raws []RawMessage) (int64, error) {
+func (p *Producer) SendRaws(raws []RawMessage, IsRaw bool) (int64, error) {
 	count := int64(len(raws))
 	seq, err := p.seq.Ids(context.Background(), &seqpb.SeqReq{
 		Id: 1, Count: count,
@@ -377,6 +382,11 @@ func (p *Producer) SendRaws(raws []RawMessage) (int64, error) {
 
 	now := time.Now()
 	id := seq.Id - count
+
+	t := logicpb.PushMsg_SYSTEM
+	if IsRaw {
+		t = logicpb.PushMsg_RAW
+	}
 
 	for i, raw := range raws {
 		var b map[string]interface{}
@@ -396,7 +406,7 @@ func (p *Producer) SendRaws(raws []RawMessage) (int64, error) {
 
 		pushMsg := &logicpb.PushMsg{
 			Seq:    seq,
-			Type:   logicpb.PushMsg_SYSTEM,
+			Type:   t,
 			Room:   raw.RoomId,
 			Msg:    bm,
 			SendAt: now.Unix(),
