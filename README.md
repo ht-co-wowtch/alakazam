@@ -791,7 +791,7 @@ live_stream: 直播
          "part_color":[
             {
                "offset":0,
-               "length":4,
+               "length":5,
                "value":"#A680B8"
             }
          ]
@@ -841,7 +841,7 @@ live_stream: 直播
          "part_color":[
             {
                "offset":0,
-               "length":4,
+               "length":5,
                "value":"#A680B8"
             }
          ]
