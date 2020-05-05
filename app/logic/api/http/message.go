@@ -38,6 +38,18 @@ func (m *msg) user(req messageReq) (int64, error) {
 		}
 	}
 
+	level := message.NullDisplayText{
+		Text:            "会员",
+		Color:           "#FFFFFF",
+		BackgroundColor: "#FFC300",
+	}
+
+	if user.Type == models.STREAMER {
+		level.Text = "主播"
+		level.Color = "#FFFFFF"
+		level.BackgroundColor = "#EBB9F5"
+	}
+
 	u := toUserMessage(user)
 	msg := message.ProducerMessage{
 		Rooms: []int32{int32(req.RoomId)},
@@ -48,11 +60,7 @@ func (m *msg) user(req messageReq) (int64, error) {
 				Color:  "#2AB7D5",
 				Avatar: u.Avatar,
 			},
-			Level: message.NullDisplayText{
-				Text:            "会员",
-				Color:           "#FFFFFF",
-				BackgroundColor: "#FFC300",
-			},
+			Level: level,
 			Message: message.NullDisplayMessage{
 				Text:  req.Message,
 				Color: "#FFFFFF",

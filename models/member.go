@@ -27,6 +27,9 @@ const (
 
 	// 玩家
 	Player = 2
+
+	// 直播主
+	STREAMER = 3
 )
 
 type Member struct {
