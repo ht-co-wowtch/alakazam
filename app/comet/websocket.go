@@ -141,7 +141,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 	trd = tr.Add(s.c.Protocol.HandshakeTimeout, func() {
 		_ = conn.SetDeadline(time.Now().Add(time.Millisecond * 100))
 		_ = conn.Close()
-		log.Error("ws handshake timeout", zap.String("uid", ch.Uid), zap.Int("step", step))
+		log.Error("ws handshake timeout", zap.Error(err), zap.String("uid", ch.Uid), zap.Int("step", step))
 	})
 
 	ch.IP, _, _ = net.SplitHostPort(conn.RemoteAddr().String())
