@@ -41,9 +41,9 @@ func (m *msg) user(req messageReq) (int64, error) {
 	var display message.Display
 	u := toUserMessage(user)
 	if user.Type == models.STREAMER {
-		display = message.DisplayByUser(u, req.Message)
-	} else {
 		display = message.DisplayByStreamer(u, req.Message)
+	} else {
+		display = message.DisplayByUser(u, req.Message)
 	}
 
 	msg := message.ProducerMessage{
