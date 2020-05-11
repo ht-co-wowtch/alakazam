@@ -167,6 +167,12 @@ func RoomTopMessageToMessage(msg models.RoomTopMessage) Message {
 		Message:   msg.Message,
 		Time:      msg.SendAt.Format("15:04:05"),
 		Timestamp: msg.SendAt.Unix(),
+		Display: Display{
+			Message: NullDisplayMessage{
+				Text:  msg.Message,
+				Color: "#FFFFFF",
+			},
+		},
 	}
 }
 
