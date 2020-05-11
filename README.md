@@ -423,6 +423,7 @@ Body
    },
    "bet":{
       "game_id":4567,
+      "game_name":"六合彩",
       "period_number":1234,
       "count":2,
       "total_amount":25,
@@ -567,6 +568,7 @@ bet: 跟投
 | 欄位名稱         | 說明           | 格式     |
 | ---------------- | -------------- | -------- |
 | game_id          | 遊戲 id        | int      |
+| game_name        | 遊戲 名稱      | string   |
 | period_number    | 本注期號       | int      |
 | count            | 下注總筆數     | int      |
 | total_amount     | 下注總金額     | int      |
@@ -974,6 +976,7 @@ live_stream: 直播
    },
    "bet":{
       "game_id":4567,
+      "game_name":"六合彩",
       "period_number":1234,
       "count":2,
       "total_amount":25,

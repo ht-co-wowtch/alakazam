@@ -99,6 +99,7 @@ type betsReq struct {
 	RoomId       []int32            `json:"room_id" binding:"required"`
 	Uid          string             `json:"uid" binding:"required"`
 	GameId       int                `json:"game_id" binding:"required"`
+	GameName     string             `json:"game_name"`
 	PeriodNumber int                `json:"period_number" binding:"required"`
 	Bets         []message.BetOrder `json:"bets" binding:"required"`
 	Count        int                `json:"count" binding:"required"`
@@ -126,11 +127,12 @@ func (s *httpServer) bets(c *gin.Context) error {
 	msg := message.ProducerMessage{
 		Rooms:   req.RoomId,
 		User:    user,
-		Display: message.DisplayByBets(user, "六合彩", req.TotalAmount),
+		Display: message.DisplayByBets(user, req.GameName, req.TotalAmount),
 	}
 
 	bet := message.Bet{
 		GameId:       req.GameId,
+		GameName:     req.GameName,
 		PeriodNumber: req.PeriodNumber,
 		Count:        req.Count,
 		TotalAmount:  req.TotalAmount,

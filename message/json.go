@@ -245,6 +245,7 @@ type Bets struct {
 // 跟投資料
 type Bet struct {
 	GameId       int        `json:"game_id"`
+	GameName     string     `json:"game_name"`
 	PeriodNumber int        `json:"period_number"`
 	Count        int        `json:"count"`
 	TotalAmount  int        `json:"total_amount"`
