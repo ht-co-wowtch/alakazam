@@ -63,6 +63,9 @@ type Display struct {
 
 	// 顯示訊息內容
 	Message NullDisplayMessage `json:"message"`
+
+	// 背景色
+	BackgroundColor string `json:"background_color"`
 }
 
 // 顯示用戶資料
@@ -114,6 +117,9 @@ type DisplayMessage struct {
 	// 字體顏色(預設)
 	Color string `json:"color"`
 
+	// 訊息標籤
+	Label []Label `json:"label"`
+
 	// 各範圍文字的顏色
 	PartColor []PartColor `json:"part_color"`
 }
@@ -122,6 +128,13 @@ type PartColor struct {
 	Offset int    `json:"offset"`
 	Length int    `json:"length"`
 	Value  string `json:"value"`
+}
+
+type Label struct {
+	Offset          int    `json:"offset"`
+	Length          int    `json:"length"`
+	Color           string `json:"color"`
+	BackgroundColor string `json:"background_color"`
 }
 
 type NullDisplayMessage DisplayMessage

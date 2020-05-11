@@ -38,34 +38,18 @@ func (m *msg) user(req messageReq) (int64, error) {
 		}
 	}
 
-	level := message.NullDisplayText{
-		Text:            "会员",
-		Color:           "#FFFFFF",
-		BackgroundColor: "#FFC300",
-	}
-
-	if user.Type == models.STREAMER {
-		level.Text = "主播"
-		level.Color = "#FFFFFF"
-		level.BackgroundColor = "#EBB9F5"
-	}
-
+	var display message.Display
 	u := toUserMessage(user)
+	if user.Type == models.STREAMER {
+		display = message.DisplayByUser(u, req.Message)
+	} else {
+		display = message.DisplayByStreamer(u, req.Message)
+	}
+
 	msg := message.ProducerMessage{
-		Rooms: []int32{int32(req.RoomId)},
-		User:  u,
-		Display: message.Display{
-			User: message.NullDisplayUser{
-				Text:   u.Name,
-				Color:  "#2AB7D5",
-				Avatar: u.Avatar,
-			},
-			Level: level,
-			Message: message.NullDisplayMessage{
-				Text:  req.Message,
-				Color: "#FFFFFF",
-			},
-		},
+		Rooms:   []int32{int32(req.RoomId)},
+		User:    u,
+		Display: display,
 	}
 
 	id, err := m.message.Send(msg)
@@ -106,24 +90,9 @@ func (m *msg) redEnvelope(req giveRedEnvelopeReq) (int64, client.RedEnvelopeRepl
 
 	u := toUserMessage(user)
 	msg := message.ProducerMessage{
-		Rooms: []int32{int32(req.RoomId)},
-		User:  u,
-		Display: message.Display{
-			User: message.NullDisplayUser{
-				Text:   u.Name,
-				Color:  "#2AB7D5",
-				Avatar: u.Avatar,
-			},
-			Level: message.NullDisplayText{
-				Text:            "会员",
-				Color:           "#FFFFFF",
-				BackgroundColor: "#FFC300",
-			},
-			Message: message.NullDisplayMessage{
-				Text:  req.Message,
-				Color: "#FFFFFF",
-			},
-		},
+		Rooms:   []int32{int32(req.RoomId)},
+		User:    u,
+		Display: message.DisplayByUser(u, req.Message),
 	}
 
 	redEnvelope := message.RedEnvelope{

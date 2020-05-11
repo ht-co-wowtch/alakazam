@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -62,20 +61,10 @@ func (s *httpServer) push(c *gin.Context) error {
 
 	u := message.NewRoot()
 	msg := message.ProducerMessage{
-		Rooms: p.RoomId,
-		Display: message.Display{
-			User: message.NullDisplayUser{
-				Text:   u.Name,
-				Color:  "#2AB7D5",
-				Avatar: u.Avatar,
-			},
-			Message: message.NullDisplayMessage{
-				Text:  p.Message,
-				Color: "#FFFFFF",
-			},
-		},
-		User:  u,
-		IsTop: p.Top,
+		Rooms:   p.RoomId,
+		Display: message.DisplayByAdmin(u, p.Message),
+		User:    u,
+		IsTop:   p.Top,
 	}
 
 	id, err := s.message.SendForAdmin(msg)
@@ -86,9 +75,9 @@ func (s *httpServer) push(c *gin.Context) error {
 		now := time.Now()
 		m := message.Message{
 			Id:        id,
-			Uid:       member.RootUid,
+			Uid:       u.Uid,
 			Type:      message.TopType,
-			Name:      member.RootName,
+			Name:      u.Name,
 			Message:   p.Message,
 			Time:      now.Format("15:04:05"),
 			Timestamp: now.Unix(),
@@ -128,24 +117,16 @@ func (s *httpServer) bets(c *gin.Context) error {
 		return err
 	}
 
+	user := message.User{
+		Name:   m.Name,
+		Uid:    req.Uid,
+		Avatar: message.ToAvatarName(m.Gender),
+	}
+
 	msg := message.ProducerMessage{
-		Rooms: req.RoomId,
-		User: message.User{
-			Name:   m.Name,
-			Uid:    req.Uid,
-			Avatar: message.ToAvatarName(m.Gender),
-		},
-		Display: message.Display{
-			User: message.NullDisplayUser{
-				Text:   m.Name,
-				Color:  "#2AB7D5",
-				Avatar: message.ToAvatarName(m.Gender),
-			},
-			Message: message.NullDisplayMessage{
-				Text:  m.Name,
-				Color: "#FFFFFF",
-			},
-		},
+		Rooms:   req.RoomId,
+		User:    user,
+		Display: message.DisplayByBets(user, "六合彩", req.TotalAmount),
 	}
 
 	bet := message.Bet{
@@ -214,19 +195,9 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	u := message.NewRoot()
 
 	msg := message.ProducerMessage{
-		Rooms: []int32{int32(o.RoomId)},
-		Display: message.Display{
-			User: message.NullDisplayUser{
-				Text:   u.Name,
-				Color:  "#2AB7D5",
-				Avatar: u.Avatar,
-			},
-			Message: message.NullDisplayMessage{
-				Text:  o.Message,
-				Color: "#FFFFFF",
-			},
-		},
-		User: u,
+		Rooms:   []int32{int32(o.RoomId)},
+		Display: message.DisplayByAdmin(u, o.Message),
+		User:    u,
 	}
 
 	redEnvelope := message.RedEnvelope{

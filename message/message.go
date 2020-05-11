@@ -181,3 +181,105 @@ func ToMessage(msgByte []byte) (Message, error) {
 	err := json.Unmarshal(msgByte, &msg)
 	return msg, err
 }
+
+const (
+	// 會員名稱文字 字體顏色
+	DISPLAY_USER_FONT_COLOR = "#7CE7EB"
+
+	// 訊息文字 字體顏色
+	DISPLAY_MESSAGE_FONT_COLOR = "#FFFFFF"
+
+	// 訊息框 背景色
+	DISPLAY_BACKGROUND_COLOR = "#0000003f"
+)
+
+// 用戶Display
+func DisplayByUser(user User, message string) Display {
+	return Display{
+		User: NullDisplayUser{
+			Text:   user.Name,
+			Color:  DISPLAY_USER_FONT_COLOR,
+			Avatar: user.Avatar,
+		},
+		Level: NullDisplayText{
+			Text:            "会员",
+			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			BackgroundColor: "#7FC355",
+		},
+		Message: NullDisplayMessage{
+			Text:  message,
+			Color: DISPLAY_MESSAGE_FONT_COLOR,
+		},
+		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+	}
+}
+
+// 主播Display
+func DisplayByStreamer(user User, message string) Display {
+	return Display{
+		User: NullDisplayUser{
+			Text:   user.Name,
+			Color:  "#FFFFAA",
+			Avatar: user.Avatar,
+		},
+		Level: NullDisplayText{
+			Text:            "主播",
+			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			BackgroundColor: "#B57AA8",
+		},
+		Message: NullDisplayMessage{
+			Text:  message,
+			Color: DISPLAY_MESSAGE_FONT_COLOR,
+		},
+		BackgroundColor: "#B57AA87F",
+	}
+}
+
+// 管理員Display
+func DisplayByAdmin(user User, message string) Display {
+	return Display{
+		User: NullDisplayUser{
+			Text:   user.Name,
+			Color:  DISPLAY_USER_FONT_COLOR,
+			Avatar: user.Avatar,
+		},
+		Level: NullDisplayText{
+			Text:            member.RootName,
+			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			BackgroundColor: "#7FC355",
+		},
+		Message: NullDisplayMessage{
+			Text:  message,
+			Color: DISPLAY_MESSAGE_FONT_COLOR,
+		},
+		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+	}
+}
+
+// 跟投Display
+func DisplayByBets(user User, gameName string, amount int) Display {
+	return Display{
+		User: NullDisplayUser{
+			Text:   user.Name,
+			Color:  DISPLAY_USER_FONT_COLOR,
+			Avatar: user.Avatar,
+		},
+		Level: NullDisplayText{
+			Text:            "系統",
+			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			BackgroundColor: "#FC8813",
+		},
+		Message: NullDisplayMessage{
+			Text:  "用戶" + user.Name + "在" + gameName + "下注" + string(amount) + "元",
+			Color: DISPLAY_MESSAGE_FONT_COLOR,
+			PartColor: []PartColor{
+				PartColor{
+					Offset: 2,
+					Length: len(user.Name),
+					Value:  "#7CE7EB",
+				},
+			},
+		},
+		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+	}
+}
