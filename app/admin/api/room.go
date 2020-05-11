@@ -89,3 +89,11 @@ func (s *httpServer) DeleteRoom(c *gin.Context) error {
 	c.Status(http.StatusNoContent)
 	return nil
 }
+
+func (s *httpServer) online(c *gin.Context) error {
+	o, err := s.room.Online()
+	if err == nil {
+		c.JSON(http.StatusOK, o)
+	}
+	return err
+}

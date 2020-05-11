@@ -21,6 +21,7 @@ type Room interface {
 	GetTopMessage(msgId int64) ([]int32, models.Message, error)
 	AddTopMessage(rids []int32, message message.Message) error
 	DeleteTopMessage(rids []int32, msgId int64) error
+	Online() (map[int32]int32, error)
 }
 
 type room struct {
@@ -194,4 +195,12 @@ func (r *room) DeleteTopMessage(rids []int32, msgId int64) error {
 		return err
 	}
 	return r.c.deleteChatTopMessage(rids)
+}
+
+func (r *room) Online() (map[int32]int32, error) {
+	online, err := r.c.getOnline("hostname")
+	if err != nil {
+		return nil, err
+	}
+	return online.RoomCount, nil
 }
