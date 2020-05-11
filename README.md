@@ -393,6 +393,15 @@ Body
       "message":{
          "text":"sam78 測試",
          "color":"#DF3030",
+         "background_color":"#0000003f",
+         "label": [
+            {
+               "offset":6,
+               "length":2,
+               "color":"#E5C4C4",
+               "background_color":"#A680B8"
+            }
+         ],
          "part_color":[
             {
                "offset":0,
@@ -516,14 +525,20 @@ display.title: 發訊息人身份
 
 display.message: 訊息資料
 
-| 欄位名稱          | 說明             | 格式    |
-| ----------------- | ---------------- | ------- |
-| text              | 訊息             | string  |
-| color             | 字體顏色(預設)   | #000000 |
-| part_color        | 各範圍文字的顏色 | array   |
-| part_color.offset | 偏移第幾個字     | int     |
-| part_color.length | 字範圍長度       | int     |
-| part_color.value  | 字體顏色         | #000000 |
+| 欄位名稱               | 說明             | 格式      |
+| ---------------------- | ---------------- | --------- |
+| text                   | 訊息             | string    |
+| color                  | 字體顏色(預設)   | #000000   |
+| background_color       | 訊息框顏色       | #0000003f |
+| part_color             | 各範圍文字的顏色 | array     |
+| part_color.offset      | 偏移第幾個字     | int       |
+| part_color.length      | 字範圍長度       | int       |
+| part_color.value       | 字體顏色         | #000000   |
+| label                  | 文字標籤         | array     |
+| label.offset           | 偏移第幾個字     | int       |
+| label.length           | 字範圍長度       | int       |
+| label.color            | 字體顏色         | #000000   |
+| label.background_color | 標籤背景         | #A680B8   |
 
 
 
@@ -612,7 +627,9 @@ live_stream: 直播
       "message":{
          "text":"測試",
          "color":"#A680B8",
-         "part_color": null
+         "background_color":"#0000003f",
+         "label":null,
+         "part_color":null,
       }
    },
    "user":{
@@ -652,7 +669,8 @@ live_stream: 直播
       "message":{
          "text":"測試",
          "color":"#A680B8",
-         "part_color": null
+         "label":null,
+         "part_color":null
       }
    },
    "user":null
@@ -676,6 +694,7 @@ live_stream: 直播
       "message":{
          "text":"你好嗎？",
          "color":"#FFFFFF",
+         "label":null,
          "part_color": null
       }
    },
@@ -704,6 +723,8 @@ live_stream: 直播
       "message":{
          "text":"測試",
          "color":"#A680B8",
+         "background_color":"#0000003f",
+         "label":null,
          "part_color": null
       }
    },
@@ -732,6 +753,8 @@ live_stream: 直播
       "message":{
          "text":"中獎訊息",
          "color":"#A680B8",
+         "background_color":"#0000003f",
+         "label":null,
          "part_color": null
       }
    },
@@ -760,6 +783,8 @@ live_stream: 直播
       "message":{
          "text":"sam78 進入房間",
          "color":"#A680B8",
+         "background_color":"#0000003f",
+         "label":null,
          "part_color": null
       }
    },
@@ -788,6 +813,8 @@ live_stream: 直播
       "message":{
          "text":"sam78 送出禮物x1",
          "color":"#A680B8",
+         "background_color":"#0000003f",
+         "label":null,
          "part_color":[
             {
                "offset":0,
@@ -838,6 +865,8 @@ live_stream: 直播
       "message":{
          "text":"sam78 打賞10元",
          "color":"#DF3030",
+         "background_color":"#0000003f",
+         "label":null,
          "part_color":[
             {
                "offset":0,
@@ -888,6 +917,8 @@ live_stream: 直播
       "message":{
          "text":"紅包",
          "color":"#FFFFFF",
+         "background_color":"#0000003f",
+         "label":null,
          "part_color": null
       }
    },
@@ -925,6 +956,15 @@ live_stream: 直播
       "message":{
          "text":"跟投",
          "color":"#DF3030",
+         "background_color":"#0000003f",
+         "label": [
+            {
+               "offset":6,
+               "length":2,
+               "color":"#E5C4C4",
+               "background_color":"#A680B8"
+            }
+         ],
          "part_color": null
       }
    },
