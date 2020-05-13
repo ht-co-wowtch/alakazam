@@ -172,6 +172,7 @@ func RoomTopMessageToMessage(msg models.RoomTopMessage) Message {
 				Text:  msg.Message,
 				Color: "#FFFFFF",
 			},
+			BackgroundColor: DISPLAY_BACKGROUND_COLOR,
 		},
 	}
 }
