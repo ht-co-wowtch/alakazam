@@ -53,7 +53,6 @@ func NewMysqlConsumer(ctx context.Context, db *xorm.EngineGroup, c *redis.Client
 
 var skip = map[pb.PushMsg_Type]bool{
 	pb.PushMsg_SYSTEM: true,
-	pb.PushMsg_RAW:    true,
 }
 
 func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {

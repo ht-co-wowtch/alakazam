@@ -179,6 +179,9 @@ func (p *Producer) Send(msg ProducerMessage) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+
+	pushMsg.IsRaw = true
+
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
 	}
@@ -345,17 +348,13 @@ func (p *Producer) SendRaw(roomId []int32, body []byte, IsRaw bool) (int64, erro
 		return 0, err
 	}
 
-	t := logicpb.PushMsg_SYSTEM
-	if IsRaw {
-		t = logicpb.PushMsg_RAW
-	}
-
 	pushMsg := &logicpb.PushMsg{
 		Seq:    seq.Id,
-		Type:   t,
+		Type:   logicpb.PushMsg_SYSTEM,
 		Room:   roomId,
 		Msg:    bm,
 		SendAt: now.Unix(),
+		IsRaw:  IsRaw,
 	}
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
@@ -383,11 +382,6 @@ func (p *Producer) SendRaws(raws []RawMessage, IsRaw bool) (int64, error) {
 	now := time.Now()
 	id := seq.Id - count
 
-	t := logicpb.PushMsg_SYSTEM
-	if IsRaw {
-		t = logicpb.PushMsg_RAW
-	}
-
 	for i, raw := range raws {
 		var b map[string]interface{}
 		if err := json.Unmarshal([]byte(raw.Body), &b); err != nil {
@@ -406,10 +400,11 @@ func (p *Producer) SendRaws(raws []RawMessage, IsRaw bool) (int64, error) {
 
 		pushMsg := &logicpb.PushMsg{
 			Seq:    seq,
-			Type:   t,
+			Type:   logicpb.PushMsg_SYSTEM,
 			Room:   raw.RoomId,
 			Msg:    bm,
 			SendAt: now.Unix(),
+			IsRaw:  IsRaw,
 		}
 
 		if err := p.send(pushMsg); err != nil {

@@ -28,27 +28,28 @@ type consume struct {
 	ctx context.Context
 }
 
-var rawOP = map[logicpb.PushMsg_Type]int32{
-	logicpb.PushMsg_RAW:       cometpb.OpRaw,
-	logicpb.PushMsg_CLOSE_TOP: cometpb.OpCloseTopMessage,
-}
-
 // 訊息推送至comet server
 func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 	switch t := pushMsg.Type; {
 	// 單一/多房間推送
 	case t <= logicpb.PushMsg_ADMIN_TOP:
-		for _, r := range pushMsg.Room {
-			if err := c.getRoom(r).Push(pushMsg.Msg, cometpb.OpRaw); err != nil {
-				return err
+		if pushMsg.IsRaw {
+			for _, r := range pushMsg.Room {
+				c.getRoom(r).consume.broadcastRoomRawByte(r, pushMsg.Msg, cometpb.OpRaw)
 			}
+		} else {
+			for _, r := range pushMsg.Room {
+				if err := c.getRoom(r).Push(pushMsg.Msg, cometpb.OpRaw); err != nil {
+					return err
+				}
+			}
+		}
+	case t == logicpb.PushMsg_CLOSE_TOP:
+		for _, r := range pushMsg.Room {
+			c.getRoom(r).consume.broadcastRoomRawByte(r, pushMsg.Msg, cometpb.OpCloseTopMessage)
 		}
 	case t == logicpb.PushMsg_Close:
 		return c.kick(pushMsg)
-	case t <= logicpb.PushMsg_CLOSE_TOP:
-		for _, r := range pushMsg.Room {
-			c.getRoom(r).consume.broadcastRoomRawByte(r, pushMsg.Msg, rawOP[t])
-		}
 	// 異常資料
 	default:
 		return fmt.Errorf("no match push type: %s", pushMsg.Type)
