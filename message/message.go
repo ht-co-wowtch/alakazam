@@ -159,6 +159,7 @@ func (s stringJson) MarshalJSON() ([]byte, error) {
 }
 
 func RoomTopMessageToMessage(msg models.RoomTopMessage) Message {
+	user := NewRoot()
 	return Message{
 		Id:        msg.MsgId,
 		Uid:       member.RootUid,
@@ -168,12 +169,18 @@ func RoomTopMessageToMessage(msg models.RoomTopMessage) Message {
 		Time:      msg.SendAt.Format("15:04:05"),
 		Timestamp: msg.SendAt.Unix(),
 		Display: Display{
+			User: NullDisplayUser{
+				Text:   user.Name,
+				Color:  DISPLAY_USER_FONT_COLOR,
+				Avatar: user.Avatar,
+			},
 			Message: NullDisplayMessage{
 				Text:  msg.Message,
 				Color: "#FFFFFF",
 			},
 			BackgroundColor: DISPLAY_BACKGROUND_COLOR,
 		},
+		User: NullUser(user),
 	}
 }
 
