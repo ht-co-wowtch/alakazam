@@ -159,28 +159,26 @@ func (s stringJson) MarshalJSON() ([]byte, error) {
 }
 
 func RoomTopMessageToMessage(msg models.RoomTopMessage) Message {
-	user := NewRoot()
 	return Message{
 		Id:        msg.MsgId,
 		Uid:       member.RootUid,
 		Type:      TopType,
-		Name:      member.RootName,
 		Message:   msg.Message,
 		Time:      msg.SendAt.Format("15:04:05"),
 		Timestamp: msg.SendAt.Unix(),
-		Display: Display{
-			User: NullDisplayUser{
-				Text:   user.Name,
-				Color:  DISPLAY_USER_FONT_COLOR,
-				Avatar: user.Avatar,
-			},
-			Message: NullDisplayMessage{
-				Text:  msg.Message,
-				Color: "#FFFFFF",
-			},
-			BackgroundColor: DISPLAY_BACKGROUND_COLOR,
-		},
-		User: NullUser(user),
+		Display:   DisplayByMessage(msg.Message),
+	}
+}
+
+func RoomBulletinMessageToMessage(msg models.RoomTopMessage) Message {
+	return Message{
+		Id:        msg.MsgId,
+		Uid:       member.RootUid,
+		Type:      MessageType,
+		Message:   msg.Message,
+		Time:      msg.SendAt.Format("15:04:05"),
+		Timestamp: msg.SendAt.Unix(),
+		Display:   DisplayBySystem(msg.Message),
 	}
 }
 
@@ -273,7 +271,7 @@ func DisplayByBets(user User, gameName string, amount int) Display {
 			Avatar: user.Avatar,
 		},
 		Level: NullDisplayText{
-			Text:            "系統",
+			Text:            member.System,
 			Color:           DISPLAY_MESSAGE_FONT_COLOR,
 			BackgroundColor: "#FC8813",
 		},
@@ -287,6 +285,33 @@ func DisplayByBets(user User, gameName string, amount int) Display {
 					Value:  "#7CE7EB",
 				},
 			},
+		},
+		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+	}
+}
+
+// 系統Display
+func DisplayBySystem(message string) Display {
+	return Display{
+		Level: NullDisplayText{
+			Text:            member.System,
+			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			BackgroundColor: "#FC8813",
+		},
+		Message: NullDisplayMessage{
+			Text:  message,
+			Color: "#FFFFAA",
+		},
+		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+	}
+}
+
+// 單純訊息Display
+func DisplayByMessage(message string) Display {
+	return Display{
+		Message: NullDisplayMessage{
+			Text:  message,
+			Color: DISPLAY_MESSAGE_FONT_COLOR,
 		},
 		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
 	}

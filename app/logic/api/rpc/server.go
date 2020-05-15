@@ -4,6 +4,7 @@ import (
 	"context"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
@@ -17,14 +18,18 @@ import (
 )
 
 // New logic grpc server
-func New(c *rpc.Conf, room room.Chat) *grpc.Server {
+func New(c *rpc.Conf, room room.Chat, message *message.Producer) *grpc.Server {
 	srv := rpc.New(c)
-	pb.RegisterLogicServer(srv, &server{room: room})
+	pb.RegisterLogicServer(srv, &server{
+		room:    room,
+		message: message,
+	})
 	return srv
 }
 
 type server struct {
-	room room.Chat
+	room    room.Chat
+	message *message.Producer
 }
 
 var _ pb.LogicServer = &server{}

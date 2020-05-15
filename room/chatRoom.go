@@ -88,10 +88,11 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 	connect.Status = true
 
 	return &pb.ConnectReply{
-		Name:          user.Name,
-		Heartbeat:     c.heartbeatNanosec,
-		HeaderMessage: room.HeaderMessage,
-		Connect:       connect,
+		Name:            user.Name,
+		Heartbeat:       c.heartbeatNanosec,
+		TopMessage:      room.TopMessage,
+		BulletinMessage: room.BulletinMessage,
+		Connect:         connect,
 	}, nil
 }
 
@@ -127,7 +128,7 @@ func (c *chat) ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error) {
 	connect := newPbConnect(user, room, "", int32(rid))
 	connect.Status = true
 	return &pb.ChangeRoomReply{
-		HeaderMessage: room.HeaderMessage,
+		HeaderMessage: room.TopMessage,
 		Connect:       connect,
 	}, nil
 }
@@ -167,19 +168,39 @@ func (c *chat) reloadChat(id int) (models.Room, error) {
 		return models.Room{}, err
 	}
 
-	if msg.RoomId == 0 {
+	if len(msg) == 0 {
 		if err = c.cache.set(room); err != nil {
 			return models.Room{}, err
 		}
 	} else {
-		b, err := json.Marshal(message.RoomTopMessageToMessage(msg))
-		if err != nil {
-			log.Error("json Marshal for room top message", zap.Error(err), zap.Int("rid", id))
+		var top []byte
+		var bulletin []byte
+
+		for _, m := range msg {
+			switch m.Type {
+			case models.TOP_MESSAGE:
+				if m.Type == models.TOP_MESSAGE {
+					top, err = json.Marshal(message.RoomTopMessageToMessage(m))
+					if err != nil {
+						log.Error("json Marshal for room top message", zap.Error(err), zap.Int("rid", id))
+					}
+				}
+				break
+			case models.BULLETIN_MESSAGE:
+				bulletin, err = json.Marshal(message.RoomBulletinMessageToMessage(m))
+				if err != nil {
+					log.Error("json Marshal for room bulletin message", zap.Error(err), zap.Int("rid", id))
+				}
+				break
+			}
 		}
-		if err := c.cache.setChat(room, b); err != nil {
+
+		if err := c.cache.setChat(room, top, bulletin); err != nil {
 			return models.Room{}, err
 		}
-		room.HeaderMessage = b
+
+		room.TopMessage = top
+		room.BulletinMessage = bulletin
 	}
 	return room, nil
 }

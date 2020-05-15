@@ -18,6 +18,12 @@ func (r *RoomMessage) TableName() string {
 	return "room_messages"
 }
 
+// 頂置訊息
+const TOP_MESSAGE = 1
+
+// 公告訊息
+const BULLETIN_MESSAGE = 2
+
 type Message struct {
 	Id       int `xorm:"pk autoincr"`
 	MsgId    int64

@@ -18,9 +18,9 @@ type Room interface {
 	Update(id int, status Status) error
 	Delete(id int) error
 	Get(id int) (models.Room, error)
-	GetTopMessage(msgId int64) ([]int32, models.Message, error)
-	AddTopMessage(rids []int32, message message.Message) error
-	DeleteTopMessage(rids []int32, msgId int64) error
+	GetTopMessage(msgId int64, t int) ([]int32, models.Message, error)
+	AddTopMessage(rids []int32, seq int64, message string, ts []int) error
+	DeleteTopMessage(rids []int32, msgId int64, t int) error
 	Online() (map[int32]int32, error)
 }
 
@@ -144,7 +144,7 @@ func (r *room) Get(id int) (models.Room, error) {
 	return room, nil
 }
 
-func (r *room) GetTopMessage(msgId int64) ([]int32, models.Message, error) {
+func (r *room) GetTopMessage(msgId int64, t int) ([]int32, models.Message, error) {
 	roomTopMsg, err := r.db.FindRoomTopMessage(msgId)
 	if err != nil {
 		return nil, models.Message{}, err
@@ -153,48 +153,80 @@ func (r *room) GetTopMessage(msgId int64) ([]int32, models.Message, error) {
 		return nil, models.Message{}, errors.ErrNoRows
 	}
 
+	var index int
 	rid := make([]int32, 0, len(roomTopMsg))
-	for _, v := range roomTopMsg {
-		rid = append(rid, v.RoomId)
+	for i, v := range roomTopMsg {
+		if v.Type == t {
+			index = i
+			rid = append(rid, v.RoomId)
+		}
 	}
+
 	return rid, models.Message{
 		MsgId:   msgId,
-		Message: roomTopMsg[0].Message,
-		SendAt:  roomTopMsg[0].SendAt,
+		Message: roomTopMsg[index].Message,
+		SendAt:  roomTopMsg[index].SendAt,
 	}, nil
 }
 
-func (r *room) AddTopMessage(rids []int32, msg message.Message) error {
-	model := models.Message{
-		MsgId:   msg.Id,
-		Message: msg.Message,
+func (r *room) AddTopMessage(rids []int32, seq int64, msg string, ts []int) error {
+	var roomTopMessage message.Message
+	model := models.RoomTopMessage{
+		MsgId:   seq,
+		Message: msg,
 		SendAt:  time.Now(),
 	}
-	if err := r.db.AddRoomTopMessage(rids, model); err != nil {
-		if e, ok := err.(*mysql.MySQLError); ok {
-			if e.Number == 1452 {
-				return errors.ErrNoRoom
+
+	for _, t := range ts {
+		model.Type = t
+		if err := r.db.AddRoomTopMessage(rids, model); err != nil {
+			if e, ok := err.(*mysql.MySQLError); ok {
+				if e.Number == 1452 {
+					return errors.ErrNoRoom
+				}
 			}
+			return err
 		}
-		return err
+
+		if t == models.TOP_MESSAGE {
+			roomTopMessage = message.RoomTopMessageToMessage(model)
+		} else {
+			roomTopMessage = message.RoomBulletinMessageToMessage(model)
+		}
+
+		b, err := json.Marshal(roomTopMessage)
+		if err != nil {
+			return err
+		}
+
+		if t == models.TOP_MESSAGE {
+			err = r.c.setChatTopMessage(rids, b)
+		} else {
+			err = r.c.setChatBulletinMessage(rids, b)
+		}
+
+		if err != nil {
+			return err
+		}
 	}
 
-	b, err := json.Marshal(msg)
-	if err != nil {
-		return err
-	}
-	return r.c.setChatTopMessage(rids, b)
+	return nil
 }
 
-func (r *room) DeleteTopMessage(rids []int32, msgId int64) error {
-	err := r.db.DeleteRoomTopMessage(msgId)
+func (r *room) DeleteTopMessage(rids []int32, msgId int64, t int) error {
+	err := r.db.DeleteRoomTopMessage(rids, msgId, t)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return errors.ErrNoRows
 		}
 		return err
 	}
-	return r.c.deleteChatTopMessage(rids)
+
+	if t == models.TOP_MESSAGE {
+		return r.c.deleteChatTopMessage(rids)
+	}
+
+	return r.c.deleteChatBulletinMessage(rids)
 }
 
 func (r *room) Online() (map[int32]int32, error) {

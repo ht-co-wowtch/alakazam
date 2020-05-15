@@ -433,14 +433,24 @@ func (s *Server) authWebsocket(ctx context.Context, ws websocket.Conn, ch *Chann
 	if err = authReply(ws, p, b); err != nil {
 		return 0, time.Duration(0), fmt.Errorf("auth web socket reply error: %s", err.Error())
 	}
-	if c.HeaderMessage != nil {
+	if c.TopMessage != nil {
 		p.Op = pb.OpRaw
-		p.Body = c.HeaderMessage
+		p.Body = c.TopMessage
 		if err = p.WriteWebsocket(ws); err != nil {
-			log.Error("write header message", zap.Int32("rid", c.Connect.RoomID))
+			log.Error("write top message", zap.Int32("rid", c.Connect.RoomID))
 		}
 		if err = ws.Flush(); err != nil {
-			log.Error("send header message", zap.Int32("rid", c.Connect.RoomID))
+			log.Error("send top message", zap.Int32("rid", c.Connect.RoomID))
+		}
+	}
+	if c.BulletinMessage != nil {
+		p.Op = pb.OpRaw
+		p.Body = c.BulletinMessage
+		if err = p.WriteWebsocket(ws); err != nil {
+			log.Error("write bulletin message", zap.Int32("rid", c.Connect.RoomID))
+		}
+		if err = ws.Flush(); err != nil {
+			log.Error("send bulletin message", zap.Int32("rid", c.Connect.RoomID))
 		}
 	}
 

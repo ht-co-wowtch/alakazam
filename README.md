@@ -409,7 +409,8 @@ Body
                "value":"#A680B8"
             }
          ]
-      }
+      },
+      "background_color":"#0000003f"
    },
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
@@ -456,6 +457,7 @@ Body
    },
    "gift":{
       "gift_id":1,
+      "total_amount":10,
       "combo":{
          "count":1,
          "duration_ms":2000
@@ -585,6 +587,7 @@ gift: 禮物
 | 欄位名稱                  | 說明                   | 格式        |
 | ------------------------- | ---------------------- | ----------- |
 | gift_id                   | 禮物 id                | int         |
+| total_amount              | 今日房間總收禮物金額   | float       |
 | message                   | 送禮訊息               | string      |
 | combo.id                  | 禮物連擊次數           | int         |
 | combo.duration_ms         | 連擊訊息顯示多久(毫秒) | int         |
@@ -632,7 +635,8 @@ live_stream: 直播
          "background_color":"#0000003f",
          "label":null,
          "part_color":null,
-      }
+      },
+      "background_color":"#0000003f"
    },
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
@@ -673,9 +677,14 @@ live_stream: 直播
          "color":"#A680B8",
          "label":null,
          "part_color":null
-      }
+      },
+      "background_color":"#0000003f"
    },
-   "user":null
+   "user":{
+      "uid":"root",
+      "name":"管理員",
+      "avatar":"root"
+   }
 }
 ```
 
@@ -690,7 +699,11 @@ live_stream: 直播
    "time":"12:37:00",
    "timestamp":1567579890,
    "display":{
-      "user":null,
+      "user":{
+         "text":"管理員",
+         "color":"#FFFFFF",
+         "avatar":"female"
+      },
       "level":null,
       "title":null,
       "message":{
@@ -698,9 +711,14 @@ live_stream: 直播
          "color":"#FFFFFF",
          "label":null,
          "part_color": null
-      }
+      },
+      "background_color":"#0000003f"
    },
-   "user":null
+   "user":{
+      "uid":"root",
+      "name":"管理員",
+      "avatar":"root"
+   }
 }
 ```
 
@@ -728,7 +746,8 @@ live_stream: 直播
          "background_color":"#0000003f",
          "label":null,
          "part_color": null
-      }
+      },
+      "background_color":"#0000003f"
    },
    "user":null
 }
@@ -758,7 +777,8 @@ live_stream: 直播
          "background_color":"#0000003f",
          "label":null,
          "part_color": null
-      }
+      },
+      "background_color":"#0000003f"
    },
    "user":null
 }
@@ -788,7 +808,8 @@ live_stream: 直播
          "background_color":"#0000003f",
          "label":null,
          "part_color": null
-      }
+      },
+      "background_color":"#0000003f"
    },
    "user":null
 }
@@ -824,7 +845,8 @@ live_stream: 直播
                "value":"#A680B8"
             }
          ]
-      }
+      },
+      "background_color":"#0000003f"
    },
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
@@ -833,13 +855,21 @@ live_stream: 直播
    },
    "gift":{
       "gift_id":1,
+      "total_amount":10,
       "combo":{
          "count":1,
          "duration_ms":2000
       },
       "hint_box":null,
       "show_animation":false,
-      "message":"送出跑車"
+      "message":"sam 送出跑車",
+      "part_color":[
+         {
+           "offset":0,
+           "length":3,
+           "value":"#A680B8"
+         }
+      ]
    }
 }
 ```
@@ -876,7 +906,8 @@ live_stream: 直播
                "value":"#A680B8"
             }
          ]
-      }
+      },
+      "background_color":"#0000003f"
    },
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
@@ -885,13 +916,21 @@ live_stream: 直播
    },
    "gift":{
       "gift_id":0,
+      "total_amount":0,
       "combo":null,
       "show_animation":false,
       "hint_box":{
          "duration_ms":3000,
          "background_color":"https://assets.292801.com/awcp/logo/hPH6edsqSY.png"
       },
-      "message":"sam78 打賞10元"
+      "message":"sam78 打賞10元",
+      "part_color":[
+         {
+           "offset":0,
+           "length":5,
+           "value":"#A680B8"
+         }
+      ]
    }
 }
 ```
@@ -922,7 +961,8 @@ live_stream: 直播
          "background_color":"#0000003f",
          "label":null,
          "part_color": null
-      }
+      },
+      "background_color":"#0000003f"
    },
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
@@ -968,7 +1008,8 @@ live_stream: 直播
             }
          ],
          "part_color": null
-      }
+      },
+      "background_color":"#0000003f"
    },
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",

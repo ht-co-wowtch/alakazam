@@ -11,7 +11,7 @@ const (
 )
 
 type IChat interface {
-	GetChat(id int) (Room, RoomTopMessage, error)
+	GetChat(id int) (Room, []RoomTopMessage, error)
 }
 
 type Room struct {
@@ -45,7 +45,9 @@ type Room struct {
 	// 建立時間
 	CreateAt time.Time `json:"-"`
 
-	HeaderMessage []byte `xorm:"-"`
+	TopMessage []byte `xorm:"-"`
+
+	BulletinMessage []byte `xorm:"-"`
 }
 
 func (r *Room) TableName() string {
@@ -88,7 +90,7 @@ func (s *Store) GetRoomTopMessage(id int) (RoomTopMessage, error) {
 	return top, nil
 }
 
-func (s *Store) GetChat(id int) (Room, RoomTopMessage, error) {
+func (s *Store) GetChat(id int) (Room, []RoomTopMessage, error) {
 	tx := s.d.Prepare()
 	defer tx.Rollback()
 	room := Room{}
@@ -97,8 +99,8 @@ func (s *Store) GetChat(id int) (Room, RoomTopMessage, error) {
 		Where("status = ?", true).
 		Get(&room)
 
-	top := RoomTopMessage{}
-	tx.Where("`room_id` = ?", id).Get(&top)
+	top := make([]RoomTopMessage, 0)
+	tx.Where("`room_id` = ?", id).Find(&top)
 
 	if err := tx.Commit(); err != nil {
 		return room, top, err

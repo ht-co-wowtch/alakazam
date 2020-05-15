@@ -65,8 +65,9 @@ message ConnectReq {
 message ConnectReply {
     string name = 1;
     int64 heartbeat = 2;
-    bytes headerMessage = 3;
-    Connect Connect = 4;
+    bytes topMessage = 3;
+    bytes bulletinMessage = 4;
+    Connect Connect = 5;
 }
 
 message DisconnectReq {

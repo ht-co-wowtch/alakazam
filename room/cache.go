@@ -13,11 +13,13 @@ import (
 type Cache interface {
 	set(room models.Room) error
 	get(id int) (models.Room, error)
-	setChat(room models.Room, message []byte) error
+	setChat(room models.Room, topMessage, bulletinMessage []byte) error
 	getChat(id int) (models.Room, error)
 	setChatTopMessage(rids []int32, message []byte) error
+	setChatBulletinMessage(rids []int32, message []byte) error
 	getChatTopMessage(rid int) ([]byte, error)
 	deleteChatTopMessage(rids []int32) error
+	deleteChatBulletinMessage(rids []int32) error
 	addOnline(server string, online *Online) error
 	getOnline(server string) (*Online, error)
 }
@@ -38,8 +40,9 @@ const (
 	// 房間的前綴詞，用於存儲在redis當key
 	roomKey = prefix + ":room_%d"
 
-	roomDataHKey   = "data"
-	roomTopMsgHKey = "msg"
+	roomDataHKey        = "data"
+	roomTopMsgHKey      = "top"
+	roomBulletinMsgHKey = "bulletin"
 
 	// server name的前綴詞，用於存儲在redis當key
 	onlineKey = prefix + ":server_%s"
@@ -82,7 +85,7 @@ func (c *cache) get(id int) (models.Room, error) {
 	return r, nil
 }
 
-func (c *cache) setChat(room models.Room, message []byte) error {
+func (c *cache) setChat(room models.Room, topMessage, bulletinMessage []byte) error {
 	b1, err := json.Marshal(room)
 	if err != nil {
 		return err
@@ -91,8 +94,9 @@ func (c *cache) setChat(room models.Room, message []byte) error {
 	tx := c.c.Pipeline()
 	key := keyRoom(room.Id)
 	tx.HMSet(key, map[string]interface{}{
-		roomDataHKey:   b1,
-		roomTopMsgHKey: message,
+		roomDataHKey:        b1,
+		roomTopMsgHKey:      topMessage,
+		roomBulletinMsgHKey: bulletinMessage,
 	})
 	tx.Expire(key, roomExpired)
 	_, err = tx.Exec()
@@ -100,7 +104,7 @@ func (c *cache) setChat(room models.Room, message []byte) error {
 }
 
 func (c *cache) getChat(id int) (models.Room, error) {
-	room, err := c.c.HMGet(keyRoom(id), roomDataHKey, roomTopMsgHKey).Result()
+	room, err := c.c.HMGet(keyRoom(id), roomDataHKey, roomTopMsgHKey, roomBulletinMsgHKey).Result()
 	if err != nil {
 		return models.Room{}, err
 	}
@@ -112,11 +116,14 @@ func (c *cache) getChat(id int) (models.Room, error) {
 	if err = json.Unmarshal([]byte(room[0].(string)), &r); err != nil {
 		return r, err
 	}
-	if room[1] == nil {
-		return r, nil
+	if room[1] != nil {
+		r.TopMessage = []byte(room[1].(string))
 	}
 
-	r.HeaderMessage = []byte(room[1].(string))
+	if room[2] != nil {
+		r.BulletinMessage = []byte(room[2].(string))
+	}
+
 	return r, err
 }
 
@@ -129,6 +136,20 @@ func (c *cache) setChatTopMessage(rids []int32, message []byte) error {
 	tx := c.c.Pipeline()
 	for _, k := range keys {
 		tx.HSet(k, roomTopMsgHKey, message)
+	}
+	_, err := tx.Exec()
+	return err
+}
+
+func (c *cache) setChatBulletinMessage(rids []int32, message []byte) error {
+	keys := make([]string, 0, len(rids))
+	for _, rid := range rids {
+		keys = append(keys, keyRoom(int(rid)))
+	}
+
+	tx := c.c.Pipeline()
+	for _, k := range keys {
+		tx.HSet(k, roomBulletinMsgHKey, message)
 	}
 	_, err := tx.Exec()
 	return err
@@ -154,6 +175,20 @@ func (c *cache) deleteChatTopMessage(rids []int32) error {
 	tx := c.c.Pipeline()
 	for _, k := range keys {
 		tx.HDel(k, roomTopMsgHKey)
+	}
+	_, err := tx.Exec()
+	return err
+}
+
+func (c *cache) deleteChatBulletinMessage(rids []int32) error {
+	keys := make([]string, 0, len(rids))
+	for _, rid := range rids {
+		keys = append(keys, keyRoom(int(rid)))
+	}
+
+	tx := c.c.Pipeline()
+	for _, k := range keys {
+		tx.HDel(k, roomBulletinMsgHKey)
 	}
 	_, err := tx.Exec()
 	return err

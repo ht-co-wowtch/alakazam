@@ -51,6 +51,12 @@ type pushRoomReq struct {
 
 	// 訊息是否頂置
 	Top bool `json:"top"`
+
+	// 訊息是否為頂置
+	IsTop bool `json:"is_top"`
+
+	// 訊息是否為公告
+	IsBulletin bool `json:"is_bulletin"`
 }
 
 func (s *httpServer) push(c *gin.Context) error {
@@ -71,18 +77,17 @@ func (s *httpServer) push(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	if p.Top {
-		now := time.Now()
-		m := message.Message{
-			Id:        id,
-			Uid:       u.Uid,
-			Type:      message.TopType,
-			Name:      u.Name,
-			Message:   p.Message,
-			Time:      now.Format("15:04:05"),
-			Timestamp: now.Unix(),
-		}
-		if err := s.room.AddTopMessage(p.RoomId, m); err != nil {
+
+	var ts []int
+	if p.IsTop {
+		ts = append(ts, models.TOP_MESSAGE)
+	}
+	if p.IsBulletin {
+		ts = append(ts, models.BULLETIN_MESSAGE)
+	}
+
+	if len(ts) > 0 {
+		if err := s.room.AddTopMessage(p.RoomId, id, p.Message, ts); err != nil {
 			if err == errors.ErrNoRoom {
 				return err
 			}
@@ -239,6 +244,11 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	return nil
 }
 
+var delMessageType = map[string]int{
+	"top":      models.TOP_MESSAGE,
+	"bulletin": models.BULLETIN_MESSAGE,
+}
+
 // 取消置頂訊息
 func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
@@ -246,31 +256,44 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 		return err
 	}
 
+	var rid []int32
+	var msg string
 	msgId := int64(id)
-	rid, msg, err := s.room.GetTopMessage(msgId)
+	t, ok := delMessageType[c.Query("type")]
 
-	if err == nil {
-		if err := s.message.CloseTop(msgId, rid); err != nil {
+	if ok {
+		var topMsg models.Message
+		rid, topMsg, err = s.room.GetTopMessage(msgId, t)
+		if err != nil {
+			goto Err
+		}
+		if t == models.TOP_MESSAGE {
+			if err := s.message.CloseTop(msgId, rid); err != nil {
+				return err
+			}
+		}
+		if err := s.room.DeleteTopMessage(rid, msgId, t); err != nil {
 			return err
 		}
-		if err := s.room.DeleteTopMessage(rid, msgId); err != nil {
-			return err
-		}
 
-		// TODO 因為後台UI介面的因素導致沒有處理`没有资料`情況，所以將`没有资料`情況視為正常
-		// 參考 http://mantis.jetfuel.com.tw/view.php?id=3004
-	} else if err == errors.ErrNoRows {
-		rid = []int32{}
-		msg = models.Message{
-			Message: "没有资料",
-		}
+		msg = topMsg.Message
 	} else {
-		return err
+		err = errors.ErrNoRows
+	}
+
+	// TODO 因為後台UI介面的因素導致沒有處理`没有资料`情況，所以將`没有资料`情況視為正常
+	// 參考 http://mantis.jetfuel.com.tw/view.php?id=3004
+Err:
+	if err != nil {
+		if err == errors.ErrNoRows {
+			rid = []int32{}
+			msg = "没有资料"
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"id":      msgId,
-		"message": msg.Message,
+		"message": msg,
 		"room_id": rid,
 	})
 	return nil
