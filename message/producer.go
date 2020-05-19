@@ -115,7 +115,6 @@ type ProducerMessage struct {
 	Rooms   []int32
 	User    User
 	Display Display
-	IsTop   bool
 	Type    string
 }
 
@@ -190,20 +189,30 @@ func (p *Producer) Send(msg ProducerMessage) (int64, error) {
 
 func (p *Producer) SendForAdmin(msg ProducerMessage) (int64, error) {
 	msg.Type = MessageType
-	if msg.IsTop {
-		msg.Type = TopType
-	}
-
 	pushMsg, err := p.toPb(msg)
 
 	if err != nil {
 		return 0, err
 	}
-	if msg.IsTop {
-		pushMsg.Type = logicpb.PushMsg_ADMIN_TOP
-	} else {
-		pushMsg.Type = logicpb.PushMsg_ADMIN
+
+	pushMsg.Type = logicpb.PushMsg_ADMIN
+
+	if err := p.send(pushMsg); err != nil {
+		return 0, err
 	}
+	return pushMsg.Seq, nil
+}
+
+func (p *Producer) SendTop(msg ProducerMessage) (int64, error) {
+	msg.Type = TopType
+	pushMsg, err := p.toPb(msg)
+
+	if err != nil {
+		return 0, err
+	}
+
+	pushMsg.Type = logicpb.PushMsg_ADMIN_TOP
+
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
 	}

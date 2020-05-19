@@ -65,17 +65,48 @@ func (s *httpServer) push(c *gin.Context) error {
 		return err
 	}
 
+	var id int64
+	var err error
 	u := message.NewRoot()
 	msg := message.ProducerMessage{
 		Rooms:   p.RoomId,
-		Display: message.DisplayByAdmin(u, p.Message),
 		User:    u,
-		IsTop:   p.Top,
 	}
 
-	id, err := s.message.SendForAdmin(msg)
-	if err != nil {
-		return err
+	if !p.IsTop && !p.IsBulletin {
+		msg.Display = message.DisplayByAdmin(u, p.Message)
+		msg := message.ProducerMessage{
+			Rooms:   p.RoomId,
+			Display: message.DisplayByAdmin(u, p.Message),
+			User:    u,
+		}
+
+		if id, err = s.message.SendForAdmin(msg); err != nil {
+			return err
+		}
+	}
+
+	if p.IsTop {
+		msg := message.ProducerMessage{
+			Rooms:   p.RoomId,
+			Display: message.DisplayBySystem(p.Message),
+			User:    u,
+		}
+
+		if id, err = s.message.SendTop(msg); err != nil {
+			return err
+		}
+	}
+	if p.IsBulletin {
+		msg := message.ProducerMessage{
+			Rooms:   p.RoomId,
+			Display: message.DisplayBySystem(p.Message),
+			User:    u,
+		}
+
+		if id, err = s.message.Send(msg); err != nil {
+			return err
+		}
 	}
 
 	var ts []int
