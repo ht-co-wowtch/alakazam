@@ -394,19 +394,20 @@ Body
          "text":"sam78 測試",
          "color":"#DF3030",
          "background_color":"#0000003f",
-         "label": [
+         "entity":[
             {
+               "type":"username",
+               "offset":0,
+               "length":5,
+               "color":"#A680B8",
+               "background_color":"#0000003f"
+            },
+            {
+               "type":"button",
                "offset":6,
                "length":2,
                "color":"#E5C4C4",
                "background_color":"#A680B8"
-            }
-         ],
-         "part_color":[
-            {
-               "offset":0,
-               "length":4,
-               "value":"#A680B8"
             }
          ]
       },
@@ -467,10 +468,19 @@ Body
          "background_image":"https://assets.292801.com/awcp/logo/hPH6edsqSY.png"
       },
       "show_animation":false,
-      "message":"sam78 打賞10元"
+      "message":"sam78 打賞10元",
+      "entity":[
+         {
+            "type":"username",
+            "offset":0,
+            "length":5,
+            "color":"#A680B8",
+            "background_color":"#0000003f"
+         }
+      ]
    },
-   "live_stream": {
-  	 "chat_id": 1,    
+   "live_stream":{
+      "chat_id":1
    }
 }
 ```
@@ -528,20 +538,17 @@ display.title: 發訊息人身份
 
 display.message: 訊息資料
 
-| 欄位名稱               | 說明             | 格式      |
-| ---------------------- | ---------------- | --------- |
-| text                   | 訊息             | string    |
-| color                  | 字體顏色(預設)   | #000000   |
-| background_color       | 訊息框顏色       | #0000003f |
-| part_color             | 各範圍文字的顏色 | array     |
-| part_color.offset      | 偏移第幾個字     | int       |
-| part_color.length      | 字範圍長度       | int       |
-| part_color.value       | 字體顏色         | #000000   |
-| label                  | 文字標籤         | array     |
-| label.offset           | 偏移第幾個字     | int       |
-| label.length           | 字範圍長度       | int       |
-| label.color            | 字體顏色         | #000000   |
-| label.background_color | 標籤背景         | #A680B8   |
+| 欄位名稱                | 說明           | 格式      |
+| ----------------------- | -------------- | --------- |
+| text                    | 訊息           | string    |
+| color                   | 字體顏色(預設) | #000000   |
+| background_color        | 訊息框顏色     | #0000003f |
+| entity                  | 文字實體       | array     |
+| entity.type             | 文字類型       | string    |
+| entity.offset           | 偏移第幾個字   | int       |
+| entity.length           | 字範圍長度     | int       |
+| entity.color            | 字體顏色       | #000000   |
+| entity.background_color | 標籤背景       | #A680B8   |
 
 
 
@@ -594,6 +601,12 @@ gift: 禮物
 | show_animation            | 是否顯示動畫           | bool        |
 | hint_box.background_image | hint box 背景圖        | string(url) |
 | hint_box.duration_ms      | hint box顯示多久(毫秒) | int         |
+| entity                    | 文字實體               | array       |
+| entity.type               | 文字類型               | string      |
+| entity.offset             | 偏移第幾個字           | int         |
+| entity.length             | 字範圍長度             | int         |
+| entity.color              | 字體顏色               | #000000     |
+| entity.background_color   | 標籤背景               | #A680B8     |
 
 
 
@@ -602,6 +615,17 @@ live_stream: 直播
 | 欄位名稱 | 說明      | 格式 |
 | -------- | --------- | ---- |
 | chat_id  | 直播間 id | int  |
+
+
+
+entity.type: 文字實體內容
+
+| 值       | 說明     | 格式   |
+| -------- | -------- | ------ |
+| username | user名稱 | string |
+| button   | 按鈕     | string |
+
+
 
 
 
@@ -633,8 +657,7 @@ live_stream: 直播
          "text":"測試",
          "color":"#A680B8",
          "background_color":"#0000003f",
-         "label":null,
-         "part_color":null,
+         "entity":null
       },
       "background_color":"#0000003f"
    },
@@ -675,8 +698,7 @@ live_stream: 直播
       "message":{
          "text":"測試",
          "color":"#A680B8",
-         "label":null,
-         "part_color":null
+         "entity":null
       },
       "background_color":"#0000003f"
    },
@@ -709,8 +731,7 @@ live_stream: 直播
       "message":{
          "text":"你好嗎？",
          "color":"#FFFFFF",
-         "label":null,
-         "part_color": null
+         "entity":null
       },
       "background_color":"#0000003f"
    },
@@ -744,8 +765,7 @@ live_stream: 直播
          "text":"測試",
          "color":"#A680B8",
          "background_color":"#0000003f",
-         "label":null,
-         "part_color": null
+         "entity":null
       },
       "background_color":"#0000003f"
    },
@@ -775,8 +795,7 @@ live_stream: 直播
          "text":"中獎訊息",
          "color":"#A680B8",
          "background_color":"#0000003f",
-         "label":null,
-         "part_color": null
+         "entity":null
       },
       "background_color":"#0000003f"
    },
@@ -806,8 +825,7 @@ live_stream: 直播
          "text":"sam78 進入房間",
          "color":"#A680B8",
          "background_color":"#0000003f",
-         "label":null,
-         "part_color": null
+         "entity":null
       },
       "background_color":"#0000003f"
    },
@@ -837,12 +855,13 @@ live_stream: 直播
          "text":"sam78 送出禮物x1",
          "color":"#A680B8",
          "background_color":"#0000003f",
-         "label":null,
-         "part_color":[
+         "entity":[
             {
+               "type":"username",
                "offset":0,
                "length":5,
-               "value":"#A680B8"
+               "color":"#A680B8",
+               "background_color":"#0000003f"
             }
          ]
       },
@@ -863,11 +882,13 @@ live_stream: 直播
       "hint_box":null,
       "show_animation":false,
       "message":"sam 送出跑車",
-      "part_color":[
+      "entity":[
          {
-           "offset":0,
-           "length":3,
-           "value":"#A680B8"
+            "type":"username",
+            "offset":0,
+            "length":3,
+            "color":"#A680B8",
+            "background_color":"#0000003f"
          }
       ]
    }
@@ -898,12 +919,13 @@ live_stream: 直播
          "text":"sam78 打賞10元",
          "color":"#DF3030",
          "background_color":"#0000003f",
-         "label":null,
-         "part_color":[
+         "entity":[
             {
+               "type":"username",
                "offset":0,
                "length":5,
-               "value":"#A680B8"
+               "color":"#A680B8",
+               "background_color":"#0000003f"
             }
          ]
       },
@@ -924,11 +946,13 @@ live_stream: 直播
          "background_color":"https://assets.292801.com/awcp/logo/hPH6edsqSY.png"
       },
       "message":"sam78 打賞10元",
-      "part_color":[
+      "entity":[
          {
-           "offset":0,
-           "length":5,
-           "value":"#A680B8"
+            "type":"username",
+            "offset":0,
+            "length":5,
+            "color":"#A680B8",
+            "background_color":"#0000003f"
          }
       ]
    }
@@ -959,8 +983,7 @@ live_stream: 直播
          "text":"紅包",
          "color":"#FFFFFF",
          "background_color":"#0000003f",
-         "label":null,
-         "part_color": null
+         "entity":null
       },
       "background_color":"#0000003f"
    },
@@ -999,15 +1022,15 @@ live_stream: 直播
          "text":"跟投",
          "color":"#DF3030",
          "background_color":"#0000003f",
-         "label": [
+         "entity":[
             {
+               "type":"button",
                "offset":6,
                "length":2,
                "color":"#E5C4C4",
                "background_color":"#A680B8"
             }
-         ],
-         "part_color": null
+         ]
       },
       "background_color":"#0000003f"
    },
