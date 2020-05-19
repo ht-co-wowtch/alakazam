@@ -117,23 +117,25 @@ type DisplayMessage struct {
 	// 字體顏色(預設)
 	Color string `json:"color"`
 
-	// 訊息標籤
-	Label []Label `json:"label"`
-
-	// 各範圍文字的顏色
-	PartColor []PartColor `json:"part_color"`
+	// 文字實體
+	Entity []Entity `json:"entity"`
 }
 
-type PartColor struct {
-	Offset int    `json:"offset"`
-	Length int    `json:"length"`
-	Value  string `json:"value"`
-}
+// 文字實體
+type Entity struct {
+	// 類型
+	Type string `json:"type"`
 
-type Label struct {
-	Offset          int    `json:"offset"`
-	Length          int    `json:"length"`
-	Color           string `json:"color"`
+	// 第幾個Offset
+	Offset int `json:"offset"`
+
+	// 從Offset算幾個Length
+	Length int `json:"length"`
+
+	// 文字顏色
+	Color string `json:"color"`
+
+	// 該範圍背景顏色
 	BackgroundColor string `json:"background_color"`
 }
 

@@ -278,11 +278,13 @@ func DisplayByBets(user User, gameName string, amount int) Display {
 		Message: NullDisplayMessage{
 			Text:  "用戶" + user.Name + "在" + gameName + "下注" + string(amount) + "元",
 			Color: DISPLAY_MESSAGE_FONT_COLOR,
-			PartColor: []PartColor{
-				PartColor{
-					Offset: 2,
-					Length: len(user.Name),
-					Value:  "#7CE7EB",
+			Entity: []Entity{
+				Entity{
+					Type:            "button",
+					Offset:          2,
+					Length:          len(user.Name),
+					Color:           "#7CE7EB",
+					BackgroundColor: DISPLAY_BACKGROUND_COLOR,
 				},
 			},
 		},

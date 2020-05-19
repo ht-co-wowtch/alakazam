@@ -881,16 +881,8 @@ entity.type: 文字實體內容
       },
       "hint_box":null,
       "show_animation":false,
-      "message":"sam 送出跑車",
-      "entity":[
-         {
-            "type":"username",
-            "offset":0,
-            "length":3,
-            "color":"#A680B8",
-            "background_color":"#0000003f"
-         }
-      ]
+      "message":"送出跑車",
+      "entity":null
    }
 }
 ```
