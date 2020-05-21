@@ -117,6 +117,9 @@ type DisplayMessage struct {
 	// 字體顏色(預設)
 	Color string `json:"color"`
 
+	// 字體背景
+	BackgroundColor string `json:"background_color"`
+
 	// 文字實體
 	Entity []Entity `json:"entity"`
 }
