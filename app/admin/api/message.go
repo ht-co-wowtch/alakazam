@@ -49,9 +49,6 @@ type pushRoomReq struct {
 	// user push message
 	Message string `json:"message" binding:"required,max=250"`
 
-	// 訊息是否頂置
-	Top bool `json:"top"`
-
 	// 訊息是否為頂置
 	IsTop bool `json:"is_top"`
 
@@ -69,8 +66,8 @@ func (s *httpServer) push(c *gin.Context) error {
 	var err error
 	u := message.NewRoot()
 	msg := message.ProducerMessage{
-		Rooms:   p.RoomId,
-		User:    u,
+		Rooms: p.RoomId,
+		User:  u,
 	}
 
 	if !p.IsTop && !p.IsBulletin {
