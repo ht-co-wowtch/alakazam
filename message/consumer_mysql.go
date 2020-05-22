@@ -51,16 +51,12 @@ func NewMysqlConsumer(ctx context.Context, db *xorm.EngineGroup, c *redis.Client
 	return mysql
 }
 
-var skip = map[pb.PushMsg_Type]bool{
-	pb.PushMsg_SYSTEM: true,
-}
-
 func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 	id := goroutineID()
 	for {
 		select {
 		case p := <-msg:
-			if _, ok := skip[p.Type]; ok {
+			if p.Type > pb.PushMsg_MONEY {
 				continue
 			}
 
@@ -71,10 +67,6 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 					message: string(p.Msg),
 					error:   err,
 				}))
-			}
-
-			if p.Type > pb.PushMsg_MONEY {
-				continue
 			}
 
 			sendAt := time.Unix(p.SendAt, 0)
@@ -114,6 +106,8 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 						message:       p.Message,
 					}
 				}
+			default:
+				continue
 			}
 
 			if err == nil {
