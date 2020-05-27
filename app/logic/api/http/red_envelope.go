@@ -43,7 +43,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		})
 	}
 
-	return nil
+	return err
 }
 
 type takeRedEnvelope struct {
