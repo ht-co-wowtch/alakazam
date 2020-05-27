@@ -459,6 +459,7 @@ Body
    "gift":{
       "gift_id":1,
       "total_amount":10,
+      "amount":5,
       "combo":{
          "count":1,
          "duration_ms":2000
@@ -595,6 +596,7 @@ gift: 禮物
 | ------------------------- | ---------------------- | ----------- |
 | gift_id                   | 禮物 id                | int         |
 | total_amount              | 今日房間總收禮物金額   | float       |
+| amount                    | 本次送禮or打賞金額     | float       |
 | message                   | 送禮訊息               | string      |
 | combo.id                  | 禮物連擊次數           | int         |
 | combo.duration_ms         | 連擊訊息顯示多久(毫秒) | int         |
@@ -875,6 +877,7 @@ entity.type: 文字實體內容
    "gift":{
       "gift_id":1,
       "total_amount":10,
+      "amount":5,
       "combo":{
          "count":1,
          "duration_ms":2000
@@ -931,6 +934,7 @@ entity.type: 文字實體內容
    "gift":{
       "gift_id":0,
       "total_amount":0,
+      "amount":5,
       "combo":null,
       "show_animation":false,
       "hint_box":{

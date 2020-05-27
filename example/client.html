@@ -319,6 +319,7 @@
                     break;
                 case 6:
                     var json = textDecoder.decode(data.slice(headerLen, packetLen));
+                    console.log(json)
                     appendMsg(json, op);
                     break;
                 case 8:
