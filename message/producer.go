@@ -116,6 +116,7 @@ type ProducerMessage struct {
 	User    User
 	Display Display
 	Type    string
+	IsSave  bool
 }
 
 func (p *Producer) toPb(msg ProducerMessage) (*logicpb.PushMsg, error) {
@@ -162,6 +163,7 @@ func (p *Producer) toPb(msg ProducerMessage) (*logicpb.PushMsg, error) {
 		Msg:     bm,
 		Message: msg.Display.Message.Text,
 		SendAt:  now.Unix(),
+		IsSave:  msg.IsSave,
 	}, nil
 }
 
@@ -265,6 +267,7 @@ func (p *Producer) toRedEnvelopePb(msg ProducerMessage, redEnvelope RedEnvelope)
 		Msg:     bm,
 		SendAt:  now.Unix(),
 		Message: msg.Display.Message.Text,
+		IsSave:  msg.IsSave,
 	}, nil
 }
 

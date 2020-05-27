@@ -233,6 +233,7 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		Rooms:   []int32{int32(o.RoomId)},
 		Display: message.DisplayByAdmin(u, o.Message),
 		User:    u,
+		IsSave:  true,
 	}
 
 	redEnvelope := message.RedEnvelope{

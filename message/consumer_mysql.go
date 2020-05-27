@@ -56,7 +56,7 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 	for {
 		select {
 		case p := <-msg:
-			if p.Type > pb.PushMsg_MONEY {
+			if !p.IsSave {
 				continue
 			}
 

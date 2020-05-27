@@ -50,6 +50,7 @@ func (m *msg) user(req messageReq) (int64, error) {
 		Rooms:   []int32{int32(req.RoomId)},
 		User:    u,
 		Display: display,
+		IsSave:  true,
 	}
 
 	id, err := m.message.Send(msg)
@@ -93,6 +94,7 @@ func (m *msg) redEnvelope(req giveRedEnvelopeReq) (int64, client.RedEnvelopeRepl
 		Rooms:   []int32{int32(req.RoomId)},
 		User:    u,
 		Display: message.DisplayByUser(u, req.Message),
+		IsSave: true,
 	}
 
 	redEnvelope := message.RedEnvelope{

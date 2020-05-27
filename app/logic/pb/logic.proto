@@ -26,6 +26,7 @@ message PushMsg {
     int64 sendAt = 9;
     string message = 10;
     bool isRaw = 11;
+    bool isSave = 12;
 }
 
 message PingReply {
