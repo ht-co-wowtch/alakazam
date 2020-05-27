@@ -199,6 +199,12 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 			// 將user Channel放到某一個Bucket內做保存
 			b = s.Bucket(ch.Key)
 			err = b.Put(rid, ch)
+
+			// 如Bucket的room是新建立的，可能人數只有當前進入該Bucket的人(1)
+			// 但該room實際人數可能並非(1)，可能是(5)，這樣落差感會滿大且需等
+			// 到再次統計人數時才會矯正room人數，給定一個變數放置所有room總人數
+			// 每次就給上次統計完成的人數結果
+			ch.Room.AllOnline = s.online[rid]
 		}
 	}
 

@@ -27,7 +27,7 @@ type Room struct {
 	// 房間人數(Room會分散在各個bucket，此為存在某bucket內的人數)
 	Online int32
 
-	// 此房間總人數(集合所有bucket內房間的總人數)
+	// 此房間總人數(集合所有bucket內房間的總人數)，不一定真實可以被灌水
 	AllOnline int32
 }
 

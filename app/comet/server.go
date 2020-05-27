@@ -46,6 +46,9 @@ type Server struct {
 
 	// Logic service grpc client
 	logic pb.LogicClient
+
+	// 房間總人數(非即時)
+	online map[int32]int32
 }
 
 // new Server
@@ -97,10 +100,7 @@ func (s *Server) Close() (err error) {
 // 因為logic有提供http獲得某房間人數
 func (s *Server) onlineproc() {
 	for {
-		var (
-			allRoomsCount map[int32]int32
-			err           error
-		)
+		var err error
 		roomCount := make(map[int32]int32)
 
 		// 因為房間會分散在不同的bucket所以需要統計
@@ -110,12 +110,12 @@ func (s *Server) onlineproc() {
 			}
 		}
 
-		if allRoomsCount, err = s.RenewOnline(context.Background(), s.name, roomCount); err != nil {
+		if s.online, err = s.RenewOnline(context.Background(), s.name, roomCount); err != nil {
 			time.Sleep(time.Second)
 			continue
 		}
 		for _, bucket := range s.buckets {
-			bucket.UpRoomsCount(allRoomsCount)
+			bucket.UpRoomsCount(s.online)
 		}
 
 		// 每30秒統計一次發給logic
