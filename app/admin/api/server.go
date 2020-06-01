@@ -55,29 +55,30 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.POST("/banned/:uid", api.ErrHandler(s.setBanned))
 	e.DELETE("/banned/:uid", api.ErrHandler(s.removeBanned))
 
-	// 設定房間
+	// 踢人
+	e.DELETE("/kick/:uid", api.ErrHandler(s.kick))
+
+	// 房間
 	e.POST("/room", api.ErrHandler(s.CreateRoom))
 	e.PUT("/room/:id", api.ErrHandler(s.UpdateRoom))
 	e.GET("/room/:id", api.ErrHandler(s.GetRoom))
 	e.DELETE("/room/:id", api.ErrHandler(s.DeleteRoom))
+	e.GET("/online", api.ErrHandler(s.online))
 
+	// 訊息
 	e.POST("/system", api.ErrHandler(s.system))
 	e.POST("/push", api.ErrHandler(s.push))
 	e.DELETE("/push/:id", api.ErrHandler(s.deleteTopMessage))
-
 	e.POST("/red-envelope", api.ErrHandler(s.giveRedEnvelope))
-
 	e.POST("/bets", api.ErrHandler(s.bets))
 
-	e.DELETE("/kick/:uid", api.ErrHandler(s.kick))
-
+	// 敏感詞
 	e.POST("/shield", api.ErrHandler(s.CreateShield))
 	e.PUT("/shield", api.ErrHandler(s.UpdateShield))
 	e.DELETE("/shield/:id", api.ErrHandler(s.DeleteShield))
 
+	// 會員資料
 	e.PUT("/profile/:token/renew", api.ErrHandler(s.renew))
-
-	e.GET("/online", api.ErrHandler(s.online))
 }
 
 func (s *httpServer) Close() error {

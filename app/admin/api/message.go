@@ -18,6 +18,7 @@ type systemReq struct {
 	IsRaw    bool                 `json:"is_raw"`
 }
 
+// 客制訊息內容(需依照格式填資料)
 func (s *httpServer) system(c *gin.Context) error {
 	var p systemReq
 	var id int64
@@ -56,6 +57,7 @@ type pushRoomReq struct {
 	IsBulletin bool `json:"is_bulletin"`
 }
 
+// 訊息
 func (s *httpServer) push(c *gin.Context) error {
 	p := new(pushRoomReq)
 	if err := c.ShouldBindJSON(p); err != nil {
@@ -183,7 +185,7 @@ func (s *httpServer) bets(c *gin.Context) error {
 	return nil
 }
 
-type redEnvelope struct {
+type redEnvelopeReq struct {
 	// 房間id
 	RoomId int `json:"room_id" binding:"required"`
 
@@ -208,7 +210,7 @@ type redEnvelope struct {
 
 // 紅包
 func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
-	var o redEnvelope
+	var o redEnvelopeReq
 	if err := c.ShouldBindJSON(&o); err != nil {
 		return err
 	}
