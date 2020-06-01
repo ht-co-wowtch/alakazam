@@ -298,6 +298,37 @@ func DisplayByBets(user User, gameName string, amount int) Display {
 	}
 }
 
+// 注單派彩Display
+func DisplayByBetsPay(user User, gameName string) Display {
+	return Display{
+		User: NullDisplayUser{
+			Text:   user.Name,
+			Color:  DISPLAY_USER_FONT_COLOR,
+			Avatar: user.Avatar,
+		},
+		Level: NullDisplayText{
+			Text:            member.System,
+			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			BackgroundColor: "#FC8813",
+		},
+		Message: NullDisplayMessage{
+			Text:            "用戶" + user.Name + "在" + gameName + "赢得奖了",
+			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			BackgroundColor: NONE_COLOR,
+			Entity: []Entity{
+				Entity{
+					Type:            "username",
+					Offset:          2,
+					Length:          len(user.Name),
+					Color:           "#7CE7EB",
+					BackgroundColor: NONE_COLOR,
+				},
+			},
+		},
+		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+	}
+}
+
 // 系統Display
 func DisplayBySystem(message string) Display {
 	return Display{

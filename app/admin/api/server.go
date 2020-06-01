@@ -71,6 +71,7 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.DELETE("/push/:id", api.ErrHandler(s.deleteTopMessage))
 	e.POST("/red-envelope", api.ErrHandler(s.giveRedEnvelope))
 	e.POST("/bets", api.ErrHandler(s.bets))
+	e.POST("betsPay", api.ErrHandler(s.betsPay))
 
 	// 敏感詞
 	e.POST("/shield", api.ErrHandler(s.CreateShield))

@@ -185,6 +185,47 @@ func (s *httpServer) bets(c *gin.Context) error {
 	return nil
 }
 
+type betsPayReq struct {
+	RoomId   int32  `json:"room_id" binding:"required"`
+	Uid      string `json:"uid" binding:"required"`
+	GameName string `json:"game_name" binding:"required"`
+}
+
+// 注單派彩
+func (s *httpServer) betsPay(c *gin.Context) error {
+	req := new(betsPayReq)
+	if err := c.ShouldBindJSON(req); err != nil {
+		return err
+	}
+
+	m, err := s.member.Fetch(req.Uid)
+	if err != nil {
+		return err
+	}
+
+	user := message.User{
+		Name:   m.Name,
+		Uid:    req.Uid,
+		Avatar: message.ToAvatarName(m.Gender),
+	}
+
+	msg := message.ProducerMessage{
+		Rooms:   []int32{req.RoomId},
+		User:    user,
+		Display: message.DisplayByBetsPay(user, req.GameName),
+	}
+
+	id, err := s.message.Send(msg)
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id": id,
+	})
+	return nil
+}
+
 type redEnvelopeReq struct {
 	// 房間id
 	RoomId int `json:"room_id" binding:"required"`
