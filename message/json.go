@@ -42,6 +42,23 @@ type Message struct {
 	Message string `json:"message"`
 }
 
+type GiftMessage struct {
+	Message
+	Gift Gift `json:"gift"`
+}
+
+type Gift struct {
+	Id            int         `json:"gift_id"`
+	Name          string      `json:"name"`
+	Amount        float64     `json:"amount"`
+	TotalAmount   float64     `json:"total_amount"`
+	Combo         int         `json:"combo"`
+	HintBox       interface{} `json:"hint_box"`
+	ShowAnimation bool        `json:"show_animation"`
+	Message       string      `json:"message"`
+	Entity        []Entity    `json:"entity"`
+}
+
 func (m Message) MarshalBinary() (data []byte, err error) {
 	return json.Marshal(m)
 }

@@ -36,6 +36,9 @@ const (
 
 	// 跟注
 	BetsType = "bets"
+
+	// 禮物
+	GiftType = "gift"
 )
 
 func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
@@ -319,6 +322,32 @@ func DisplayByBetsPay(user User, gameName string) Display {
 				Entity{
 					Type:            "username",
 					Offset:          2,
+					Length:          len(user.Name),
+					Color:           "#7CE7EB",
+					BackgroundColor: NONE_COLOR,
+				},
+			},
+		},
+		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+	}
+}
+
+// gift Display
+func DisplayByGift(user User, name string) Display {
+	return Display{
+		Title: NullDisplayText{
+			Text:            member.System,
+			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			BackgroundColor: "#FC8813",
+		},
+		Message: NullDisplayMessage{
+			Text:            user.Name + "送出" + name + "x1",
+			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			BackgroundColor: NONE_COLOR,
+			Entity: []Entity{
+				Entity{
+					Type:            "username",
+					Offset:          0,
 					Length:          len(user.Name),
 					Color:           "#7CE7EB",
 					BackgroundColor: NONE_COLOR,

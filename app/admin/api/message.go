@@ -226,6 +226,62 @@ func (s *httpServer) betsPay(c *gin.Context) error {
 	return nil
 }
 
+type giftReq struct {
+	RoomId      int32   `json:"room_id" binding:"required"`
+	Uid         string  `json:"uid" binding:"required"`
+	Id          int     `json:"id" binding:"required"`
+	Name        string  `json:"name" binding:"required"`
+	Combo       int     `json:"combo" binding:"required"`
+	Amount      float64 `json:"amount" binding:"required"`
+	TotalAmount float64 `json:"total_amount" binding:"required"`
+	UserName    string  `json:"user_name"`
+	UserAvatar  string  `json:"user_avatar"`
+}
+
+// 禮物
+func (s *httpServer) gift(c *gin.Context) error {
+	var req giftReq
+	var user message.User
+	if err := c.ShouldBindJSON(&req); err != nil {
+		return err
+	}
+
+	if req.Name == "" {
+		m, err := s.member.Fetch(req.Uid)
+		if err != nil {
+			return err
+		}
+
+		user = message.User{
+			Name:   m.Name,
+			Uid:    req.Uid,
+			Avatar: message.ToAvatarName(m.Gender),
+		}
+	} else {
+		user = message.User{
+			Name:   req.UserName,
+			Uid:    req.Uid,
+			Avatar: req.UserAvatar,
+		}
+	}
+
+	id, err := s.message.SendGift(req.RoomId, user, message.Gift{
+		Id:          req.Id,
+		Name:        req.Name,
+		Amount:      req.Amount,
+		TotalAmount: req.TotalAmount,
+		Combo:       req.Combo,
+	})
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id": id,
+	})
+	return nil
+}
+
 type redEnvelopeReq struct {
 	// 房間id
 	RoomId int `json:"room_id" binding:"required"`

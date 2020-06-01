@@ -221,6 +221,48 @@ func (p *Producer) SendTop(msg ProducerMessage) (int64, error) {
 	return pushMsg.Seq, nil
 }
 
+func (p *Producer) SendGift(rid int32, user User, gift Gift) (int64, error) {
+	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
+		Id: 1, Count: 1,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	gift.Message = "送出" + gift.Name
+
+	now := time.Now()
+	bm, err := json.Marshal(GiftMessage{
+		Message: Message{
+			Id:        seq.Id,
+			Type:      GiftType,
+			Time:      now.Format("15:04:05"),
+			Timestamp: now.Unix(),
+			Display:   DisplayByGift(user, gift.Name),
+			User:      NullUser(user),
+		},
+		Gift: gift,
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	pushMsg := &logicpb.PushMsg{
+		Seq:    seq.Id,
+		Type:   logicpb.PushMsg_SYSTEM,
+		Room:   []int32{rid},
+		Mid:    user.Id,
+		Msg:    bm,
+		SendAt: now.Unix(),
+		IsRaw:  true,
+	}
+	if err := p.send(pushMsg); err != nil {
+		return 0, err
+	}
+	return pushMsg.Seq, nil
+}
+
 func (p *Producer) toRedEnvelopePb(msg ProducerMessage, redEnvelope RedEnvelope) (*logicpb.PushMsg, error) {
 	if err := checkMessage(msg.Display.Message.Text); err != nil {
 		return nil, err
