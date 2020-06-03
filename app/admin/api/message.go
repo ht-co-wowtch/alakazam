@@ -231,7 +231,7 @@ type giftReq struct {
 	Uid         string  `json:"uid" binding:"required"`
 	Id          int     `json:"id" binding:"required"`
 	Name        string  `json:"name" binding:"required"`
-	Combo       int     `json:"combo" binding:"required"`
+	Combo       int     `json:"combo"`
 	Amount      float64 `json:"amount" binding:"required"`
 	TotalAmount float64 `json:"total_amount" binding:"required"`
 	UserName    string  `json:"user_name"`
@@ -246,7 +246,7 @@ func (s *httpServer) gift(c *gin.Context) error {
 		return err
 	}
 
-	if req.Name == "" {
+	if req.UserName == "" {
 		m, err := s.member.Fetch(req.Uid)
 		if err != nil {
 			return err
@@ -270,8 +270,59 @@ func (s *httpServer) gift(c *gin.Context) error {
 		Name:        req.Name,
 		Amount:      req.Amount,
 		TotalAmount: req.TotalAmount,
-		Combo:       req.Combo,
+		Combo: message.NullCombo{
+			Count:      req.Combo,
+			DurationMs: 3000,
+		},
+		Message: "送出" + req.Name,
 	})
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id": id,
+	})
+	return nil
+}
+
+type rewardReq struct {
+	RoomId      int32   `json:"room_id" binding:"required"`
+	Uid         string  `json:"uid" binding:"required"`
+	Amount      float64 `json:"amount" binding:"required"`
+	TotalAmount float64 `json:"total_amount" binding:"required"`
+	UserName    string  `json:"user_name"`
+	UserAvatar  string  `json:"user_avatar"`
+}
+
+// 打賞
+func (s *httpServer) reward(c *gin.Context) error {
+	var req rewardReq
+	var user message.User
+	if err := c.ShouldBindJSON(&req); err != nil {
+		return err
+	}
+
+	if req.UserName == "" {
+		m, err := s.member.Fetch(req.Uid)
+		if err != nil {
+			return err
+		}
+
+		user = message.User{
+			Name:   m.Name,
+			Uid:    req.Uid,
+			Avatar: message.ToAvatarName(m.Gender),
+		}
+	} else {
+		user = message.User{
+			Name:   req.UserName,
+			Uid:    req.Uid,
+			Avatar: req.UserAvatar,
+		}
+	}
+
+	id, err := s.message.SendReward(req.RoomId, user, req.Amount, req.TotalAmount)
 	if err != nil {
 		return err
 	}

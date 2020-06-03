@@ -229,7 +229,9 @@ func (p *Producer) SendGift(rid int32, user User, gift Gift) (int64, error) {
 		return 0, err
 	}
 
-	gift.Message = "送出" + gift.Name
+	if gift.Combo.Count == 0 {
+		gift.ShowAnimation = true
+	}
 
 	now := time.Now()
 	bm, err := json.Marshal(GiftMessage{
@@ -242,6 +244,57 @@ func (p *Producer) SendGift(rid int32, user User, gift Gift) (int64, error) {
 			User:      NullUser(user),
 		},
 		Gift: gift,
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	pushMsg := &logicpb.PushMsg{
+		Seq:    seq.Id,
+		Type:   logicpb.PushMsg_SYSTEM,
+		Room:   []int32{rid},
+		Mid:    user.Id,
+		Msg:    bm,
+		SendAt: now.Unix(),
+		IsRaw:  true,
+	}
+	if err := p.send(pushMsg); err != nil {
+		return 0, err
+	}
+	return pushMsg.Seq, nil
+}
+
+func (p *Producer) SendReward(rid int32, user User, amount, totalAmount float64) (int64, error) {
+	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
+		Id: 1, Count: 1,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	display := DisplayByReward(user, amount)
+
+	now := time.Now()
+	bm, err := json.Marshal(GiftMessage{
+		Message: Message{
+			Id:        seq.Id,
+			Type:      GiftType,
+			Time:      now.Format("15:04:05"),
+			Timestamp: now.Unix(),
+			Display:   display,
+			User:      NullUser(user),
+		},
+		Gift: Gift{
+			Amount:      amount,
+			TotalAmount: totalAmount,
+			Message:     display.Message.Text,
+			HintBox: NullHintBox{
+				DurationMs:      3000,
+				BackgroundColor: "#F856567F",
+			},
+			Entity: display.Message.Entity,
+		},
 	})
 
 	if err != nil {

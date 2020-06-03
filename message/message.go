@@ -7,6 +7,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"strconv"
 	"time"
 )
 
@@ -285,7 +286,7 @@ func DisplayByBets(user User, gameName string, amount int) Display {
 		},
 		Message: NullDisplayMessage{
 			Text:            "用戶" + user.Name + "在" + gameName + "下注" + string(amount) + "元",
-			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			Color:           "#FFFFAA",
 			BackgroundColor: NONE_COLOR,
 			Entity: []Entity{
 				Entity{
@@ -316,7 +317,7 @@ func DisplayByBetsPay(user User, gameName string) Display {
 		},
 		Message: NullDisplayMessage{
 			Text:            "用戶" + user.Name + "在" + gameName + "赢得奖了",
-			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			Color:           "#FFFFAA",
 			BackgroundColor: NONE_COLOR,
 			Entity: []Entity{
 				Entity{
@@ -332,7 +333,7 @@ func DisplayByBetsPay(user User, gameName string) Display {
 	}
 }
 
-// gift Display
+// 禮物 Display
 func DisplayByGift(user User, name string) Display {
 	return Display{
 		Title: NullDisplayText{
@@ -342,7 +343,33 @@ func DisplayByGift(user User, name string) Display {
 		},
 		Message: NullDisplayMessage{
 			Text:            user.Name + "送出" + name + "x1",
+			Color:           "#FFFFAA",
+			BackgroundColor: NONE_COLOR,
+			Entity: []Entity{
+				Entity{
+					Type:            "username",
+					Offset:          0,
+					Length:          len(user.Name),
+					Color:           "#7CE7EB",
+					BackgroundColor: NONE_COLOR,
+				},
+			},
+		},
+		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+	}
+}
+
+// 打賞 Display
+func DisplayByReward(user User, amount float64) Display {
+	return Display{
+		Title: NullDisplayText{
+			Text:            member.System,
 			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			BackgroundColor: "#FC8813",
+		},
+		Message: NullDisplayMessage{
+			Text:            user.Name + "打賞主播" + strconv.FormatFloat(amount, 'f', -1, 64) + "元",
+			Color:           "#FFFFAA",
 			BackgroundColor: NONE_COLOR,
 			Entity: []Entity{
 				Entity{

@@ -42,6 +42,14 @@ type Message struct {
 	Message string `json:"message"`
 }
 
+func (m Message) MarshalBinary() (data []byte, err error) {
+	return json.Marshal(m)
+}
+
+func (m Message) Score() float64 {
+	return float64(m.Timestamp)
+}
+
 type GiftMessage struct {
 	Message
 	Gift Gift `json:"gift"`
@@ -52,19 +60,39 @@ type Gift struct {
 	Name          string      `json:"name"`
 	Amount        float64     `json:"amount"`
 	TotalAmount   float64     `json:"total_amount"`
-	Combo         int         `json:"combo"`
-	HintBox       interface{} `json:"hint_box"`
+	Combo         NullCombo   `json:"combo"`
+	HintBox       NullHintBox `json:"hint_box"`
 	ShowAnimation bool        `json:"show_animation"`
 	Message       string      `json:"message"`
 	Entity        []Entity    `json:"entity"`
 }
 
-func (m Message) MarshalBinary() (data []byte, err error) {
-	return json.Marshal(m)
+type Combo struct {
+	Count      int `json:"count"`
+	DurationMs int `json:"duration_ms"`
 }
 
-func (m Message) Score() float64 {
-	return float64(m.Timestamp)
+type NullCombo Combo
+
+func (d NullCombo) MarshalJSON() ([]byte, error) {
+	if d.Count == 0 {
+		return []byte(`null`), nil
+	}
+	return json.Marshal(Combo(d))
+}
+
+type HintBox struct {
+	DurationMs      int    `json:"duration_ms"`
+	BackgroundColor string `json:"background_color"`
+}
+
+type NullHintBox HintBox
+
+func (d NullHintBox) MarshalJSON() ([]byte, error) {
+	if d.DurationMs == 0 {
+		return []byte(`null`), nil
+	}
+	return json.Marshal(HintBox(d))
 }
 
 // 顯示訊息資料格式
