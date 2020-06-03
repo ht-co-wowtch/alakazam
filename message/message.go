@@ -195,14 +195,17 @@ func ToMessage(msgByte []byte) (Message, error) {
 const (
 	NONE_COLOR = "#00000000"
 
-	// 會員名稱文字 字體顏色
-	DISPLAY_USER_FONT_COLOR = "#7CE7EB"
+	// 會員名稱文字顏色
+	USER_COLOR = "#7CE7EB"
 
-	// 訊息文字 字體顏色
-	DISPLAY_MESSAGE_FONT_COLOR = "#FFFFFF"
+	// 訊息文字顏色
+	MESSAGE_COLOR = "#FFFFFF"
 
 	// 訊息框 背景色
-	DISPLAY_BACKGROUND_COLOR = "#0000003f"
+	MESSAGE_BACKGROUND_COLOR = "#0000003f"
+
+	// 系統訊息字體顏色
+	MESSAGE_SYSTEM_COLOR = "#FFFFAA"
 )
 
 // 用戶Display
@@ -210,20 +213,20 @@ func DisplayByUser(user User, message string) Display {
 	return Display{
 		User: NullDisplayUser{
 			Text:   user.Name,
-			Color:  DISPLAY_USER_FONT_COLOR,
+			Color:  USER_COLOR,
 			Avatar: user.Avatar,
 		},
 		Level: NullDisplayText{
 			Text:            "会员",
-			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#7FC355",
 		},
 		Message: NullDisplayMessage{
 			Text:            message,
-			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			Color:           MESSAGE_COLOR,
 			BackgroundColor: NONE_COLOR,
 		},
-		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
 	}
 }
 
@@ -232,17 +235,17 @@ func DisplayByStreamer(user User, message string) Display {
 	return Display{
 		User: NullDisplayUser{
 			Text:   user.Name,
-			Color:  "#FFFFAA",
+			Color:  MESSAGE_SYSTEM_COLOR,
 			Avatar: user.Avatar,
 		},
 		Level: NullDisplayText{
 			Text:            "主播",
-			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#B57AA8",
 		},
 		Message: NullDisplayMessage{
 			Text:            message,
-			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			Color:           MESSAGE_COLOR,
 			BackgroundColor: NONE_COLOR,
 		},
 		BackgroundColor: "#B57AA87F",
@@ -254,20 +257,20 @@ func DisplayByAdmin(user User, message string) Display {
 	return Display{
 		User: NullDisplayUser{
 			Text:   user.Name,
-			Color:  DISPLAY_USER_FONT_COLOR,
+			Color:  USER_COLOR,
 			Avatar: user.Avatar,
 		},
 		Level: NullDisplayText{
 			Text:            member.RootName,
-			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#7FC355",
 		},
 		Message: NullDisplayMessage{
 			Text:            message,
-			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			Color:           MESSAGE_COLOR,
 			BackgroundColor: NONE_COLOR,
 		},
-		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
 	}
 }
 
@@ -276,17 +279,17 @@ func DisplayByBets(user User, gameName string, amount int) Display {
 	return Display{
 		User: NullDisplayUser{
 			Text:   user.Name,
-			Color:  DISPLAY_USER_FONT_COLOR,
+			Color:  USER_COLOR,
 			Avatar: user.Avatar,
 		},
 		Level: NullDisplayText{
 			Text:            member.System,
-			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#FC8813",
 		},
 		Message: NullDisplayMessage{
 			Text:            "用戶" + user.Name + "在" + gameName + "下注" + string(amount) + "元",
-			Color:           "#FFFFAA",
+			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []Entity{
 				Entity{
@@ -298,7 +301,7 @@ func DisplayByBets(user User, gameName string, amount int) Display {
 				},
 			},
 		},
-		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
 	}
 }
 
@@ -307,17 +310,17 @@ func DisplayByBetsPay(user User, gameName string) Display {
 	return Display{
 		User: NullDisplayUser{
 			Text:   user.Name,
-			Color:  DISPLAY_USER_FONT_COLOR,
+			Color:  USER_COLOR,
 			Avatar: user.Avatar,
 		},
 		Level: NullDisplayText{
 			Text:            member.System,
-			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#FC8813",
 		},
 		Message: NullDisplayMessage{
 			Text:            "用戶" + user.Name + "在" + gameName + "赢得奖了",
-			Color:           "#FFFFAA",
+			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []Entity{
 				Entity{
@@ -329,7 +332,7 @@ func DisplayByBetsPay(user User, gameName string) Display {
 				},
 			},
 		},
-		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
 	}
 }
 
@@ -338,12 +341,12 @@ func DisplayByGift(user User, name string) Display {
 	return Display{
 		Title: NullDisplayText{
 			Text:            member.System,
-			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#FC8813",
 		},
 		Message: NullDisplayMessage{
 			Text:            user.Name + "送出" + name + "x1",
-			Color:           "#FFFFAA",
+			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []Entity{
 				Entity{
@@ -355,7 +358,7 @@ func DisplayByGift(user User, name string) Display {
 				},
 			},
 		},
-		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
 	}
 }
 
@@ -364,12 +367,12 @@ func DisplayByReward(user User, amount float64) Display {
 	return Display{
 		Title: NullDisplayText{
 			Text:            member.System,
-			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#FC8813",
 		},
 		Message: NullDisplayMessage{
 			Text:            user.Name + "打賞主播" + strconv.FormatFloat(amount, 'f', -1, 64) + "元",
-			Color:           "#FFFFAA",
+			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []Entity{
 				Entity{
@@ -381,7 +384,7 @@ func DisplayByReward(user User, amount float64) Display {
 				},
 			},
 		},
-		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
 	}
 }
 
@@ -390,15 +393,15 @@ func DisplayBySystem(message string) Display {
 	return Display{
 		Level: NullDisplayText{
 			Text:            member.System,
-			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#FC8813",
 		},
 		Message: NullDisplayMessage{
 			Text:            message,
-			Color:           "#FFFFAA",
+			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 		},
-		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
 	}
 }
 
@@ -407,9 +410,9 @@ func DisplayByMessage(message string) Display {
 	return Display{
 		Message: NullDisplayMessage{
 			Text:            message,
-			Color:           DISPLAY_MESSAGE_FONT_COLOR,
+			Color:           MESSAGE_COLOR,
 			BackgroundColor: NONE_COLOR,
 		},
-		BackgroundColor: DISPLAY_BACKGROUND_COLOR,
+		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
 	}
 }
