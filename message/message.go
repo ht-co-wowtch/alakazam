@@ -314,7 +314,7 @@ func DisplayByBetsPay(user User, gameName string) Display {
 			Avatar: user.Avatar,
 		},
 		Title: NullDisplayText{
-			Text:            member.System,
+			Text:            "中奖",
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
 		},
