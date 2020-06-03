@@ -201,11 +201,17 @@ const (
 	// 訊息文字顏色
 	MESSAGE_COLOR = "#FFFFFF"
 
+	// 訊息內用戶名字體顏色
+	MESSAGE_USERNAME_COLOR = "#7CE7EB"
+
 	// 訊息框 背景色
 	MESSAGE_BACKGROUND_COLOR = "#0000003f"
 
 	// 系統訊息字體顏色
 	MESSAGE_SYSTEM_COLOR = "#FFFFAA"
+
+	// 系統框 背景色
+	SYSTEM_BACKGROUND_COLOR = "#FC8813"
 )
 
 // 用戶Display
@@ -238,7 +244,7 @@ func DisplayByStreamer(user User, message string) Display {
 			Color:  MESSAGE_SYSTEM_COLOR,
 			Avatar: user.Avatar,
 		},
-		Level: NullDisplayText{
+		Title: NullDisplayText{
 			Text:            "主播",
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#B57AA8",
@@ -260,7 +266,7 @@ func DisplayByAdmin(user User, message string) Display {
 			Color:  USER_COLOR,
 			Avatar: user.Avatar,
 		},
-		Level: NullDisplayText{
+		Title: NullDisplayText{
 			Text:            member.RootName,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#7FC355",
@@ -282,23 +288,17 @@ func DisplayByBets(user User, gameName string, amount int) Display {
 			Color:  USER_COLOR,
 			Avatar: user.Avatar,
 		},
-		Level: NullDisplayText{
+		Title: NullDisplayText{
 			Text:            member.System,
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: "#FC8813",
+			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
 		},
 		Message: NullDisplayMessage{
 			Text:            "用戶" + user.Name + "在" + gameName + "下注" + string(amount) + "元",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []Entity{
-				Entity{
-					Type:            "button",
-					Offset:          2,
-					Length:          len(user.Name),
-					Color:           "#FFFFFF",
-					BackgroundColor: "#F85656",
-				},
+				buttonEntity(user.Name, 2),
 			},
 		},
 		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
@@ -313,23 +313,17 @@ func DisplayByBetsPay(user User, gameName string) Display {
 			Color:  USER_COLOR,
 			Avatar: user.Avatar,
 		},
-		Level: NullDisplayText{
+		Title: NullDisplayText{
 			Text:            member.System,
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: "#FC8813",
+			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
 		},
 		Message: NullDisplayMessage{
 			Text:            "用戶" + user.Name + "在" + gameName + "赢得奖了",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []Entity{
-				Entity{
-					Type:            "username",
-					Offset:          2,
-					Length:          len(user.Name),
-					Color:           "#7CE7EB",
-					BackgroundColor: NONE_COLOR,
-				},
+				usernameEntity(user.Name, 2),
 			},
 		},
 		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
@@ -342,20 +336,14 @@ func DisplayByGift(user User, name string) Display {
 		Title: NullDisplayText{
 			Text:            member.System,
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: "#FC8813",
+			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
 		},
 		Message: NullDisplayMessage{
 			Text:            user.Name + "送出" + name + "x1",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []Entity{
-				Entity{
-					Type:            "username",
-					Offset:          0,
-					Length:          len(user.Name),
-					Color:           "#7CE7EB",
-					BackgroundColor: NONE_COLOR,
-				},
+				usernameEntity(user.Name, 0),
 			},
 		},
 		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
@@ -368,20 +356,14 @@ func DisplayByReward(user User, amount float64) Display {
 		Title: NullDisplayText{
 			Text:            member.System,
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: "#FC8813",
+			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
 		},
 		Message: NullDisplayMessage{
 			Text:            user.Name + "打賞主播" + strconv.FormatFloat(amount, 'f', -1, 64) + "元",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []Entity{
-				Entity{
-					Type:            "username",
-					Offset:          0,
-					Length:          len(user.Name),
-					Color:           "#7CE7EB",
-					BackgroundColor: NONE_COLOR,
-				},
+				usernameEntity(user.Name, 0),
 			},
 		},
 		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
@@ -391,10 +373,10 @@ func DisplayByReward(user User, amount float64) Display {
 // 系統Display
 func DisplayBySystem(message string) Display {
 	return Display{
-		Level: NullDisplayText{
+		Title: NullDisplayText{
 			Text:            member.System,
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: "#FC8813",
+			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
 		},
 		Message: NullDisplayMessage{
 			Text:            message,
@@ -414,5 +396,25 @@ func DisplayByMessage(message string) Display {
 			BackgroundColor: NONE_COLOR,
 		},
 		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
+	}
+}
+
+func usernameEntity(name string, offset int) Entity {
+	return Entity{
+		Type:            "username",
+		Offset:          offset,
+		Length:          len(name),
+		Color:           MESSAGE_USERNAME_COLOR,
+		BackgroundColor: NONE_COLOR,
+	}
+}
+
+func buttonEntity(name string, offset int) Entity {
+	return Entity{
+		Type:            "button",
+		Offset:          offset,
+		Length:          len(name),
+		Color:           MESSAGE_COLOR,
+		BackgroundColor: "#F85656",
 	}
 }
