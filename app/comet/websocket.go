@@ -195,7 +195,11 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 
 	// websocket連線等待read做auth
 	if p, err = ch.protoRing.Set(); err == nil {
-		if rid, hb, err = s.authWebsocket(ctx, ws, ch, p); err == nil {
+		var connect *logicpb.ConnectReply
+		if connect, err = s.authWebsocket(ctx, ws, ch, p); err == nil {
+			rid = connect.Connect.RoomID
+			hb = time.Duration(connect.Heartbeat)
+
 			// 將user Channel放到某一個Bucket內做保存
 			b = s.Bucket(ch.Key)
 			err = b.Put(rid, ch)
@@ -376,11 +380,11 @@ failed:
 }
 
 // websocket請求連線至某房間
-func (s *Server) authWebsocket(ctx context.Context, ws websocket.Conn, ch *Channel, p *pb.Proto) (int32, time.Duration, error) {
+func (s *Server) authWebsocket(ctx context.Context, ws websocket.Conn, ch *Channel, p *pb.Proto) (*logicpb.ConnectReply, error) {
 	for {
 		// 如果第一次連線送的資料不是請求連接到某房間則會一直等待
 		if err := p.ReadWebsocket(ws); err != nil {
-			return 0, time.Duration(0), err
+			return nil, err
 		}
 		if p.Op == pb.OpAuth {
 			break
@@ -406,10 +410,10 @@ func (s *Server) authWebsocket(ctx context.Context, ws websocket.Conn, ch *Chann
 
 		b, err := json.Marshal(connect)
 		if err != nil {
-			return 0, time.Duration(0), fmt.Errorf("auth reply json marshal for close error: %s", err.Error())
+			return nil, fmt.Errorf("auth reply json marshal for close error: %s", err.Error())
 		}
 		if err = authReply(ws, p, b); err != nil {
-			return 0, time.Duration(0), fmt.Errorf("auth web socket reply for close error: %s", err.Error())
+			return nil, fmt.Errorf("auth web socket reply for close error: %s", err.Error())
 		}
 
 		msg := struct {
@@ -425,19 +429,19 @@ func (s *Server) authWebsocket(ctx context.Context, ws websocket.Conn, ch *Chann
 		closeP.Body, _ = json.Marshal(msg)
 
 		if err = closeP.WriteWebsocket(ws); err != nil {
-			return 0, time.Duration(0), fmt.Errorf("auth reply close web socket for WriteWebsocket error: %s", err.Error())
+			return nil, fmt.Errorf("auth reply close web socket for WriteWebsocket error: %s", err.Error())
 		} else if err = ws.Flush(); err != nil {
-			return 0, time.Duration(0), fmt.Errorf("auth reply close web socket for Flush error: %s", err.Error())
+			return nil, fmt.Errorf("auth reply close web socket for Flush error: %s", err.Error())
 		}
-		return 0, time.Duration(0), io.EOF
+		return nil, io.EOF
 	}
 
 	b, err := json.Marshal(c.Connect)
 	if err != nil {
-		return 0, time.Duration(0), fmt.Errorf("auth reply json marshal error: %s", err.Error())
+		return nil, fmt.Errorf("auth reply json marshal error: %s", err.Error())
 	}
 	if err = authReply(ws, p, b); err != nil {
-		return 0, time.Duration(0), fmt.Errorf("auth web socket reply error: %s", err.Error())
+		return nil, fmt.Errorf("auth web socket reply error: %s", err.Error())
 	}
 	if c.TopMessage != nil {
 		p.Op = pb.OpRaw
@@ -463,7 +467,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws websocket.Conn, ch *Chann
 	ch.Uid = c.Connect.Uid
 	ch.Key = c.Connect.Key
 	ch.Name = c.Name
-	return c.Connect.RoomID, time.Duration(c.Heartbeat), nil
+	return c, nil
 }
 
 func authReply(ws websocket.Conn, p *pb.Proto, b []byte) (err error) {
