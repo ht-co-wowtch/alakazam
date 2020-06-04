@@ -88,11 +88,18 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 	connect.Status = true
 
 	return &pb.ConnectReply{
-		Name:            user.Name,
 		Heartbeat:       c.heartbeatNanosec,
 		TopMessage:      room.TopMessage,
 		BulletinMessage: room.BulletinMessage,
 		Connect:         connect,
+		User: &pb.User{
+			Id:     user.Id,
+			Uid:    user.Uid,
+			Name:   user.Name,
+			Gender: int32(user.Gender),
+			Type:   int32(user.Type),
+		},
+		IsConnectSuccessReply: true,
 	}, nil
 }
 

@@ -67,13 +67,13 @@ func (m *Member) SetBannedForSystem(uid string, sec int) (bool, error) {
 
 	l, err := m.db.GetTodaySystemBannedLog(me.Id)
 	if err != nil {
-		log.Error("automatically banned up to 5 times for set banned", zap.Error(err), zap.Int("mid", me.Id))
+		log.Error("automatically banned up to 5 times for set banned", zap.Error(err), zap.Int64("mid", me.Id))
 	} else {
 		now := time.Now()
 		nowUnix := now.Unix()
 		zeroUnix, err := time.ParseInLocation("2006-01-02 15:04:05", now.Format("2006-01-02 0:00:00"), time.Local)
 		if err != nil {
-			log.Error("parse time layout for set banned", zap.Error(err), zap.Int("mid", me.Id))
+			log.Error("parse time layout for set banned", zap.Error(err), zap.Int64("mid", me.Id))
 		} else if len(l) >= 5 {
 			for _, v := range l {
 				cat := v.CreateAt.Unix()
@@ -84,7 +84,7 @@ func (m *Member) SetBannedForSystem(uid string, sec int) (bool, error) {
 
 			ok, err := m.SetBlockade(uid)
 			if err != nil || !ok {
-				log.Error("set blockade for set banned", zap.Error(err), zap.Bool("action", ok), zap.Int("mid", me.Id))
+				log.Error("set blockade for set banned", zap.Error(err), zap.Bool("action", ok), zap.Int64("mid", me.Id))
 			}
 			return true, nil
 		}

@@ -193,9 +193,10 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 
 	step = 3
 
+	var connect *logicpb.ConnectReply
+
 	// websocket連線等待read做auth
 	if p, err = ch.protoRing.Set(); err == nil {
-		var connect *logicpb.ConnectReply
 		if connect, err = s.authWebsocket(ctx, ws, ch, p); err == nil {
 			rid = connect.Connect.RoomID
 			hb = time.Duration(connect.Heartbeat)
@@ -239,6 +240,12 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 	go s.dispatchWebsocket(ws, wp, wb, ch)
 
 	serverHeartbeat := s.RandServerHearbeat()
+
+	if connect.IsConnectSuccessReply {
+		if _, e := s.ConnectSuccessReply(ctx, ch.Room.ID, connect.User); e != nil {
+			log.Error("connect success reply", zap.Error(e), zap.Int32("rid", ch.Room.ID), zap.Any("user", connect.User))
+		}
+	}
 
 	for {
 		if p, err = ch.protoRing.Set(); err != nil {
@@ -464,9 +471,9 @@ func (s *Server) authWebsocket(ctx context.Context, ws websocket.Conn, ch *Chann
 		}
 	}
 
-	ch.Uid = c.Connect.Uid
 	ch.Key = c.Connect.Key
-	ch.Name = c.Name
+	ch.Uid = c.User.Uid
+	ch.Name = c.User.Name
 	return c, nil
 }
 

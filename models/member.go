@@ -33,11 +33,11 @@ const (
 )
 
 type Member struct {
-	Id         int       `xorm:"pk autoincr"`
+	Id         int64     `xorm:"pk autoincr"`
 	Uid        string    `json:"uid"`
 	Name       string    `json:"name"`
 	Type       int       `json:"type"`
-	Gender     int       `json:"gender"`
+	Gender     int32     `json:"gender"`
 	IsMessage  bool      `json:"is_message"`
 	IsBlockade bool      `json:"is_blockade"`
 	CreateAt   time.Time `json:"-"`
@@ -73,7 +73,7 @@ func (s *Store) Find(uid string) (*Member, error) {
 	return m, err
 }
 
-func (s *Store) GetMembers(ids []int) ([]Member, error) {
+func (s *Store) GetMembers(ids []int64) ([]Member, error) {
 	m := make([]Member, 0)
 	err := s.d.Table(&Member{}).Find(&m)
 	return m, err
@@ -85,9 +85,9 @@ func (s *Store) GetMembersByUid(uid []string) ([]Member, error) {
 	return m, err
 }
 
-func (s *Store) UpdateIsMessage(memberId int, isMessage bool) (bool, error) {
+func (s *Store) UpdateIsMessage(mid int64, isMessage bool) (bool, error) {
 	aff, err := s.d.Cols("is_message").
-		Where("id = ?", memberId).
+		Where("id = ?", mid).
 		Update(&Member{
 			IsMessage: isMessage,
 		})

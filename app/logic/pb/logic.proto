@@ -45,6 +45,14 @@ message Connect {
     PermissionMessage permissionMessage = 7 [(gogoproto.jsontag) = "permission_message"];
 }
 
+message User {
+    int64 id = 1;
+    string uid = 2;
+    string name = 3;
+    int32 gender = 4;
+    int32 type = 5;
+}
+
 message Permission {
     bool isMessage = 1 [(gogoproto.jsontag) = "is_message"];
 	bool isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
@@ -64,11 +72,17 @@ message ConnectReq {
 }
 
 message ConnectReply {
-    string name = 1;
-    int64 heartbeat = 2;
-    bytes topMessage = 3;
-    bytes bulletinMessage = 4;
-    Connect Connect = 5;
+    int64 heartbeat = 1;
+    bytes topMessage = 2;
+    bytes bulletinMessage = 3;
+    Connect Connect = 4;
+    User User = 5;
+    bool isConnectSuccessReply = 6;
+}
+
+message ConnectSuccessReq {
+    int32 roomId = 1;
+    User User = 2;
 }
 
 message DisconnectReq {
@@ -119,6 +133,8 @@ service Logic {
     rpc Ping(PingReq) returns(PingReply);
     // Connect
     rpc Connect(ConnectReq) returns (ConnectReply);
+    // Connect Success Reply
+    rpc ConnectSuccessReply(ConnectSuccessReq) returns (PingReply);
     // Disconnect
     rpc Disconnect(DisconnectReq) returns (DisconnectReply);
     // ChangeRoom
@@ -127,4 +143,5 @@ service Logic {
     rpc Heartbeat(HeartbeatReq) returns (HeartbeatReply);
     // RenewOnline
     rpc RenewOnline(OnlineReq) returns (OnlineReply);
+
 }

@@ -21,6 +21,14 @@ func (s *Server) Connect(c context.Context, p *cometpb.Proto) (*logicpb.ConnectR
 	})
 }
 
+// 進入某個房間成功回應
+func (s *Server) ConnectSuccessReply(c context.Context, rid int32, user *logicpb.User) (*logicpb.PingReply, error) {
+	return s.logic.ConnectSuccessReply(c, &logicpb.ConnectSuccessReq{
+		RoomId: rid,
+		User:   user,
+	})
+}
+
 // client連線中斷，告知logic service需清理此人的連線資料
 func (s *Server) Disconnect(c context.Context, uid, key string) error {
 	_, err := s.logic.Disconnect(context.Background(), &logicpb.DisconnectReq{

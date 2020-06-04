@@ -118,7 +118,7 @@ func (m *msg) redEnvelope(req giveRedEnvelopeReq) (int64, client.RedEnvelopeRepl
 
 func toUserMessage(user *models.Member) message.User {
 	return message.User{
-		Id:     int64(user.Id),
+		Id:     user.Id,
 		Uid:    user.Uid,
 		Name:   user.Name,
 		Avatar: message.ToAvatarName(user.Gender),

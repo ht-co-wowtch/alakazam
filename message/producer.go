@@ -525,6 +525,42 @@ func (p *Producer) SendRaws(raws []RawMessage, IsRaw bool) (int64, error) {
 	return id, nil
 }
 
+func (p *Producer) SendConnect(rid int32, user *logicpb.User) (int64, error) {
+	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
+		Id: 1, Count: 1,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	now := time.Now()
+	bm, err := json.Marshal(Message{
+		Id:        seq.Id,
+		Type:      HintType,
+		Time:      now.Format("15:04:05"),
+		Timestamp: now.Unix(),
+		Display:   DisplayByConnect(user.Name),
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	pushMsg := &logicpb.PushMsg{
+		Seq:    seq.Id,
+		Type:   logicpb.PushMsg_SYSTEM,
+		Room:   []int32{rid},
+		Mid:    user.Id,
+		Msg:    bm,
+		SendAt: now.Unix(),
+		IsRaw:  true,
+	}
+	if err := p.send(pushMsg); err != nil {
+		return 0, err
+	}
+	return pushMsg.Seq, nil
+}
+
 func (p *Producer) Kick(msg string, keys []string) error {
 	pushMsg := &logicpb.PushMsg{
 		Type:    logicpb.PushMsg_Close,

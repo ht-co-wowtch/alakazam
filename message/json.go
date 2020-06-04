@@ -56,15 +56,15 @@ type GiftMessage struct {
 }
 
 type Gift struct {
-	Id            int         `json:"gift_id"`
-	Name          string      `json:"name"`
-	Amount        float64     `json:"amount"`
-	TotalAmount   float64     `json:"total_amount"`
-	Combo         NullCombo   `json:"combo"`
-	HintBox       NullHintBox `json:"hint_box"`
-	ShowAnimation bool        `json:"show_animation"`
-	Message       string      `json:"message"`
-	Entity        []Entity    `json:"entity"`
+	Id            int          `json:"gift_id"`
+	Name          string       `json:"name"`
+	Amount        float64      `json:"amount"`
+	TotalAmount   float64      `json:"total_amount"`
+	Combo         NullCombo    `json:"combo"`
+	HintBox       NullHintBox  `json:"hint_box"`
+	ShowAnimation bool         `json:"show_animation"`
+	Message       string       `json:"message"`
+	Entity        []TextEntity `json:"entity"`
 }
 
 type Combo struct {
@@ -111,6 +111,9 @@ type Display struct {
 
 	// 背景色
 	BackgroundColor string `json:"background_color"`
+
+	// 背景圖像
+	BackgroundImage []interface{} `json:"background_image"`
 }
 
 // 顯示用戶資料
@@ -166,11 +169,11 @@ type DisplayMessage struct {
 	BackgroundColor string `json:"background_color"`
 
 	// 文字實體
-	Entity []Entity `json:"entity"`
+	Entity []TextEntity `json:"entity"`
 }
 
 // 文字實體
-type Entity struct {
+type TextEntity struct {
 	// 類型
 	Type string `json:"type"`
 
@@ -194,6 +197,17 @@ func (d NullDisplayMessage) MarshalJSON() ([]byte, error) {
 		return []byte(`null`), nil
 	}
 	return json.Marshal(DisplayMessage(d))
+}
+
+// 漸層色背景
+type LinearGradientBackground struct {
+	Type string `json:"type"`
+
+	// 漸層方向
+	To string `json:"to"`
+
+	// 顏色組合
+	Color []string `json:"color"`
 }
 
 // 用戶資料

@@ -40,6 +40,9 @@ const (
 
 	// 禮物
 	GiftType = "gift"
+
+	// 提示
+	HintType = "hint"
 )
 
 func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
@@ -69,7 +72,7 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 		return []interface{}{}, nil
 	}
 
-	mids := make([]int, len(msg.Message)+len(msg.RedEnvelopeMessage))
+	mids := make([]int64, len(msg.Message)+len(msg.RedEnvelopeMessage))
 
 	for _, v := range msg.Message {
 		mids = append(mids, v.MemberId)
@@ -83,7 +86,7 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 		return []interface{}{}, err
 	}
 
-	memberMap := make(map[int]models.Member, len(ms))
+	memberMap := make(map[int64]models.Member, len(ms))
 	for _, v := range ms {
 		memberMap[v.Id] = v
 	}
@@ -297,7 +300,7 @@ func DisplayByBets(user User, gameName string, amount int) Display {
 			Text:            "用戶" + user.Name + "在" + gameName + "下注" + string(amount) + "元",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
-			Entity: []Entity{
+			Entity: []TextEntity{
 				buttonEntity(user.Name, 2),
 			},
 		},
@@ -322,7 +325,7 @@ func DisplayByBetsPay(user User, gameName string) Display {
 			Text:            "用戶" + user.Name + "在" + gameName + "赢得奖了",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
-			Entity: []Entity{
+			Entity: []TextEntity{
 				usernameEntity(user.Name, 2),
 			},
 		},
@@ -342,7 +345,7 @@ func DisplayByGift(user User, name string) Display {
 			Text:            user.Name + "送出" + name + "x1",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
-			Entity: []Entity{
+			Entity: []TextEntity{
 				usernameEntity(user.Name, 0),
 			},
 		},
@@ -362,7 +365,7 @@ func DisplayByReward(user User, amount float64) Display {
 			Text:            user.Name + "打賞主播" + strconv.FormatFloat(amount, 'f', -1, 64) + "元",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
-			Entity: []Entity{
+			Entity: []TextEntity{
 				usernameEntity(user.Name, 0),
 			},
 		},
@@ -387,6 +390,33 @@ func DisplayBySystem(message string) Display {
 	}
 }
 
+// 進場Display
+func DisplayByConnect(username string) Display {
+	return Display{
+		Level: NullDisplayText{
+			Text:            "会员",
+			Color:           MESSAGE_COLOR,
+			BackgroundColor: "#7FC355",
+		},
+		Message: NullDisplayMessage{
+			Text:            username + "进入聊天室",
+			Color:           MESSAGE_SYSTEM_COLOR,
+			BackgroundColor: NONE_COLOR,
+			Entity: []TextEntity{
+				usernameEntity(username, 0),
+			},
+		},
+		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
+		BackgroundImage: []interface{}{
+			LinearGradientBackground{
+				Type:  "linear-gradient",
+				To:    "right",
+				Color: []string{"#FC881380", "#FC8813"},
+			},
+		},
+	}
+}
+
 // 單純訊息Display
 func DisplayByMessage(message string) Display {
 	return Display{
@@ -399,8 +429,8 @@ func DisplayByMessage(message string) Display {
 	}
 }
 
-func usernameEntity(name string, offset int) Entity {
-	return Entity{
+func usernameEntity(name string, offset int) TextEntity {
+	return TextEntity{
 		Type:            "username",
 		Offset:          offset,
 		Length:          len(name),
@@ -409,8 +439,8 @@ func usernameEntity(name string, offset int) Entity {
 	}
 }
 
-func buttonEntity(name string, offset int) Entity {
-	return Entity{
+func buttonEntity(name string, offset int) TextEntity {
+	return TextEntity{
 		Type:            "button",
 		Offset:          offset,
 		Length:          len(name),

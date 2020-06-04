@@ -27,7 +27,7 @@ const BULLETIN_MESSAGE = 2
 type Message struct {
 	Id       int `xorm:"pk autoincr"`
 	MsgId    int64
-	MemberId int
+	MemberId int64
 	Type     string
 	Message  string
 	SendAt   time.Time
@@ -40,7 +40,7 @@ func (r *Message) TableName() string {
 type RedEnvelopeMessage struct {
 	Id             int `xorm:"pk autoincr"`
 	MsgId          int64
-	MemberId       int
+	MemberId       int64
 	Message        string
 	RedEnvelopesId string
 	Token          string

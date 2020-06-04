@@ -207,7 +207,7 @@ func (m *Member) GetUserNames(uid []string) (map[string]string, error) {
 	return name, nil
 }
 
-func (m *Member) GetMembers(id []int) ([]models.Member, error) {
+func (m *Member) GetMembers(id []int64) ([]models.Member, error) {
 	return m.db.GetMembers(id)
 }
 
@@ -237,7 +237,7 @@ func (m *Member) Heartbeat(uid string) error {
 	return m.c.refreshExpire(uid)
 }
 
-func (m *Member) Update(uid, name string, gender int) error {
+func (m *Member) Update(uid, name string, gender int32) error {
 	u, err := m.db.Find(uid)
 	if err != nil {
 		if err == sql.ErrNoRows {

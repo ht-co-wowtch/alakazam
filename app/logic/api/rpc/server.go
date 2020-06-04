@@ -61,6 +61,12 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 	return connect, nil
 }
 
+// 成功進入房間
+func (s *server) ConnectSuccessReply(ctx context.Context, req *pb.ConnectSuccessReq) (*pb.PingReply, error) {
+	_, err := s.message.SendConnect(req.RoomId, req.User)
+	return &pb.PingReply{}, err
+}
+
 // 某client要中斷連線
 func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.DisconnectReply, error) {
 	has, err := s.room.Disconnect(req.Uid, req.Key)
