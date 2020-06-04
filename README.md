@@ -411,7 +411,17 @@ Body
             }
          ]
       },
-      "background_color":"#0000003f"
+      "background_color":"#0000003f",
+      "background_image":[
+         {
+            "type":"linear-gradient",
+            "to":"right",
+            "color":[
+               "#FC881380",
+               "#FC8813"
+            ]
+         }
+      ]
    },
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
@@ -553,6 +563,21 @@ display.message: 訊息資料
 
 
 
+display.background_image: 訊息框背景圖
+
+| 欄位名稱 | 說明 | 格式   |
+| -------- | ---- | ------ |
+| text     | 種類 | string |
+
+display.background_image.`type`=linear-gradient
+
+| 欄位名稱 | 說明                   | 格式   |
+| -------- | ---------------------- | ------ |
+| to       | 漸層方向 `right``left` | string |
+| color    | 顏色                   | array  |
+
+
+
 user: 發訊息人資料
 
 | 欄位名稱 | 說明                     | 格式   |
@@ -629,8 +654,6 @@ entity.type: 文字實體內容
 
 
 
-
-
 一般訊息(用戶)
 
 ```json
@@ -661,7 +684,8 @@ entity.type: 文字實體內容
          "background_color":"#0000003f",
          "entity":null
       },
-      "background_color":"#0000003f"
+      "background_color":"#0000003f",
+      "background_image":null
    },
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
@@ -702,7 +726,8 @@ entity.type: 文字實體內容
          "color":"#A680B8",
          "entity":null
       },
-      "background_color":"#0000003f"
+      "background_color":"#0000003f",
+      "background_image":null
    },
    "user":{
       "uid":"root",
@@ -735,7 +760,8 @@ entity.type: 文字實體內容
          "color":"#FFFFFF",
          "entity":null
       },
-      "background_color":"#0000003f"
+      "background_color":"#0000003f",
+      "background_image":null
    },
    "user":{
       "uid":"root",
@@ -769,7 +795,8 @@ entity.type: 文字實體內容
          "background_color":"#0000003f",
          "entity":null
       },
-      "background_color":"#0000003f"
+      "background_color":"#0000003f",
+      "background_image":null
    },
    "user":null
 }
@@ -799,7 +826,8 @@ entity.type: 文字實體內容
          "background_color":"#0000003f",
          "entity":null
       },
-      "background_color":"#0000003f"
+      "background_color":"#0000003f",
+      "background_image":null
    },
    "user":null
 }
@@ -811,25 +839,43 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":4001,
+   "id":48801,
    "type":"hint",
-   "time":"12:37:00",
-   "timestamp":1567579890,
+   "time":"11:58:37",
+   "timestamp":1591243117,
    "display":{
       "user":null,
       "title":null,
       "level":{
-         "text":"vip1",
+         "text":"会员",
          "color":"#FFFFFF",
-         "background_color":"#E5CB29"
+         "background_color":"#7FC355"
       },
       "message":{
-         "text":"sam78 進入房間",
-         "color":"#A680B8",
-         "background_color":"#0000003f",
-         "entity":null
+         "text":"nickname_1进入聊天室",
+         "color":"#FFFFAA",
+         "background_color":"#00000000",
+         "entity":[
+            {
+               "type":"username",
+               "offset":0,
+               "length":10,
+               "color":"#7CE7EB",
+               "background_color":"#00000000"
+            }
+         ]
       },
-      "background_color":"#0000003f"
+      "background_color":"#0000003f",
+      "background_image":[
+         {
+            "type":"linear-gradient",
+            "to":"right",
+            "color":[
+               "#FC881380",
+               "#FC8813"
+            ]
+         }
+      ]
    },
    "user":null
 }
@@ -867,7 +913,8 @@ entity.type: 文字實體內容
             }
          ]
       },
-      "background_color":"#0000003f"
+      "background_color":"#0000003f",
+      "background_image":null
    },
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
@@ -924,7 +971,8 @@ entity.type: 文字實體內容
             }
          ]
       },
-      "background_color":"#0000003f"
+      "background_color":"#0000003f",
+      "background_image":null
    },
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
@@ -981,7 +1029,8 @@ entity.type: 文字實體內容
          "background_color":"#0000003f",
          "entity":null
       },
-      "background_color":"#0000003f"
+      "background_color":"#0000003f",
+      "background_image":null
    },
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
@@ -1028,7 +1077,8 @@ entity.type: 文字實體內容
             }
          ]
       },
-      "background_color":"#0000003f"
+      "background_color":"#0000003f",
+      "background_image":null
    },
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
