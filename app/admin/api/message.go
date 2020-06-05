@@ -5,6 +5,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
@@ -66,44 +67,19 @@ func (s *httpServer) push(c *gin.Context) error {
 
 	var id int64
 	var err error
-	u := message.NewRoot()
-	msg := message.ProducerMessage{
-		Rooms: p.RoomId,
-		User:  u,
-	}
 
 	if !p.IsTop && !p.IsBulletin {
-		msg.Display = message.DisplayByAdmin(u, p.Message)
-		msg := message.ProducerMessage{
-			Rooms:   p.RoomId,
-			Display: message.DisplayByAdmin(u, p.Message),
-			User:    u,
-		}
-
-		if id, err = s.message.SendForAdmin(msg); err != nil {
+		if id, err = s.message.SendAdmin(p.RoomId, p.Message); err != nil {
 			return err
 		}
 	}
-
 	if p.IsTop {
-		msg := message.ProducerMessage{
-			Rooms:   p.RoomId,
-			Display: message.DisplayBySystem(p.Message),
-			User:    u,
-		}
-
-		if id, err = s.message.SendTop(msg); err != nil {
+		if id, err = s.message.SendTop(p.RoomId, p.Message); err != nil {
 			return err
 		}
 	}
 	if p.IsBulletin {
-		msg := message.ProducerMessage{
-			Rooms:   p.RoomId,
-			Display: message.DisplayBySystem(p.Message),
-			User:    u,
-		}
-
-		if id, err = s.message.Send(msg); err != nil {
+		if id, err = s.message.SendSystem(p.RoomId, p.Message); err != nil {
 			return err
 		}
 	}
@@ -131,14 +107,14 @@ func (s *httpServer) push(c *gin.Context) error {
 }
 
 type betsReq struct {
-	RoomId       []int32            `json:"room_id" binding:"required"`
-	Uid          string             `json:"uid" binding:"required"`
-	GameId       int                `json:"game_id" binding:"required"`
-	GameName     string             `json:"game_name"`
-	PeriodNumber int                `json:"period_number" binding:"required"`
-	Bets         []message.BetOrder `json:"bets" binding:"required"`
-	Count        int                `json:"count" binding:"required"`
-	TotalAmount  int                `json:"total_amount" binding:"required"`
+	RoomId       []int32           `json:"room_id" binding:"required"`
+	Uid          string            `json:"uid" binding:"required"`
+	GameId       int               `json:"game_id" binding:"required"`
+	GameName     string            `json:"game_name"`
+	PeriodNumber int               `json:"period_number" binding:"required"`
+	Bets         []scheme.BetOrder `json:"bets" binding:"required"`
+	Count        int               `json:"count" binding:"required"`
+	TotalAmount  int               `json:"total_amount" binding:"required"`
 }
 
 // 跟投
@@ -153,19 +129,13 @@ func (s *httpServer) bets(c *gin.Context) error {
 		return err
 	}
 
-	user := message.User{
+	user := scheme.User{
 		Name:   m.Name,
 		Uid:    req.Uid,
 		Avatar: message.ToAvatarName(m.Gender),
 	}
 
-	msg := message.ProducerMessage{
-		Rooms:   req.RoomId,
-		User:    user,
-		Display: message.DisplayByBets(user, req.GameName, req.TotalAmount),
-	}
-
-	bet := message.Bet{
+	bet := scheme.Bet{
 		GameId:       req.GameId,
 		GameName:     req.GameName,
 		PeriodNumber: req.PeriodNumber,
@@ -174,7 +144,7 @@ func (s *httpServer) bets(c *gin.Context) error {
 		Orders:       req.Bets,
 	}
 
-	id, err := s.message.SendBets(msg, bet)
+	id, err := s.message.SendBets(req.RoomId, user, bet)
 	if err != nil {
 		return err
 	}
@@ -203,19 +173,13 @@ func (s *httpServer) betsPay(c *gin.Context) error {
 		return err
 	}
 
-	user := message.User{
+	user := scheme.User{
 		Name:   m.Name,
 		Uid:    req.Uid,
 		Avatar: message.ToAvatarName(m.Gender),
 	}
 
-	msg := message.ProducerMessage{
-		Rooms:   []int32{req.RoomId},
-		User:    user,
-		Display: message.DisplayByBetsPay(user, req.GameName),
-	}
-
-	id, err := s.message.Send(msg)
+	id, err := s.message.SendBetsPay([]int32{req.RoomId}, user, req.GameName)
 	if err != nil {
 		return err
 	}
@@ -241,7 +205,7 @@ type giftReq struct {
 // 禮物
 func (s *httpServer) gift(c *gin.Context) error {
 	var req giftReq
-	var user message.User
+	var user scheme.User
 	if err := c.ShouldBindJSON(&req); err != nil {
 		return err
 	}
@@ -252,25 +216,25 @@ func (s *httpServer) gift(c *gin.Context) error {
 			return err
 		}
 
-		user = message.User{
+		user = scheme.User{
 			Name:   m.Name,
 			Uid:    req.Uid,
 			Avatar: message.ToAvatarName(m.Gender),
 		}
 	} else {
-		user = message.User{
+		user = scheme.User{
 			Name:   req.UserName,
 			Uid:    req.Uid,
 			Avatar: req.UserAvatar,
 		}
 	}
 
-	id, err := s.message.SendGift(req.RoomId, user, message.Gift{
+	id, err := s.message.SendGift(req.RoomId, user, scheme.Gift{
 		Id:          req.Id,
 		Name:        req.Name,
 		Amount:      req.Amount,
 		TotalAmount: req.TotalAmount,
-		Combo: message.NullCombo{
+		Combo: scheme.NullCombo{
 			Count:      req.Combo,
 			DurationMs: 3000,
 		},
@@ -298,7 +262,7 @@ type rewardReq struct {
 // 打賞
 func (s *httpServer) reward(c *gin.Context) error {
 	var req rewardReq
-	var user message.User
+	var user scheme.User
 	if err := c.ShouldBindJSON(&req); err != nil {
 		return err
 	}
@@ -309,13 +273,13 @@ func (s *httpServer) reward(c *gin.Context) error {
 			return err
 		}
 
-		user = message.User{
+		user = scheme.User{
 			Name:   m.Name,
 			Uid:    req.Uid,
 			Avatar: message.ToAvatarName(m.Gender),
 		}
 	} else {
-		user = message.User{
+		user = scheme.User{
 			Name:   req.UserName,
 			Uid:    req.Uid,
 			Avatar: req.UserAvatar,
@@ -377,29 +341,22 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 		return err
 	}
 
-	u := message.NewRoot()
-
-	msg := message.ProducerMessage{
-		Rooms:   []int32{int32(o.RoomId)},
-		Display: message.DisplayByAdmin(u, o.Message),
-		User:    u,
-		IsSave:  true,
-	}
-
-	redEnvelope := message.RedEnvelope{
+	u := scheme.NewRoot()
+	redEnvelope := scheme.RedEnvelope{
 		Id:      result.Order,
 		Token:   result.Token,
 		Expired: result.ExpireAt.Format(time.RFC3339),
 	}
 
 	var msgId int64
+	rid := []int32{int32(o.RoomId)}
 	if o.PublishAt.IsZero() {
-		if msgId, err = s.message.SendRedEnvelope(msg, redEnvelope); err != nil {
+		if msgId, err = s.message.SendRedEnvelope(rid, o.Message, u, redEnvelope); err != nil {
 			return err
 		}
 	} else if result.PublishAt.Before(time.Now()) {
 		return errors.ErrPublishAt
-	} else if msgId, err = s.delayMessage.SendDelayRedEnvelopeForAdmin(msg, redEnvelope, result.PublishAt); err != nil {
+	} else if msgId, err = s.delayMessage.SendDelayRedEnvelopeForAdmin(rid, o.Message, u, redEnvelope, result.PublishAt); err != nil {
 		return err
 	}
 

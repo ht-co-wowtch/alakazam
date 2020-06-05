@@ -42,8 +42,8 @@ func (r *rateLimit) perSec(mid int64) error {
 	return nil
 }
 
-func (r *rateLimit) sameMsg(msg ProducerMessage) error {
-	key := fmt.Sprintf(rateMsgKey, md5.Sum([]byte(msg.User.Uid+msg.Display.Message.Text)))
+func (r *rateLimit) sameMsg(message string, uid string) error {
+	key := fmt.Sprintf(rateMsgKey, md5.Sum([]byte(uid+message)))
 	cut, err := r.cache.Incr(key).Result()
 	if err != nil {
 		return err
@@ -51,9 +51,9 @@ func (r *rateLimit) sameMsg(msg ProducerMessage) error {
 	if cut == 1 {
 		_, err := r.cache.Expire(key, r.sameSec).Result()
 		if err != nil {
-			log.Error("set rate same msg for redis", zap.Error(err), zap.Int64("mid", msg.User.Id))
+			log.Error("set rate same msg for redis", zap.Error(err), zap.String("uid", uid))
 			if _, err := r.cache.Del(key).Result(); err != nil {
-				log.Error("del rate same msg for redis", zap.Error(err), zap.Int64("mid", msg.User.Id))
+				log.Error("del rate same msg for redis", zap.Error(err), zap.String("uid", uid))
 			}
 		}
 	}

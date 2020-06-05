@@ -8,6 +8,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/go-xorm/xorm"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"runtime"
@@ -87,7 +88,7 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 					}
 				}
 			case pb.PushMsg_MONEY:
-				m := new(RedEnvelopeMessage)
+				m := new(scheme.RedEnvelopeMessage)
 				if err = json.Unmarshal(p.Msg, m); err != nil {
 					break
 				}

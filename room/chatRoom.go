@@ -9,6 +9,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
@@ -30,7 +31,7 @@ type Chat interface {
 	GetRoom(rid int) (models.Room, error)
 	GetUserMessageSession(uid string, rid int) (*models.Member, models.Room, error)
 	ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error)
-	GetTopMessage(rid int) (message.Message, error)
+	GetTopMessage(rid int) (scheme.Message, error)
 	GetOnline(server string) (*Online, error)
 }
 
@@ -258,15 +259,15 @@ func (c *chat) GetRoom(rid int) (models.Room, error) {
 	return room, nil
 }
 
-func (c *chat) GetTopMessage(rid int) (message.Message, error) {
+func (c *chat) GetTopMessage(rid int) (scheme.Message, error) {
 	msg, err := c.cache.getChatTopMessage(rid)
 	if err != nil {
 		if err == redis.Nil {
-			return message.Message{}, errors.ErrNoRows
+			return scheme.Message{}, errors.ErrNoRows
 		}
-		return message.Message{}, err
+		return scheme.Message{}, err
 	}
-	return message.ToMessage(msg)
+	return scheme.ToMessage(msg)
 }
 
 func (c *chat) GetOnline(server string) (*Online, error) {

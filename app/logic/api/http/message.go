@@ -6,6 +6,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
@@ -38,22 +39,7 @@ func (m *msg) user(req messageReq) (int64, error) {
 		}
 	}
 
-	var display message.Display
-	u := toUserMessage(user)
-	if user.Type == models.STREAMER {
-		display = message.DisplayByStreamer(u, req.Message)
-	} else {
-		display = message.DisplayByUser(u, req.Message)
-	}
-
-	msg := message.ProducerMessage{
-		Rooms:   []int32{int32(req.RoomId)},
-		User:    u,
-		Display: display,
-		IsSave:  true,
-	}
-
-	id, err := m.message.Send(msg)
+	id, err := m.message.SendUser([]int32{int32(req.RoomId)}, req.Message, user)
 
 	if err == errors.ErrRateSameMsg {
 		isBlockade, err := m.member.SetBannedForSystem(user.Uid, 10*60)
@@ -89,21 +75,13 @@ func (m *msg) redEnvelope(req giveRedEnvelopeReq) (int64, client.RedEnvelopeRepl
 		return 0, client.RedEnvelopeReply{}, err
 	}
 
-	u := toUserMessage(user)
-	msg := message.ProducerMessage{
-		Rooms:   []int32{int32(req.RoomId)},
-		User:    u,
-		Display: message.DisplayByUser(u, req.Message),
-		IsSave: true,
-	}
-
-	redEnvelope := message.RedEnvelope{
+	redEnvelope := scheme.RedEnvelope{
 		Id:      reply.Order,
 		Token:   reply.Token,
 		Expired: reply.ExpireAt.Format(time.RFC3339),
 	}
 
-	msgId, err := m.message.SendRedEnvelope(msg, redEnvelope)
+	msgId, err := m.message.SendRedEnvelope([]int32{int32(req.RoomId)}, req.Message, toUserMessage(user), redEnvelope)
 
 	if err != nil {
 		log.Error("send red envelope message error",
@@ -116,8 +94,8 @@ func (m *msg) redEnvelope(req giveRedEnvelopeReq) (int64, client.RedEnvelopeRepl
 	return msgId, reply, err
 }
 
-func toUserMessage(user *models.Member) message.User {
-	return message.User{
+func toUserMessage(user *models.Member) scheme.User {
+	return scheme.User{
 		Id:     user.Id,
 		Uid:    user.Uid,
 		Name:   user.Name,

@@ -9,6 +9,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"time"
 )
@@ -170,7 +171,7 @@ func (r *room) GetTopMessage(msgId int64, t int) ([]int32, models.Message, error
 }
 
 func (r *room) AddTopMessage(rids []int32, seq int64, msg string, ts []int) error {
-	var roomTopMessage message.Message
+	var roomTopMessage scheme.Message
 	model := models.RoomTopMessage{
 		MsgId:   seq,
 		Message: msg,

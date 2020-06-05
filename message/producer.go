@@ -10,6 +10,7 @@ import (
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	seqpb "gitlab.com/jetfueltw/cpw/alakazam/app/seq/api/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	shield "gitlab.com/jetfueltw/cpw/alakazam/pkg/filter"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -113,75 +114,45 @@ func (p *Producer) Close() error {
 
 type ProducerMessage struct {
 	Rooms   []int32
-	User    User
-	Display Display
+	User    scheme.User
+	Display scheme.Display
 	Type    string
 	IsSave  bool
 }
 
-func (p *Producer) toPb(msg ProducerMessage) (*logicpb.PushMsg, error) {
-	if err := checkMessage(msg.Display.Message.Text); err != nil {
-		return nil, err
-	}
-
-	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
-		Id: 1, Count: 1,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	fmsg, isMatch, sensitive := p.filter.FilterFindSensitive(msg.Display.Message.Text)
-	if isMatch {
-		log.Info("message filter hit", zap.Int64("msg_id", seq.Id), zap.Strings("sensitive", sensitive))
-	}
-
-	msg.Display.Message.Text = fmsg
-
-	now := time.Now()
-	bm, err := json.Marshal(Message{
-		Id:        seq.Id,
-		Type:      msg.Type,
-		Time:      now.Format("15:04:05"),
-		Timestamp: now.Unix(),
-		User:      NullUser(msg.User),
-		Display:   msg.Display,
-
-		Uid:     msg.User.Uid,
-		Name:    msg.Display.User.Text,
-		Avatar:  msg.Display.User.Avatar,
-		Message: msg.Display.Message.Text,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &logicpb.PushMsg{
-		Seq:     seq.Id,
-		Type:    logicpb.PushMsg_USER,
-		Room:    msg.Rooms,
-		Mid:     msg.User.Id,
-		Msg:     bm,
-		Message: msg.Display.Message.Text,
-		SendAt:  now.Unix(),
-		IsSave:  msg.IsSave,
-	}, nil
-}
-
-func (p *Producer) Send(msg ProducerMessage) (int64, error) {
-	if err := p.rate.perSec(msg.User.Id); err != nil {
+func (p *Producer) SendUser(rid []int32, msg string, user *models.Member) (int64, error) {
+	if err := p.rate.perSec(user.Id); err != nil {
 		return 0, err
 	}
-	if err := p.rate.sameMsg(msg); err != nil {
+	if err := p.rate.sameMsg(msg, user.Uid); err != nil {
 		return 0, err
 	}
 
-	msg.Type = MessageType
-	pushMsg, err := p.toPb(msg)
-	if err != nil {
+	msg, err := p.filterMessage(msg)
+
+	var id int64
+	if id, err = p.id(); err != nil {
 		return 0, err
 	}
 
-	pushMsg.IsRaw = true
+	u := scheme.User{
+		Id:     user.Id,
+		Uid:    user.Uid,
+		Name:   user.Name,
+		Avatar: ToAvatarName(user.Gender),
+	}
+
+	var message scheme.Message
+	if user.Type == models.STREAMER {
+		message = u.ToStreamer(id, msg)
+	} else {
+		message = u.ToUser(id, msg)
+	}
+
+	pushMsg, err := message.ToPb(user.Id, rid, logicpb.PushMsg_USER, true, true)
+	if err != nil {
+		return 0, err
+	}
 
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
@@ -189,15 +160,18 @@ func (p *Producer) Send(msg ProducerMessage) (int64, error) {
 	return pushMsg.Seq, nil
 }
 
-func (p *Producer) SendForAdmin(msg ProducerMessage) (int64, error) {
-	msg.Type = MessageType
-	pushMsg, err := p.toPb(msg)
-
+func (p *Producer) SendSystem(rid []int32, msg string) (int64, error) {
+	id, err := p.id()
 	if err != nil {
 		return 0, err
 	}
 
-	pushMsg.Type = logicpb.PushMsg_ADMIN
+	u := scheme.NewRoot()
+
+	pushMsg, err := u.ToSystem(id, msg).ToPb(u.Id, rid, logicpb.PushMsg_USER, false, false)
+	if err != nil {
+		return 0, err
+	}
 
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
@@ -205,15 +179,18 @@ func (p *Producer) SendForAdmin(msg ProducerMessage) (int64, error) {
 	return pushMsg.Seq, nil
 }
 
-func (p *Producer) SendTop(msg ProducerMessage) (int64, error) {
-	msg.Type = TopType
-	pushMsg, err := p.toPb(msg)
-
+func (p *Producer) SendAdmin(rid []int32, msg string) (int64, error) {
+	id, err := p.id()
 	if err != nil {
 		return 0, err
 	}
 
-	pushMsg.Type = logicpb.PushMsg_ADMIN_TOP
+	u := scheme.NewRoot()
+
+	pushMsg, err := u.ToAdmin(id, msg).ToPb(u.Id, rid, logicpb.PushMsg_ADMIN, false, false)
+	if err != nil {
+		return 0, err
+	}
 
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
@@ -221,10 +198,27 @@ func (p *Producer) SendTop(msg ProducerMessage) (int64, error) {
 	return pushMsg.Seq, nil
 }
 
-func (p *Producer) SendGift(rid int32, user User, gift Gift) (int64, error) {
-	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
-		Id: 1, Count: 1,
-	})
+func (p *Producer) SendTop(rid []int32, msg string) (int64, error) {
+	id, err := p.id()
+	if err != nil {
+		return 0, err
+	}
+
+	u := scheme.NewRoot()
+
+	pushMsg, err := u.ToTop(id, msg).ToPb(u.Id, rid, logicpb.PushMsg_ADMIN_TOP, false, false)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := p.send(pushMsg); err != nil {
+		return 0, err
+	}
+	return pushMsg.Seq, nil
+}
+
+func (p *Producer) SendGift(rid int32, user scheme.User, gift scheme.Gift) (int64, error) {
+	id, err := p.id()
 	if err != nil {
 		return 0, err
 	}
@@ -233,31 +227,38 @@ func (p *Producer) SendGift(rid int32, user User, gift Gift) (int64, error) {
 		gift.ShowAnimation = true
 	}
 
-	now := time.Now()
-	bm, err := json.Marshal(GiftMessage{
-		Message: Message{
-			Id:        seq.Id,
-			Type:      GiftType,
-			Time:      now.Format("15:04:05"),
-			Timestamp: now.Unix(),
-			Display:   DisplayByGift(user, gift.Name),
-			User:      NullUser(user),
-		},
-		Gift: gift,
-	})
-
+	pushMsg, err := gift.ToMessage(id, user).ToPb(user.Id, rid)
 	if err != nil {
 		return 0, err
 	}
 
-	pushMsg := &logicpb.PushMsg{
-		Seq:    seq.Id,
-		Type:   logicpb.PushMsg_SYSTEM,
-		Room:   []int32{rid},
-		Mid:    user.Id,
-		Msg:    bm,
-		SendAt: now.Unix(),
-		IsRaw:  true,
+	if err := p.send(pushMsg); err != nil {
+		return 0, err
+	}
+	return pushMsg.Seq, nil
+}
+
+func (p *Producer) SendReward(rid int32, user scheme.User, amount, totalAmount float64) (int64, error) {
+	id, err := p.id()
+	if err != nil {
+		return 0, err
+	}
+
+	pushMsg, err := scheme.NewReward(id, user, amount, totalAmount).ToPb(user.Id, rid)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := p.send(pushMsg); err != nil {
+		return 0, err
+	}
+	return pushMsg.Seq, nil
+}
+
+func (p *Producer) SendRedEnvelope(rid []int32, message string, user scheme.User, redEnvelope scheme.RedEnvelope) (int64, error) {
+	pushMsg, err := p.toRedEnvelopePb(rid, message, user, redEnvelope)
+	if err != nil {
+		return 0, err
 	}
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
@@ -265,167 +266,48 @@ func (p *Producer) SendGift(rid int32, user User, gift Gift) (int64, error) {
 	return pushMsg.Seq, nil
 }
 
-func (p *Producer) SendReward(rid int32, user User, amount, totalAmount float64) (int64, error) {
-	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
-		Id: 1, Count: 1,
-	})
+func (p *Producer) SendBets(rid []int32, user scheme.User, bet scheme.Bet) (int64, error) {
+	id, err := p.id()
 	if err != nil {
 		return 0, err
 	}
 
-	display := DisplayByReward(user, amount)
+	message := bet.ToMessage(id, user)
 
-	now := time.Now()
-	bm, err := json.Marshal(GiftMessage{
-		Message: Message{
-			Id:        seq.Id,
-			Type:      GiftType,
-			Time:      now.Format("15:04:05"),
-			Timestamp: now.Unix(),
-			Display:   display,
-			User:      NullUser(user),
-		},
-		Gift: Gift{
-			Amount:      amount,
-			TotalAmount: totalAmount,
-			Message:     display.Message.Text,
-			HintBox: NullHintBox{
-				DurationMs:      3000,
-				BackgroundColor: "#F856567F",
-			},
-			Entity: display.Message.Entity,
-		},
-	})
-
+	bm, err := json.Marshal(message)
 	if err != nil {
 		return 0, err
 	}
 
 	pushMsg := &logicpb.PushMsg{
-		Seq:    seq.Id,
-		Type:   logicpb.PushMsg_SYSTEM,
-		Room:   []int32{rid},
-		Mid:    user.Id,
-		Msg:    bm,
-		SendAt: now.Unix(),
-		IsRaw:  true,
-	}
-	if err := p.send(pushMsg); err != nil {
-		return 0, err
-	}
-	return pushMsg.Seq, nil
-}
-
-func (p *Producer) toRedEnvelopePb(msg ProducerMessage, redEnvelope RedEnvelope) (*logicpb.PushMsg, error) {
-	if err := checkMessage(msg.Display.Message.Text); err != nil {
-		return nil, err
-	}
-	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
-		Id: 1, Count: 1,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	fmsg, isMatch, sensitive := p.filter.FilterFindSensitive(msg.Display.Message.Text)
-	if isMatch {
-		log.Info("message filter hit", zap.Int64("msg_id", seq.Id), zap.Strings("sensitive", sensitive))
-	}
-
-	msg.Display.Message.Text = fmsg
-
-	now := time.Now()
-	bm, err := json.Marshal(RedEnvelopeMessage{
-		Message: Message{
-			Id:        seq.Id,
-			Type:      RedEnvelopeType,
-			Time:      now.Format("15:04:05"),
-			Timestamp: now.Unix(),
-			User:      NullUser(msg.User),
-			Display:   msg.Display,
-
-			Uid:     msg.User.Uid,
-			Name:    msg.Display.User.Text,
-			Avatar:  msg.Display.User.Avatar,
-			Message: msg.Display.Message.Text,
-		},
-		RedEnvelope: redEnvelope,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &logicpb.PushMsg{
-		Seq:     seq.Id,
-		Type:    logicpb.PushMsg_MONEY,
-		Room:    msg.Rooms,
-		Mid:     msg.User.Id,
+		Seq:     id,
+		Type:    logicpb.PushMsg_SYSTEM,
+		Room:    rid,
+		Mid:     user.Id,
 		Msg:     bm,
-		SendAt:  now.Unix(),
-		Message: msg.Display.Message.Text,
-		IsSave:  msg.IsSave,
-	}, nil
-}
-
-func (p *Producer) SendRedEnvelope(msg ProducerMessage, redEnvelope RedEnvelope) (int64, error) {
-	pushMsg, err := p.toRedEnvelopePb(msg, redEnvelope)
-	if err != nil {
-		return 0, err
+		Message: message.Display.Message.Text,
+		SendAt:  message.Timestamp,
+		IsSave:  false,
+		IsRaw:   false,
 	}
+
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
 	}
 	return pushMsg.Seq, nil
 }
 
-func (p *Producer) SendBets(msg ProducerMessage, bet Bet) (int64, error) {
-	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
-		Id: 1, Count: 1,
-	})
+func (p *Producer) SendBetsPay(rid []int32, user scheme.User, gameName string) (int64, error) {
+	id, err := p.id()
 	if err != nil {
 		return 0, err
 	}
 
-	// 避免Items與TransItems欄位json Marshal後出現null
-	for i, v := range bet.Orders {
-		if len(v.Items) == 0 {
-			bet.Orders[i].Items = []string{}
-		}
-		if len(v.TransItems) == 0 {
-			bet.Orders[i].TransItems = []string{}
-		}
-	}
-
-	now := time.Now()
-	bm, err := json.Marshal(Bets{
-		Id:        seq.Id,
-		Type:      BetsType,
-		Time:      now.Format("15:04:05"),
-		Timestamp: now.Unix(),
-		Display:   msg.Display,
-		User:      msg.User,
-		Bet:       bet,
-
-		Uid:          msg.User.Uid,
-		Name:         msg.User.Name,
-		Avatar:       msg.User.Avatar,
-		GameId:       bet.GameId,
-		PeriodNumber: bet.PeriodNumber,
-		Items:        bet.Orders,
-		Count:        bet.Count,
-		TotalAmount:  bet.TotalAmount,
-	})
+	pushMsg, err := scheme.NewBetsPay(id, user, gameName).ToPb(user.Id, rid, logicpb.PushMsg_SYSTEM, false, false)
 	if err != nil {
 		return 0, err
 	}
 
-	pushMsg := &logicpb.PushMsg{
-		Seq:    seq.Id,
-		Type:   logicpb.PushMsg_SYSTEM,
-		Room:   msg.Rooms,
-		Mid:    msg.User.Id,
-		Msg:    bm,
-		SendAt: now.Unix(),
-	}
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
 	}
@@ -433,9 +315,7 @@ func (p *Producer) SendBets(msg ProducerMessage, bet Bet) (int64, error) {
 }
 
 func (p *Producer) SendRaw(roomId []int32, body []byte, IsRaw bool) (int64, error) {
-	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
-		Id: 1, Count: 1,
-	})
+	id, err := p.id()
 	if err != nil {
 		return 0, err
 	}
@@ -446,7 +326,7 @@ func (p *Producer) SendRaw(roomId []int32, body []byte, IsRaw bool) (int64, erro
 		return 0, err
 	}
 
-	b["id"] = seq.Id
+	b["id"] = id
 	b["time"] = now.Format("15:04:05")
 	b["timestamp"] = now.Unix()
 
@@ -456,7 +336,7 @@ func (p *Producer) SendRaw(roomId []int32, body []byte, IsRaw bool) (int64, erro
 	}
 
 	pushMsg := &logicpb.PushMsg{
-		Seq:    seq.Id,
+		Seq:    id,
 		Type:   logicpb.PushMsg_SYSTEM,
 		Room:   roomId,
 		Msg:    bm,
@@ -479,15 +359,13 @@ type RawMessage struct {
 
 func (p *Producer) SendRaws(raws []RawMessage, IsRaw bool) (int64, error) {
 	count := int64(len(raws))
-	seq, err := p.seq.Ids(context.Background(), &seqpb.SeqReq{
-		Id: 1, Count: count,
-	})
+	id, err := p.id()
 	if err != nil {
 		return 0, err
 	}
 
 	now := time.Now()
-	id := seq.Id - count
+	id = id - count
 
 	for i, raw := range raws {
 		var b map[string]interface{}
@@ -526,35 +404,16 @@ func (p *Producer) SendRaws(raws []RawMessage, IsRaw bool) (int64, error) {
 }
 
 func (p *Producer) SendConnect(rid int32, user *logicpb.User) (int64, error) {
-	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
-		Id: 1, Count: 1,
-	})
+	id, err := p.id()
 	if err != nil {
 		return 0, err
 	}
 
-	now := time.Now()
-	bm, err := json.Marshal(Message{
-		Id:        seq.Id,
-		Type:      HintType,
-		Time:      now.Format("15:04:05"),
-		Timestamp: now.Unix(),
-		Display:   DisplayByConnect(user.Name),
-	})
-
+	pushMsg, err := scheme.NewConnect(id, user.Name).ToPb(user.Id, []int32{rid}, logicpb.PushMsg_SYSTEM, false, false)
 	if err != nil {
 		return 0, err
 	}
 
-	pushMsg := &logicpb.PushMsg{
-		Seq:    seq.Id,
-		Type:   logicpb.PushMsg_SYSTEM,
-		Room:   []int32{rid},
-		Mid:    user.Id,
-		Msg:    bm,
-		SendAt: now.Unix(),
-		IsRaw:  true,
-	}
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
 	}
@@ -622,6 +481,60 @@ func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 		)
 	}
 	return err
+}
+
+func (p *Producer) id() (int64, error) {
+	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
+		Id: 1, Count: 1,
+	})
+	if err != nil {
+		return 0, err
+	}
+	return seq.Id, err
+}
+
+func (p *Producer) filterMessage(message string) (string, error) {
+	if err := checkMessage(message); err != nil {
+		return "", err
+	}
+
+	fmsg, isMatch, sensitive := p.filter.FilterFindSensitive(message)
+	if isMatch {
+		log.Info("message filter hit", zap.Strings("sensitive", sensitive))
+	}
+
+	return fmsg, nil
+}
+
+func (p *Producer) toRedEnvelopePb(rid []int32, message string, user scheme.User, redEnvelope scheme.RedEnvelope) (*logicpb.PushMsg, error) {
+	message, err := p.filterMessage(message)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := p.id()
+	if err != nil {
+		return nil, err
+	}
+
+	msg := redEnvelope.ToMessage(id, message, user)
+
+	bm, err := json.Marshal(msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &logicpb.PushMsg{
+		Seq:     id,
+		Type:    logicpb.PushMsg_MONEY,
+		Room:    rid,
+		Mid:     user.Id,
+		Msg:     bm,
+		Message: message,
+		SendAt:  msg.Timestamp,
+		IsSave:  true,
+		IsRaw:   false,
+	}, nil
 }
 
 var (

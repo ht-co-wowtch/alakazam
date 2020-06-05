@@ -1,8 +1,24 @@
-package message
+package scheme
 
 import (
 	"encoding/json"
+	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
+	"time"
+)
+
+const (
+	// 普通訊息
+	MESSAGE_TYPE = "message"
+
+	// 紅包訊息
+	RED_ENVELOPE_TYPE = "red_envelope"
+
+	// 公告訊息
+	TOP_TYPE = "top"
+
+	// 禮物/打賞
+	GIFT_TYPE = "gift"
 )
 
 type System struct {
@@ -50,49 +66,23 @@ func (m Message) Score() float64 {
 	return float64(m.Timestamp)
 }
 
-type GiftMessage struct {
-	Message
-	Gift Gift `json:"gift"`
-}
-
-type Gift struct {
-	Id            int          `json:"gift_id"`
-	Name          string       `json:"name"`
-	Amount        float64      `json:"amount"`
-	TotalAmount   float64      `json:"total_amount"`
-	Combo         NullCombo    `json:"combo"`
-	HintBox       NullHintBox  `json:"hint_box"`
-	ShowAnimation bool         `json:"show_animation"`
-	Message       string       `json:"message"`
-	Entity        []TextEntity `json:"entity"`
-}
-
-type Combo struct {
-	Count      int `json:"count"`
-	DurationMs int `json:"duration_ms"`
-}
-
-type NullCombo Combo
-
-func (d NullCombo) MarshalJSON() ([]byte, error) {
-	if d.Count == 0 {
-		return []byte(`null`), nil
+func (m Message) ToPb(mid int64, rid []int32, t logicpb.PushMsg_Type, isSave, isRaw bool) (*logicpb.PushMsg, error) {
+	bm, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
 	}
-	return json.Marshal(Combo(d))
-}
 
-type HintBox struct {
-	DurationMs      int    `json:"duration_ms"`
-	BackgroundColor string `json:"background_color"`
-}
-
-type NullHintBox HintBox
-
-func (d NullHintBox) MarshalJSON() ([]byte, error) {
-	if d.DurationMs == 0 {
-		return []byte(`null`), nil
-	}
-	return json.Marshal(HintBox(d))
+	return &logicpb.PushMsg{
+		Seq:     m.Id,
+		Type:    t,
+		Room:    rid,
+		Mid:     mid,
+		Msg:     bm,
+		Message: m.Message,
+		SendAt:  m.Timestamp,
+		IsSave:  isSave,
+		IsRaw:   isRaw,
+	}, nil
 }
 
 // 顯示訊息資料格式
@@ -224,6 +214,55 @@ type User struct {
 	Avatar string `json:"avatar"`
 }
 
+func (u User) ToUser(seq int64, message string) Message {
+	b := u.toBase(seq, message)
+	b.Type = MESSAGE_TYPE
+	b.Display = displayByUser(u, message)
+	return b
+}
+
+func (u User) ToStreamer(seq int64, message string) Message {
+	b := u.toBase(seq, message)
+	b.Type = MESSAGE_TYPE
+	b.Display = displayByStreamer(u, message)
+	return b
+}
+
+func (u User) ToAdmin(seq int64, message string) Message {
+	b := u.toBase(seq, message)
+	b.Type = MESSAGE_TYPE
+	b.Display = displayByAdmin(u, message)
+	return b
+}
+
+func (u User) ToTop(seq int64, message string) Message {
+	msg := u.ToSystem(seq, message)
+	msg.Type = TOP_TYPE
+	return msg
+}
+
+func (u User) ToSystem(seq int64, message string) Message {
+	b := u.toBase(seq, message)
+	b.Type = MESSAGE_TYPE
+	b.Display = displayBySystem(message)
+	return b
+}
+
+func (u User) toBase(seq int64, message string) Message {
+	now := time.Now()
+	return Message{
+		Id:        seq,
+		User:      NullUser(u),
+		Time:      now.Format("15:04:05"),
+		Timestamp: now.Unix(),
+
+		Uid:     u.Uid,
+		Name:    u.Name,
+		Avatar:  u.Avatar,
+		Message: message,
+	}
+}
+
 type NullUser User
 
 func (d NullUser) MarshalJSON() ([]byte, error) {
@@ -239,88 +278,23 @@ func NewRoot() User {
 		Id:     member.RootMid,
 		Uid:    member.RootUid,
 		Name:   member.RootName,
-		Avatar: avatarRoot,
+		Avatar: "root",
 	}
 }
 
-// 紅包訊息格式
-type RedEnvelopeMessage struct {
-	// 訊息格式
-	Message
-
-	// 紅包資料
-	RedEnvelope RedEnvelope `json:"red_envelope"`
+func ToMessage(msgByte []byte) (Message, error) {
+	var msg Message
+	err := json.Unmarshal(msgByte, &msg)
+	return msg, err
 }
 
-func (m RedEnvelopeMessage) Score() float64 {
-	return float64(m.Message.Timestamp)
-}
-
-// 紅包資料
-type RedEnvelope struct {
-	// 紅包id
-	Id string `json:"id"`
-
-	// 紅包token
-	Token string `json:"token"`
-
-	// 紅包多久過期
-	Expired string `json:"expired"`
-}
-
-func (m RedEnvelope) MarshalBinary() (data []byte, err error) {
-	return json.Marshal(m)
-}
-
-// 跟投訊息格式
-type Bets struct {
-	// 訊息id
-	Id int64 `json:"id"`
-
-	// 訊息種類
-	Type string `json:"type"`
-
-	// 訊息產生時間
-	Time string `json:"time"`
-
-	// 訊息產生時間戳記
-	Timestamp int64 `json:"timestamp"`
-
-	// 顯示訊息的資料
-	Display Display `json:"display"`
-
-	// 發訊息者
-	User User `json:"user"`
-
-	// 跟投資料
-	Bet Bet `json:"bet"`
-
-	// TODO 以下待廢棄
-	Uid          string     `json:"uid"`
-	Name         string     `json:"name"`
-	Avatar       string     `json:"avatar"`
-	GameId       int        `json:"game_id"`
-	PeriodNumber int        `json:"period_number"`
-	Items        []BetOrder `json:"bets"`
-	Count        int        `json:"count"`
-	TotalAmount  int        `json:"total_amount"`
-}
-
-// 跟投資料
-type Bet struct {
-	GameId       int        `json:"game_id"`
-	GameName     string     `json:"game_name"`
-	PeriodNumber int        `json:"period_number"`
-	Count        int        `json:"count"`
-	TotalAmount  int        `json:"total_amount"`
-	Orders       []BetOrder `json:"bets"`
-}
-
-// 跟投項目資料
-type BetOrder struct {
-	Name       string   `json:"name"`
-	OddsCode   string   `json:"odds_code"`
-	Items      []string `json:"items"`
-	TransItems []string `json:"trans_items"`
-	Amount     int      `json:"amount"`
+func NewConnect(seq int64, username string) Message {
+	now := time.Now()
+	return Message{
+		Id:        seq,
+		Type:      "hint",
+		Display:   displayByConnect(username),
+		Time:      now.Format("15:04:05"),
+		Timestamp: now.Unix(),
+	}
 }

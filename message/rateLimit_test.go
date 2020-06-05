@@ -3,6 +3,7 @@ package message
 import (
 	"github.com/magiconair/properties/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"testing"
 	"time"
 )
@@ -40,33 +41,33 @@ func TestPerSec(t *testing.T) {
 }
 
 func TestIsSameMsg(t *testing.T) {
-	msg := Display{
-		Message: NullDisplayMessage{
+	msg := scheme.Display{
+		Message: scheme.NullDisplayMessage{
 			Text: "test",
 		},
 	}
 
 	rate := newRateLimit(r)
 	msgA := ProducerMessage{
-		User: User{
+		User: scheme.User{
 			Uid: "1",
 		},
 		Display: msg,
 	}
 	msgB := ProducerMessage{
-		User: User{
+		User: scheme.User{
 			Uid: "2",
 		},
 		Display: msg,
 	}
 	msgC := ProducerMessage{
-		User: User{
+		User: scheme.User{
 			Uid: "3",
 		},
 		Display: msg,
 	}
 	msgD := ProducerMessage{
-		User: User{
+		User: scheme.User{
 			Uid: "4",
 		},
 		Display: msg,

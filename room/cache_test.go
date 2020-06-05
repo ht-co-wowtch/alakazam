@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"os"
@@ -54,7 +55,7 @@ var (
 		DepositLimit: amount,
 	}
 
-	roomTopMessageTest = message.Message{
+	roomTopMessageTest = scheme.Message{
 		Id:        1,
 		Uid:       "123",
 		Name:      "test",
