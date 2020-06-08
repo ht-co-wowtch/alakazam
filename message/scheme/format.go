@@ -107,6 +107,7 @@ func displayByBets(user User, gameName string, amount int) Display {
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []TextEntity{
+				usernameTextEntity(user.Name, 2),
 				TextEntity{
 					Type:            "button",
 					Offset:          len(msg),
@@ -123,11 +124,6 @@ func displayByBets(user User, gameName string, amount int) Display {
 // 注單派彩Display
 func displayByBetsPay(user User, gameName string) Display {
 	return Display{
-		User: NullDisplayUser{
-			Text:   user.Name,
-			Color:  USER_COLOR,
-			Avatar: user.Avatar,
-		},
 		Title: NullDisplayText{
 			Text:            "中奖",
 			Color:           MESSAGE_COLOR,
@@ -138,7 +134,7 @@ func displayByBetsPay(user User, gameName string) Display {
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []TextEntity{
-				usernameEntity(user.Name, 2),
+				usernameTextEntity(user.Name, 2),
 			},
 		},
 		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
@@ -158,7 +154,7 @@ func displayByGift(user User, name string) Display {
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []TextEntity{
-				usernameEntity(user.Name, 0),
+				usernameTextEntity(user.Name, 0),
 			},
 		},
 		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
@@ -178,7 +174,7 @@ func displayByReward(user User, amount float64) Display {
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []TextEntity{
-				usernameEntity(user.Name, 0),
+				usernameTextEntity(user.Name, 0),
 			},
 		},
 		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
@@ -215,7 +211,7 @@ func displayByConnect(username string) Display {
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []TextEntity{
-				usernameEntity(username, 0),
+				usernameTextEntity(username, 0),
 			},
 		},
 		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
@@ -229,7 +225,7 @@ func displayByConnect(username string) Display {
 	}
 }
 
-func usernameEntity(name string, offset int) TextEntity {
+func usernameTextEntity(name string, offset int) TextEntity {
 	return TextEntity{
 		Type:            "username",
 		Offset:          offset,
