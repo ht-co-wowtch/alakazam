@@ -14,6 +14,7 @@ import (
 	web "gitlab.com/jetfueltw/cpw/micro/http"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
+	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"runtime"
@@ -147,12 +148,18 @@ func ErrHandler(f handlerFunc) gin.HandlerFunc {
 		if err := f(c); err != nil {
 			e := errdefs.Err(err)
 			if e.Err != nil {
+				var b []byte
+				if c.Request.Method == "POST" || c.Request.Method == "PUT" {
+					b, _ = ioutil.ReadAll(c.Request.Body)
+				}
+
 				log.Error(
 					"api error",
 					zap.Int("code", e.Code),
 					zap.String("path", c.Request.URL.Path),
 					zap.String("rawQuery", c.Request.URL.RawQuery),
 					zap.String("method", c.Request.Method),
+					zap.String("body", string(b)),
 					zap.Error(e.Err),
 				)
 			}
