@@ -95,23 +95,25 @@ func displayByAdmin(user User, message string) Display {
 
 // 跟投Display
 func displayByBets(user User, gameName string, amount int) Display {
+	msg := "用戶" + user.Name + "在" + gameName + "下注" + strconv.Itoa(amount) + "元"
 	return Display{
-		User: NullDisplayUser{
-			Text:   user.Name,
-			Color:  USER_COLOR,
-			Avatar: user.Avatar,
-		},
 		Title: NullDisplayText{
 			Text:            member.System,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
 		},
 		Message: NullDisplayMessage{
-			Text:            "用戶" + user.Name + "在" + gameName + "下注" + string(amount) + "元",
+			Text:            msg + " ＋跟注",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []TextEntity{
-				buttonEntity(user.Name, 2),
+				TextEntity{
+					Type:            "button",
+					Offset:          len(msg),
+					Length:          len(" ＋跟注"),
+					Color:           MESSAGE_COLOR,
+					BackgroundColor: "#F85656",
+				},
 			},
 		},
 		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
@@ -234,15 +236,5 @@ func usernameEntity(name string, offset int) TextEntity {
 		Length:          len(name),
 		Color:           MESSAGE_USERNAME_COLOR,
 		BackgroundColor: NONE_COLOR,
-	}
-}
-
-func buttonEntity(name string, offset int) TextEntity {
-	return TextEntity{
-		Type:            "button",
-		Offset:          offset,
-		Length:          len(name),
-		Color:           MESSAGE_COLOR,
-		BackgroundColor: "#F85656",
 	}
 }
