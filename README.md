@@ -412,16 +412,14 @@ Body
          ]
       },
       "background_color":"#0000003f",
-      "background_image":[
-         {
-            "type":"linear-gradient",
-            "to":"right",
-            "color":[
-               "#FC881380",
-               "#FC8813"
-            ]
+      "background_image":{
+         "type":"linear-gradient",
+         "to":"right",
+         "color":{
+            "0":"#FC881380",
+            "99":"#FC881300"
          }
-      ]
+      }
    },
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
@@ -865,17 +863,15 @@ entity.type: 文字實體內容
             }
          ]
       },
-      "background_color":"#0000003f",
-      "background_image":[
-         {
-            "type":"linear-gradient",
-            "to":"right",
-            "color":[
-               "#FC881380",
-               "#FC8813"
-            ]
+      "background_color":null,
+      "background_image":{
+         "type":"linear-gradient",
+         "to":"right",
+         "color":{
+            "0":"#FC881380",
+            "99":"#FC881300"
          }
-      ]
+      }
    },
    "user":null
 }

@@ -214,12 +214,12 @@ func displayByConnect(username string) Display {
 				usernameTextEntity(username, 0),
 			},
 		},
-		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
-		BackgroundImage: []interface{}{
-			LinearGradientBackground{
-				Type:  "linear-gradient",
-				To:    "right",
-				Color: []string{"#FC881380", "#FC8813"},
+		BackgroundImage: BackgroundImage{
+			Type: "linear-gradient",
+			To:   "right",
+			Color: map[int]string{
+				0:  "#FC881380",
+				99: "#FC881300",
 			},
 		},
 	}
