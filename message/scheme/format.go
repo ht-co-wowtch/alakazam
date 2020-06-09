@@ -128,10 +128,10 @@ func displayByBetsPay(user User, gameName string) Display {
 		Title: NullDisplayText{
 			Text:            "中奖",
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
+			BackgroundColor: "#F85656",
 		},
 		Message: NullDisplayMessage{
-			Text:            "用戶" + user.Name + "在" + gameName + "赢得奖了",
+			Text:            "恭喜用户" + user.Name + "在" + gameName + "中奖了",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []TextEntity{
