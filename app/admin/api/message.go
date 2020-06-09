@@ -197,7 +197,7 @@ type giftReq struct {
 	Name        string  `json:"name" binding:"required"`
 	Combo       int     `json:"combo"`
 	Amount      float64 `json:"amount" binding:"required"`
-	TotalAmount float64 `json:"total_amount" binding:"required"`
+	TotalAmount float64 `json:"total_amount"`
 	UserName    string  `json:"user_name"`
 	UserAvatar  string  `json:"user_avatar"`
 }
@@ -254,7 +254,7 @@ type rewardReq struct {
 	RoomId      int32   `json:"room_id" binding:"required"`
 	Uid         string  `json:"uid" binding:"required"`
 	Amount      float64 `json:"amount" binding:"required"`
-	TotalAmount float64 `json:"total_amount" binding:"required"`
+	TotalAmount float64 `json:"total_amount"`
 	UserName    string  `json:"user_name"`
 	UserAvatar  string  `json:"user_avatar"`
 }
