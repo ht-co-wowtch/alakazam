@@ -3,6 +3,7 @@ package scheme
 import (
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"strconv"
+	"unicode/utf8"
 )
 
 const (
@@ -110,8 +111,8 @@ func displayByBets(user User, gameName string, amount int) Display {
 				usernameTextEntity(user.Name, 2),
 				TextEntity{
 					Type:            "button",
-					Offset:          len(msg),
-					Length:          len(" ＋跟注"),
+					Offset:          utf8.RuneCountInString(msg),
+					Length:          utf8.RuneCountInString(" ＋跟注"),
 					Color:           MESSAGE_COLOR,
 					BackgroundColor: "#F85656",
 				},
@@ -229,7 +230,7 @@ func usernameTextEntity(name string, offset int) TextEntity {
 	return TextEntity{
 		Type:            "username",
 		Offset:          offset,
-		Length:          len(name),
+		Length:          utf8.RuneCountInString(name),
 		Color:           MESSAGE_USERNAME_COLOR,
 		BackgroundColor: NONE_COLOR,
 	}
