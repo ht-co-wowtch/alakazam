@@ -1,7 +1,11 @@
 package scheme
 
 import (
+	"encoding/json"
+	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/money"
 	"time"
+	"unicode/utf8"
 )
 
 // 跟投訊息格式
@@ -75,14 +79,56 @@ func (b Bet) ToMessage(seq int64, user User) Bets {
 	}
 }
 
-func NewBetsPay(seq int64, user User, gameName string) Message {
+type BetsWinReward struct {
+	Message
+	Reward DisplayMessage `json:"reward"`
+}
+
+func NewBetsWin(seq int64, user User, gameName string) Message {
 	now := time.Now()
 	return Message{
 		Id:        seq,
 		Type:      MESSAGE_TYPE,
 		User:      NullUser(user),
-		Display:   displayByBetsPay(user, gameName),
+		Display:   displayByBetsWin(user, gameName),
 		Time:      now.Format("15:04:05"),
 		Timestamp: now.Unix(),
 	}
+}
+
+func NewBetsWinReward(seq int64, user User, amount float64, buttonName string) BetsWinReward {
+	now := time.Now()
+	msg := "恭喜您中奖 金额＄" + money.FormatFloat64(amount) + " "
+	return BetsWinReward{
+		Message: Message{
+			Id:        seq,
+			Type:      BETS_WIN_REWARD,
+			User:      NullUser(user),
+			Time:      now.Format("15:04:05"),
+			Timestamp: now.Unix(),
+		},
+		Reward: DisplayMessage{
+			Text:            msg + buttonName,
+			Color:           "#FFFFAA",
+			BackgroundColor: "#F8565699",
+			Entity: []TextEntity{
+				buttonTextEntity(buttonName, utf8.RuneCountInString(msg)),
+			},
+		},
+	}
+}
+
+func (b BetsWinReward) ToPb(keys []string) (*logicpb.PushMsg, error) {
+	bm, err := json.Marshal(b)
+	if err != nil {
+		return nil, err
+	}
+
+	return &logicpb.PushMsg{
+		Seq:    b.Id,
+		Type:   logicpb.PushMsg_Key,
+		Keys:   keys,
+		Msg:    bm,
+		SendAt: b.Timestamp,
+	}, nil
 }

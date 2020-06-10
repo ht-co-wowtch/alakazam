@@ -353,16 +353,17 @@ Operation = `6`=> 單筆訊息
 
 每個message json 內都有一個type來判斷訊息種類
 
-| Value        | 說明      |
-| ------------ | --------- |
-| message      | 一般      |
-| top          | 置頂      |
-| red_envelope | 紅包      |
-| bets         | 跟投      |
-| gift         | 禮物/打賞 |
-| hint         | 提示      |
-| open_live    | 開播      |
-| close_live   | 關播      |
+| Value           | 說明         |
+| --------------- | ------------ |
+| message         | 一般         |
+| top             | 置頂         |
+| red_envelope    | 紅包         |
+| bets            | 跟投         |
+| gift            | 禮物/打賞    |
+| hint            | 提示         |
+| bets_win_reward | 投注中獎打賞 |
+| open_live       | 開播         |
+| close_live      | 關播         |
 
 
 
@@ -485,6 +486,20 @@ Body
             "length":5,
             "color":"#A680B8",
             "background_color":"#0000003f"
+         }
+      ]
+   },
+   "bets_win_reward":{
+      "text":"恭喜您中奖 金额＄1,010.01 打賞主播",
+      "color":"#FFFFAA",
+      "background_color":"#F8565699",
+      "entity":[
+         {
+            "type":"button",
+            "offset":18,
+            "length":4,
+            "color":"#FFFFAA",
+            "background_color":"#F85656"
          }
       ]
    },
@@ -802,32 +817,34 @@ entity.type: 文字實體內容
 
 ![arch](./doc/message/system.png)
 
-中獎訊息
+投注中獎打賞訊息
 
 ```json
 {
-   "id":4001,
-   "type":"message",
-   "time":"12:37:00",
-   "timestamp":1567579890,
-   "display":{
-      "user":null,
-      "level":null,
-      "title":{
-         "text":"中獎",
-         "color":"#FFFFFF",
-         "background_color":"#FF0000"
-      },
-      "message":{
-         "text":"中獎訊息",
-         "color":"#A680B8",
-         "background_color":"#0000003f",
-         "entity":null
-      },
-      "background_color":"#0000003f",
-      "background_image":null
+   "id":53402,
+   "type":"bets_win_reward",
+   "time":"10:54:50",
+   "timestamp":1591757690,
+   "display":null,
+   "user":{
+      "uid":"0d641b03d4d548dbb3a73a2197811261",
+      "name":"ni你ckname_1",
+      "avatar":"male"
    },
-   "user":null
+   "bets_win_reward":{
+      "text":"恭喜您中奖 金额＄1,010.01 打賞主播",
+      "color":"#FFFFAA",
+      "background_color":"#F8565699",
+      "entity":[
+         {
+            "type":"button",
+            "offset":18,
+            "length":4,
+            "color":"#FFFFAA",
+            "background_color":"#F85656"
+         }
+      ]
+   }
 }
 ```
 

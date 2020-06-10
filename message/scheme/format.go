@@ -109,21 +109,15 @@ func displayByBets(user User, gameName string, amount int) Display {
 			BackgroundColor: NONE_COLOR,
 			Entity: []TextEntity{
 				usernameTextEntity(user.Name, 2),
-				TextEntity{
-					Type:            "button",
-					Offset:          utf8.RuneCountInString(msg),
-					Length:          utf8.RuneCountInString(" ＋跟注"),
-					Color:           MESSAGE_COLOR,
-					BackgroundColor: "#F85656",
-				},
+				buttonTextEntity(" ＋跟注", utf8.RuneCountInString(msg)),
 			},
 		},
 		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
 	}
 }
 
-// 注單派彩Display
-func displayByBetsPay(user User, gameName string) Display {
+// 投注中獎Display
+func displayByBetsWin(user User, gameName string) Display {
 	return Display{
 		Title: NullDisplayText{
 			Text:            "中奖",
@@ -233,5 +227,15 @@ func usernameTextEntity(name string, offset int) TextEntity {
 		Length:          utf8.RuneCountInString(name),
 		Color:           MESSAGE_USERNAME_COLOR,
 		BackgroundColor: NONE_COLOR,
+	}
+}
+
+func buttonTextEntity(name string, offset int) TextEntity {
+	return TextEntity{
+		Type:            "button",
+		Offset:          offset,
+		Length:          utf8.RuneCountInString(name),
+		Color:           "#FFFFAA",
+		BackgroundColor: "#F85656",
 	}
 }

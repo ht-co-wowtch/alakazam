@@ -156,19 +156,25 @@ func (s *httpServer) bets(c *gin.Context) error {
 }
 
 type betsPayReq struct {
-	RoomId   int32  `json:"room_id" binding:"required"`
-	Uid      string `json:"uid" binding:"required"`
-	GameName string `json:"game_name" binding:"required"`
+	RoomId     int32         `json:"room_id" binding:"required"`
+	Uid        string        `json:"uid" binding:"required"`
+	GameName   string        `json:"game_name" binding:"required"`
+	OpenReward OpenRewardReq `json:"open_chat_reward"`
 }
 
-// 注單派彩
-func (s *httpServer) betsPay(c *gin.Context) error {
+type OpenRewardReq struct {
+	Amount     float64 `json:"amount" binding:"required"`
+	ButtonName string  `json:"button_name" binding:"required"`
+}
+
+// 投注中獎
+func (s *httpServer) betsWin(c *gin.Context) error {
 	req := new(betsPayReq)
 	if err := c.ShouldBindJSON(req); err != nil {
 		return err
 	}
 
-	m, err := s.member.Fetch(req.Uid)
+	m, err := s.member.GetSession(req.Uid)
 	if err != nil {
 		return err
 	}
@@ -179,13 +185,24 @@ func (s *httpServer) betsPay(c *gin.Context) error {
 		Avatar: message.ToAvatarName(m.Gender),
 	}
 
-	id, err := s.message.SendBetsPay([]int32{req.RoomId}, user, req.GameName)
+	id, err := s.message.SendBetsWin([]int32{req.RoomId}, user, req.GameName)
+	if err != nil {
+		return err
+	}
+
+	ks, err := s.member.GetKeys(req.Uid)
+	if err != nil {
+		return err
+	}
+
+	wid, err := s.message.SendBetsWinReward(ks, user, req.OpenReward.Amount, req.OpenReward.ButtonName)
 	if err != nil {
 		return err
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"id": id,
+		"id":        id,
+		"reward_id": wid,
 	})
 	return nil
 }

@@ -297,13 +297,30 @@ func (p *Producer) SendBets(rid []int32, user scheme.User, bet scheme.Bet) (int6
 	return pushMsg.Seq, nil
 }
 
-func (p *Producer) SendBetsPay(rid []int32, user scheme.User, gameName string) (int64, error) {
+func (p *Producer) SendBetsWin(rid []int32, user scheme.User, gameName string) (int64, error) {
 	id, err := p.id()
 	if err != nil {
 		return 0, err
 	}
 
-	pushMsg, err := scheme.NewBetsPay(id, user, gameName).ToPb(user.Id, rid, logicpb.PushMsg_SYSTEM, false, false)
+	pushMsg, err := scheme.NewBetsWin(id, user, gameName).ToPb(user.Id, rid, logicpb.PushMsg_SYSTEM, false, false)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := p.send(pushMsg); err != nil {
+		return 0, err
+	}
+	return pushMsg.Seq, nil
+}
+
+func (p *Producer) SendBetsWinReward(keys []string, user scheme.User, amount float64, buttonName string) (int64, error) {
+	id, err := p.id()
+	if err != nil {
+		return 0, err
+	}
+
+	pushMsg, err := scheme.NewBetsWinReward(id, user, amount, buttonName).ToPb(keys)
 	if err != nil {
 		return 0, err
 	}

@@ -103,7 +103,7 @@ func NewReward(seq int64, user User, amount, totalAmount float64) GiftMessage {
 			Message:     display.Message.Text,
 			HintBox: NullHintBox{
 				DurationMs:      3000,
-				BackgroundColor: "#F856567F",
+				BackgroundColor: "#F8565699",
 			},
 			Entity: display.Message.Entity,
 		},

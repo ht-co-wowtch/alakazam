@@ -19,6 +19,9 @@ const (
 
 	// 禮物/打賞
 	GIFT_TYPE = "gift"
+
+	// 投注中獎打賞
+	BETS_WIN_REWARD = "bets_win_reward"
 )
 
 type System struct {
@@ -103,7 +106,7 @@ type Display struct {
 	BackgroundColor interface{} `json:"background_color"`
 
 	// 背景圖像
-	BackgroundImage BackgroundImage `json:"background_image"`
+	BackgroundImage interface{} `json:"background_image"`
 }
 
 // 顯示用戶資料

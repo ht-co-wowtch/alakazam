@@ -13,6 +13,7 @@ message PushMsg {
         SYSTEM = 4;
         ADMIN_TOP = 5;
         CLOSE_TOP = 30;
+        Key = 31;
         Close = 100;
     }
     Type type = 1;
