@@ -124,7 +124,7 @@ func (s *httpServer) bets(c *gin.Context) error {
 		return err
 	}
 
-	m, err := s.member.Fetch(req.Uid)
+	m, err := s.member.GetSession(req.Uid)
 	if err != nil {
 		return err
 	}
@@ -228,7 +228,7 @@ func (s *httpServer) gift(c *gin.Context) error {
 	}
 
 	if req.UserName == "" {
-		m, err := s.member.Fetch(req.Uid)
+		m, err := s.member.GetSession(req.Uid)
 		if err != nil {
 			return err
 		}
@@ -285,7 +285,7 @@ func (s *httpServer) reward(c *gin.Context) error {
 	}
 
 	if req.UserName == "" {
-		m, err := s.member.Fetch(req.Uid)
+		m, err := s.member.GetSession(req.Uid)
 		if err != nil {
 			return err
 		}
