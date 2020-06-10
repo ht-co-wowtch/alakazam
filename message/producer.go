@@ -227,7 +227,6 @@ func (p *Producer) SendTop(rid []int32, msg string) (int64, error) {
 	}
 
 	pushMsg.Room = rid
-	pushMsg.Mid = u.Id
 	pushMsg.Type = logicpb.PushMsg_ROOM
 
 	if err := p.send(pushMsg); err != nil {
@@ -246,7 +245,7 @@ func (p *Producer) SendGift(rid int32, user scheme.User, gift scheme.Gift) (int6
 		gift.ShowAnimation = true
 	}
 
-	pushMsg, err := gift.ToMessage(id, user).ToPb(user.Id, rid)
+	pushMsg, err := gift.ToMessage(id, user).ToPb(rid)
 	if err != nil {
 		return 0, err
 	}
@@ -263,7 +262,7 @@ func (p *Producer) SendReward(rid int32, user scheme.User, amount, totalAmount f
 		return 0, err
 	}
 
-	pushMsg, err := scheme.NewReward(id, user, amount, totalAmount).ToPb(user.Id, rid)
+	pushMsg, err := scheme.NewReward(id, user, amount, totalAmount).ToPb(rid)
 	if err != nil {
 		return 0, err
 	}
@@ -324,7 +323,6 @@ func (p *Producer) SendBetsWin(rid []int32, user scheme.User, gameName string) (
 	}
 
 	pushMsg.Room = rid
-	pushMsg.Mid = user.Id
 	pushMsg.Type = logicpb.PushMsg_ROOM
 
 	if err := p.send(pushMsg); err != nil {
@@ -339,7 +337,7 @@ func (p *Producer) SendBetsWinReward(keys []string, user scheme.User, amount flo
 		return 0, err
 	}
 
-	pushMsg, err := scheme.NewBetsWinReward(id, user, amount, buttonName).ToPb(keys)
+	pushMsg, err := scheme.NewBetsWinReward(id, user, amount, buttonName).ToProto(keys)
 	if err != nil {
 		return 0, err
 	}
@@ -451,7 +449,6 @@ func (p *Producer) SendConnect(rid int32, user *logicpb.User) (int64, error) {
 	}
 
 	pushMsg.Room = []int32{rid}
-	pushMsg.Mid = user.Id
 	pushMsg.Type = logicpb.PushMsg_ROOM
 
 	if err := p.send(pushMsg); err != nil {
@@ -461,10 +458,17 @@ func (p *Producer) SendConnect(rid int32, user *logicpb.User) (int64, error) {
 }
 
 func (p *Producer) Kick(msg string, keys []string) error {
-	pushMsg := &logicpb.PushMsg{
-		Type:    logicpb.PushMsg_KICK,
-		Keys:    keys,
+	m := struct {
+		Message string `json:"message"`
+	}{
 		Message: msg,
+	}
+	bm, _ := json.Marshal(m)
+
+	pushMsg := &logicpb.PushMsg{
+		Type: logicpb.PushMsg_KICK,
+		Keys: keys,
+		Msg:  bm,
 	}
 	if err := p.send(pushMsg); err != nil {
 		return err
@@ -474,7 +478,7 @@ func (p *Producer) Kick(msg string, keys []string) error {
 
 func (p *Producer) CloseTop(msgId int64, rid []int32) error {
 	pushMsg := &logicpb.PushMsg{
-		Type: logicpb.PushMsg_KICK,
+		Type: logicpb.PushMsg_ROOM,
 		Seq:  msgId,
 		Room: rid,
 		Msg:  []byte(fmt.Sprintf(`{"id":%d}`, msgId)),
@@ -493,17 +497,8 @@ func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 		return err
 	}
 
-	var key kafka.StringEncoder
-
-	switch pushMsg.Type {
-	case logicpb.PushMsg_KICK:
-		key = kafka.StringEncoder(pushMsg.Keys[0])
-	default:
-		key = kafka.StringEncoder(pushMsg.Room[0])
-	}
-
 	m := &kafka.ProducerMessage{
-		Key:   key,
+		Key:   kafka.StringEncoder(pushMsg.Seq),
 		Topic: p.topic,
 		Value: kafka.ByteEncoder(b),
 	}

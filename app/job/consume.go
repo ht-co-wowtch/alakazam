@@ -2,7 +2,6 @@ package job
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
@@ -33,6 +32,7 @@ func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 	switch pushMsg.Type {
 	// 單人推送
 	case logicpb.PushMsg_PUSH:
+		c.pushRawByte(pushMsg.Keys, pushMsg.Msg, cometpb.OpRaw)
 		break
 
 	// 單房間推送
@@ -51,7 +51,8 @@ func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 		break
 
 	case logicpb.PushMsg_KICK:
-		return c.kick(pushMsg)
+		c.pushRawByte(pushMsg.Keys, pushMsg.Msg, cometpb.OpProtoFinish)
+		break
 
 	// 異常資料
 	default:
@@ -69,9 +70,23 @@ func (c *consume) broadcastRoomRawByte(roomID int32, body []byte, op int32) {
 			Body: body,
 		},
 	}
-	comets := c.servers
-	for _, c := range comets {
+
+	for _, c := range c.servers {
 		c.BroadcastRoom(&args)
+	}
+}
+
+func (c *consume) pushRawByte(keys []string, body []byte, op int32) {
+	args := cometpb.KeyReq{
+		Key: keys,
+		Proto: &cometpb.Proto{
+			Op:   op,
+			Body: body,
+		},
+	}
+
+	for _, c := range c.servers {
+		c.Push(&args)
 	}
 }
 
@@ -97,23 +112,4 @@ func (c *consume) delRoom(roomID int32) {
 	c.roomsMutex.Lock()
 	delete(c.rooms, roomID)
 	c.roomsMutex.Unlock()
-}
-
-func (c *consume) kick(pushMsg *logicpb.PushMsg) error {
-	msg := struct {
-		Message string `json:"message"`
-	}{
-		Message: pushMsg.Message,
-	}
-	b, _ := json.Marshal(msg)
-	for _, c := range c.servers {
-		c.Kick(&cometpb.KeyReq{
-			Proto: &cometpb.Proto{
-				Op:   cometpb.OpProtoFinish,
-				Body: b,
-			},
-			Key: pushMsg.Keys,
-		})
-	}
-	return nil
 }

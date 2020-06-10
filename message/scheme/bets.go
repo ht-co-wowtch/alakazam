@@ -118,7 +118,7 @@ func NewBetsWinReward(seq int64, user User, amount float64, buttonName string) B
 	}
 }
 
-func (b BetsWinReward) ToPb(keys []string) (*logicpb.PushMsg, error) {
+func (b BetsWinReward) ToProto(keys []string) (*logicpb.PushMsg, error) {
 	bm, err := json.Marshal(b)
 	if err != nil {
 		return nil, err

@@ -40,7 +40,7 @@ service Comet {
     // Ping Service 
     rpc Ping(google.protobuf.Empty) returns(google.protobuf.Empty);
     // Close websocket
-    rpc Kick(KeyReq) returns(google.protobuf.Empty);
+    rpc Push(KeyReq) returns(google.protobuf.Empty);
     // Broadcast send to every enrity
     rpc Broadcast(BroadcastReq) returns (BroadcastReply);
     // BroadcastRoom broadcast to one room

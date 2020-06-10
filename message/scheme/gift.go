@@ -51,7 +51,7 @@ func (d NullHintBox) MarshalJSON() ([]byte, error) {
 	return json.Marshal(HintBox(d))
 }
 
-func (g GiftMessage) ToPb(mid int64, rid int32) (*logicpb.PushMsg, error) {
+func (g GiftMessage) ToPb(rid int32) (*logicpb.PushMsg, error) {
 	bm, err := json.Marshal(g)
 	if err != nil {
 		return nil, err

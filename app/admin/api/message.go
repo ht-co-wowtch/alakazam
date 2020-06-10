@@ -190,12 +190,12 @@ func (s *httpServer) betsWin(c *gin.Context) error {
 		return err
 	}
 
-	ks, err := s.member.GetKeys(req.Uid)
+	keys, err := s.member.GetKeys(req.Uid)
 	if err != nil {
 		return err
 	}
 
-	wid, err := s.message.SendBetsWinReward(ks, user, req.OpenReward.Amount, req.OpenReward.ButtonName)
+	wid, err := s.message.SendBetsWinReward(keys, user, req.OpenReward.Amount, req.OpenReward.ButtonName)
 	if err != nil {
 		return err
 	}
