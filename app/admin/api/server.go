@@ -71,7 +71,7 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.DELETE("/push/:id", api.ErrHandler(s.deleteTopMessage))
 	e.POST("/red-envelope", api.ErrHandler(s.giveRedEnvelope))
 	e.POST("/bets", api.ErrHandler(s.bets))
-	e.POST("/betsPay", api.ErrHandler(s.betsWin))
+	e.POST("/betsWin", api.ErrHandler(s.betsWin))
 	e.POST("/gift", api.ErrHandler(s.gift))
 	e.POST("/reward", api.ErrHandler(s.reward))
 
