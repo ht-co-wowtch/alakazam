@@ -3,7 +3,6 @@ package message
 import (
 	"database/sql"
 	"github.com/go-redis/redis"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
@@ -73,62 +72,44 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 	data := make([]interface{}, 0)
 	for _, msgId := range msg.List {
 		switch msg.Type[msgId] {
-		case pb.PushMsg_MONEY:
+		case models.RED_ENVELOPE_TYPE:
 			redEnvelope := msg.RedEnvelopeMessage[msgId]
 			user := memberMap[redEnvelope.MemberId]
-			data = append(data, scheme.RedEnvelopeMessage{
-				Message: scheme.Message{
-					Id:        msgId,
-					Type:      scheme.RED_ENVELOPE_TYPE,
-					Time:      redEnvelope.SendAt.Format("15:04:05"),
-					Timestamp: redEnvelope.SendAt.Unix(),
-					Display: scheme.Display{
-						Message: scheme.NullDisplayMessage{
-							Text:  redEnvelope.Message,
-							Color: "#FFFFFF",
-						},
-					},
-					User: scheme.NullUser{
-						Uid:    user.Uid,
-						Name:   user.Name,
-						Avatar: ToAvatarName(user.Gender),
-					},
+			read := scheme.RedEnvelope{
+				Id:      redEnvelope.RedEnvelopesId,
+				Token:   redEnvelope.Token,
+				Expired: redEnvelope.ExpireAt.Format(time.RFC3339),
+			}
 
-					Uid:     user.Uid,
-					Name:    user.Name,
-					Avatar:  ToAvatarName(user.Gender),
-					Message: redEnvelope.Message,
-				},
-				RedEnvelope: scheme.RedEnvelope{
-					Id:      redEnvelope.RedEnvelopesId,
-					Token:   redEnvelope.Token,
-					Expired: redEnvelope.ExpireAt.Format(time.RFC3339),
-				},
+			m := read.ToMessage(msgId, redEnvelope.Message, scheme.User{
+				Uid:    user.Uid,
+				Name:   user.Name,
+				Avatar: ToAvatarName(user.Gender),
 			})
-		case pb.PushMsg_USER:
+
+			m.Time = msg.Message[msgId].SendAt.Format("15:04:05")
+			m.Timestamp = msg.Message[msgId].SendAt.Unix()
+
+			data = append(data, m)
+		case models.MESSAGE_TYPE:
+			var m scheme.Message
 			user := memberMap[msg.Message[msgId].MemberId]
-			data = append(data, scheme.Message{
-				Id:        msgId,
-				Uid:       user.Uid,
-				Name:      user.Name,
-				Type:      scheme.MESSAGE_TYPE,
-				Avatar:    ToAvatarName(user.Gender),
-				Message:   msg.Message[msgId].Message,
-				Time:      msg.Message[msgId].SendAt.Format("15:04:05"),
-				Timestamp: msg.Message[msgId].SendAt.Unix(),
-			})
-		case pb.PushMsg_ADMIN:
-			user := memberMap[msg.Message[msgId].MemberId]
-			data = append(data, scheme.Message{
-				Id:        msgId,
-				Uid:       user.Uid,
-				Name:      user.Name,
-				Type:      scheme.MESSAGE_TYPE,
-				Avatar:    avatarRoot,
-				Message:   msg.Message[msgId].Message,
-				Time:      msg.Message[msgId].SendAt.Format("15:04:05"),
-				Timestamp: msg.Message[msgId].SendAt.Unix(),
-			})
+
+			if user.Id == member.RootMid {
+				m = scheme.NewRoot().ToAdmin(msgId, msg.Message[msgId].Message)
+			} else {
+				u := scheme.User{
+					Uid:    user.Uid,
+					Name:   user.Name,
+					Avatar: ToAvatarName(user.Gender),
+				}
+				m = u.ToUser(msgId, msg.Message[msgId].Message)
+			}
+
+			m.Time = msg.Message[msgId].SendAt.Format("15:04:05")
+			m.Timestamp = msg.Message[msgId].SendAt.Unix()
+
+			data = append(data, m)
 		}
 	}
 

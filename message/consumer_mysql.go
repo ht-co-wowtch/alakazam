@@ -9,6 +9,7 @@ import (
 	"github.com/go-xorm/xorm"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"runtime"
@@ -57,7 +58,7 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 	for {
 		select {
 		case p := <-msg:
-			if !p.IsSave {
+			if p.MsgType == 0 {
 				continue
 			}
 
@@ -77,9 +78,9 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 
 			defer tx.Rollback()
 
-			switch p.Type {
-			case pb.PushMsg_USER, pb.PushMsg_ADMIN:
-				if _, e := tx.Exec(fmt.Sprintf(addMessage, p.Room[0]%50), p.Seq, p.Mid, p.Type, p.Message, sendAt); e != nil {
+			switch p.MsgType {
+			case models.MESSAGE_TYPE:
+				if _, e := tx.Exec(fmt.Sprintf(addMessage, p.Room[0]%50), p.Seq, p.Mid, models.MESSAGE_TYPE, p.Message, sendAt); e != nil {
 					err = &messageError{
 						error:   e,
 						msgId:   p.Seq,
@@ -87,7 +88,7 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 						message: p.Message,
 					}
 				}
-			case pb.PushMsg_MONEY:
+			case models.RED_ENVELOPE_TYPE:
 				m := new(scheme.RedEnvelopeMessage)
 				if err = json.Unmarshal(p.Msg, m); err != nil {
 					break
@@ -113,7 +114,7 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 
 			if err == nil {
 				for _, rid := range p.Room {
-					if _, e := tx.Exec(fmt.Sprintf(addRoomMessage, rid%50), rid, p.Seq, p.Type, sendAt); e != nil {
+					if _, e := tx.Exec(fmt.Sprintf(addRoomMessage, rid%50), rid, p.Seq, p.MsgType, sendAt); e != nil {
 						err = &MysqlRoomMessageError{
 							error:   e,
 							msgId:   p.Seq,

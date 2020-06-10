@@ -3,7 +3,6 @@ package models
 import (
 	"database/sql"
 	"fmt"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"time"
 )
 
@@ -11,7 +10,7 @@ type RoomMessage struct {
 	Id     int `xorm:"pk autoincr"`
 	MsgId  int64
 	RoomId int
-	Type   pb.PushMsg_Type
+	Type   int
 }
 
 func (r *RoomMessage) TableName() string {
@@ -54,13 +53,16 @@ func (r *RedEnvelopeMessage) TableName() string {
 
 type Messages struct {
 	List               []int64
-	Type               map[int64]pb.PushMsg_Type
+	Type               map[int64]int
 	Message            map[int64]Message
 	RedEnvelopeMessage map[int64]RedEnvelopeMessage
 }
 
 const (
 	messageLimit = 20
+
+	MESSAGE_TYPE      = 1
+	RED_ENVELOPE_TYPE = 2
 )
 
 func (s *Store) GetRoomMessage(roomId int32, start time.Time) (*Messages, error) {
@@ -82,17 +84,17 @@ func (s *Store) GetRoomMessage(roomId int32, start time.Time) (*Messages, error)
 	var msgId []int64
 	var redMsgId []int64
 	msgIds := make([]int64, 0, messageLimit)
-	mapMsg := make(map[int64]pb.PushMsg_Type)
+	mapMsg := make(map[int64]int)
 
 	for i := len(rms); i > 0; i-- {
 		msg := rms[i-1]
 		mapMsg[msg.MsgId] = msg.Type
 		msgIds = append(msgIds, msg.MsgId)
-		switch msg.Type {
-		case pb.PushMsg_MONEY:
-			redMsgId = append(redMsgId, msg.MsgId)
-		default:
+
+		if msg.Type == MESSAGE_TYPE {
 			msgId = append(msgId, msg.MsgId)
+		} else {
+			redMsgId = append(redMsgId, msg.MsgId)
 		}
 	}
 

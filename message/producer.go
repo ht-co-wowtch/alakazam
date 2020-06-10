@@ -153,7 +153,7 @@ func (p *Producer) SendUser(rid []int32, msg string, user *models.Member) (int64
 	if err != nil {
 		return 0, err
 	}
-
+	pushMsg.MsgType = models.MESSAGE_TYPE
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
 	}
@@ -191,6 +191,7 @@ func (p *Producer) SendAdmin(rid []int32, msg string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+	pushMsg.MsgType = models.MESSAGE_TYPE
 
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
@@ -547,10 +548,10 @@ func (p *Producer) toRedEnvelopePb(rid []int32, message string, user scheme.User
 		Room:    rid,
 		Mid:     user.Id,
 		Msg:     bm,
+		MsgType: models.RED_ENVELOPE_TYPE,
 		Message: message,
 		SendAt:  msg.Timestamp,
 		IsSave:  true,
-		IsRaw:   false,
 	}, nil
 }
 

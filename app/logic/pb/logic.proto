@@ -22,12 +22,13 @@ message PushMsg {
     repeated int32 room = 4;
     repeated string keys = 5;
     bytes msg = 6;
-    int64 mid = 7;
-    int64 seq = 8;
-    int64 sendAt = 9;
-    string message = 10;
-    bool isRaw = 11;
-    bool isSave = 12;
+    int32 msgType = 7;
+    int64 mid = 8;
+    int64 seq = 9;
+    int64 sendAt = 10;
+    string message = 11;
+    bool isRaw = 12;
+    bool isSave = 13;
 }
 
 message PingReply {
