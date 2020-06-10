@@ -6,15 +6,9 @@ import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 message PushMsg {
     enum Type {
-        Empty = 0;
-        USER = 1;
-        ADMIN = 2;
-        MONEY = 3;
-        SYSTEM = 4;
-        ADMIN_TOP = 5;
-        CLOSE_TOP = 30;
-        Key = 31;
-        Close = 100;
+        KICK = 0;
+        PUSH = 1;
+        ROOM = 2;
     }
     Type type = 1;
     int32 speed = 2;

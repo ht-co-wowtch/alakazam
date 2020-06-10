@@ -58,15 +58,12 @@ func (g GiftMessage) ToPb(mid int64, rid int32) (*logicpb.PushMsg, error) {
 	}
 
 	return &logicpb.PushMsg{
-		Seq:     g.Id,
-		Type:    logicpb.PushMsg_SYSTEM,
-		Room:    []int32{rid},
-		Mid:     mid,
-		Msg:     bm,
-		Message: g.Display.Message.Text,
-		SendAt:  g.Timestamp,
-		IsSave:  false,
-		IsRaw:   true,
+		Seq:    g.Id,
+		Type:   logicpb.PushMsg_ROOM,
+		Room:   []int32{rid},
+		Msg:    bm,
+		SendAt: g.Timestamp,
+		IsRaw:  true,
 	}, nil
 }
 

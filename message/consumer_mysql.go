@@ -58,10 +58,6 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 	for {
 		select {
 		case p := <-msg:
-			if p.MsgType == 0 {
-				continue
-			}
-
 			if err := m.cache.addMessage(p); err != nil {
 				log.Error("consumer message", zap.Error(messageError{
 					msgId:   p.Seq,
@@ -156,7 +152,7 @@ const (
 )
 
 func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
-	if msg.Type <= pb.PushMsg_MONEY {
+	if msg.MsgType > 0 {
 		m.consumer[msg.Room[0]%m.consumerCount] <- msg
 	}
 	return nil

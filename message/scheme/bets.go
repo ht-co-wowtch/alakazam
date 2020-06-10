@@ -126,7 +126,7 @@ func (b BetsWinReward) ToPb(keys []string) (*logicpb.PushMsg, error) {
 
 	return &logicpb.PushMsg{
 		Seq:    b.Id,
-		Type:   logicpb.PushMsg_Key,
+		Type:   logicpb.PushMsg_PUSH,
 		Keys:   keys,
 		Msg:    bm,
 		SendAt: b.Timestamp,

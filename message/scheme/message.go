@@ -69,7 +69,7 @@ func (m Message) Score() float64 {
 	return float64(m.Timestamp)
 }
 
-func (m Message) ToPb(mid int64, rid []int32, t logicpb.PushMsg_Type, isSave, isRaw bool) (*logicpb.PushMsg, error) {
+func (m Message) ToProto() (*logicpb.PushMsg, error) {
 	bm, err := json.Marshal(m)
 	if err != nil {
 		return nil, err
@@ -77,14 +77,9 @@ func (m Message) ToPb(mid int64, rid []int32, t logicpb.PushMsg_Type, isSave, is
 
 	return &logicpb.PushMsg{
 		Seq:     m.Id,
-		Type:    t,
-		Room:    rid,
-		Mid:     mid,
 		Msg:     bm,
 		Message: m.Message,
 		SendAt:  m.Timestamp,
-		IsSave:  isSave,
-		IsRaw:   isRaw,
 	}, nil
 }
 

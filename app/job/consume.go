@@ -30,9 +30,13 @@ type consume struct {
 
 // 訊息推送至comet server
 func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
-	switch t := pushMsg.Type; {
-	// 單一/多房間推送
-	case t <= logicpb.PushMsg_ADMIN_TOP:
+	switch pushMsg.Type {
+	// 單人推送
+	case logicpb.PushMsg_PUSH:
+		break
+
+	// 單房間推送
+	case logicpb.PushMsg_ROOM:
 		if pushMsg.IsRaw {
 			for _, r := range pushMsg.Room {
 				c.getRoom(r).consume.broadcastRoomRawByte(r, pushMsg.Msg, cometpb.OpRaw)
@@ -44,12 +48,11 @@ func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 				}
 			}
 		}
-	case t == logicpb.PushMsg_CLOSE_TOP:
-		for _, r := range pushMsg.Room {
-			c.getRoom(r).consume.broadcastRoomRawByte(r, pushMsg.Msg, cometpb.OpCloseTopMessage)
-		}
-	case t == logicpb.PushMsg_Close:
+		break
+
+	case logicpb.PushMsg_KICK:
 		return c.kick(pushMsg)
+
 	// 異常資料
 	default:
 		return fmt.Errorf("no match push type: %s", pushMsg.Type)
