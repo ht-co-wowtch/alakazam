@@ -20,7 +20,7 @@ type Gift struct {
 	HintBox       NullHintBox  `json:"hint_box"`
 	ShowAnimation bool         `json:"show_animation"`
 	Message       string       `json:"message"`
-	Entity        []TextEntity `json:"entity"`
+	Entity        []textEntity `json:"entity"`
 }
 
 type Combo struct {
@@ -74,7 +74,7 @@ func (g Gift) ToMessage(seq int64, user User) GiftMessage {
 			Id:        seq,
 			Type:      GIFT_TYPE,
 			Display:   displayByGift(user, g.Name),
-			User:      NullUser(user),
+			User:      user,
 			Time:      now.Format("15:04:05"),
 			Timestamp: now.Unix(),
 		},
@@ -85,24 +85,25 @@ func (g Gift) ToMessage(seq int64, user User) GiftMessage {
 func NewReward(seq int64, user User, amount, totalAmount float64) GiftMessage {
 	now := time.Now()
 	display := displayByReward(user, amount)
+	msg := display.Message.(displayMessage)
 	return GiftMessage{
 		Message: Message{
 			Id:        seq,
 			Type:      GIFT_TYPE,
 			Display:   display,
-			User:      NullUser(user),
+			User:      user,
 			Time:      now.Format("15:04:05"),
 			Timestamp: now.Unix(),
 		},
 		Gift: Gift{
 			Amount:      amount,
 			TotalAmount: totalAmount,
-			Message:     display.Message.Text,
+			Message:     msg.Text,
 			HintBox: NullHintBox{
 				DurationMs:      3000,
 				BackgroundColor: "#F8565699",
 			},
-			Entity: display.Message.Entity,
+			Entity: msg.Entity,
 		},
 	}
 }

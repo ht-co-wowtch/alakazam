@@ -24,16 +24,6 @@ const (
 	BETS_WIN_REWARD = "bets_win_reward"
 )
 
-type System struct {
-	Id        int64                  `json:"id"`
-	Type      string                 `json:"type"`
-	Name      string                 `json:"name"`
-	Message   string                 `json:"message"`
-	Time      string                 `json:"time"`
-	Timestamp int64                  `json:"timestamp"`
-	Data      map[string]interface{} `json:"data"`
-}
-
 // 訊息格式
 type Message struct {
 	// 訊息id
@@ -49,10 +39,10 @@ type Message struct {
 	Timestamp int64 `json:"timestamp"`
 
 	// 顯示訊息的資料
-	Display Display `json:"display"`
+	Display interface{} `json:"display"`
 
 	// 發訊息者
-	User NullUser `json:"user"`
+	User interface{} `json:"user"`
 
 	// TODO 以下待廢棄
 	Uid     string `json:"uid"`
@@ -84,18 +74,18 @@ func (m Message) ToProto() (*logicpb.PushMsg, error) {
 }
 
 // 顯示訊息資料格式
-type Display struct {
+type display struct {
 	// 顯示用戶
-	User NullDisplayUser `json:"user"`
+	User interface{} `json:"user"`
 
 	// 顯示用戶等級
-	Level NullDisplayText `json:"level"`
+	Level interface{} `json:"level"`
 
 	// 顯示用戶標題
-	Title NullDisplayText `json:"title"`
+	Title interface{} `json:"title"`
 
 	// 顯示訊息內容
-	Message NullDisplayMessage `json:"message"`
+	Message interface{} `json:"message"`
 
 	// 背景色
 	BackgroundColor interface{} `json:"background_color"`
@@ -105,7 +95,7 @@ type Display struct {
 }
 
 // 顯示用戶資料
-type DisplayUser struct {
+type displayUser struct {
 	// 用戶名
 	Text string `json:"text"`
 
@@ -116,17 +106,8 @@ type DisplayUser struct {
 	Avatar string `json:"avatar"`
 }
 
-type NullDisplayUser DisplayUser
-
-func (d NullDisplayUser) MarshalJSON() ([]byte, error) {
-	if d.Text == "" {
-		return []byte(`null`), nil
-	}
-	return json.Marshal(DisplayUser(d))
-}
-
 // 文字資料
-type DisplayText struct {
+type displayText struct {
 	// 文字
 	Text string `json:"text"`
 
@@ -137,16 +118,7 @@ type DisplayText struct {
 	BackgroundColor string `json:"background_color"`
 }
 
-type NullDisplayText DisplayText
-
-func (d NullDisplayText) MarshalJSON() ([]byte, error) {
-	if d.Text == "" {
-		return []byte(`null`), nil
-	}
-	return json.Marshal(DisplayText(d))
-}
-
-type DisplayMessage struct {
+type displayMessage struct {
 	// 文字
 	Text string `json:"text"`
 
@@ -157,11 +129,11 @@ type DisplayMessage struct {
 	BackgroundColor string `json:"background_color"`
 
 	// 文字實體
-	Entity []TextEntity `json:"entity"`
+	Entity []textEntity `json:"entity"`
 }
 
 // 文字實體
-type TextEntity struct {
+type textEntity struct {
 	// 類型
 	Type string `json:"type"`
 
@@ -178,17 +150,8 @@ type TextEntity struct {
 	BackgroundColor string `json:"background_color"`
 }
 
-type NullDisplayMessage DisplayMessage
-
-func (d NullDisplayMessage) MarshalJSON() ([]byte, error) {
-	if d.Text == "" {
-		return []byte(`null`), nil
-	}
-	return json.Marshal(DisplayMessage(d))
-}
-
 // 漸層色背景
-type BackgroundImage struct {
+type backgroundImage struct {
 	Type string `json:"type"`
 
 	// 漸層方向
@@ -250,7 +213,7 @@ func (u User) toBase(seq int64, message string) Message {
 	now := time.Now()
 	return Message{
 		Id:        seq,
-		User:      NullUser(u),
+		User:      u,
 		Time:      now.Format("15:04:05"),
 		Timestamp: now.Unix(),
 
@@ -259,15 +222,6 @@ func (u User) toBase(seq int64, message string) Message {
 		Avatar:  u.Avatar,
 		Message: message,
 	}
-}
-
-type NullUser User
-
-func (d NullUser) MarshalJSON() ([]byte, error) {
-	if d.Uid == "" || d.Name == "" {
-		return []byte(`null`), nil
-	}
-	return json.Marshal(User(d))
 }
 
 // 管理員用戶資料

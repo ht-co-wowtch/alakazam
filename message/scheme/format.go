@@ -29,19 +29,19 @@ const (
 )
 
 // 用戶Display
-func displayByUser(user User, message string) Display {
-	return Display{
-		User: NullDisplayUser{
+func displayByUser(user User, message string) display {
+	return display{
+		User: displayUser{
 			Text:   user.Name,
 			Color:  USER_COLOR,
 			Avatar: user.Avatar,
 		},
-		Level: NullDisplayText{
+		Level: displayText{
 			Text:            "会员",
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#7FC355",
 		},
-		Message: NullDisplayMessage{
+		Message: displayMessage{
 			Text:            message,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: NONE_COLOR,
@@ -51,19 +51,19 @@ func displayByUser(user User, message string) Display {
 }
 
 // 主播Display
-func displayByStreamer(user User, message string) Display {
-	return Display{
-		User: NullDisplayUser{
+func displayByStreamer(user User, message string) display {
+	return display{
+		User: displayUser{
 			Text:   user.Name,
 			Color:  MESSAGE_SYSTEM_COLOR,
 			Avatar: user.Avatar,
 		},
-		Title: NullDisplayText{
+		Title: displayText{
 			Text:            "主播",
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#B57AA8",
 		},
-		Message: NullDisplayMessage{
+		Message: displayMessage{
 			Text:            message,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: NONE_COLOR,
@@ -73,14 +73,14 @@ func displayByStreamer(user User, message string) Display {
 }
 
 // 管理員Display
-func displayByAdmin(message string) Display {
-	return Display{
-		Title: NullDisplayText{
+func displayByAdmin(message string) display {
+	return display{
+		Title: displayText{
 			Text:            member.RootName,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#7FC355",
 		},
-		Message: NullDisplayMessage{
+		Message: displayMessage{
 			Text:            message,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: NONE_COLOR,
@@ -90,19 +90,19 @@ func displayByAdmin(message string) Display {
 }
 
 // 跟投Display
-func displayByBets(user User, gameName string, amount int) Display {
+func displayByBets(user User, gameName string, amount int) display {
 	msg := "用戶" + user.Name + "在" + gameName + "下注" + strconv.Itoa(amount) + "元"
-	return Display{
-		Title: NullDisplayText{
+	return display{
+		Title: displayText{
 			Text:            member.System,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
 		},
-		Message: NullDisplayMessage{
+		Message: displayMessage{
 			Text:            msg + " ＋跟注",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
-			Entity: []TextEntity{
+			Entity: []textEntity{
 				usernameTextEntity(user.Name, 2),
 				buttonTextEntity(" ＋跟注", utf8.RuneCountInString(msg)),
 			},
@@ -112,18 +112,18 @@ func displayByBets(user User, gameName string, amount int) Display {
 }
 
 // 投注中獎Display
-func displayByBetsWin(user User, gameName string) Display {
-	return Display{
-		Title: NullDisplayText{
+func displayByBetsWin(user User, gameName string) display {
+	return display{
+		Title: displayText{
 			Text:            "中奖",
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#F85656",
 		},
-		Message: NullDisplayMessage{
+		Message: displayMessage{
 			Text:            "恭喜用户" + user.Name + "在" + gameName + "中奖了",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
-			Entity: []TextEntity{
+			Entity: []textEntity{
 				usernameTextEntity(user.Name, 2),
 			},
 		},
@@ -131,19 +131,19 @@ func displayByBetsWin(user User, gameName string) Display {
 	}
 }
 
-// 禮物 Display
-func displayByGift(user User, name string) Display {
-	return Display{
-		Title: NullDisplayText{
+// 禮物 display
+func displayByGift(user User, name string) display {
+	return display{
+		Title: displayText{
 			Text:            member.System,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
 		},
-		Message: NullDisplayMessage{
+		Message: displayMessage{
 			Text:            user.Name + "送出" + name + "x1",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
-			Entity: []TextEntity{
+			Entity: []textEntity{
 				usernameTextEntity(user.Name, 0),
 			},
 		},
@@ -151,19 +151,19 @@ func displayByGift(user User, name string) Display {
 	}
 }
 
-// 打賞 Display
-func displayByReward(user User, amount float64) Display {
-	return Display{
-		Title: NullDisplayText{
+// 打賞 display
+func displayByReward(user User, amount float64) display {
+	return display{
+		Title: displayText{
 			Text:            member.System,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
 		},
-		Message: NullDisplayMessage{
+		Message: displayMessage{
 			Text:            user.Name + "打賞主播" + strconv.FormatFloat(amount, 'f', -1, 64) + "元",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
-			Entity: []TextEntity{
+			Entity: []textEntity{
 				usernameTextEntity(user.Name, 0),
 			},
 		},
@@ -172,14 +172,14 @@ func displayByReward(user User, amount float64) Display {
 }
 
 // 系統Display
-func displayBySystem(message string) Display {
-	return Display{
-		Title: NullDisplayText{
+func displayBySystem(message string) display {
+	return display{
+		Title: displayText{
 			Text:            member.System,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
 		},
-		Message: NullDisplayMessage{
+		Message: displayMessage{
 			Text:            message,
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
@@ -189,22 +189,22 @@ func displayBySystem(message string) Display {
 }
 
 // 進場Display
-func displayByConnect(username string) Display {
-	return Display{
-		Level: NullDisplayText{
+func displayByConnect(username string) display {
+	return display{
+		Level: displayText{
 			Text:            "会员",
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#7FC355",
 		},
-		Message: NullDisplayMessage{
+		Message: displayMessage{
 			Text:            username + "进入聊天室",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
-			Entity: []TextEntity{
+			Entity: []textEntity{
 				usernameTextEntity(username, 0),
 			},
 		},
-		BackgroundImage: BackgroundImage{
+		BackgroundImage: backgroundImage{
 			Type: "linear-gradient",
 			To:   "right",
 			Color: map[int]string{
@@ -215,8 +215,8 @@ func displayByConnect(username string) Display {
 	}
 }
 
-func usernameTextEntity(name string, offset int) TextEntity {
-	return TextEntity{
+func usernameTextEntity(name string, offset int) textEntity {
+	return textEntity{
 		Type:            "username",
 		Offset:          offset,
 		Length:          utf8.RuneCountInString(name),
@@ -225,8 +225,8 @@ func usernameTextEntity(name string, offset int) TextEntity {
 	}
 }
 
-func buttonTextEntity(name string, offset int) TextEntity {
-	return TextEntity{
+func buttonTextEntity(name string, offset int) textEntity {
+	return textEntity{
 		Type:            "button",
 		Offset:          offset,
 		Length:          utf8.RuneCountInString(name),

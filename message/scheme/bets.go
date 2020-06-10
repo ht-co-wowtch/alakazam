@@ -60,7 +60,7 @@ func (b Bet) ToMessage(seq int64, user User) Bets {
 			Id:        seq,
 			Type:      "bets",
 			Display:   displayByBets(user, b.GameName, b.TotalAmount),
-			User:      NullUser(user),
+			User:      user,
 			Time:      now.Format("15:04:05"),
 			Timestamp: now.Unix(),
 
@@ -81,7 +81,7 @@ func (b Bet) ToMessage(seq int64, user User) Bets {
 
 type BetsWinReward struct {
 	Message
-	Reward DisplayMessage `json:"reward"`
+	Reward displayMessage `json:"reward"`
 }
 
 func NewBetsWin(seq int64, user User, gameName string) Message {
@@ -89,7 +89,7 @@ func NewBetsWin(seq int64, user User, gameName string) Message {
 	return Message{
 		Id:        seq,
 		Type:      MESSAGE_TYPE,
-		User:      NullUser(user),
+		User:      user,
 		Display:   displayByBetsWin(user, gameName),
 		Time:      now.Format("15:04:05"),
 		Timestamp: now.Unix(),
@@ -103,15 +103,15 @@ func NewBetsWinReward(seq int64, user User, amount float64, buttonName string) B
 		Message: Message{
 			Id:        seq,
 			Type:      BETS_WIN_REWARD,
-			User:      NullUser(user),
+			User:      user,
 			Time:      now.Format("15:04:05"),
 			Timestamp: now.Unix(),
 		},
-		Reward: DisplayMessage{
+		Reward: displayMessage{
 			Text:            msg + buttonName,
 			Color:           "#FFFFAA",
 			BackgroundColor: "#F8565699",
-			Entity: []TextEntity{
+			Entity: []textEntity{
 				buttonTextEntity(buttonName, utf8.RuneCountInString(msg)),
 			},
 		},

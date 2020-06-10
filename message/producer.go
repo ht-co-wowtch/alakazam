@@ -112,14 +112,6 @@ func (p *Producer) Close() error {
 	return p.producer.Close()
 }
 
-type ProducerMessage struct {
-	Rooms   []int32
-	User    scheme.User
-	Display scheme.Display
-	Type    string
-	IsSave  bool
-}
-
 func (p *Producer) SendUser(rid []int32, msg string, user *models.Member) (int64, error) {
 	if err := p.rate.perSec(user.Id); err != nil {
 		return 0, err

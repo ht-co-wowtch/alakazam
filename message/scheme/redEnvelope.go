@@ -40,7 +40,7 @@ func (r RedEnvelope) ToMessage(seq int64, message string, user User) RedEnvelope
 		Message: Message{
 			Id:        seq,
 			Type:      RED_ENVELOPE_TYPE,
-			User:      NullUser(user),
+			User:      user,
 			Display:   displayByUser(user, message),
 			Time:      now.Format("15:04:05"),
 			Timestamp: now.Unix(),

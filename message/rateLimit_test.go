@@ -3,7 +3,6 @@ package message
 import (
 	"github.com/magiconair/properties/assert"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"testing"
 	"time"
 )
@@ -41,63 +40,33 @@ func TestPerSec(t *testing.T) {
 }
 
 func TestIsSameMsg(t *testing.T) {
-	msg := scheme.Display{
-		Message: scheme.NullDisplayMessage{
-			Text: "test",
-		},
-	}
-
 	rate := newRateLimit(r)
-	msgA := ProducerMessage{
-		User: scheme.User{
-			Uid: "1",
-		},
-		Display: msg,
-	}
-	msgB := ProducerMessage{
-		User: scheme.User{
-			Uid: "2",
-		},
-		Display: msg,
-	}
-	msgC := ProducerMessage{
-		User: scheme.User{
-			Uid: "3",
-		},
-		Display: msg,
-	}
-	msgD := ProducerMessage{
-		User: scheme.User{
-			Uid: "4",
-		},
-		Display: msg,
-	}
 
 	testCase := []struct {
-		msg       []ProducerMessage
+		uid       []string
 		IsSameMsg []error
 	}{
 		{
-			msg:       []ProducerMessage{msgA},
+			uid:       []string{"1"},
 			IsSameMsg: []error{nil},
 		},
 		{
-			msg:       []ProducerMessage{msgB, msgB},
+			uid:       []string{"2", "2"},
 			IsSameMsg: []error{nil, nil},
 		},
 		{
-			msg:       []ProducerMessage{msgC, msgC, msgC},
+			uid:       []string{"3", "3", "3"},
 			IsSameMsg: []error{nil, nil, errors.ErrRateSameMsg},
 		},
 		{
-			msg:       []ProducerMessage{msgD, msgD, msgD, msgD},
+			uid:       []string{"4", "4", "4", "4"},
 			IsSameMsg: []error{nil, nil, errors.ErrRateSameMsg, errors.ErrRateSameMsg},
 		},
 	}
 
 	for _, v := range testCase {
-		for i, m := range v.msg {
-			err := rate.sameMsg(m)
+		for i, u := range v.uid {
+			err := rate.sameMsg("test", u)
 			assert.Equal(t, v.IsSameMsg[i], err)
 		}
 	}
