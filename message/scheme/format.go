@@ -73,13 +73,8 @@ func displayByStreamer(user User, message string) Display {
 }
 
 // 管理員Display
-func displayByAdmin(user User, message string) Display {
+func displayByAdmin(message string) Display {
 	return Display{
-		User: NullDisplayUser{
-			Text:   user.Name,
-			Color:  USER_COLOR,
-			Avatar: user.Avatar,
-		},
 		Title: NullDisplayText{
 			Text:            member.RootName,
 			Color:           MESSAGE_COLOR,

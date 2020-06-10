@@ -234,7 +234,7 @@ func (u User) ToStreamer(seq int64, message string) Message {
 func (u User) ToAdmin(seq int64, message string) Message {
 	b := u.toBase(seq, message)
 	b.Type = MESSAGE_TYPE
-	b.Display = displayByAdmin(u, message)
+	b.Display = displayByAdmin(message)
 	return b
 }
 
