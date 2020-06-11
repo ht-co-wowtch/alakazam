@@ -14,6 +14,30 @@ import (
 	"time"
 )
 
+type customReq struct {
+	RoomId   []int32          `json:"room_id" binding:"required"`
+	Messages []scheme.Message `json:"messages" binding:"required"`
+	IsRaw    bool             `json:"is_raw"`
+}
+
+// 客制訊息內容(需依照格式填資料)
+func (s *httpServer) custom(c *gin.Context) error {
+	var p customReq
+	if err := c.ShouldBindJSON(&p); err != nil {
+		return err
+	}
+
+	ids, err := s.message.SendMessage(p.RoomId, p.Messages, p.IsRaw)
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"ids": ids,
+	})
+	return nil
+}
+
 type pushRoomReq struct {
 	// 要廣播的房間
 	RoomId []int32 `json:"room_id" binding:"required"`

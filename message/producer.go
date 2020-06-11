@@ -256,6 +256,45 @@ func (p *Producer) SendConnect(rid int32, user *logicpb.User) (int64, error) {
 	})
 }
 
+func (p *Producer) SendMessage(rid []int32, msgs []scheme.Message, isRaw bool) ([]int64, error) {
+	var ids []int64
+	count := int64(len(msgs))
+	seq, err := p.seq.Ids(context.Background(), &seqpb.SeqReq{
+		Id: 1, Count: count,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var pushMsgs []*logicpb.PushMsg
+	now := time.Now()
+	id := seq.Id - count
+
+	for i, msg := range msgs {
+		msg.Id = id
+		msg.Time = now.Format("15:04:05")
+		msg.Timestamp = now.Unix()
+
+		p, err := msg.ToRoomProto(rid)
+		if err != nil {
+			return nil, err
+		}
+
+		p.IsRaw = isRaw
+
+		pushMsgs = append(pushMsgs, p)
+		ids = append(ids, id)
+
+		id = id + int64(i) + 1
+	}
+
+	if err := p.sends(pushMsgs); err != nil {
+		return nil, err
+	}
+
+	return ids, err
+}
+
 func (p *Producer) Kick(msg string, keys []string) error {
 	m := struct {
 		Message string `json:"message"`
@@ -290,8 +329,6 @@ func (p *Producer) CloseTop(msgId int64, rid []int32) error {
 	return nil
 }
 
-// 房間推送，以下為條件
-// 1. room id
 func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 	b, err := proto.Marshal(pushMsg)
 	if err != nil {
@@ -303,6 +340,7 @@ func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 		Topic: p.topic,
 		Value: kafka.ByteEncoder(b),
 	}
+
 	partition, offset, err := p.producer.SendMessage(m)
 	if err != nil {
 		log.Error(
@@ -314,6 +352,32 @@ func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 			zap.String("type", pushMsg.Type.String()),
 			zap.String("msg", pushMsg.Message),
 			zap.Int32s("rooms", pushMsg.Room),
+		)
+	}
+	return err
+}
+
+func (p *Producer) sends(pushMsgs []*logicpb.PushMsg) error {
+	var producerMessages []*kafka.ProducerMessage
+	for _, msg := range pushMsgs {
+		b, err := proto.Marshal(msg)
+		if err != nil {
+			return err
+		}
+
+		producerMessages = append(producerMessages, &kafka.ProducerMessage{
+			Key:   kafka.StringEncoder(msg.Seq),
+			Topic: p.topic,
+			Value: kafka.ByteEncoder(b),
+		})
+	}
+
+	err := p.producer.SendMessages(producerMessages)
+	if err != nil {
+		log.Error(
+			"message producer send messages",
+			zap.Error(err),
+			zap.String("topic", p.topic),
 		)
 	}
 	return err
