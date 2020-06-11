@@ -124,7 +124,7 @@ func displayByBetsWin(user User, gameName string) display {
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []textEntity{
-				usernameTextEntity(user.Name, 2),
+				usernameTextEntity(user.Name, 4),
 			},
 		},
 		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
