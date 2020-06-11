@@ -256,21 +256,9 @@ func (p *Producer) SendConnect(rid int32, user *logicpb.User) (int64, error) {
 	})
 }
 
-func (p *Producer) SendMessage(rid []int32, msgs []scheme.Message, isRaw bool) ([]int64, error) {
-	var ids []int64
-	count := int64(len(msgs))
-	seq, err := p.seq.Ids(context.Background(), &seqpb.SeqReq{
-		Id: 1, Count: count,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	var pushMsgs []*logicpb.PushMsg
-	now := time.Now()
-	id := seq.Id - count
-
-	for i, msg := range msgs {
+func (p *Producer) SendMessage(rid []int32, msg scheme.Message, isRaw bool) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		now := time.Now()
 		msg.Id = id
 		msg.Time = now.Format("15:04:05")
 		msg.Timestamp = now.Unix()
@@ -282,17 +270,8 @@ func (p *Producer) SendMessage(rid []int32, msgs []scheme.Message, isRaw bool) (
 
 		p.IsRaw = isRaw
 
-		pushMsgs = append(pushMsgs, p)
-		ids = append(ids, id)
-
-		id = id + int64(i) + 1
-	}
-
-	if err := p.sends(pushMsgs); err != nil {
-		return nil, err
-	}
-
-	return ids, err
+		return p, nil
+	})
 }
 
 func (p *Producer) Kick(msg string, keys []string) error {

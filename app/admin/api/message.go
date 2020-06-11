@@ -15,9 +15,9 @@ import (
 )
 
 type customReq struct {
-	RoomId   []int32          `json:"room_id" binding:"required"`
-	Messages []scheme.Message `json:"messages" binding:"required"`
-	IsRaw    bool             `json:"is_raw"`
+	RoomId  []int32        `json:"room_id" binding:"required"`
+	Message scheme.Message `json:"message" binding:"required"`
+	IsRaw   bool           `json:"is_raw"`
 }
 
 // 客制訊息內容(需依照格式填資料)
@@ -27,13 +27,13 @@ func (s *httpServer) custom(c *gin.Context) error {
 		return err
 	}
 
-	ids, err := s.message.SendMessage(p.RoomId, p.Messages, p.IsRaw)
+	id, err := s.message.SendMessage(p.RoomId, p.Message, p.IsRaw)
 	if err != nil {
 		return err
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"ids": ids,
+		"id": id,
 	})
 	return nil
 }
