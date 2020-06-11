@@ -21,26 +21,6 @@ func (m RedEnvelopeMessage) Score() float64 {
 	return float64(m.Message.Timestamp)
 }
 
-func (b RedEnvelopeMessage) ToProto(user User, rid []int32) (*logicpb.PushMsg, error) {
-	bm, err := json.Marshal(b)
-	if err != nil {
-		return nil, err
-	}
-
-	return &logicpb.PushMsg{
-		Seq:     b.Id,
-		Type:    logicpb.PushMsg_ROOM,
-		Op:      pb.OpRaw,
-		Room:    rid,
-		Mid:     user.Id,
-		Msg:     bm,
-		MsgType: models.RED_ENVELOPE_TYPE,
-		Message: b.Message.Message,
-		SendAt:  b.Timestamp,
-		IsSave:  true,
-	}, nil
-}
-
 // 紅包資料
 type RedEnvelope struct {
 	// 紅包id
@@ -57,7 +37,7 @@ func (m RedEnvelope) MarshalBinary() (data []byte, err error) {
 	return json.Marshal(m)
 }
 
-func (r RedEnvelope) ToMessage(seq int64, message string, user User) RedEnvelopeMessage {
+func (r RedEnvelope) ToMessage(seq int64, user User, message string) RedEnvelopeMessage {
 	now := time.Now()
 	return RedEnvelopeMessage{
 		Message: Message{
@@ -75,4 +55,25 @@ func (r RedEnvelope) ToMessage(seq int64, message string, user User) RedEnvelope
 		},
 		RedEnvelope: r,
 	}
+}
+
+func (r RedEnvelope) ToProto(seq int64, rid []int32, user User, message string) (*logicpb.PushMsg, error) {
+	m := r.ToMessage(seq, user, message)
+	bm, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+
+	return &logicpb.PushMsg{
+		Seq:     seq,
+		Type:    logicpb.PushMsg_ROOM,
+		Op:      pb.OpRaw,
+		Room:    rid,
+		Mid:     user.Id,
+		Msg:     bm,
+		MsgType: models.RED_ENVELOPE_TYPE,
+		Message: message,
+		SendAt:  m.Timestamp,
+		IsSave:  true,
+	}, nil
 }

@@ -81,11 +81,11 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 				Expired: redEnvelope.ExpireAt.Format(time.RFC3339),
 			}
 
-			m := read.ToMessage(msgId, redEnvelope.Message, scheme.User{
+			m := read.ToMessage(msgId, scheme.User{
 				Uid:    user.Uid,
 				Name:   user.Name,
 				Avatar: ToAvatarName(user.Gender),
-			})
+			}, redEnvelope.Message)
 
 			m.Time = msg.Message[msgId].SendAt.Format("15:04:05")
 			m.Timestamp = msg.Message[msgId].SendAt.Unix()

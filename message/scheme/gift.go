@@ -52,26 +52,9 @@ func (d NullHintBox) MarshalJSON() ([]byte, error) {
 	return json.Marshal(HintBox(d))
 }
 
-func (g GiftMessage) ToProto(rid int32) (*logicpb.PushMsg, error) {
-	bm, err := json.Marshal(g)
-	if err != nil {
-		return nil, err
-	}
-
-	return &logicpb.PushMsg{
-		Seq:    g.Id,
-		Type:   logicpb.PushMsg_ROOM,
-		Op:     pb.OpRaw,
-		Room:   []int32{rid},
-		Msg:    bm,
-		SendAt: g.Timestamp,
-		IsRaw:  true,
-	}, nil
-}
-
-func (g Gift) ToMessage(seq int64, user User) GiftMessage {
+func (g Gift) ToProto(seq int64, rid int32, user User) (*logicpb.PushMsg, error) {
 	now := time.Now()
-	return GiftMessage{
+	m := GiftMessage{
 		Message: Message{
 			Id:        seq,
 			Type:      GIFT_TYPE,
@@ -82,13 +65,28 @@ func (g Gift) ToMessage(seq int64, user User) GiftMessage {
 		},
 		Gift: g,
 	}
+
+	bm, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+
+	return &logicpb.PushMsg{
+		Seq:    seq,
+		Type:   logicpb.PushMsg_ROOM,
+		Op:     pb.OpRaw,
+		Room:   []int32{rid},
+		Msg:    bm,
+		SendAt: m.Timestamp,
+		IsRaw:  true,
+	}, nil
 }
 
-func NewReward(seq int64, user User, amount, totalAmount float64) GiftMessage {
+func NewRewardProto(seq int64, rid int32, user User, amount, totalAmount float64) (*logicpb.PushMsg, error) {
 	now := time.Now()
 	display := displayByReward(user, amount)
 	msg := display.Message.(displayMessage)
-	return GiftMessage{
+	m := GiftMessage{
 		Message: Message{
 			Id:        seq,
 			Type:      GIFT_TYPE,
@@ -108,4 +106,19 @@ func NewReward(seq int64, user User, amount, totalAmount float64) GiftMessage {
 			Entity: msg.Entity,
 		},
 	}
+
+	bm, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+
+	return &logicpb.PushMsg{
+		Seq:    seq,
+		Type:   logicpb.PushMsg_ROOM,
+		Op:     pb.OpRaw,
+		Room:   []int32{rid},
+		Msg:    bm,
+		SendAt: m.Timestamp,
+		IsRaw:  true,
+	}, nil
 }

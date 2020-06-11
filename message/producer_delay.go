@@ -79,7 +79,7 @@ func (p *DelayProducer) SendDelayRedEnvelopeForAdmin(rid []int32, message string
 		return 0, err
 	}
 
-	pushMsg, err := redEnvelope.ToMessage(id, message, user).ToProto(user, rid)
+	pushMsg, err := redEnvelope.ToProto(id, rid, user, message)
 	if err != nil {
 		return 0, err
 	}

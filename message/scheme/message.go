@@ -67,11 +67,10 @@ func (m Message) ToProto() (*logicpb.PushMsg, error) {
 	}
 
 	return &logicpb.PushMsg{
-		Seq:     m.Id,
-		Op:      pb.OpRaw,
-		Msg:     bm,
-		Message: m.Message,
-		SendAt:  m.Timestamp,
+		Seq:    m.Id,
+		Op:     pb.OpRaw,
+		Msg:    bm,
+		SendAt: m.Timestamp,
 	}, nil
 }
 

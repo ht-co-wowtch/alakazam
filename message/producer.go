@@ -165,6 +165,7 @@ func (p *Producer) SendUser(rid []int32, msg string, user *models.Member) (int64
 
 		pushMsg.Room = rid
 		pushMsg.Mid = user.Id
+		pushMsg.Message = msg
 		pushMsg.Type = logicpb.PushMsg_ROOM
 		pushMsg.MsgType = models.MESSAGE_TYPE
 		pushMsg.IsRaw = true
@@ -191,6 +192,7 @@ func (p *Producer) SendAdmin(rid []int32, msg string) (int64, error) {
 
 		pushMsg.Room = rid
 		pushMsg.Mid = u.Id
+		pushMsg.Message = msg
 		pushMsg.Type = logicpb.PushMsg_ROOM
 		pushMsg.MsgType = models.MESSAGE_TYPE
 
@@ -209,13 +211,13 @@ func (p *Producer) SendGift(rid int32, user scheme.User, gift scheme.Gift) (int6
 		if gift.Combo.Count == 0 {
 			gift.ShowAnimation = true
 		}
-		return gift.ToMessage(id, user).ToProto(rid)
+		return gift.ToProto(id, rid, user)
 	})
 }
 
 func (p *Producer) SendReward(rid int32, user scheme.User, amount, totalAmount float64) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
-		return scheme.NewReward(id, user, amount, totalAmount).ToProto(rid)
+		return scheme.NewRewardProto(id, rid, user, amount, totalAmount)
 	})
 }
 
@@ -226,39 +228,25 @@ func (p *Producer) SendRedEnvelope(rid []int32, message string, user scheme.User
 			return nil, err
 		}
 
-		return redEnvelope.ToMessage(id, message, user).ToProto(user, rid)
+		return redEnvelope.ToProto(id, rid, user, message)
 	})
 }
 
 func (p *Producer) SendBets(rid []int32, user scheme.User, bet scheme.Bet) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
-		message := bet.ToMessage(id, user)
-
-		bm, err := json.Marshal(message)
-		if err != nil {
-			return nil, err
-		}
-
-		return &logicpb.PushMsg{
-			Seq:    id,
-			Op:     pb.OpRaw,
-			Type:   logicpb.PushMsg_ROOM,
-			Room:   rid,
-			Msg:    bm,
-			SendAt: message.Timestamp,
-		}, nil
+		return bet.ToProto(id, rid, user)
 	})
 }
 
 func (p *Producer) SendBetsWin(rid []int32, user scheme.User, gameName string) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
-		return scheme.NewBetsWin(id, user, gameName).ToRoomProto(rid)
+		return scheme.NewBetsWinProto(id, rid, user, gameName)
 	})
 }
 
 func (p *Producer) SendBetsWinReward(keys []string, user scheme.User, amount float64, buttonName string) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
-		return scheme.NewBetsWinReward(id, user, amount, buttonName).ToProto(keys)
+		return scheme.NewBetsWinRewardProto(id, keys, user, amount, buttonName)
 	})
 }
 

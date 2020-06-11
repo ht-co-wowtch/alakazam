@@ -43,7 +43,7 @@ type BetOrder struct {
 	Amount     int      `json:"amount"`
 }
 
-func (b Bet) ToMessage(seq int64, user User) Bets {
+func (b Bet) ToProto(seq int64, rid []int32, user User) (*logicpb.PushMsg, error) {
 	now := time.Now()
 
 	// 避免Items與TransItems欄位json Marshal後出現null
@@ -56,7 +56,7 @@ func (b Bet) ToMessage(seq int64, user User) Bets {
 		}
 	}
 
-	return Bets{
+	m := Bets{
 		Message: Message{
 			Id:        seq,
 			Type:      "bets",
@@ -78,6 +78,20 @@ func (b Bet) ToMessage(seq int64, user User) Bets {
 		Count:        b.Count,
 		TotalAmount:  b.TotalAmount,
 	}
+
+	bm, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+
+	return &logicpb.PushMsg{
+		Seq:    seq,
+		Op:     pb.OpRaw,
+		Type:   logicpb.PushMsg_ROOM,
+		Room:   rid,
+		Msg:    bm,
+		SendAt: m.Timestamp,
+	}, nil
 }
 
 type BetsWinReward struct {
@@ -85,9 +99,9 @@ type BetsWinReward struct {
 	Reward displayMessage `json:"reward"`
 }
 
-func NewBetsWin(seq int64, user User, gameName string) Message {
+func NewBetsWinProto(seq int64, rid []int32, user User, gameName string) (*logicpb.PushMsg, error) {
 	now := time.Now()
-	return Message{
+	m := Message{
 		Id:        seq,
 		Type:      MESSAGE_TYPE,
 		User:      user,
@@ -95,12 +109,13 @@ func NewBetsWin(seq int64, user User, gameName string) Message {
 		Time:      now.Format("15:04:05"),
 		Timestamp: now.Unix(),
 	}
+	return m.ToRoomProto(rid)
 }
 
-func NewBetsWinReward(seq int64, user User, amount float64, buttonName string) BetsWinReward {
+func NewBetsWinRewardProto(seq int64, keys []string, user User, amount float64, buttonName string) (*logicpb.PushMsg, error) {
 	now := time.Now()
 	msg := "恭喜您中奖 金额＄" + money.FormatFloat64(amount) + " "
-	return BetsWinReward{
+	m := BetsWinReward{
 		Message: Message{
 			Id:        seq,
 			Type:      BETS_WIN_REWARD,
@@ -117,20 +132,18 @@ func NewBetsWinReward(seq int64, user User, amount float64, buttonName string) B
 			},
 		},
 	}
-}
 
-func (b BetsWinReward) ToProto(keys []string) (*logicpb.PushMsg, error) {
-	bm, err := json.Marshal(b)
+	bm, err := json.Marshal(m)
 	if err != nil {
 		return nil, err
 	}
 
 	return &logicpb.PushMsg{
-		Seq:    b.Id,
+		Seq:    seq,
 		Type:   logicpb.PushMsg_PUSH,
 		Op:     pb.OpRaw,
 		Keys:   keys,
 		Msg:    bm,
-		SendAt: b.Timestamp,
+		SendAt: m.Timestamp,
 	}, nil
 }
