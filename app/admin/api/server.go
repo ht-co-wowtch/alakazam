@@ -66,7 +66,6 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.GET("/online", api.ErrHandler(s.online))
 
 	// 訊息
-	e.POST("/system", api.ErrHandler(s.system))
 	e.POST("/push", api.ErrHandler(s.push))
 	e.DELETE("/push/:id", api.ErrHandler(s.deleteTopMessage))
 	e.POST("/red-envelope", api.ErrHandler(s.giveRedEnvelope))
