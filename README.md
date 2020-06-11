@@ -357,6 +357,7 @@ Operation = `6`=> 單筆訊息
 | --------------- | ------------ |
 | message         | 一般         |
 | top             | 置頂         |
+| bulletin        | 進場公告     |
 | red_envelope    | 紅包         |
 | bets            | 跟投         |
 | gift            | 禮物/打賞    |
@@ -714,29 +715,22 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":4001,
-   "type":"message",
-   "time":"12:37:00",
-   "timestamp":1567579890,
+   "id":59402,
+   "type":"bulletin",
+   "time":"14:37:50",
+   "timestamp":1591857470,
    "display":{
-      "user":{
-         "text":"管理員",
-         "color":"#FFFFFF",
-         "avatar":"root"
-      },
-      "level":{
-         "text":"vip1",
-         "color":"#DF3030",
-         "background_color":"#C7B9C1"
-      },
+      "user":null,
+      "level":null,
       "title":{
-         "text":"房管",
-         "color":"#E5C4C4",
-         "background_color":"#332121"
+         "text":"系统",
+         "color":"#FFFFFF",
+         "background_color":"#FC8813"
       },
       "message":{
          "text":"測試",
-         "color":"#A680B8",
+         "color":"#FFFFAA",
+         "background_color":"#00000000",
          "entity":null
       },
       "background_color":"#0000003f",
@@ -744,7 +738,7 @@ entity.type: 文字實體內容
    },
    "user":{
       "uid":"root",
-      "name":"管理員",
+      "name":"管理员",
       "avatar":"root"
    }
 }

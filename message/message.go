@@ -136,6 +136,7 @@ func RoomTopMessageToMessage(msg models.RoomTopMessage) scheme.Message {
 func RoomBulletinMessageToMessage(msg models.RoomTopMessage) scheme.Message {
 	u := scheme.NewRoot()
 	message := u.ToSystem(msg.MsgId, msg.Message)
+	message.Type = "bulletin"
 	message.Time = msg.SendAt.Format("15:04:05")
 	message.Timestamp = msg.SendAt.Unix()
 	return message
