@@ -6,9 +6,8 @@ import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 message PushMsg {
     enum Type {
-        KICK = 0;
-        PUSH = 1;
-        ROOM = 2;
+        PUSH = 0;
+        ROOM = 1;
     }
     Type type = 1;
     int32 speed = 2;
@@ -19,10 +18,11 @@ message PushMsg {
     int32 msgType = 7;
     int64 mid = 8;
     int64 seq = 9;
-    int64 sendAt = 10;
-    string message = 11;
-    bool isRaw = 12;
-    bool isSave = 13;
+    int32 op = 10;
+    int64 sendAt = 11;
+    string message = 12;
+    bool isRaw = 13;
+    bool isSave = 14;
 }
 
 message PingReply {

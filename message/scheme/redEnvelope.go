@@ -2,6 +2,9 @@ package scheme
 
 import (
 	"encoding/json"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
+	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"time"
 )
 
@@ -16,6 +19,26 @@ type RedEnvelopeMessage struct {
 
 func (m RedEnvelopeMessage) Score() float64 {
 	return float64(m.Message.Timestamp)
+}
+
+func (b RedEnvelopeMessage) ToProto(user User, rid []int32) (*logicpb.PushMsg, error) {
+	bm, err := json.Marshal(b)
+	if err != nil {
+		return nil, err
+	}
+
+	return &logicpb.PushMsg{
+		Seq:     b.Id,
+		Type:    logicpb.PushMsg_ROOM,
+		Op:      pb.OpRaw,
+		Room:    rid,
+		Mid:     user.Id,
+		Msg:     bm,
+		MsgType: models.RED_ENVELOPE_TYPE,
+		Message: b.Message.Message,
+		SendAt:  b.Timestamp,
+		IsSave:  true,
+	}, nil
 }
 
 // 紅包資料

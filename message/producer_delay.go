@@ -69,10 +69,21 @@ func (p *DelayProducer) run() {
 }
 
 func (p *DelayProducer) SendDelayRedEnvelopeForAdmin(rid []int32, message string, user scheme.User, redEnvelope scheme.RedEnvelope, publishAt time.Time) (int64, error) {
-	pushMsg, err := p.producer.toRedEnvelopePb(rid, message, user, redEnvelope)
+	message, err := p.producer.filterMessage(message)
 	if err != nil {
 		return 0, err
 	}
+
+	id, err := p.producer.id()
+	if err != nil {
+		return 0, err
+	}
+
+	pushMsg, err := redEnvelope.ToMessage(id, message, user).ToProto(user, rid)
+	if err != nil {
+		return 0, err
+	}
+
 	p.cron.add(pushMsg, publishAt)
 	log.Info("add delay message for red envelope", zap.Int64("id", pushMsg.Seq))
 	return pushMsg.Seq, nil

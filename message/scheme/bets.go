@@ -2,6 +2,7 @@ package scheme
 
 import (
 	"encoding/json"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/money"
 	"time"
@@ -127,6 +128,7 @@ func (b BetsWinReward) ToProto(keys []string) (*logicpb.PushMsg, error) {
 	return &logicpb.PushMsg{
 		Seq:    b.Id,
 		Type:   logicpb.PushMsg_PUSH,
+		Op:     pb.OpRaw,
 		Keys:   keys,
 		Msg:    bm,
 		SendAt: b.Timestamp,

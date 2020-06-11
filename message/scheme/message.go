@@ -2,6 +2,7 @@ package scheme
 
 import (
 	"encoding/json"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"time"
@@ -67,10 +68,21 @@ func (m Message) ToProto() (*logicpb.PushMsg, error) {
 
 	return &logicpb.PushMsg{
 		Seq:     m.Id,
+		Op:      pb.OpRaw,
 		Msg:     bm,
 		Message: m.Message,
 		SendAt:  m.Timestamp,
 	}, nil
+}
+
+func (m Message) ToRoomProto(rid []int32) (*logicpb.PushMsg, error) {
+	p, err := m.ToProto()
+	if err != nil {
+		return nil, err
+	}
+	p.Room = rid
+	p.Type = logicpb.PushMsg_ROOM
+	return p, nil
 }
 
 // 顯示訊息資料格式

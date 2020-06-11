@@ -2,6 +2,7 @@ package scheme
 
 import (
 	"encoding/json"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"time"
 )
@@ -51,7 +52,7 @@ func (d NullHintBox) MarshalJSON() ([]byte, error) {
 	return json.Marshal(HintBox(d))
 }
 
-func (g GiftMessage) ToPb(rid int32) (*logicpb.PushMsg, error) {
+func (g GiftMessage) ToProto(rid int32) (*logicpb.PushMsg, error) {
 	bm, err := json.Marshal(g)
 	if err != nil {
 		return nil, err
@@ -60,6 +61,7 @@ func (g GiftMessage) ToPb(rid int32) (*logicpb.PushMsg, error) {
 	return &logicpb.PushMsg{
 		Seq:    g.Id,
 		Type:   logicpb.PushMsg_ROOM,
+		Op:     pb.OpRaw,
 		Room:   []int32{rid},
 		Msg:    bm,
 		SendAt: g.Timestamp,

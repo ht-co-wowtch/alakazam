@@ -32,26 +32,22 @@ func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 	switch pushMsg.Type {
 	// 單人推送
 	case logicpb.PushMsg_PUSH:
-		c.pushRawByte(pushMsg.Keys, pushMsg.Msg, cometpb.OpRaw)
+		c.pushRawByte(pushMsg.Keys, pushMsg.Msg, pushMsg.Op)
 		break
 
 	// 單房間推送
 	case logicpb.PushMsg_ROOM:
 		if pushMsg.IsRaw {
 			for _, r := range pushMsg.Room {
-				c.getRoom(r).consume.broadcastRoomRawByte(r, pushMsg.Msg, cometpb.OpRaw)
+				c.getRoom(r).consume.broadcastRoomRawByte(r, pushMsg.Msg, pushMsg.Op)
 			}
 		} else {
 			for _, r := range pushMsg.Room {
-				if err := c.getRoom(r).Push(pushMsg.Msg, cometpb.OpRaw); err != nil {
+				if err := c.getRoom(r).Push(pushMsg.Msg, pushMsg.Op); err != nil {
 					return err
 				}
 			}
 		}
-		break
-
-	case logicpb.PushMsg_KICK:
-		c.pushRawByte(pushMsg.Keys, pushMsg.Msg, cometpb.OpProtoFinish)
 		break
 
 	// 異常資料
