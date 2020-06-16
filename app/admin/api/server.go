@@ -19,6 +19,7 @@ type httpServer struct {
 	delayMessage *message.DelayProducer
 	room         room.Room
 	nidoran      *client.Client
+	noticeUrl    map[string]string
 }
 
 func NewServer(conf *web.Conf, member *member.Member, producer *message.Producer, room room.Room, nidoran *client.Client, shield message.Filter) *http.Server {
@@ -40,6 +41,7 @@ func NewServer(conf *web.Conf, member *member.Member, producer *message.Producer
 		delayMessage: delayMessage,
 		room:         room,
 		nidoran:      nidoran,
+		noticeUrl:    make(map[string]string),
 	}
 
 	handler(engine, srv)
@@ -63,6 +65,7 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.PUT("/room/:id", api.ErrHandler(s.UpdateRoom))
 	e.GET("/room/:id", api.ErrHandler(s.GetRoom))
 	e.DELETE("/room/:id", api.ErrHandler(s.DeleteRoom))
+	e.POST("/room/notice", api.ErrHandler(s.notice))
 	e.GET("/online", api.ErrHandler(s.online))
 
 	// 訊息

@@ -1,10 +1,16 @@
 package api
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 	"net/http"
+	"net/url"
 	"strconv"
 )
 
@@ -25,6 +31,7 @@ func (s *httpServer) CreateRoom(c *gin.Context) error {
 
 func (s *httpServer) UpdateRoom(c *gin.Context) error {
 	var params room.Status
+	var r models.Room
 	rid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return err
@@ -32,12 +39,37 @@ func (s *httpServer) UpdateRoom(c *gin.Context) error {
 	if err := c.ShouldBindJSON(&params); err != nil {
 		return err
 	}
-	if _, err := s.room.Get(rid); err != nil {
+	if r, err = s.room.Get(rid); err != nil {
 		return err
 	}
 	if err := s.room.Update(rid, params); err != nil {
 		return err
 	}
+
+	if len(s.noticeUrl) > 0 {
+		for _, u := range s.noticeUrl {
+			b, _ := json.Marshal(gin.H{
+				"id":         r.Id,
+				"is_message": r.IsMessage,
+				"is_bets":    r.IsBets,
+				"limit": room.Limit{
+					Day:     r.DayLimit,
+					Deposit: r.DepositLimit,
+					Dml:     r.DmlLimit,
+				},
+				"status":    r.Status,
+				"create_at": r.CreateAt,
+				"update_at": r.UpdateAt,
+			})
+
+			if _, err := http.Post(u, "application/json", bytes.NewReader(b)); err != nil {
+				log.Error("notice", zap.Int("rid", rid), zap.Error(err))
+			}
+
+			log.Info("send notice")
+		}
+	}
+
 	c.Status(http.StatusNoContent)
 	return nil
 }
@@ -96,4 +128,26 @@ func (s *httpServer) online(c *gin.Context) error {
 		c.JSON(http.StatusOK, o)
 	}
 	return err
+}
+
+func (s *httpServer) notice(c *gin.Context) error {
+	var u struct {
+		Name string `json:"key" binding:"required"`
+		Url  string `json:"url" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&u); err != nil {
+		return err
+	}
+
+	_, err := url.Parse(u.Url)
+	if err != nil {
+		return err
+	}
+
+	if _, ok := s.noticeUrl[u.Name]; !ok {
+		s.noticeUrl[u.Name] = u.Url
+	}
+
+	return nil
 }
