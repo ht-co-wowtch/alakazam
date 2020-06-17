@@ -195,6 +195,7 @@ func (p *Producer) SendAdmin(rid []int32, msg string) (int64, error) {
 		pushMsg.Message = msg
 		pushMsg.Type = logicpb.PushMsg_ROOM
 		pushMsg.MsgType = models.MESSAGE_TYPE
+		pushMsg.IsSave = true
 
 		return pushMsg, nil
 	})
