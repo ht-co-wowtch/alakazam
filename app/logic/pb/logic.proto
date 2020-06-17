@@ -134,7 +134,7 @@ service Logic {
     // Disconnect
     rpc Disconnect(DisconnectReq) returns (DisconnectReply);
     // ChangeRoom
-    rpc ChangeRoom(ChangeRoomReq) returns (ChangeRoomReply);
+    rpc ChangeRoom(ChangeRoomReq) returns (ConnectReply);
     // Heartbeat
     rpc Heartbeat(HeartbeatReq) returns (HeartbeatReply);
     // RenewOnline

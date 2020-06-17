@@ -80,13 +80,13 @@ func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.Dis
 }
 
 // user當前連線要切換房間
-func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.ChangeRoomReply, error) {
-	p, err := s.room.ChangeRoom(req.Uid, int(req.RoomID))
+func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.ConnectReply, error) {
+	p, err := s.room.ChangeRoom(req.Uid, int(req.RoomID), req.Key)
 	if err != nil {
 		log.Error("grpc change room", zap.Error(err), zap.Int32("rid", req.RoomID))
 		switch e := err.(type) {
 		case errdefs.Error:
-			return &pb.ChangeRoomReply{}, status.Error(codes.FailedPrecondition, err.Error())
+			return &pb.ConnectReply{}, status.Error(codes.FailedPrecondition, err.Error())
 		case *errdefs.Causer:
 			var msg string
 			if e.Code == errors.NoLogin {
@@ -94,9 +94,9 @@ func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.Cha
 			} else {
 				msg = e.Message
 			}
-			return &pb.ChangeRoomReply{}, status.Error(codes.FailedPrecondition, msg)
+			return &pb.ConnectReply{}, status.Error(codes.FailedPrecondition, msg)
 		}
-		return &pb.ChangeRoomReply{}, status.Error(codes.Internal, err.Error())
+		return &pb.ConnectReply{}, status.Error(codes.Internal, err.Error())
 	}
 	return p, nil
 }

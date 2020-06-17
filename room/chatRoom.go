@@ -30,7 +30,7 @@ type Chat interface {
 	RenewOnline(server string, roomCount map[int32]int32) (map[int32]int32, error)
 	GetRoom(rid int) (models.Room, error)
 	GetUserMessageSession(uid string, rid int) (*models.Member, models.Room, error)
-	ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error)
+	ChangeRoom(uid string, rid int, key string) (*pb.ConnectReply, error)
 	GetTopMessage(rid int) (scheme.Message, error)
 	GetOnline(server string) (*Online, error)
 }
@@ -81,11 +81,33 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	return c.newConnectReply(user, room, key)
+}
+
+func (c *chat) ChangeRoom(uid string, rid int, key string) (*pb.ConnectReply, error) {
+	room, err := c.getChat(rid)
+	if err != nil {
+		return nil, err
+	}
+	if !room.Status {
+		return nil, errors.ErrRoomClose
+	}
+
+	user, err := c.member.Get(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.newConnectReply(user, room, key)
+}
+
+func (c *chat) newConnectReply(user *models.Member, room models.Room, key string) (*pb.ConnectReply, error) {
 	if user.IsBlockade {
 		return nil, errors.ErrBlockade
 	}
 
-	connect := newPbConnect(user, room, key, int32(params.RoomID))
+	connect := newPbConnect(user, room, key, int32(room.Id))
 	connect.Status = true
 
 	return &pb.ConnectReply{
@@ -97,7 +119,7 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 			Id:     user.Id,
 			Uid:    user.Uid,
 			Name:   user.Name,
-			Gender: int32(user.Gender),
+			Gender: user.Gender,
 			Type:   int32(user.Type),
 		},
 		IsConnectSuccessReply: true,
@@ -114,31 +136,6 @@ func (c *chat) GetUserMessageSession(uid string, rid int) (*models.Member, model
 		return nil, models.Room{}, err
 	}
 	return user, room, nil
-}
-
-func (c *chat) ChangeRoom(uid string, rid int) (*pb.ChangeRoomReply, error) {
-	room, err := c.getChat(rid)
-	if err != nil {
-		return nil, err
-	}
-	if !room.Status {
-		return nil, errors.ErrRoomClose
-	}
-
-	user, err := c.member.Get(uid)
-	if err != nil {
-		return nil, err
-	}
-
-	if user.IsBlockade {
-		return nil, errors.ErrBlockade
-	}
-	connect := newPbConnect(user, room, "", int32(rid))
-	connect.Status = true
-	return &pb.ChangeRoomReply{
-		HeaderMessage: room.TopMessage,
-		Connect:       connect,
-	}, nil
 }
 
 func (c *chat) get(id int) (models.Room, error) {
