@@ -65,8 +65,6 @@ func (s *httpServer) UpdateRoom(c *gin.Context) error {
 			if _, err := http.Post(u, "application/json", bytes.NewReader(b)); err != nil {
 				log.Error("notice", zap.Int("rid", rid), zap.Error(err))
 			}
-
-			log.Info("send notice")
 		}
 	}
 
