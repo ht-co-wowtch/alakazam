@@ -74,6 +74,5 @@ func (r RedEnvelope) ToProto(seq int64, rid []int32, user User, message string) 
 		MsgType: models.RED_ENVELOPE_TYPE,
 		Message: message,
 		SendAt:  m.Timestamp,
-		IsSave:  true,
 	}, nil
 }
