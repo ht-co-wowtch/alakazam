@@ -63,6 +63,11 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 
 // 成功進入房間
 func (s *server) ConnectSuccessReply(ctx context.Context, req *pb.ConnectSuccessReq) (*pb.PingReply, error) {
+	// 主播不顯示進場訊息
+	if req.User.Type == 3 {
+		return &pb.PingReply{}, nil
+	}
+
 	_, err := s.message.SendConnect(req.RoomId, req.User)
 	return &pb.PingReply{}, err
 }
