@@ -4,6 +4,7 @@ import (
 	"context"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
@@ -17,14 +18,18 @@ import (
 )
 
 // New logic grpc server
-func New(c *rpc.Conf, room room.Chat) *grpc.Server {
+func New(c *rpc.Conf, room room.Chat, message *message.Producer) *grpc.Server {
 	srv := rpc.New(c)
-	pb.RegisterLogicServer(srv, &server{room: room})
+	pb.RegisterLogicServer(srv, &server{
+		room:    room,
+		message: message,
+	})
 	return srv
 }
 
 type server struct {
-	room room.Chat
+	room    room.Chat
+	message *message.Producer
 }
 
 var _ pb.LogicServer = &server{}
@@ -56,6 +61,17 @@ func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectRe
 	return connect, nil
 }
 
+// 成功進入房間
+func (s *server) ConnectSuccessReply(ctx context.Context, req *pb.ConnectSuccessReq) (*pb.PingReply, error) {
+	// 主播不顯示進場訊息
+	if req.User.Type == 3 {
+		return &pb.PingReply{}, nil
+	}
+
+	_, err := s.message.SendConnect(req.RoomId, req.User)
+	return &pb.PingReply{}, err
+}
+
 // 某client要中斷連線
 func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.DisconnectReply, error) {
 	has, err := s.room.Disconnect(req.Uid, req.Key)
@@ -69,13 +85,13 @@ func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.Dis
 }
 
 // user當前連線要切換房間
-func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.ChangeRoomReply, error) {
-	p, err := s.room.ChangeRoom(req.Uid, int(req.RoomID))
+func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.ConnectReply, error) {
+	p, err := s.room.ChangeRoom(req.Uid, int(req.RoomID), req.Key)
 	if err != nil {
 		log.Error("grpc change room", zap.Error(err), zap.Int32("rid", req.RoomID))
 		switch e := err.(type) {
 		case errdefs.Error:
-			return &pb.ChangeRoomReply{}, status.Error(codes.FailedPrecondition, err.Error())
+			return &pb.ConnectReply{}, status.Error(codes.FailedPrecondition, err.Error())
 		case *errdefs.Causer:
 			var msg string
 			if e.Code == errors.NoLogin {
@@ -83,9 +99,9 @@ func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.Cha
 			} else {
 				msg = e.Message
 			}
-			return &pb.ChangeRoomReply{}, status.Error(codes.FailedPrecondition, msg)
+			return &pb.ConnectReply{}, status.Error(codes.FailedPrecondition, msg)
 		}
-		return &pb.ChangeRoomReply{}, status.Error(codes.Internal, err.Error())
+		return &pb.ConnectReply{}, status.Error(codes.Internal, err.Error())
 	}
 	return p, nil
 }
@@ -101,10 +117,12 @@ func (s *server) Heartbeat(ctx context.Context, req *pb.HeartbeatReq) (*pb.Heart
 
 // 更新每個房間線上總人數資料
 func (s *server) RenewOnline(ctx context.Context, req *pb.OnlineReq) (*pb.OnlineReply, error) {
-	//allRoomCount, err := s.room.RenewOnline(req.Server, req.RoomCount)
-	//if err != nil {
-	//	log.Error("grpc renew online", zap.Error(err), zap.String("server", req.Server))
-	//	return &pb.OnlineReply{}, err
-	//}
-	return &pb.OnlineReply{}, nil
+	allRoomCount, err := s.room.RenewOnline(req.Server, req.RoomCount)
+	if err != nil {
+		log.Error("grpc renew online", zap.Error(err), zap.String("server", req.Server))
+		return &pb.OnlineReply{}, err
+	}
+	return &pb.OnlineReply{
+		AllRoomCount: allRoomCount,
+	}, nil
 }

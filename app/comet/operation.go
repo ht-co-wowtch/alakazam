@@ -21,6 +21,14 @@ func (s *Server) Connect(c context.Context, p *cometpb.Proto) (*logicpb.ConnectR
 	})
 }
 
+// 進入某個房間成功回應
+func (s *Server) ConnectSuccessReply(c context.Context, rid int32, user *logicpb.User) (*logicpb.PingReply, error) {
+	return s.logic.ConnectSuccessReply(c, &logicpb.ConnectSuccessReq{
+		RoomId: rid,
+		User:   user,
+	})
+}
+
 // client連線中斷，告知logic service需清理此人的連線資料
 func (s *Server) Disconnect(c context.Context, uid, key string) error {
 	_, err := s.logic.Disconnect(context.Background(), &logicpb.DisconnectReq{
@@ -104,19 +112,39 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 		reply.Connect.Key = ch.Key
 		p.Body, _ = json.Marshal(reply.Connect)
 
-		if reply.HeaderMessage != nil {
+		if reply.TopMessage != nil {
 			ch.protoRing.SetAdv()
 			ch.Signal()
 
 			p1, err := ch.protoRing.Set()
 			if err != nil {
-				log.Error("proto ping set for change room")
+				log.Error("proto ping set top message for change room")
 				return nil
 			}
 
 			p1.Op = cometpb.OpRaw
-			p1.Body = reply.HeaderMessage
+			p1.Body = reply.TopMessage
 		}
+		if reply.BulletinMessage != nil {
+			ch.protoRing.SetAdv()
+			ch.Signal()
+
+			p1, err := ch.protoRing.Set()
+			if err != nil {
+				log.Error("proto ping set bulletin message for change room")
+				return nil
+			}
+
+			p1.Op = cometpb.OpRaw
+			p1.Body = reply.BulletinMessage
+		}
+
+		if reply.IsConnectSuccessReply {
+			if _, e := s.ConnectSuccessReply(ctx, ch.Room.ID, reply.User); e != nil {
+				log.Error("connect success reply", zap.Error(e), zap.Int32("rid", ch.Room.ID), zap.Any("user", reply.User))
+			}
+		}
+
 	default:
 		// TODO error
 		p.Body = nil

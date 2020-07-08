@@ -2,8 +2,9 @@ package message
 
 import (
 	"encoding/json"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"time"
@@ -46,8 +47,8 @@ func (p *DelayProducer) run() {
 		case m := <-p.cron.Message():
 			for _, v := range m {
 				var err error
-				if v.Type == pb.PushMsg_MONEY {
-					var red RedEnvelopeMessage
+				if v.MsgType == models.RED_ENVELOPE_TYPE {
+					var red scheme.RedEnvelopeMessage
 					if err = json.Unmarshal(v.Msg, &red); err != nil {
 						log.Error("red envelope for delay send message", zap.Error(err), zap.Int64("id", v.Seq))
 						continue
@@ -67,23 +68,22 @@ func (p *DelayProducer) run() {
 	}
 }
 
-func (p *DelayProducer) SendDelayRedEnvelopeForAdmin(msg ProducerAdminRedEnvelopeMessage, publishAt time.Time) (int64, error) {
-	pushMsg, err := p.producer.toRedEnvelopePb(ProducerRedEnvelopeMessage{
-		ProducerMessage: ProducerMessage{
-			Rooms:   msg.Rooms,
-			Mid:     RootMid,
-			Uid:     RootUid,
-			Name:    msg.Name,
-			Message: msg.Message,
-			Avatar:  99,
-		},
-		RedEnvelopeId: msg.RedEnvelopeId,
-		Token:         msg.Token,
-		Expired:       msg.Expired,
-	})
+func (p *DelayProducer) SendDelayRedEnvelopeForAdmin(rid []int32, message string, user scheme.User, redEnvelope scheme.RedEnvelope, publishAt time.Time) (int64, error) {
+	message, err := p.producer.filterMessage(message)
 	if err != nil {
 		return 0, err
 	}
+
+	id, err := p.producer.id()
+	if err != nil {
+		return 0, err
+	}
+
+	pushMsg, err := redEnvelope.ToProto(id, rid, user, message)
+	if err != nil {
+		return 0, err
+	}
+
 	p.cron.add(pushMsg, publishAt)
 	log.Info("add delay message for red envelope", zap.Int64("id", pushMsg.Seq))
 	return pushMsg.Seq, nil

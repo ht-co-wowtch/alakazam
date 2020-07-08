@@ -2,7 +2,8 @@
 
 # 聊天室
 
-- [快速開始使用服務](#quick-reference)
+- [啟動聊天室](./docker/docker-compose/README.md)
+- [快速開始介接聊天室](#quick-reference)
 - [快速建置聊天室服務](#quick-start)
 - [依賴工具](#dependencies)
 - [架構圖](#architecture)
@@ -10,8 +11,8 @@
 - [聊天室Web Socket協定](#protocol-body)
 - [Web Socket](#web-socket)
 - [會員權限動作](#permission)
+- [監控](./docker/docker-compose/README.md#metrics)
 - [注意事項](#precautions)
-- [Tag](#tag)
 
 ## Quick Start
 
@@ -59,15 +60,23 @@ TODO
 TODO
 
 - [ ] json改用msgp
-- [ ] Metrics監控
+- [x] 各服務監控
+- [x] kafka監控
+- [ ] zk監控
 - [ ] 註冊中心(etcd or zk)
 - [ ] 整合測試 bash shell
-- [ ] golang pprof
-- [ ] 歷史訊息redis
+- [x] golang pprof
+- [x] 歷史訊息redis
 - [ ] 歷史訊息 mongodb
-- [ ] Kafka and zk config 調整
+- [x] Kafka and zk config 調整
 - [ ] 訊息壓縮
-- [ ] cache 優化
+- [x] cache 優化
+- [ ] 訊息持久化速度慢(透過監控offset lag發現)
+- [ ] 架構圖
+- [ ] 壓測資料
+- [ ] 完成壓測腳本
+- [ ] websocket替換成原生
+- [ ] time替換成原生
 
 ## Quick Reference
 
@@ -76,12 +85,12 @@ TODO
 1. 如何進入聊天室 [答案](#room)
 2. 進入聊天室後的回覆 or 如何知道用戶在聊天室相關權限，如聊天，發紅包等等動作 [答案](#room-reply)
 3. 如何進入聊天室有失敗會怎樣 `答案:失敗會直接close連線`
-4. 如何在聊天室發訊息 [請看前台訊息推送API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80)
+4. 如何在聊天室發訊息 [請看前台訊息推送API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80)
 5. 如何接收聊天室訊息 [答案](#message)
 6. 聊天室訊息結構 [答案](#message-reply)
 7. 封鎖狀態下進入聊天室會怎樣 [答案](#close-reply)
-8. 禁言狀態下聊天會怎樣 [請看前台訊息推送API範例-禁言中](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80)
-9. 如何在聊天室發紅包 [請看前台發紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af)
+8. 禁言狀態下聊天會怎樣 [請看前台訊息推送API範例-禁言中](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80)
+9. 如何在聊天室發紅包 [請看前台發紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af)
 10. 聊天室發紅包訊息結構 [答案](#message-reply)
 11. 如何搶紅包 [請看前台搶紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#68e59552-6c95-45ab-9f9e-3eaad7c1989d)
 12. 如何切換聊天室房間[答案](#change-room)
@@ -270,11 +279,13 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
     "status": false,
     "permission": {
         "is_message": false,
-        "is_red_envelope": false
+        "is_red_envelope": false,
+        "is_bets": false,
     },
     "permission_message": {
         "is_message": "聊天室目前禁言状态，无法发言",
-        "is_red_envelope": "请先登入会员"
+        "is_red_envelope": "请先登入会员",
+        "is_bets": "请先登入会员"
     }
 }
 ```
@@ -288,8 +299,10 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 | status                             | 進入房間是否成功，只代表進入不代表任何權限   |
 | permission.is_message              | true: 可聊天，false: 不可聊天                |
 | permission.is_red_envelope         | true: 可發/搶紅包，false: 不可發/搶紅包      |
+| permission.is_bets                 | true: 可跟注，false: 不可跟注                |
 | permission_message.is_message      | 進入房間後關於發言相關提示訊息               |
 | permission_message.is_red_envelope | 進入房間後關於搶/發紅包相關提示訊息          |
+| permission_message.is_bets         | 進入房間後關於跟注相關提示訊息               |
 
 進入房間有幾種狀況，原因都會寫在`message`
 
@@ -340,111 +353,815 @@ Operation = `6`=> 單筆訊息
 
 每個message json 內都有一個type來判斷訊息種類
 
-| Value        | 說明           |
-| ------------ | -------------- |
-| message      | 普通訊息       |
-| red_envelope | 紅包訊息       |
-| top          | 公告(置頂)訊息 |
-| bets         | 跟投訊息       |
+| Value           | 說明         |
+| --------------- | ------------ |
+| message         | 一般         |
+| top             | 置頂         |
+| bulletin        | 進場公告     |
+| red_envelope    | 紅包         |
+| bets            | 跟投         |
+| gift            | 禮物/打賞    |
+| hint            | 提示         |
+| bets_win_reward | 投注中獎打賞 |
+| open_live       | 開播         |
+| close_live      | 關播         |
 
-普通訊息 or 公告(置頂)訊息
+
+
+Body 
 
 ```json
 {
-    "id": 4001,
-    "uid": "3d641b03d4d548dbb3a73a2197811261",
-    "type": "message",
-    "name": "sam78",
-    "avatar": "female",
-    "message": "測試",
-    "time": "12:37:00",
-    "timestamp": 1567579890
+   "id":4001,
+   "type":"message",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":{
+         "text":"sam78",
+         "color":"#E9E645",
+         "avatar":"female"
+      },
+      "level":{
+         "text":"vip1",
+         "color":"#DF3030",
+         "background_color":"#86777F"
+      },
+      "title":{
+         "text":"房管",
+         "color":"#E5C4C4",
+         "background_color":"#332121"
+      },
+      "message":{
+         "text":"sam78 測試",
+         "color":"#DF3030",
+         "background_color":"#0000003f",
+         "entity":[
+            {
+               "type":"username",
+               "offset":0,
+               "length":5,
+               "color":"#A680B8",
+               "background_color":"#0000003f"
+            },
+            {
+               "type":"button",
+               "offset":6,
+               "length":2,
+               "color":"#E5C4C4",
+               "background_color":"#A680B8"
+            }
+         ]
+      },
+      "background_color":"#0000003f",
+      "background_image":{
+         "type":"linear-gradient",
+         "to":"right",
+         "color":{
+            "0":"#FC881380",
+            "99":"#FC881300"
+         }
+      }
+   },
+   "user":{
+      "uid":"3d641b03d4d548dbb3a73a2197811261",
+      "name":"sam78",
+      "avatar":"female"
+   },
+   "red_envelope":{
+      "id":"0d641b03d4d548dbb3a73a2197811261",
+      "token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjY4NzkzMTMsImlkIjoiMWI5MTZiNDc4YzBjNGZjMzhmMGE0MzE1NjMwNjExMTQiLCJ1aWQiOiIwZDY0MWIwM2Q0ZDU0OGRiYjNhNzNhMjE5NzgxMTI2MSJ9.pgyltHiT11XcZySJPiuetV35OXU-wgQ4XtU_UTzwghU",
+      "expired":"2019-08-27T12:15:13+08:00"
+   },
+   "bet":{
+      "game_id":4567,
+      "game_name":"六合彩",
+      "period_number":1234,
+      "count":2,
+      "total_amount":25,
+      "bets":[
+         {
+            "name":"冠軍",
+            "odds_code":"1.pos.1",
+            "items":[
+               "9",
+               "tiger"
+            ],
+            "trans_items":[
+               "9",
+               "虎"
+            ],
+            "amount":15
+         },
+         {
+            "name":"亞軍",
+            "odds_code":"2.pos.1",
+            "items":[
+
+            ],
+            "trans_items":[
+
+            ],
+            "amount":10
+         }
+      ]
+   },
+   "gift":{
+      "gift_id":1,
+      "total_amount":10,
+      "amount":5,
+      "combo":{
+         "count":1,
+         "duration_ms":2000
+      },
+      "hint_box":{
+         "duration_ms":3000,
+         "background_image":"https://assets.292801.com/awcp/logo/hPH6edsqSY.png"
+      },
+      "show_animation":false,
+      "message":"sam78 打賞10元",
+      "entity":[
+         {
+            "type":"username",
+            "offset":0,
+            "length":5,
+            "color":"#A680B8",
+            "background_color":"#0000003f"
+         }
+      ]
+   },
+   "bets_win_reward":{
+      "text":"恭喜您中奖 金额＄1,010.01 打賞主播",
+      "color":"#FFFFAA",
+      "background_color":"#F8565699",
+      "entity":[
+         {
+            "type":"button",
+            "offset":18,
+            "length":4,
+            "color":"#FFFFAA",
+            "background_color":"#F85656"
+         }
+      ]
+   },
+   "live_stream":{
+      "chat_id":1
+   }
 }
 ```
 
-| name      | 說明                     | 格式          |
-| --------- | ------------------------ | ------------- |
-| Id        | 訊息id                   | Int           |
-| uid       | 訊息人uid                | string        |
-| type      | 訊息類型                 | string        |
-| name      | 訊息人名稱               | string        |
-| avatar    | 頭像名稱 [類型](#avatar) | string        |
-| message   | 訊息                     | string        |
-| time      | 發送時間                 | 時:分:秒      |
-| timestamp | 訊息發送時間             | 時間戳記(int) |
+
+
+![arch](./doc/message/live_message.png)
+
+
+
+| 欄位名稱     | 說明         | 格式          |
+| ------------ | ------------ | ------------- |
+| id           | 訊息id       | int           |
+| type         | 訊息類型     | string        |
+| time         | 發送時間     | 時:分:秒      |
+| timestamp    | 訊息發送時間 | 時間戳記(int) |
+| display      | 顯示訊息資料 |               |
+| user         | 發訊息人資料 |               |
+| red_envelope | 紅包資料     |               |
+| bet          | 跟投         |               |
+| gift         | 禮物         |               |
+| live_stream  | 直播         |               |
+
+
+
+display.user: 顯示用戶資料
+
+| 欄位名稱 | 說明                     | 格式    |
+| -------- | ------------------------ | ------- |
+| text     | 人名                     | string  |
+| color    | 字體顏色                 | #000000 |
+| avatar   | 頭像名稱 [類型](#avatar) | string  |
+
+
+
+display.level: 發訊息人等級 
+
+| 欄位名稱         | 說明         | 格式    |
+| ---------------- | ------------ | ------- |
+| text             | 身份名稱     | string  |
+| color            | 字體顏色     | #000000 |
+| background_color | 字體背景顏色 | #000000 |
+
+
+
+display.title: 發訊息人身份
+
+| 欄位名稱         | 說明         | 格式    |
+| ---------------- | ------------ | ------- |
+| text             | 身份名稱     | string  |
+| color            | 字體顏色     | #000000 |
+| background_color | 字體背景顏色 | #000000 |
+
+
+
+display.message: 訊息資料
+
+| 欄位名稱                | 說明           | 格式      |
+| ----------------------- | -------------- | --------- |
+| text                    | 訊息           | string    |
+| color                   | 字體顏色(預設) | #000000   |
+| background_color        | 訊息框顏色     | #0000003f |
+| entity                  | 文字實體       | array     |
+| entity.type             | 文字類型       | string    |
+| entity.offset           | 偏移第幾個字   | int       |
+| entity.length           | 字範圍長度     | int       |
+| entity.color            | 字體顏色       | #000000   |
+| entity.background_color | 標籤背景       | #A680B8   |
+
+
+
+display.background_image: 訊息框背景圖
+
+| 欄位名稱 | 說明 | 格式   |
+| -------- | ---- | ------ |
+| text     | 種類 | string |
+
+display.background_image.`type`=linear-gradient
+
+| 欄位名稱 | 說明                   | 格式   |
+| -------- | ---------------------- | ------ |
+| to       | 漸層方向 `right``left` | string |
+| color    | 顏色                   | array  |
+
+
+
+user: 發訊息人資料
+
+| 欄位名稱 | 說明                     | 格式   |
+| -------- | ------------------------ | ------ |
+| uid      | 發訊息人 會員uuid        | string |
+| name     | 發訊息人名稱             | string |
+| avatar   | 頭像名稱 [類型](#avatar) | string |
+
+
+
+red_envelope: 紅包資料
+
+| 欄位名稱 | 說明          | 格式   |
+| -------- | ------------- | ------ |
+| id       | 紅包id        | string |
+| token    | 搶紅包的token | string |
+| expired  | 紅包過期時間  | RF3339 |
+
+
+
+bet: 跟投
+
+| 欄位名稱         | 說明           | 格式     |
+| ---------------- | -------------- | -------- |
+| game_id          | 遊戲 id        | int      |
+| game_name        | 遊戲 名稱      | string   |
+| period_number    | 本注期號       | int      |
+| count            | 下注總筆數     | int      |
+| total_amount     | 下注總金額     | int      |
+| bets.name        | 下注號碼名稱   | string   |
+| bets.odds_code   | 賠率代號       | string   |
+| bets.items       | 組合號碼       | []string |
+| bets.trans_items | 組合號碼(中文) | []string |
+| bets.amount      | 下注金額       | int      |
+
+
+
+gift: 禮物
+
+| 欄位名稱                  | 說明                   | 格式        |
+| ------------------------- | ---------------------- | ----------- |
+| gift_id                   | 禮物 id                | int         |
+| total_amount              | 今日房間總收禮物金額   | float       |
+| amount                    | 本次送禮or打賞金額     | float       |
+| message                   | 送禮訊息               | string      |
+| combo.id                  | 禮物連擊次數           | int         |
+| combo.duration_ms         | 連擊訊息顯示多久(毫秒) | int         |
+| show_animation            | 是否顯示動畫           | bool        |
+| hint_box.background_image | hint box 背景圖        | string(url) |
+| hint_box.duration_ms      | hint box顯示多久(毫秒) | int         |
+| entity                    | 文字實體               | array       |
+| entity.type               | 文字類型               | string      |
+| entity.offset             | 偏移第幾個字           | int         |
+| entity.length             | 字範圍長度             | int         |
+| entity.color              | 字體顏色               | #000000     |
+| entity.background_color   | 標籤背景               | #A680B8     |
+
+
+
+live_stream: 直播
+
+| 欄位名稱 | 說明      | 格式 |
+| -------- | --------- | ---- |
+| chat_id  | 直播間 id | int  |
+
+
+
+entity.type: 文字實體內容
+
+| 值       | 說明     | 格式   |
+| -------- | -------- | ------ |
+| username | user名稱 | string |
+| button   | 按鈕     | string |
+
+
+
+一般訊息(用戶)
+
+```json
+{
+   "id":4001,
+   "type":"message",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":{
+         "text":"sam78",
+         "color":"#000000",
+         "avatar":"female"
+      },
+      "level":{
+         "text":"vip1",
+         "color":"#DF3030",
+         "background_color":"#C7B9C1"
+      },
+      "title":{
+         "text":"房管",
+         "color":"#E5C4C4",
+         "background_color":"#332121"
+      },
+      "message":{
+         "text":"測試",
+         "color":"#A680B8",
+         "background_color":"#0000003f",
+         "entity":null
+      },
+      "background_color":"#0000003f",
+      "background_image":null
+   },
+   "user":{
+      "uid":"3d641b03d4d548dbb3a73a2197811261",
+      "name":"sam78",
+      "avatar":"female"
+   }
+}
+```
+
+![arch](./doc/message/user.png)
+
+公告(管理員)
+
+```json
+{
+   "id":59402,
+   "type":"bulletin",
+   "time":"14:37:50",
+   "timestamp":1591857470,
+   "display":{
+      "user":null,
+      "level":null,
+      "title":{
+         "text":"系统",
+         "color":"#FFFFFF",
+         "background_color":"#FC8813"
+      },
+      "message":{
+         "text":"測試",
+         "color":"#FFFFAA",
+         "background_color":"#00000000",
+         "entity":null
+      },
+      "background_color":"#0000003f",
+      "background_image":null
+   },
+   "user":{
+      "uid":"root",
+      "name":"管理员",
+      "avatar":"root"
+   }
+}
+```
+
+![arch](./doc/message/root.png)
+
+置頂訊息
+
+```json
+{
+   "id":4001,
+   "type":"top",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":{
+         "text":"管理員",
+         "color":"#FFFFFF",
+         "avatar":"female"
+      },
+      "level":null,
+      "title":null,
+      "message":{
+         "text":"你好嗎？",
+         "color":"#FFFFFF",
+         "entity":null
+      },
+      "background_color":"#0000003f",
+      "background_image":null
+   },
+   "user":{
+      "uid":"root",
+      "name":"管理員",
+      "avatar":"root"
+   }
+}
+```
+
+![arch](./doc/message/top.png)
+
+系統訊息
+
+```json
+{
+   "id":4001,
+   "type":"message",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":null,
+      "level":null,
+      "title":{
+         "text":"系統",
+         "color":"#FFFFFF",
+         "background_color":"#E5CB29"
+      },
+      "message":{
+         "text":"測試",
+         "color":"#A680B8",
+         "background_color":"#0000003f",
+         "entity":null
+      },
+      "background_color":"#0000003f",
+      "background_image":null
+   },
+   "user":null
+}
+```
+
+![arch](./doc/message/system.png)
+
+投注中獎打賞訊息
+
+```json
+{
+   "id":53402,
+   "type":"bets_win_reward",
+   "time":"10:54:50",
+   "timestamp":1591757690,
+   "display":null,
+   "user":{
+      "uid":"0d641b03d4d548dbb3a73a2197811261",
+      "name":"ni你ckname_1",
+      "avatar":"male"
+   },
+   "bets_win_reward":{
+      "text":"恭喜您中奖 金额＄1,010.01 打賞主播",
+      "color":"#FFFFAA",
+      "background_color":"#F8565699",
+      "entity":[
+         {
+            "type":"button",
+            "offset":18,
+            "length":4,
+            "color":"#FFFFAA",
+            "background_color":"#F85656"
+         }
+      ]
+   }
+}
+```
+
+![arch](./doc/message/will.png)
+
+進入房間訊息
+
+```json
+{
+   "id":48801,
+   "type":"hint",
+   "time":"11:58:37",
+   "timestamp":1591243117,
+   "display":{
+      "user":null,
+      "title":null,
+      "level":{
+         "text":"会员",
+         "color":"#FFFFFF",
+         "background_color":"#7FC355"
+      },
+      "message":{
+         "text":"nickname_1进入聊天室",
+         "color":"#FFFFAA",
+         "background_color":"#00000000",
+         "entity":[
+            {
+               "type":"username",
+               "offset":0,
+               "length":10,
+               "color":"#7CE7EB",
+               "background_color":"#00000000"
+            }
+         ]
+      },
+      "background_color":null,
+      "background_image":{
+         "type":"linear-gradient",
+         "to":"right",
+         "color":{
+            "0":"#FC881380",
+            "99":"#FC881300"
+         }
+      }
+   },
+   "user":null
+}
+```
+
+<img src="./doc/message/in_room.png" alt="arch" style="zoom:80%;" />
+
+送禮訊息
+
+```json
+{
+   "id":4001,
+   "type":"gift",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":null,
+      "level":null,
+      "title":{
+         "text":"會員",
+         "color":"#FFFFFF",
+         "background_color":"#FF0000"
+      },
+      "message":{
+         "text":"sam78 送出禮物x1",
+         "color":"#A680B8",
+         "background_color":"#0000003f",
+         "entity":[
+            {
+               "type":"username",
+               "offset":0,
+               "length":5,
+               "color":"#A680B8",
+               "background_color":"#0000003f"
+            }
+         ]
+      },
+      "background_color":"#0000003f",
+      "background_image":null
+   },
+   "user":{
+      "uid":"3d641b03d4d548dbb3a73a2197811261",
+      "name":"sam78",
+      "avatar":"female"
+   },
+   "gift":{
+      "gift_id":1,
+      "total_amount":10,
+      "amount":5,
+      "combo":{
+         "count":1,
+         "duration_ms":2000
+      },
+      "hint_box":null,
+      "show_animation":false,
+      "message":"送出跑車",
+      "entity":null
+   }
+}
+```
+
+![arch](./doc/message/gift.png)
+
+![arch](./doc/message/gift_hint.png)
+
+打賞訊息
+
+```json
+{
+   "id":4001,
+   "type":"gift",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":null,
+      "level":null,
+      "title":{
+         "text":"會員",
+         "color":"#FFFFFF",
+         "background_color":"#FF0000"
+      },
+      "message":{
+         "text":"sam78 打賞10元",
+         "color":"#DF3030",
+         "background_color":"#0000003f",
+         "entity":[
+            {
+               "type":"username",
+               "offset":0,
+               "length":5,
+               "color":"#A680B8",
+               "background_color":"#0000003f"
+            }
+         ]
+      },
+      "background_color":"#0000003f",
+      "background_image":null
+   },
+   "user":{
+      "uid":"3d641b03d4d548dbb3a73a2197811261",
+      "name":"sam78",
+      "avatar":"female"
+   },
+   "gift":{
+      "gift_id":0,
+      "total_amount":0,
+      "amount":5,
+      "combo":null,
+      "show_animation":false,
+      "hint_box":{
+         "duration_ms":3000,
+         "background_color":"https://assets.292801.com/awcp/logo/hPH6edsqSY.png"
+      },
+      "message":"sam78 打賞10元",
+      "entity":[
+         {
+            "type":"username",
+            "offset":0,
+            "length":5,
+            "color":"#A680B8",
+            "background_color":"#0000003f"
+         }
+      ]
+   }
+}
+```
+
+![arch](./doc/message/reward.png)
+
+![arch](./doc/message/reward_hint.png)
 
 紅包訊息
 
 ```json
 {
-    "id": 4404,
-    "uid": "0d641b03d4d548dbb3a73a2197811261",
-    "type": "red_envelope",
-    "name": "sam78",
-    "avatar": "male",
-    "message": "發大財",
-    "time": "12:37:00",
-    "timestamp": 1567579890,
-    "red_envelope": {
-        "id": "0d641b03d4d548dbb3a73a2197811261",
-        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjY4NzkzMTMsImlkIjoiMWI5MTZiNDc4YzBjNGZjMzhmMGE0MzE1NjMwNjExMTQiLCJ1aWQiOiIwZDY0MWIwM2Q0ZDU0OGRiYjNhNzNhMjE5NzgxMTI2MSJ9.pgyltHiT11XcZySJPiuetV35OXU-wgQ4XtU_UTzwghU",
-        "expired": "2019-08-27T12:15:13+08:00"
-    }
+   "id":4001,
+   "type":"red_envelope",
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":{
+         "text":"sam78",
+         "color":"#FFFFFF",
+         "avatar":"female"
+      },
+      "level":null,
+      "title":null,
+      "message":{
+         "text":"紅包",
+         "color":"#FFFFFF",
+         "background_color":"#0000003f",
+         "entity":null
+      },
+      "background_color":"#0000003f",
+      "background_image":null
+   },
+   "user":{
+      "uid":"3d641b03d4d548dbb3a73a2197811261",
+      "name":"sam78",
+      "avatar":"female"
+   },
+   "red_envelope":{
+      "id":"0d641b03d4d548dbb3a73a2197811261",
+      "token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjY4NzkzMTMsImlkIjoiMWI5MTZiNDc4YzBjNGZjMzhmMGE0MzE1NjMwNjExMTQiLCJ1aWQiOiIwZDY0MWIwM2Q0ZDU0OGRiYjNhNzNhMjE5NzgxMTI2MSJ9.pgyltHiT11XcZySJPiuetV35OXU-wgQ4XtU_UTzwghU",
+      "expired":"2019-08-27T12:15:13+08:00"
+   }
 }
 ```
 
-| name                 | 說明          | 格式   |
-| -------------------- | ------------- | ------ |
-| message              | 紅包說明      | string |
-| red_envelope.id      | 紅包id        | string |
-| red_envelope.token   | 搶紅包的token | string |
-| red_envelope.expired | 紅包過期時間  | RF3339 |
+
 
 跟投訊息
 
 ```json
 {
-   "id":9801,
-   "uid":"0d641b03d4d548dbb3a73a2197811261",
+   "id":4001,
    "type":"bets",
-   "name":"Sam",
-   "avatar":"other",
-   "time":"11:08:11",
-   "timestamp":1571627291,
-   "period_number":1234,
-   "bets_period_number":4567,
-   "bets":[
-      {
-         "name":"冠軍",
-         "odds":9.88,
-         "odds_code":"1.pos.1",
-         "items":[],
-         "amount":15
+   "time":"12:37:00",
+   "timestamp":1567579890,
+   "display":{
+      "user":{
+         "text":"sam78",
+         "color":"#FFFFFF",
+         "avatar":"female"
       },
-      {
-         "name":"亞軍",
-         "odds":9.88,
-         "odds_code":"2.pos.1",
-         "items":[],
-         "amount":10
-      }
-   ],
-   "count":2,
-   "total_amount":25
+      "level":null,
+      "title":null,
+      "message":{
+         "text":"跟投",
+         "color":"#DF3030",
+         "background_color":"#0000003f",
+         "entity":[
+            {
+               "type":"button",
+               "offset":6,
+               "length":2,
+               "color":"#E5C4C4",
+               "background_color":"#A680B8"
+            }
+         ]
+      },
+      "background_color":"#0000003f",
+      "background_image":null
+   },
+   "user":{
+      "uid":"3d641b03d4d548dbb3a73a2197811261",
+      "name":"sam78"
+   },
+   "bet":{
+      "game_id":4567,
+      "game_name":"六合彩",
+      "period_number":1234,
+      "count":2,
+      "total_amount":25,
+      "bets":[
+         {
+            "name":"冠軍",
+            "odds_code":"1.pos.1",
+            "items":[
+               "9",
+               "tiger"
+            ],
+            "trans_items":[
+               "9",
+               "虎"
+            ],
+            "amount":15
+         },
+         {
+            "name":"亞軍",
+            "odds_code":"2.pos.1",
+            "items":[
+
+            ],
+            "trans_items":[
+
+            ],
+            "amount":10
+         }
+      ]
+   }
 }
 ```
 
-| name               | 說明         | 格式     |
-| ------------------ | ------------ | -------- |
-| period_number      | 遊戲 id      | string   |
-| bets_period_number | 本注期號     | int      |
-| bets.name          | 下注號碼名稱 | string   |
-| bets.odds          | 賠率         | float    |
-| bets.odds_code     | 賠率代號     | string   |
-| bets.items         | 組合號碼     | []string |
-| bets.amount        | 下注金額     | int      |
-| count              | 下注總筆數   | Int      |
-| total_amount       | 下注總金額   | int      |
+
+
+開播訊息
+
+```json
+{
+   "id":4001,
+   "type":"open_live",
+   "time": "12:37:00",
+   "timestamp": 1567579890, 
+   "display":null,
+   "user":null,
+   "live_stream": {
+  	 "chat_id": 1,    
+   }
+}
+```
+
+
+
+關播訊息
+
+```json
+{
+   "id":4001,
+   "type":"close_live",
+   "time": "12:37:00",
+   "timestamp": 1567579890, 
+   "display":null,
+   "user":null,
+   "live_stream": {
+  	 "chat_id": 1,    
+   }
+}
+```
 
 
 
@@ -463,11 +1180,13 @@ Operation = `8`=> 回覆更換房間結果
     "status": false,
     "permission": {
         "is_message": false,
-        "is_red_envelope": false
+        "is_red_envelope": false,
+        "is_bets": false
     },
     "permission_message": {
         "is_message": "聊天室目前禁言状态，无法发言",
-        "is_red_envelope": "请先登入会员"
+        "is_red_envelope": "请先登入会员",
+        "is_bets": "请先登入会员"
     }
 }
 ```
@@ -481,8 +1200,10 @@ Operation = `8`=> 回覆更換房間結果
 | status                             | 進入房間是否成功，只代表進入不代表任何權限   |
 | permission.is_message              | true: 可聊天，false: 不可聊天                |
 | permission.is_red_envelope         | true: 可發/搶紅包，false: 不可發/搶紅包      |
+| permission.is_bets                 | true: 可跟注，false: 不可跟注                |
 | permission_message.is_message      | 進入房間後關於發言相關提示訊息               |
 | permission_message.is_red_envelope | 進入房間後關於搶/發紅包相關提示訊息          |
+| permission_message.is_bets         | 進入房間後關於跟注相關提示訊息               |
 
 #### Cancle Header Message Reply
 
@@ -701,38 +1422,3 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 
    nginx : `proxy_read_timeout` `proxy_send_timeout` 
 
-   
-
-## Tag
-
-`0.24.0`
-
-1. 調整kafka Producer and Consumer Config
-2. 增加發紅包API動作Log
-3. 更新jmeter 腳本
-4. 更新監控儀表板
-5. fix feat: http://mantis.jetfuel.com.tw/view.php?id=3004
-
-`0.24.1`
-
-1. 調整kafka Consumer Config
-2. 解決 log => while consuming push-topic/0: consumer group claim read message not found
-3. 更新jmeter 腳本
-
-0.25.0
-
-1. 增加kafka client 相關監控指數
-
-0.26.0
-
-1. 新增房間壓測腳本
-2. 後台更新房間資料api 也可以關閉房間
-
-0.27.0
-
-1. 廢棄`admin_messages table`
-2. `messages` table 增加種類欄位做判斷
-
-0.28.0
-
-1. 初版下注API

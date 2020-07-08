@@ -7,9 +7,11 @@ import (
 	kafka "github.com/Shopify/sarama"
 	"github.com/go-redis/redis"
 	"github.com/gogo/protobuf/proto"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	seqpb "gitlab.com/jetfueltw/cpw/alakazam/app/seq/api/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	shield "gitlab.com/jetfueltw/cpw/alakazam/pkg/filter"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -111,130 +113,179 @@ func (p *Producer) Close() error {
 	return p.producer.Close()
 }
 
-const (
-	RootMid  = 1
-	RootUid  = "root"
-	RootName = "管理员"
-)
-
-type ProducerMessage struct {
-	Rooms   []int32
-	Mid     int64
-	Uid     string
-	Name    string
-	Message string
-	IsTop   bool
-	Type    string
-	Avatar  int
-}
-
-func (p *Producer) toPb(msg ProducerMessage) (*logicpb.PushMsg, error) {
-	if err := checkMessage(msg.Message); err != nil {
-		return nil, err
-	}
-
-	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
-		Id: 1, Count: 1,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	fmsg, isMatch, sensitive := p.filter.FilterFindSensitive(msg.Message)
-	if isMatch {
-		log.Info("message filter hit", zap.Int64("msg_id", seq.Id), zap.Strings("sensitive", sensitive))
-	}
-
-	now := time.Now()
-	bm, err := json.Marshal(Message{
-		Id:        seq.Id,
-		Type:      msg.Type,
-		Uid:       msg.Uid,
-		Name:      msg.Name,
-		Avatar:    toAvatarName(msg.Avatar),
-		Message:   fmsg,
-		Time:      now.Format("15:04:05"),
-		Timestamp: now.Unix(),
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &logicpb.PushMsg{
-		Seq:     seq.Id,
-		Type:    logicpb.PushMsg_USER,
-		Room:    msg.Rooms,
-		Mid:     msg.Mid,
-		Msg:     bm,
-		Message: fmsg,
-		SendAt:  now.Unix(),
-	}, nil
-}
-
-func (p *Producer) Send(msg ProducerMessage) (int64, error) {
-	if err := p.rate.perSec(msg.Mid); err != nil {
-		return 0, err
-	}
-	if err := p.rate.sameMsg(msg); err != nil {
-		return 0, err
-	}
-
-	msg.Type = messageType
-	pushMsg, err := p.toPb(msg)
+func (p *Producer) Send(fun func(id int64) (*logicpb.PushMsg, error)) (int64, error) {
+	id, err := p.id()
 	if err != nil {
 		return 0, err
 	}
+
+	pushMsg, err := fun(id)
+	if err != nil {
+		return 0, err
+	}
+
 	if err := p.send(pushMsg); err != nil {
 		return 0, err
 	}
 	return pushMsg.Seq, nil
 }
 
-type ProducerAdminMessage struct {
-	Rooms   []int32
-	Name    string
-	Message string
-	IsTop   bool
-}
-
-// 所有房間推送
-func (p *Producer) SendForAdmin(msg ProducerAdminMessage) (int64, error) {
-	ty := messageType
-	if msg.IsTop {
-		ty = TopType
+func (p *Producer) SendUser(rid []int32, msg string, user *models.Member) (int64, error) {
+	if err := p.rate.perSec(user.Id); err != nil {
+		return 0, err
 	}
-	pushMsg, err := p.toPb(ProducerMessage{
-		Rooms:   msg.Rooms,
-		Mid:     RootMid,
-		Uid:     RootUid,
-		Name:    RootName,
-		Avatar:  99,
-		Message: msg.Message,
-		Type:    ty,
-	})
+	if err := p.rate.sameMsg(msg, user.Uid); err != nil {
+		return 0, err
+	}
+
+	msg, err := p.filterMessage(msg)
 	if err != nil {
 		return 0, err
 	}
-	if msg.IsTop {
-		pushMsg.Type = logicpb.PushMsg_ADMIN_TOP
-	} else {
-		pushMsg.Type = logicpb.PushMsg_ADMIN
-	}
-	if err := p.send(pushMsg); err != nil {
-		return 0, err
-	}
-	return pushMsg.Seq, nil
+
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		u := scheme.User{
+			Id:     user.Id,
+			Uid:    user.Uid,
+			Name:   user.Name,
+			Avatar: ToAvatarName(user.Gender),
+		}
+
+		var message scheme.Message
+		if user.Type == models.STREAMER {
+			message = u.ToStreamer(id, msg)
+		} else {
+			message = u.ToUser(id, msg)
+		}
+
+		pushMsg, err := message.ToProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pushMsg.Room = rid
+		pushMsg.Mid = user.Id
+		pushMsg.Message = msg
+		pushMsg.Type = logicpb.PushMsg_ROOM
+		pushMsg.MsgType = models.MESSAGE_TYPE
+		pushMsg.IsRaw = true
+
+		return pushMsg, nil
+	})
 }
 
-type ProducerKickMessage struct {
-	Message string
-	Keys    []string
+func (p *Producer) SendSystem(rid []int32, msg string) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		return scheme.NewRoot().ToSystem(id, msg).ToRoomProto(rid)
+	})
 }
 
-func (p *Producer) Kick(msg ProducerKickMessage) error {
+func (p *Producer) SendAdmin(rid []int32, msg string) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		u := scheme.NewRoot()
+
+		pushMsg, err := u.ToAdmin(id, msg).ToProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pushMsg.Room = rid
+		pushMsg.Mid = u.Id
+		pushMsg.Message = msg
+		pushMsg.Type = logicpb.PushMsg_ROOM
+		pushMsg.MsgType = models.MESSAGE_TYPE
+
+		return pushMsg, nil
+	})
+}
+
+func (p *Producer) SendTop(rid []int32, msg string) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		return scheme.NewRoot().ToTop(id, msg).ToRoomProto(rid)
+	})
+}
+
+func (p *Producer) SendGift(rid int32, user scheme.User, gift scheme.Gift) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		if gift.Combo.Count == 0 {
+			gift.ShowAnimation = true
+		}
+		return gift.ToProto(id, rid, user)
+	})
+}
+
+func (p *Producer) SendReward(rid int32, user scheme.User, amount, totalAmount float64) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		return scheme.NewRewardProto(id, rid, user, amount, totalAmount)
+	})
+}
+
+func (p *Producer) SendRedEnvelope(rid []int32, message string, user scheme.User, redEnvelope scheme.RedEnvelope) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		message, err := p.filterMessage(message)
+		if err != nil {
+			return nil, err
+		}
+
+		return redEnvelope.ToProto(id, rid, user, message)
+	})
+}
+
+func (p *Producer) SendBets(rid []int32, user scheme.User, bet scheme.Bet) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		return bet.ToProto(id, rid, user)
+	})
+}
+
+func (p *Producer) SendBetsWin(rid []int32, user scheme.User, gameName string) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		return scheme.NewBetsWinProto(id, rid, user, gameName)
+	})
+}
+
+func (p *Producer) SendBetsWinReward(keys []string, user scheme.User, amount float64, buttonName string) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		return scheme.NewBetsWinRewardProto(id, keys, user, amount, buttonName)
+	})
+}
+
+func (p *Producer) SendConnect(rid int32, user *logicpb.User) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		return scheme.NewConnect(id, user.Name).ToRoomProto([]int32{rid})
+	})
+}
+
+func (p *Producer) SendMessage(rid []int32, msg scheme.Message, isRaw bool) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		now := time.Now()
+		msg.Id = id
+		msg.Time = now.Format("15:04:05")
+		msg.Timestamp = now.Unix()
+
+		p, err := msg.ToRoomProto(rid)
+		if err != nil {
+			return nil, err
+		}
+
+		p.IsRaw = isRaw
+
+		return p, nil
+	})
+}
+
+func (p *Producer) Kick(msg string, keys []string) error {
+	m := struct {
+		Message string `json:"message"`
+	}{
+		Message: msg,
+	}
+	bm, _ := json.Marshal(m)
+
 	pushMsg := &logicpb.PushMsg{
-		Type:    logicpb.PushMsg_Close,
-		Keys:    msg.Keys,
-		Message: msg.Message,
+		Type: logicpb.PushMsg_PUSH,
+		Op:   pb.OpProtoFinish,
+		Keys: keys,
+		Msg:  bm,
 	}
 	if err := p.send(pushMsg); err != nil {
 		return err
@@ -244,7 +295,8 @@ func (p *Producer) Kick(msg ProducerKickMessage) error {
 
 func (p *Producer) CloseTop(msgId int64, rid []int32) error {
 	pushMsg := &logicpb.PushMsg{
-		Type: logicpb.PushMsg_CLOSE_TOP,
+		Type: logicpb.PushMsg_ROOM,
+		Op:   pb.OpCloseTopMessage,
 		Seq:  msgId,
 		Room: rid,
 		Msg:  []byte(fmt.Sprintf(`{"id":%d}`, msgId)),
@@ -255,184 +307,81 @@ func (p *Producer) CloseTop(msgId int64, rid []int32) error {
 	return nil
 }
 
-type ProducerRedEnvelopeMessage struct {
-	ProducerMessage
-	RedEnvelopeId string
-	Token         string
-	Expired       time.Time
-}
-
-func (p *Producer) toRedEnvelopePb(msg ProducerRedEnvelopeMessage) (*logicpb.PushMsg, error) {
-	if err := checkMessage(msg.Message); err != nil {
-		return nil, err
-	}
-	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
-		Id: 1, Count: 1,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	fmsg, isMatch, sensitive := p.filter.FilterFindSensitive(msg.Message)
-	if isMatch {
-		log.Info("message filter hit", zap.Int64("msg_id", seq.Id), zap.Strings("sensitive", sensitive))
-	}
-
-	now := time.Now()
-	bm, err := json.Marshal(RedEnvelopeMessage{
-		Message: Message{
-			Id:        seq.Id,
-			Type:      redEnvelopeType,
-			Uid:       msg.Uid,
-			Name:      msg.Name,
-			Avatar:    toAvatarName(msg.Avatar),
-			Message:   fmsg,
-			Time:      now.Format("15:04:05"),
-			Timestamp: now.Unix(),
-		},
-		RedEnvelope: RedEnvelope{
-			Id:      msg.RedEnvelopeId,
-			Token:   msg.Token,
-			Expired: msg.Expired.Format(time.RFC3339),
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &logicpb.PushMsg{
-		Seq:     seq.Id,
-		Type:    logicpb.PushMsg_MONEY,
-		Room:    msg.Rooms,
-		Mid:     msg.Mid,
-		Msg:     bm,
-		SendAt:  now.Unix(),
-		Message: fmsg,
-	}, nil
-}
-
-func (p *Producer) SendRedEnvelope(msg ProducerRedEnvelopeMessage) (int64, error) {
-	pushMsg, err := p.toRedEnvelopePb(msg)
-	if err != nil {
-		return 0, err
-	}
-	if err := p.send(pushMsg); err != nil {
-		return 0, err
-	}
-	return pushMsg.Seq, nil
-}
-
-type ProducerAdminRedEnvelopeMessage struct {
-	ProducerAdminMessage
-	RedEnvelopeId string
-	Token         string
-	Expired       time.Time
-}
-
-func (p *Producer) SendRedEnvelopeForAdmin(msg ProducerAdminRedEnvelopeMessage) (int64, error) {
-	pushMsg, err := p.toRedEnvelopePb(ProducerRedEnvelopeMessage{
-		ProducerMessage: ProducerMessage{
-			Rooms:   msg.Rooms,
-			Mid:     RootMid,
-			Uid:     RootUid,
-			Name:    msg.Name,
-			Message: msg.Message,
-			Avatar:  99,
-		},
-		RedEnvelopeId: msg.RedEnvelopeId,
-		Token:         msg.Token,
-		Expired:       msg.Expired,
-	})
-	if err != nil {
-		return 0, err
-	}
-	if err := p.send(pushMsg); err != nil {
-		return 0, err
-	}
-	return pushMsg.Seq, nil
-}
-
-type ProducerBetsMessage struct {
-	Rooms  []int32
-	Mid    int64
-	Uid    string
-	Name   string
-	Avatar int
-
-	PeriodNumber     int
-	BetsPeriodNumber int
-	Bets             []Bet
-	Count            int
-	TotalAmount      int
-}
-
-func (p *Producer) SendBets(msg ProducerBetsMessage) (int64, error) {
-	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
-		Id: 1, Count: 1,
-	})
-	if err != nil {
-		return 0, err
-	}
-
-	now := time.Now()
-	bm, err := json.Marshal(Bets{
-		Id:               seq.Id,
-		Type:             betsType,
-		Uid:              msg.Uid,
-		Name:             msg.Name,
-		Avatar:           toAvatarName(msg.Avatar),
-		Time:             now.Format("15:04:05"),
-		Timestamp:        now.Unix(),
-		PeriodNumber:     msg.PeriodNumber,
-		BetsPeriodNumber: msg.BetsPeriodNumber,
-		Items:            msg.Bets,
-		Count:            msg.Count,
-		TotalAmount:      msg.TotalAmount,
-	})
-	if err != nil {
-		return 0, err
-	}
-
-	pushMsg := &logicpb.PushMsg{
-		Seq:    seq.Id,
-		Type:   logicpb.PushMsg_BETS,
-		Room:   msg.Rooms,
-		Mid:    msg.Mid,
-		Msg:    bm,
-		SendAt: now.Unix(),
-	}
-	if err := p.send(pushMsg); err != nil {
-		return 0, err
-	}
-	return pushMsg.Seq, nil
-}
-
-// 房間推送，以下為條件
-// 1. room id
 func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 	b, err := proto.Marshal(pushMsg)
 	if err != nil {
 		return err
 	}
 
-	var key kafka.StringEncoder
-
-	switch pushMsg.Type {
-	case logicpb.PushMsg_Close:
-		key = kafka.StringEncoder(pushMsg.Keys[0])
-	default:
-		key = kafka.StringEncoder(pushMsg.Room[0])
-	}
-
 	m := &kafka.ProducerMessage{
-		Key:   key,
+		Key:   kafka.StringEncoder(pushMsg.Seq),
 		Topic: p.topic,
 		Value: kafka.ByteEncoder(b),
 	}
+
 	partition, offset, err := p.producer.SendMessage(m)
 	if err != nil {
-		log.Error("message producer send message", zap.Error(err), zap.Int32("partition", partition), zap.Int64("offset", offset))
+		log.Error(
+			"message producer send message",
+			zap.Error(err),
+			zap.Int32("partition", partition),
+			zap.Int64("offset", offset),
+			zap.String("topic", p.topic),
+			zap.String("type", pushMsg.Type.String()),
+			zap.String("msg", pushMsg.Message),
+			zap.Int32s("rooms", pushMsg.Room),
+		)
 	}
 	return err
+}
+
+func (p *Producer) sends(pushMsgs []*logicpb.PushMsg) error {
+	var producerMessages []*kafka.ProducerMessage
+	for _, msg := range pushMsgs {
+		b, err := proto.Marshal(msg)
+		if err != nil {
+			return err
+		}
+
+		producerMessages = append(producerMessages, &kafka.ProducerMessage{
+			Key:   kafka.StringEncoder(msg.Seq),
+			Topic: p.topic,
+			Value: kafka.ByteEncoder(b),
+		})
+	}
+
+	err := p.producer.SendMessages(producerMessages)
+	if err != nil {
+		log.Error(
+			"message producer send messages",
+			zap.Error(err),
+			zap.String("topic", p.topic),
+		)
+	}
+	return err
+}
+
+func (p *Producer) id() (int64, error) {
+	seq, err := p.seq.Id(context.Background(), &seqpb.SeqReq{
+		Id: 1, Count: 1,
+	})
+	if err != nil {
+		return 0, err
+	}
+	return seq.Id, err
+}
+
+func (p *Producer) filterMessage(message string) (string, error) {
+	if err := checkMessage(message); err != nil {
+		return "", err
+	}
+
+	fmsg, isMatch, sensitive := p.filter.FilterFindSensitive(message)
+	if isMatch {
+		log.Info("message filter hit", zap.Strings("sensitive", sensitive))
+	}
+
+	return fmsg, nil
 }
 
 var (

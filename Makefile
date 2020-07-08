@@ -47,6 +47,9 @@ stop:
 migrate:
 	bin/logic -c logic.yml -migrate=true
 
+burrow_prometheus:
+	cd metrics/burrow/prometheus && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags '-s -w' -o ./bin/burrow_prometheus
+
 proto-build: proto-logic proto-comet proto-seq
 
 proto-logic:

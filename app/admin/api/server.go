@@ -19,6 +19,7 @@ type httpServer struct {
 	delayMessage *message.DelayProducer
 	room         room.Room
 	nidoran      *client.Client
+	noticeUrl    map[string]string
 }
 
 func NewServer(conf *web.Conf, member *member.Member, producer *message.Producer, room room.Room, nidoran *client.Client, shield message.Filter) *http.Server {
@@ -40,6 +41,7 @@ func NewServer(conf *web.Conf, member *member.Member, producer *message.Producer
 		delayMessage: delayMessage,
 		room:         room,
 		nidoran:      nidoran,
+		noticeUrl:    make(map[string]string),
 	}
 
 	handler(engine, srv)
@@ -55,25 +57,33 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.POST("/banned/:uid", api.ErrHandler(s.setBanned))
 	e.DELETE("/banned/:uid", api.ErrHandler(s.removeBanned))
 
-	// 設定房間
+	// 踢人
+	e.DELETE("/kick/:uid", api.ErrHandler(s.kick))
+
+	// 房間
 	e.POST("/room", api.ErrHandler(s.CreateRoom))
 	e.PUT("/room/:id", api.ErrHandler(s.UpdateRoom))
 	e.GET("/room/:id", api.ErrHandler(s.GetRoom))
 	e.DELETE("/room/:id", api.ErrHandler(s.DeleteRoom))
+	e.POST("/room/notice", api.ErrHandler(s.notice))
+	e.GET("/online", api.ErrHandler(s.online))
 
+	// 訊息
+	e.POST("/custom", api.ErrHandler(s.custom))
 	e.POST("/push", api.ErrHandler(s.push))
 	e.DELETE("/push/:id", api.ErrHandler(s.deleteTopMessage))
-
 	e.POST("/red-envelope", api.ErrHandler(s.giveRedEnvelope))
-
 	e.POST("/bets", api.ErrHandler(s.bets))
+	e.POST("/betsWin", api.ErrHandler(s.betsWin))
+	e.POST("/gift", api.ErrHandler(s.gift))
+	e.POST("/reward", api.ErrHandler(s.reward))
 
-	e.DELETE("/kick/:uid", api.ErrHandler(s.kick))
-
+	// 敏感詞
 	e.POST("/shield", api.ErrHandler(s.CreateShield))
 	e.PUT("/shield", api.ErrHandler(s.UpdateShield))
 	e.DELETE("/shield/:id", api.ErrHandler(s.DeleteShield))
 
+	// 會員資料
 	e.PUT("/profile/:token/renew", api.ErrHandler(s.renew))
 }
 

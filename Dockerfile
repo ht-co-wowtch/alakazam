@@ -1,8 +1,9 @@
-FROM golang:1.12-alpine AS build_module
+FROM golang:1.13-alpine AS build_module
 
 ENV GO111MODULE=on
 ARG GOPROXY
 ENV GOPROXY=${GOPROXY}
+ENV GOPRIVATE=gitlab.com/jetfueltw/cpw
 
 RUN set -ex && apk add --no-cache git
 

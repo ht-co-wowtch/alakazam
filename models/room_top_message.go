@@ -7,13 +7,14 @@ import (
 )
 
 const (
-	addRoomTopMessage = "REPLACE INTO `room_top_messages` (`room_id`,`msg_id`,`message`,`send_at`) VALUES (?,?,?,?);"
+	addRoomTopMessage = "REPLACE INTO `room_top_messages` (`room_id`,`msg_id`,`message`,`type`,`send_at`) VALUES (?,?,?,?,?);"
 )
 
 type RoomTopMessage struct {
 	RoomId  int32
 	MsgId   int64
 	Message string
+	Type    int
 	SendAt  time.Time
 }
 
@@ -27,10 +28,10 @@ func (s *Store) FindRoomTopMessage(msgId int64) ([]RoomTopMessage, error) {
 	return msg, err
 }
 
-func (s *Store) AddRoomTopMessage(rids []int32, message Message) error {
+func (s *Store) AddRoomTopMessage(rids []int32, message RoomTopMessage) error {
 	_, err := s.d.Transaction(func(session *xorm.Session) (i interface{}, e error) {
 		for _, rid := range rids {
-			if _, err := session.Exec(addRoomTopMessage, rid, message.MsgId, message.Message, message.SendAt); err != nil {
+			if _, err := session.Exec(addRoomTopMessage, rid, message.MsgId, message.Message, message.Type, message.SendAt); err != nil {
 				return nil, err
 			}
 		}
@@ -39,8 +40,10 @@ func (s *Store) AddRoomTopMessage(rids []int32, message Message) error {
 	return err
 }
 
-func (s *Store) DeleteRoomTopMessage(msgId int64) error {
-	aff, err := s.d.Where("`msg_id` = ?", msgId).Delete(&RoomTopMessage{})
+func (s *Store) DeleteRoomTopMessage(rid []int32, msgId int64, t int) error {
+	aff, err := s.d.In("room_id", rid).
+		Where("`type` = ? AND `msg_id` = ? ", t, msgId).
+		Delete(&RoomTopMessage{})
 	if err != nil {
 		return err
 	}

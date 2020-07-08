@@ -40,12 +40,15 @@ func (s *server) Ping(ctx context.Context, req *empty.Empty) (*empty.Empty, erro
 }
 
 // 踢人
-func (s *server) Kick(ctx context.Context, req *pb.KeyReq) (*empty.Empty, error) {
+func (s *server) Push(ctx context.Context, req *pb.KeyReq) (*empty.Empty, error) {
 	for _, key := range req.Key {
 		if b := s.srv.Bucket(key); b != nil {
 			if ch := b.Channel(key); ch != nil {
 				_ = ch.Push(req.Proto)
-				ch.Close()
+
+				if req.Proto.Op == pb.OpProtoFinish {
+					ch.Close()
+				}
 			}
 		}
 	}

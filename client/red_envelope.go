@@ -28,9 +28,6 @@ type RedEnvelope struct {
 type RedEnvelopeAdmin struct {
 	RedEnvelope
 
-	// 紅包人名稱
-	Name string `json:"name"`
-
 	// 什麼時候發佈
 	PublishAt time.Time `json:"publish_at"`
 }
@@ -59,6 +56,9 @@ type RedEnvelopeReply struct {
 
 	// 過期時間
 	ExpireAt time.Time `json:"expire_at"`
+
+	// 紅包是否來自後台
+	IsAdmin bool `json:"is_admin"`
 
 	// 紅包token
 	Token string `json:"token"`
@@ -120,9 +120,6 @@ type TakeEnvelopeReply struct {
 	// 發紅包人的uid
 	Uid string `json:"uid"`
 
-	// 發紅包人的名稱
-	Name string `json:"name"`
-
 	// 紅包訊息
 	Message string `json:"message"`
 
@@ -134,6 +131,9 @@ type TakeEnvelopeReply struct {
 
 	// 搶到的金額
 	Amount float64 `json:"amount"`
+
+	// 紅包是否來自後台
+	IsAdmin bool `json:"is_admin"`
 }
 
 const (
@@ -168,14 +168,18 @@ func (c *Client) TakeRedEnvelope(redEnvelopeToken, token string) (TakeEnvelopeRe
 }
 
 type RedEnvelopeDetail struct {
+	RedEnvelopeInfo
+
+	// 哪些會員搶走
+	Members []MemberDetail `json:"members"`
+}
+
+type RedEnvelopeInfo struct {
 	// 紅包id
 	Id string `json:"id"`
 
 	// 發紅包的會員uid
 	Uid string `json:"uid"`
-
-	// 發紅包的會員名稱
-	Name string `json:"name"`
 
 	// 紅包訊息
 	Message string `json:"message"`
@@ -201,16 +205,13 @@ type RedEnvelopeDetail struct {
 	// 紅包過期時間
 	ExpireAt time.Time `json:"expire_at"`
 
-	// 哪些會員搶走
-	Members []memberDetail `json:"members"`
+	// 紅包是否來自後台
+	IsAdmin bool `json:"is_admin"`
 }
 
-type memberDetail struct {
+type MemberDetail struct {
 	// 搶走紅包會員uid
 	Uid string `json:"uid"`
-
-	// 搶走紅包會員的姓名
-	Name string `json:"name"`
 
 	// 搶走紅包會員拿走多少金額
 	Amount float64 `json:"amount"`
@@ -232,34 +233,6 @@ func (c *Client) GetRedEnvelopeDetail(id, token string) (RedEnvelopeDetail, erro
 	var u RedEnvelopeDetail
 	if err := json.NewDecoder(resp.Body).Decode(&u); err != nil {
 		return RedEnvelopeDetail{}, err
-	}
-	return u, nil
-}
-
-type TakeRedEnvelopeAmount struct {
-	// 發紅包的會員uid
-	Uid string `json:"uid"`
-
-	// 搶走紅包會員的姓名
-	Name string `json:"name"`
-
-	// 搶到的金額
-	Amount float64 `json:"amount"`
-}
-
-// 領取該紅包多少錢
-func (c *Client) GetRedEnvelope(id, token string) (TakeRedEnvelopeAmount, error) {
-	resp, err := c.c.Get("/red-envelope-consume/"+id, nil, bearer(token))
-	if err != nil {
-		return TakeRedEnvelopeAmount{}, err
-	}
-	defer resp.Body.Close()
-	if err := checkResponse(resp); err != nil {
-		return TakeRedEnvelopeAmount{}, err
-	}
-	var u TakeRedEnvelopeAmount
-	if err := json.NewDecoder(resp.Body).Decode(&u); err != nil {
-		return TakeRedEnvelopeAmount{}, err
 	}
 	return u, nil
 }

@@ -55,7 +55,7 @@ func New(c *conf.Config) *Server {
 	memberCli := member.New(db, cache, cli)
 	chat := room.NewChat(db, cache, memberCli, cli, c.Heartbeat)
 	httpServer := api.NewServer(c, memberCli, messageProducer, chat, cli, message.NewHistory(db, cache, memberCli))
-	rpcServer := rpc.New(c.RPCServer, chat)
+	rpcServer := rpc.New(c.RPCServer, chat, messageProducer)
 
 	log.Infof("http server port [%s]", c.HTTPServer.Addr)
 

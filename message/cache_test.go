@@ -23,7 +23,7 @@ var (
 			Msg:    []byte(`{"id":1}`),
 		},
 		&pb.PushMsg{
-			Room:   []int32{1},
+			Room:   []int32{1, 2},
 			SendAt: time.Now().Unix(),
 			Msg:    []byte(`{"id":2}`),
 		},
@@ -63,6 +63,14 @@ func TestAddMessage(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, []string{
 		`{"id":1}`,
+		`{"id":2}`,
+	}, msg)
+
+	// http://mantis.jetfuel.com.tw/view.php?id=3366
+	msg, err = r.ZRange(keyMessage(2), 0, 10).Result()
+
+	assert.Nil(t, err)
+	assert.Equal(t, []string{
 		`{"id":2}`,
 	}, msg)
 }

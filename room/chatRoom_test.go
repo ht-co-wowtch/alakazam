@@ -31,6 +31,7 @@ func TestGuestConnectionRoom(t *testing.T) {
 	assert.False(t, reply.Connect.Permission.IsBets)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.NoLoginMessage)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, errors.NoLoginMessage)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsBets, errors.NoLoginMessage)
 }
 
 func TestMemberConnectionRoom(t *testing.T) {
@@ -93,6 +94,7 @@ func TestGuestConnectionCloseMessageRoom(t *testing.T) {
 	assert.False(t, reply.Connect.Permission.IsBets)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.NoLoginMessage)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, errors.NoLoginMessage)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsBets, errors.NoLoginMessage)
 }
 
 func TestMemberConnectionCloseMessageRoom(t *testing.T) {
@@ -105,6 +107,7 @@ func TestMemberConnectionCloseMessageRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Permission.IsBets)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.RoomBanned)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, "")
+	assert.Equal(t, reply.Connect.PermissionMessage.IsBets, "")
 }
 
 func TestMarketConnectionCloseMessageRoom(t *testing.T) {
@@ -117,6 +120,7 @@ func TestMarketConnectionCloseMessageRoom(t *testing.T) {
 	assert.True(t, reply.Connect.Permission.IsBets)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsMessage, errors.RoomBanned)
 	assert.Equal(t, reply.Connect.PermissionMessage.IsRedEnvelope, "")
+	assert.Equal(t, reply.Connect.PermissionMessage.IsBets, "")
 }
 
 func TestMemberCloseMessageConnectionRoom(t *testing.T) {
@@ -147,6 +151,7 @@ func TestMemberCloseBetsConnectionRoom(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, reply.Connect.Status)
 	assert.False(t, reply.Connect.Permission.IsBets)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsBets, errors.NoLoginMessage)
 }
 
 func TestMarketCloseBetsConnectionRoom(t *testing.T) {
@@ -155,6 +160,7 @@ func TestMarketCloseBetsConnectionRoom(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, reply.Connect.Status)
 	assert.False(t, reply.Connect.Permission.IsBets)
+	assert.Equal(t, reply.Connect.PermissionMessage.IsBets, errors.NoLoginMessage)
 }
 
 func TestGuestBlockadeConnectionRoom(t *testing.T) {

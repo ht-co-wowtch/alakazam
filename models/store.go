@@ -31,13 +31,13 @@ type Chat interface {
 	Find(uid string) (*Member, error)
 	CreateUser(member *Member) (bool, error)
 	UpdateUser(member *Member) (bool, error)
-	GetMembers(ids []int) ([]Member, error)
+	GetMembers(ids []int64) ([]Member, error)
 	GetMembersByUid(uid []string) ([]Member, error)
 	SetBlockade(uid string) (int64, error)
 	DeleteBanned(uid string) (int64, error)
-	SetBannedLog(memberId int, sec time.Duration, isSystem bool) (bool, error)
-	GetTodaySystemBannedLog(memberId int) ([]BannedLog, error)
-	UpdateIsMessage(memberId int, isMessage bool) (bool, error)
+	SetBannedLog(mid int64, sec time.Duration, isSystem bool) (bool, error)
+	GetTodaySystemBannedLog(mid int64) ([]BannedLog, error)
+	UpdateIsMessage(mid int64, isMessage bool) (bool, error)
 }
 
 type Store struct {

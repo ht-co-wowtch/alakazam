@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"os"
@@ -54,7 +55,7 @@ var (
 		DepositLimit: amount,
 	}
 
-	roomTopMessageTest = message.Message{
+	roomTopMessageTest = scheme.Message{
 		Id:        1,
 		Uid:       "123",
 		Name:      "test",
@@ -117,7 +118,7 @@ func TestGetChatNil(t *testing.T) {
 func TestGetChatMessageNil(t *testing.T) {
 	c.c.FlushAll()
 
-	_, err := c.c.HSet(keyRoom(roomTest.Id), roomDataKey, `{"id":1}`).Result()
+	_, err := c.c.HSet(keyRoom(roomTest.Id), roomDataHKey, `{"id":1}`).Result()
 	assert.Nil(t, err)
 
 	room, err := c.getChat(roomTest.Id)

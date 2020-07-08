@@ -8,10 +8,6 @@ import (
 	"time"
 )
 
-var (
-	errFailure = errors.New("失敗")
-)
-
 func (m *Member) SetBanned(uid string, sec int, isSystem bool) error {
 	me, err := m.db.Find(uid)
 	if err != nil {
@@ -28,30 +24,24 @@ func (m *Member) SetBanned(uid string, sec int, isSystem bool) error {
 			return err
 		}
 		if !ok {
-			return errFailure
+			return errors.New("set banned cache failure")
 		}
 	} else if sec == -1 {
 		if !me.IsMessage {
 			return nil
 		}
 
-		ok, err := m.db.UpdateIsMessage(me.Id, false)
+		_, err := m.db.UpdateIsMessage(me.Id, false)
 		if err != nil {
 			return err
-		}
-		if !ok {
-			return errFailure
 		}
 
 		expire = time.Duration(0)
 
 		me.IsMessage = false
-		ok, err = m.c.set(me)
+		_, err = m.c.set(me)
 		if err != nil {
 			return err
-		}
-		if !ok {
-			return errFailure
 		}
 	}
 
@@ -77,13 +67,13 @@ func (m *Member) SetBannedForSystem(uid string, sec int) (bool, error) {
 
 	l, err := m.db.GetTodaySystemBannedLog(me.Id)
 	if err != nil {
-		log.Error("automatically banned up to 5 times for set banned", zap.Error(err), zap.Int("mid", me.Id))
+		log.Error("automatically banned up to 5 times for set banned", zap.Error(err), zap.Int64("mid", me.Id))
 	} else {
 		now := time.Now()
 		nowUnix := now.Unix()
 		zeroUnix, err := time.ParseInLocation("2006-01-02 15:04:05", now.Format("2006-01-02 0:00:00"), time.Local)
 		if err != nil {
-			log.Error("parse time layout for set banned", zap.Error(err), zap.Int("mid", me.Id))
+			log.Error("parse time layout for set banned", zap.Error(err), zap.Int64("mid", me.Id))
 		} else if len(l) >= 5 {
 			for _, v := range l {
 				cat := v.CreateAt.Unix()
@@ -94,7 +84,7 @@ func (m *Member) SetBannedForSystem(uid string, sec int) (bool, error) {
 
 			ok, err := m.SetBlockade(uid)
 			if err != nil || !ok {
-				log.Error("set blockade for set banned", zap.Error(err), zap.Bool("action", ok), zap.Int("mid", me.Id))
+				log.Error("set blockade for set banned", zap.Error(err), zap.Bool("action", ok), zap.Int64("mid", me.Id))
 			}
 			return true, nil
 		}
@@ -115,25 +105,23 @@ func (m *Member) RemoveBanned(uid string) error {
 	if err != nil {
 		return err
 	}
-	if !ok {
-		return errFailure
+
+	// 如果redis內沒有禁言時效資料且用戶發言狀態為true
+	if me.IsMessage && !ok {
+		return nil
 	}
+
 	if !me.IsMessage {
 		ok, err := m.db.UpdateIsMessage(me.Id, true)
 		if err != nil {
 			return err
 		}
-		if !ok {
-			return errFailure
-		}
-
-		me.IsMessage = true
-		ok, err = m.c.set(me)
-		if err != nil {
-			return err
-		}
-		if !ok {
-			return errFailure
+		if ok {
+			me.IsMessage = true
+			_, err = m.c.set(me)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil

@@ -5,8 +5,13 @@ import (
 	"time"
 )
 
+const (
+	LOTTERY_TYPE = 1
+	LIVE_TYPE    = 2
+)
+
 type IChat interface {
-	GetChat(id int) (Room, RoomTopMessage, error)
+	GetChat(id int) (Room, []RoomTopMessage, error)
 }
 
 type Room struct {
@@ -28,6 +33,9 @@ type Room struct {
 	// 打碼量限制
 	DmlLimit int
 
+	// 觀眾數倍率
+	AudienceRatio float64
+
 	// 房間狀態(開:1 關:0)
 	Status bool
 
@@ -37,7 +45,9 @@ type Room struct {
 	// 建立時間
 	CreateAt time.Time `json:"-"`
 
-	HeaderMessage []byte `xorm:"-"`
+	TopMessage []byte `xorm:"-"`
+
+	BulletinMessage []byte `xorm:"-"`
 }
 
 func (r *Room) TableName() string {
@@ -52,8 +62,8 @@ func (s *Store) CreateRoom(room *Room) (int64, error) {
 }
 
 func (s *Store) UpdateRoom(room Room) (int64, error) {
-	u := s.d.Cols("is_message", "is_bets", "day_limit", "deposit_limit", "dml_limit", "status")
-	return u.Where("id = ?", room.Id).
+	return s.d.Cols("type", "member_id", "is_message", "is_bets", "day_limit", "deposit_limit", "dml_limit", "audience_ratio", "status", "update_at").
+		Where("id = ?", room.Id).
 		Update(&room)
 }
 
@@ -68,7 +78,9 @@ func (s *Store) GetRoom(roomId int) (Room, error) {
 
 func (s *Store) GetRoomTopMessage(id int) (RoomTopMessage, error) {
 	top := RoomTopMessage{}
-	ok, err := s.d.Where("`room_id` = ?", id).Get(&top)
+	ok, err := s.d.Where("`room_id` = ?", id).
+		Where("status = ?", true).
+		Get(&top)
 	if err != nil {
 		return top, err
 	}
@@ -78,14 +90,17 @@ func (s *Store) GetRoomTopMessage(id int) (RoomTopMessage, error) {
 	return top, nil
 }
 
-func (s *Store) GetChat(id int) (Room, RoomTopMessage, error) {
+func (s *Store) GetChat(id int) (Room, []RoomTopMessage, error) {
 	tx := s.d.Prepare()
 	defer tx.Rollback()
 	room := Room{}
-	ok, _ := tx.Where("id = ?", id).Get(&room)
 
-	top := RoomTopMessage{}
-	tx.Where("`room_id` = ?", id).Get(&top)
+	ok, _ := tx.Where("id = ?", id).
+		Where("status = ?", true).
+		Get(&room)
+
+	top := make([]RoomTopMessage, 0)
+	tx.Where("`room_id` = ?", id).Find(&top)
 
 	if err := tx.Commit(); err != nil {
 		return room, top, err

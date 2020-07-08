@@ -2,10 +2,9 @@ package message
 
 import (
 	"database/sql"
-	"encoding/json"
 	"github.com/go-redis/redis"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"time"
 )
@@ -23,17 +22,6 @@ func NewHistory(db *models.Store, c *redis.Client, member *member.Member) *Histo
 		member: member,
 	}
 }
-
-const (
-	// 普通訊息
-	messageType = "message"
-	// 紅包訊息
-	redEnvelopeType = "red_envelope"
-	// 公告訊息
-	TopType = "top"
-	// 跟注
-	betsType = "bets"
-)
 
 func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 	if time.Now().Add(-2 * time.Hour).After(at) {
@@ -62,7 +50,7 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 		return []interface{}{}, nil
 	}
 
-	mids := make([]int, len(msg.Message)+len(msg.RedEnvelopeMessage))
+	mids := make([]int64, len(msg.Message)+len(msg.RedEnvelopeMessage))
 
 	for _, v := range msg.Message {
 		mids = append(mids, v.MemberId)
@@ -76,7 +64,7 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 		return []interface{}{}, err
 	}
 
-	memberMap := make(map[int]models.Member, len(ms))
+	memberMap := make(map[int64]models.Member, len(ms))
 	for _, v := range ms {
 		memberMap[v.Id] = v
 	}
@@ -84,50 +72,44 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 	data := make([]interface{}, 0)
 	for _, msgId := range msg.List {
 		switch msg.Type[msgId] {
-		case pb.PushMsg_MONEY:
+		case models.RED_ENVELOPE_TYPE:
 			redEnvelope := msg.RedEnvelopeMessage[msgId]
 			user := memberMap[redEnvelope.MemberId]
-			data = append(data, RedEnvelopeMessage{
-				Message: Message{
-					Id:        msgId,
-					Uid:       user.Uid,
-					Name:      user.Name,
-					Type:      redEnvelopeType,
-					Avatar:    toAvatarName(user.Gender),
-					Message:   redEnvelope.Message,
-					Time:      redEnvelope.SendAt.Format("15:04:05"),
-					Timestamp: redEnvelope.SendAt.Unix(),
-				},
-				RedEnvelope: RedEnvelope{
-					Id:      redEnvelope.RedEnvelopesId,
-					Token:   redEnvelope.Token,
-					Expired: redEnvelope.ExpireAt.Format(time.RFC3339),
-				},
-			})
-		case pb.PushMsg_USER:
+			read := scheme.RedEnvelope{
+				Id:      redEnvelope.RedEnvelopesId,
+				Token:   redEnvelope.Token,
+				Expired: redEnvelope.ExpireAt.Format(time.RFC3339),
+			}
+
+			m := read.ToMessage(msgId, scheme.User{
+				Uid:    user.Uid,
+				Name:   user.Name,
+				Avatar: ToAvatarName(user.Gender),
+			}, redEnvelope.Message)
+
+			m.Time = msg.Message[msgId].SendAt.Format("15:04:05")
+			m.Timestamp = msg.Message[msgId].SendAt.Unix()
+
+			data = append(data, m)
+		case models.MESSAGE_TYPE:
+			var m scheme.Message
 			user := memberMap[msg.Message[msgId].MemberId]
-			data = append(data, Message{
-				Id:        msgId,
-				Uid:       user.Uid,
-				Name:      user.Name,
-				Type:      messageType,
-				Avatar:    toAvatarName(user.Gender),
-				Message:   msg.Message[msgId].Message,
-				Time:      msg.Message[msgId].SendAt.Format("15:04:05"),
-				Timestamp: msg.Message[msgId].SendAt.Unix(),
-			})
-		case pb.PushMsg_ADMIN:
-			user := memberMap[msg.Message[msgId].MemberId]
-			data = append(data, Message{
-				Id:        msgId,
-				Uid:       user.Uid,
-				Name:      user.Name,
-				Type:      messageType,
-				Avatar:    avatarRoot,
-				Message:   msg.Message[msgId].Message,
-				Time:      msg.Message[msgId].SendAt.Format("15:04:05"),
-				Timestamp: msg.Message[msgId].SendAt.Unix(),
-			})
+
+			if user.Id == member.RootMid {
+				m = scheme.NewRoot().ToAdmin(msgId, msg.Message[msgId].Message)
+			} else {
+				u := scheme.User{
+					Uid:    user.Uid,
+					Name:   user.Name,
+					Avatar: ToAvatarName(user.Gender),
+				}
+				m = u.ToUser(msgId, msg.Message[msgId].Message)
+			}
+
+			m.Time = msg.Message[msgId].SendAt.Format("15:04:05")
+			m.Timestamp = msg.Message[msgId].SendAt.Unix()
+
+			data = append(data, m)
 		}
 	}
 
@@ -143,20 +125,19 @@ func (s stringJson) MarshalJSON() ([]byte, error) {
 	return []byte(s), nil
 }
 
-func RoomTopMessageToMessage(msg models.RoomTopMessage) Message {
-	return Message{
-		Id:        msg.MsgId,
-		Uid:       RootUid,
-		Type:      TopType,
-		Name:      RootName,
-		Message:   msg.Message,
-		Time:      msg.SendAt.Format("15:04:05"),
-		Timestamp: msg.SendAt.Unix(),
-	}
+func RoomTopMessageToMessage(msg models.RoomTopMessage) scheme.Message {
+	u := scheme.NewRoot()
+	message := u.ToTop(msg.MsgId, msg.Message)
+	message.Time = msg.SendAt.Format("15:04:05")
+	message.Timestamp = msg.SendAt.Unix()
+	return message
 }
 
-func ToMessage(msgByte []byte) (Message, error) {
-	var msg Message
-	err := json.Unmarshal(msgByte, &msg)
-	return msg, err
+func RoomBulletinMessageToMessage(msg models.RoomTopMessage) scheme.Message {
+	u := scheme.NewRoot()
+	message := u.ToSystem(msg.MsgId, msg.Message)
+	message.Type = "bulletin"
+	message.Time = msg.SendAt.Format("15:04:05")
+	message.Timestamp = msg.SendAt.Unix()
+	return message
 }

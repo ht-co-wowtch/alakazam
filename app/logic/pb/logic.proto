@@ -6,25 +6,20 @@ import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 message PushMsg {
     enum Type {
-        Empty = 0;
-        USER = 1;
-        ADMIN = 2;
-        MONEY = 3;
-        BETS = 4;
-        ADMIN_TOP = 30;
-        CLOSE_TOP = 31;
-        Close = 100;
+        PUSH = 0;
+        ROOM = 1;
     }
     Type type = 1;
-    int32 speed = 2;
-    string server = 3;
-    repeated int32 room = 4;
-    repeated string keys = 5;
-    bytes msg = 6;
+    repeated int32 room = 2;
+    repeated string keys = 3;
+    bytes msg = 4;
+    string message = 5;
+    int32 msgType = 6;
     int64 mid = 7;
     int64 seq = 8;
-    int64 sendAt = 9;
-    string message = 10;
+    int32 op = 9;
+    int64 sendAt = 10;
+    bool isRaw = 11;
 }
 
 message PingReply {
@@ -43,6 +38,14 @@ message Connect {
     PermissionMessage permissionMessage = 7 [(gogoproto.jsontag) = "permission_message"];
 }
 
+message User {
+    int64 id = 1;
+    string uid = 2;
+    string name = 3;
+    int32 gender = 4;
+    int32 type = 5;
+}
+
 message Permission {
     bool isMessage = 1 [(gogoproto.jsontag) = "is_message"];
 	bool isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
@@ -52,6 +55,7 @@ message Permission {
 message PermissionMessage {
     string isMessage = 1 [(gogoproto.jsontag) = "is_message"];
    	string isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
+    string isBets = 3 [(gogoproto.jsontag) = "is_bets"];
 }
 
 message ConnectReq {
@@ -61,10 +65,17 @@ message ConnectReq {
 }
 
 message ConnectReply {
-    string name = 1;
-    int64 heartbeat = 2;
-    bytes headerMessage = 3;
+    int64 heartbeat = 1;
+    bytes topMessage = 2;
+    bytes bulletinMessage = 3;
     Connect Connect = 4;
+    User User = 5;
+    bool isConnectSuccessReply = 6;
+}
+
+message ConnectSuccessReq {
+    int32 roomId = 1;
+    User User = 2;
 }
 
 message DisconnectReq {
@@ -115,12 +126,15 @@ service Logic {
     rpc Ping(PingReq) returns(PingReply);
     // Connect
     rpc Connect(ConnectReq) returns (ConnectReply);
+    // Connect Success Reply
+    rpc ConnectSuccessReply(ConnectSuccessReq) returns (PingReply);
     // Disconnect
     rpc Disconnect(DisconnectReq) returns (DisconnectReply);
     // ChangeRoom
-    rpc ChangeRoom(ChangeRoomReq) returns (ChangeRoomReply);
+    rpc ChangeRoom(ChangeRoomReq) returns (ConnectReply);
     // Heartbeat
     rpc Heartbeat(HeartbeatReq) returns (HeartbeatReply);
     // RenewOnline
     rpc RenewOnline(OnlineReq) returns (OnlineReply);
+
 }

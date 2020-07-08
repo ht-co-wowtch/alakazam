@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -45,6 +46,8 @@ func TestUpdateRoom(t *testing.T) {
 		Id:           1,
 		IsMessage:    false,
 		IsBets:       false,
+		Type:         LIVE_TYPE,
+		MemberId:     sql.NullInt64{Int64: 2, Valid: true},
 		DayLimit:     2,
 		DepositLimit: 200,
 		DmlLimit:     200,
@@ -61,6 +64,8 @@ func TestUpdateRoom(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, ok)
 	assert.False(t, r.IsMessage)
+	assert.Equal(t, r.Type, LIVE_TYPE)
+	assert.Equal(t, r.MemberId.Int64, int64(2))
 	assert.Equal(t, room.DayLimit, r.DayLimit)
 	assert.Equal(t, room.DepositLimit, r.DepositLimit)
 	assert.Equal(t, room.DmlLimit, r.DmlLimit)
@@ -75,8 +80,10 @@ func TestGetRoom(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, Room{
+		Id:           1,
 		IsMessage:    true,
 		IsBets:       true,
+		Type:         LOTTERY_TYPE,
 		DayLimit:     1,
 		DepositLimit: 100,
 		DmlLimit:     1000,

@@ -1,0 +1,33 @@
+# Create database
+# ------------------------------------------------------------
+CREATE DATABASE IF NOT EXISTS `my_db` COLLATE 'utf8mb4_unicode_ci';
+
+GRANT ALL ON `my_db`.* TO 'default'@'%';
+FLUSH PRIVILEGES;
+
+USE `my_db`;
+
+
+# Create table user
+# ------------------------------------------------------------
+DROP TABLE IF EXISTS `user`;
+
+CREATE TABLE `user` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '流水號',
+    `account` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '帳號',
+    `password` varchar(60) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '密碼',
+    `is_active` tinyint(1) unsigned NOT NULL COMMENT '是否啟用',
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `user_account_unique` (`account`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='使用者';
+
+
+# Data seeding
+# ------------------------------------------------------------
+LOCK TABLES `user` WRITE;
+INSERT INTO `user` (`id`, `account`, `password`, `is_active`, `created_at`, `updated_at`)
+VALUES
+    (1,'admin','$2a$10$SRfq6iTU5QAvbvBqoPXiSOpNY6clM3i/GNAGx7g09PAyt3HkvtCLW',1,'2018-12-07 07:19:48','2018-12-07 07:19:48');
+UNLOCK TABLES;

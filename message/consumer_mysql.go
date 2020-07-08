@@ -8,6 +8,8 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/go-xorm/xorm"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"runtime"
@@ -65,10 +67,6 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 				}))
 			}
 
-			if p.Type > pb.PushMsg_MONEY {
-				continue
-			}
-
 			sendAt := time.Unix(p.SendAt, 0)
 			tx := m.db.Master().Prepare()
 
@@ -76,18 +74,18 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 
 			defer tx.Rollback()
 
-			switch p.Type {
-			case pb.PushMsg_USER, pb.PushMsg_ADMIN:
-				if _, e := tx.Exec(fmt.Sprintf(addMessage, p.Room[0]%50), p.Seq, p.Mid, p.Type, p.Message, sendAt); e != nil {
+			switch p.MsgType {
+			case models.MESSAGE_TYPE:
+				if _, e := tx.Exec(fmt.Sprintf(addMessage, p.Room[0]%50), p.Seq, p.Mid, models.MESSAGE_TYPE, p.Message, sendAt); e != nil {
 					err = &messageError{
-						error:   err,
+						error:   e,
 						msgId:   p.Seq,
 						mid:     p.Mid,
 						message: p.Message,
 					}
 				}
-			case pb.PushMsg_MONEY:
-				m := new(RedEnvelopeMessage)
+			case models.RED_ENVELOPE_TYPE:
+				m := new(scheme.RedEnvelopeMessage)
 				if err = json.Unmarshal(p.Msg, m); err != nil {
 					break
 				}
@@ -106,11 +104,13 @@ func (m *MysqlConsumer) run(msg chan *pb.PushMsg) {
 						message:       p.Message,
 					}
 				}
+			default:
+				continue
 			}
 
 			if err == nil {
 				for _, rid := range p.Room {
-					if _, e := tx.Exec(fmt.Sprintf(addRoomMessage, rid%50), rid, p.Seq, p.Type, sendAt); e != nil {
+					if _, e := tx.Exec(fmt.Sprintf(addRoomMessage, rid%50), rid, p.Seq, p.MsgType, sendAt); e != nil {
 						err = &MysqlRoomMessageError{
 							error:   e,
 							msgId:   p.Seq,
@@ -152,7 +152,7 @@ const (
 )
 
 func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
-	if msg.Type <= pb.PushMsg_MONEY {
+	if msg.MsgType > 0 {
 		m.consumer[msg.Room[0]%m.consumerCount] <- msg
 	}
 	return nil

@@ -2,7 +2,6 @@ package job
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
@@ -31,19 +30,26 @@ type consume struct {
 // 訊息推送至comet server
 func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 	switch pushMsg.Type {
-	// 單一/多房間推送
-	case logicpb.PushMsg_USER, logicpb.PushMsg_MONEY, logicpb.PushMsg_BETS, logicpb.PushMsg_ADMIN, logicpb.PushMsg_ADMIN_TOP:
-		for _, r := range pushMsg.Room {
-			if err := c.getRoom(r).Push(pushMsg.Msg, cometpb.OpRaw); err != nil {
-				return err
+	// 單人推送
+	case logicpb.PushMsg_PUSH:
+		c.pushRawByte(pushMsg.Keys, pushMsg.Msg, pushMsg.Op)
+		break
+
+	// 單房間推送
+	case logicpb.PushMsg_ROOM:
+		if pushMsg.IsRaw {
+			for _, r := range pushMsg.Room {
+				c.getRoom(r).consume.broadcastRoomRawByte(r, pushMsg.Msg, pushMsg.Op)
+			}
+		} else {
+			for _, r := range pushMsg.Room {
+				if err := c.getRoom(r).Push(pushMsg.Msg, pushMsg.Op); err != nil {
+					return err
+				}
 			}
 		}
-	case logicpb.PushMsg_Close:
-		return c.kick(pushMsg)
-	case logicpb.PushMsg_CLOSE_TOP:
-		for _, r := range pushMsg.Room {
-			c.getRoom(r).consume.broadcastRoomRawBytes(r, pushMsg.Msg, cometpb.OpCloseTopMessage)
-		}
+		break
+
 	// 異常資料
 	default:
 		return fmt.Errorf("no match push type: %s", pushMsg.Type)
@@ -52,11 +58,7 @@ func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 }
 
 // 房間訊息推送給comet
-func (c *consume) broadcastRoomRawMessage(roomID int32, body []byte) {
-	c.broadcastRoomRawBytes(roomID, body, cometpb.OpBatchRaw)
-}
-
-func (c *consume) broadcastRoomRawBytes(roomID int32, body []byte, op int32) {
+func (c *consume) broadcastRoomRawByte(roomID int32, body []byte, op int32) {
 	args := cometpb.BroadcastRoomReq{
 		RoomID: roomID,
 		Proto: &cometpb.Proto{
@@ -64,9 +66,23 @@ func (c *consume) broadcastRoomRawBytes(roomID int32, body []byte, op int32) {
 			Body: body,
 		},
 	}
-	comets := c.servers
-	for _, c := range comets {
+
+	for _, c := range c.servers {
 		c.BroadcastRoom(&args)
+	}
+}
+
+func (c *consume) pushRawByte(keys []string, body []byte, op int32) {
+	args := cometpb.KeyReq{
+		Key: keys,
+		Proto: &cometpb.Proto{
+			Op:   op,
+			Body: body,
+		},
+	}
+
+	for _, c := range c.servers {
+		c.Push(&args)
 	}
 }
 
@@ -92,23 +108,4 @@ func (c *consume) delRoom(roomID int32) {
 	c.roomsMutex.Lock()
 	delete(c.rooms, roomID)
 	c.roomsMutex.Unlock()
-}
-
-func (c *consume) kick(pushMsg *logicpb.PushMsg) error {
-	msg := struct {
-		Message string `json:"message"`
-	}{
-		Message: pushMsg.Message,
-	}
-	b, _ := json.Marshal(msg)
-	for _, c := range c.servers {
-		c.Kick(&cometpb.KeyReq{
-			Proto: &cometpb.Proto{
-				Op:   cometpb.OpProtoFinish,
-				Body: b,
-			},
-			Key: pushMsg.Keys,
-		})
-	}
-	return nil
 }

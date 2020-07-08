@@ -13,11 +13,13 @@ import (
 type Cache interface {
 	set(room models.Room) error
 	get(id int) (models.Room, error)
-	setChat(room models.Room, message []byte) error
+	setChat(room models.Room, topMessage, bulletinMessage []byte) error
 	getChat(id int) (models.Room, error)
 	setChatTopMessage(rids []int32, message []byte) error
+	setChatBulletinMessage(rids []int32, message []byte) error
 	getChatTopMessage(rid int) ([]byte, error)
 	deleteChatTopMessage(rids []int32) error
+	deleteChatBulletinMessage(rids []int32) error
 	addOnline(server string, online *Online) error
 	getOnline(server string) (*Online, error)
 }
@@ -33,14 +35,17 @@ func newCache(client *redis.Client) Cache {
 }
 
 const (
-	// 房間的前綴詞，用於存儲在redis當key
-	roomKey = "room_%d"
+	prefix = "ala"
 
-	roomDataKey   = "data"
-	roomTopMsgKey = "msg"
+	// 房間的前綴詞，用於存儲在redis當key
+	roomKey = prefix + ":room_%d"
+
+	roomDataHKey        = "data"
+	roomTopMsgHKey      = "top"
+	roomBulletinMsgHKey = "bulletin"
 
 	// server name的前綴詞，用於存儲在redis當key
-	onlineKey = "server_%s"
+	onlineKey = prefix + ":server_%s"
 )
 
 func keyRoom(id int) string {
@@ -62,14 +67,14 @@ func (c *cache) set(room models.Room) error {
 		return err
 	}
 	key := keyRoom(room.Id)
-	tx.HSet(key, roomDataKey, b)
+	tx.HSet(key, roomDataHKey, b)
 	tx.Expire(key, roomExpired)
 	_, err = tx.Exec()
 	return err
 }
 
 func (c *cache) get(id int) (models.Room, error) {
-	b, err := c.c.HGet(keyRoom(id), roomDataKey).Bytes()
+	b, err := c.c.HGet(keyRoom(id), roomDataHKey).Bytes()
 	if err != nil {
 		return models.Room{}, err
 	}
@@ -80,7 +85,7 @@ func (c *cache) get(id int) (models.Room, error) {
 	return r, nil
 }
 
-func (c *cache) setChat(room models.Room, message []byte) error {
+func (c *cache) setChat(room models.Room, topMessage, bulletinMessage []byte) error {
 	b1, err := json.Marshal(room)
 	if err != nil {
 		return err
@@ -89,8 +94,9 @@ func (c *cache) setChat(room models.Room, message []byte) error {
 	tx := c.c.Pipeline()
 	key := keyRoom(room.Id)
 	tx.HMSet(key, map[string]interface{}{
-		roomDataKey:   b1,
-		roomTopMsgKey: message,
+		roomDataHKey:        b1,
+		roomTopMsgHKey:      topMessage,
+		roomBulletinMsgHKey: bulletinMessage,
 	})
 	tx.Expire(key, roomExpired)
 	_, err = tx.Exec()
@@ -98,7 +104,7 @@ func (c *cache) setChat(room models.Room, message []byte) error {
 }
 
 func (c *cache) getChat(id int) (models.Room, error) {
-	room, err := c.c.HMGet(keyRoom(id), roomDataKey, roomTopMsgKey).Result()
+	room, err := c.c.HMGet(keyRoom(id), roomDataHKey, roomTopMsgHKey, roomBulletinMsgHKey).Result()
 	if err != nil {
 		return models.Room{}, err
 	}
@@ -110,11 +116,14 @@ func (c *cache) getChat(id int) (models.Room, error) {
 	if err = json.Unmarshal([]byte(room[0].(string)), &r); err != nil {
 		return r, err
 	}
-	if room[1] == nil {
-		return r, nil
+	if room[1] != nil {
+		r.TopMessage = []byte(room[1].(string))
 	}
 
-	r.HeaderMessage = []byte(room[1].(string))
+	if room[2] != nil {
+		r.BulletinMessage = []byte(room[2].(string))
+	}
+
 	return r, err
 }
 
@@ -126,14 +135,28 @@ func (c *cache) setChatTopMessage(rids []int32, message []byte) error {
 
 	tx := c.c.Pipeline()
 	for _, k := range keys {
-		tx.HSet(k, roomTopMsgKey, message)
+		tx.HSet(k, roomTopMsgHKey, message)
+	}
+	_, err := tx.Exec()
+	return err
+}
+
+func (c *cache) setChatBulletinMessage(rids []int32, message []byte) error {
+	keys := make([]string, 0, len(rids))
+	for _, rid := range rids {
+		keys = append(keys, keyRoom(int(rid)))
+	}
+
+	tx := c.c.Pipeline()
+	for _, k := range keys {
+		tx.HSet(k, roomBulletinMsgHKey, message)
 	}
 	_, err := tx.Exec()
 	return err
 }
 
 func (c *cache) getChatTopMessage(rid int) ([]byte, error) {
-	b, err := c.c.HGet(keyRoom(rid), roomTopMsgKey).Bytes()
+	b, err := c.c.HGet(keyRoom(rid), roomTopMsgHKey).Bytes()
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +174,21 @@ func (c *cache) deleteChatTopMessage(rids []int32) error {
 
 	tx := c.c.Pipeline()
 	for _, k := range keys {
-		tx.HDel(k, roomTopMsgKey)
+		tx.HDel(k, roomTopMsgHKey)
+	}
+	_, err := tx.Exec()
+	return err
+}
+
+func (c *cache) deleteChatBulletinMessage(rids []int32) error {
+	keys := make([]string, 0, len(rids))
+	for _, rid := range rids {
+		keys = append(keys, keyRoom(int(rid)))
+	}
+
+	tx := c.c.Pipeline()
+	for _, k := range keys {
+		tx.HDel(k, roomBulletinMsgHKey)
 	}
 	_, err := tx.Exec()
 	return err
@@ -171,10 +208,11 @@ type Online struct {
 func (c *cache) addOnline(server string, online *Online) error {
 	roomsMap := map[uint32]map[int32]int32{}
 	for room, count := range online.RoomCount {
-		rMap := roomsMap[cityhash.CityHash32([]byte(strconv.Itoa(int(room))), uint32(room))%8]
+		r := strconv.Itoa(int(room))
+		rMap := roomsMap[cityhash.CityHash32([]byte(r), uint32(len(r)))%8]
 		if rMap == nil {
 			rMap = make(map[int32]int32)
-			roomsMap[cityhash.CityHash32([]byte(strconv.Itoa(int(room))), uint32(room))%8] = rMap
+			roomsMap[cityhash.CityHash32([]byte(r), uint32(len(r)))%8] = rMap
 		}
 		rMap[room] = count
 	}
