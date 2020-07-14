@@ -8,7 +8,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
-	"net"
 	"time"
 )
 
@@ -17,6 +16,8 @@ type Consumer struct {
 	topic   string
 	group   sarama.ConsumerGroup
 	handler sarama.ConsumerGroupHandler
+	ready   chan bool
+	isRun   bool
 }
 
 type Config struct {
@@ -68,8 +69,9 @@ func NewConsumer(ctx context.Context, conf Config) *Consumer {
 		ctx:   ctx,
 		topic: conf.Topic,
 		group: group,
+		ready: make(chan bool),
 	}
-	go c.errorProc()
+	go c.proc()
 	return c
 }
 
@@ -78,14 +80,15 @@ type ConsumerGroupHandler interface {
 }
 
 func (c *Consumer) Run(handler ConsumerGroupHandler) {
-	c.handler = &consumer{handler}
+	c.handler = &consumer{
+		handler: handler,
+		ready:   c.ready,
+	}
+
 	for {
 		if err := c.group.Consume(c.ctx, []string{c.topic}, c.handler); err != nil {
-			switch err.(type) {
-			case *net.OpError:
-				log.Error("kafka consumer", zap.Error(err))
-				return
-			default:
+			if c.isRun {
+				c.isRun = false
 				log.Error("kafka consumer", zap.Error(err))
 			}
 		}
@@ -102,11 +105,14 @@ func (c *Consumer) Close() {
 	c.ctx.Done()
 }
 
-func (c *Consumer) errorProc() {
+func (c *Consumer) proc() {
 	for {
 		select {
 		case <-c.ctx.Done():
 			return
+		case isRun := <-c.ready:
+			c.isRun = isRun
+			break
 		case err := <-c.group.Errors():
 			log.Error("consumer message", zap.Error(err))
 		}
@@ -115,19 +121,25 @@ func (c *Consumer) errorProc() {
 
 type consumer struct {
 	handler ConsumerGroupHandler
+	ready   chan bool
 }
 
 func (c *consumer) Setup(session sarama.ConsumerGroupSession) error {
+	log.Info("kafka consumer setup")
 	return nil
 }
 
 func (c *consumer) Cleanup(session sarama.ConsumerGroupSession) error {
+	log.Info("kafka consumer cleanup")
 	return nil
 }
 
 //var errMessageNotFound = errors.New("consumer group claim read message not found")
 
 func (c *consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	c.ready <- true
+	log.Infof("kafka start consumer message for [%d] partition", claim.Partition())
+
 	for msg := range claim.Messages() {
 		session.MarkMessage(msg, "")
 		pushMsg := new(pb.PushMsg)
