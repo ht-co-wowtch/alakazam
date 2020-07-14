@@ -96,7 +96,7 @@ func (b Bet) ToProto(seq int64, rid []int32, user User) (*logicpb.PushMsg, error
 
 type BetsWinReward struct {
 	Message
-	Reward displayMessage `json:"reward"`
+	Reward displayMessage `json:"bets_win_reward"`
 }
 
 func NewBetsWinProto(seq int64, rid []int32, user User, gameName string) (*logicpb.PushMsg, error) {
