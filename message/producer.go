@@ -295,11 +295,12 @@ func (p *Producer) Kick(msg string, keys []string) error {
 
 func (p *Producer) CloseTop(msgId int64, rid []int32) error {
 	pushMsg := &logicpb.PushMsg{
-		Type: logicpb.PushMsg_ROOM,
-		Op:   pb.OpCloseTopMessage,
-		Seq:  msgId,
-		Room: rid,
-		Msg:  []byte(fmt.Sprintf(`{"id":%d}`, msgId)),
+		Type:  logicpb.PushMsg_ROOM,
+		Op:    pb.OpCloseTopMessage,
+		IsRaw: true,
+		Seq:   msgId,
+		Room:  rid,
+		Msg:   []byte(fmt.Sprintf(`{"id":%d}`, msgId)),
 	}
 	if err := p.send(pushMsg); err != nil {
 		return err
