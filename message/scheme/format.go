@@ -91,7 +91,7 @@ func displayByAdmin(message string) display {
 
 // 跟投Display
 func displayByBets(user User, gameName string, amount int) display {
-	msg := "用戶" + user.Name + "在" + gameName + "下注" + strconv.Itoa(amount) + "元"
+	msg := "用户" + user.Name + "在" + gameName + "下注" + strconv.Itoa(amount) + "元"
 	return display{
 		Title: displayText{
 			Text:            member.System,
@@ -160,7 +160,7 @@ func displayByReward(user User, amount float64) display {
 			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
 		},
 		Message: displayMessage{
-			Text:            user.Name + "打賞主播" + strconv.FormatFloat(amount, 'f', -1, 64) + "元",
+			Text:            user.Name + "打赏主播" + strconv.FormatFloat(amount, 'f', -1, 64) + "元",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []textEntity{
