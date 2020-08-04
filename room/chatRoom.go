@@ -99,6 +99,10 @@ func (c *chat) ChangeRoom(uid string, rid int, key string) (*pb.ConnectReply, er
 		return nil, err
 	}
 
+	if err := c.member.ChangeRoom(uid, key, rid); err != nil {
+		return nil, err
+	}
+
 	return c.newConnectReply(user, room, key)
 }
 

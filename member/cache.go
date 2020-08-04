@@ -28,6 +28,7 @@ type Cache interface {
 	get(uid string) (*models.Member, error)
 	getKeys(uid string) ([]string, error)
 	getWs(uid string) (map[string]string, error)
+	setWs(uid, key string, rid int) error
 	logout(uid, key string) (bool, error)
 	delete(uid string) (bool, error)
 	refreshExpire(uid string) error
@@ -133,6 +134,21 @@ func (c *cache) getKeys(uid string) ([]string, error) {
 		keys = append(keys, key)
 	}
 	return keys, nil
+}
+
+func (c *cache) setWs(uid, key string, rid int) error {
+	uidWsKey := keyUidWs(uid)
+	c1 := c.c.HSet(uidWsKey, key, rid)
+	c2 := c.c.Expire(uidWsKey, c.expire)
+
+	if c1.Err() != nil {
+		return errSetUidWsKey
+	}
+	if !c2.Val() {
+		return errExpire
+	}
+
+	return nil
 }
 
 func (c *cache) getWs(uid string) (map[string]string, error) {

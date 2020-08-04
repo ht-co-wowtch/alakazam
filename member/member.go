@@ -24,6 +24,7 @@ type Chat interface {
 	GetMessageSession(uid string) (*models.Member, error)
 	Login(rid int, token, server string) (*models.Member, string, error)
 	Logout(uid, key string) (bool, error)
+	ChangeRoom(uid, key string, rid int) error
 	Heartbeat(uid string) error
 }
 
@@ -101,6 +102,10 @@ func (m *Member) Login(rid int, token, server string) (*models.Member, string, e
 
 func (m *Member) Logout(uid, key string) (bool, error) {
 	return m.c.logout(uid, key)
+}
+
+func (m *Member) ChangeRoom(uid, key string, rid int) error {
+	return m.c.setWs(uid, key, rid)
 }
 
 func (m *Member) Kick(uid string) ([]string, error) {
