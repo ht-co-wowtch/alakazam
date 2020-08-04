@@ -85,7 +85,7 @@ func (m *Member) Login(rid int, token, server string) (*models.Member, string, e
 
 	key := uuid.New().String()
 
-	if err = m.c.login(u, key, server); err != nil {
+	if err = m.c.login(u, rid, key); err != nil {
 		return nil, "", err
 	} else {
 		log.Info(
@@ -104,7 +104,7 @@ func (m *Member) Logout(uid, key string) (bool, error) {
 }
 
 func (m *Member) Kick(uid string) ([]string, error) {
-	keys, err := m.c.getKey(uid)
+	keys, err := m.c.getKeys(uid)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,11 @@ func (m *Member) Kick(uid string) ([]string, error) {
 }
 
 func (m *Member) GetKeys(uid string) ([]string, error) {
-	return m.c.getKey(uid)
+	return m.c.getKeys(uid)
+}
+
+func (m *Member) GetWs(uid string) (map[string]string, error) {
+	return m.c.getWs(uid)
 }
 
 func (m *Member) GetMessageSession(uid string) (*models.Member, error) {

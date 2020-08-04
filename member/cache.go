@@ -23,10 +23,11 @@ const (
 )
 
 type Cache interface {
-	login(member *models.Member, key, server string) error
+	login(member *models.Member, rid int, key string) error
 	set(member *models.Member) (bool, error)
 	get(uid string) (*models.Member, error)
-	getKey(uid string) ([]string, error)
+	getKeys(uid string) ([]string, error)
+	getWs(uid string) (map[string]string, error)
 	logout(uid, key string) (bool, error)
 	delete(uid string) (bool, error)
 	refreshExpire(uid string) error
@@ -67,7 +68,7 @@ var (
 	errExpire      = errors.New("set expire")
 )
 
-func (c *cache) login(member *models.Member, key, server string) error {
+func (c *cache) login(member *models.Member, rid int, key string) error {
 	b, err := json.Marshal(member)
 	if err != nil {
 		return err
@@ -82,7 +83,7 @@ func (c *cache) login(member *models.Member, key, server string) error {
 	})
 
 	uidWsKey := keyUidWs(member.Uid)
-	c2 := tx.HSet(uidWsKey, key, server)
+	c2 := tx.HSet(uidWsKey, key, rid)
 	c3 := tx.Expire(uidKey, c.expire)
 	c4 := tx.Expire(uidWsKey, c.expire)
 
@@ -122,7 +123,7 @@ func (c *cache) get(uid string) (*models.Member, error) {
 	return &m, nil
 }
 
-func (c *cache) getKey(uid string) ([]string, error) {
+func (c *cache) getKeys(uid string) ([]string, error) {
 	maps, err := c.c.HGetAll(keyUidWs(uid)).Result()
 	if err != nil {
 		return nil, err
@@ -132,6 +133,10 @@ func (c *cache) getKey(uid string) ([]string, error) {
 		keys = append(keys, key)
 	}
 	return keys, nil
+}
+
+func (c *cache) getWs(uid string) (map[string]string, error) {
+	return c.c.HGetAll(keyUidWs(uid)).Result()
 }
 
 func (c *cache) logout(uid, key string) (bool, error) {

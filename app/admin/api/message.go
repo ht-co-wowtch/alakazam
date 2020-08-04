@@ -179,12 +179,28 @@ func (s *httpServer) betsWin(c *gin.Context) error {
 		Avatar: message.ToAvatarName(m.Gender),
 	}
 
-	id, err := s.message.SendBetsWin([]int32{req.RoomId}, user, req.GameName)
+	ws, err := s.member.GetWs(req.Uid)
 	if err != nil {
 		return err
 	}
 
-	keys, err := s.member.GetKeys(req.Uid)
+	var isSend bool
+	keys := []string{}
+	rid := strconv.Itoa(int(req.RoomId))
+
+	for key, id := range ws {
+		if id == rid {
+			isSend = true
+		}
+
+		keys = append(keys, key)
+	}
+
+	if !isSend {
+		return nil
+	}
+
+	id, err := s.message.SendBetsWin([]int32{req.RoomId}, user, req.GameName)
 	if err != nil {
 		return err
 	}
