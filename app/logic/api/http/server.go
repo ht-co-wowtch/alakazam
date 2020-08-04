@@ -71,6 +71,7 @@ func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, 
 
 func handler(e *gin.Engine, s httpServer) {
 	e.POST("/push/room", s.authUid, ErrHandler(s.pushRoom))
+	e.POST("/push/private", s.authUid, ErrHandler(s.pushPrivate))
 	e.POST("/red-envelope", s.authUid, ErrHandler(s.giveRedEnvelope))
 	e.PUT("/red-envelope", s.authUid, ErrHandler(s.takeRedEnvelope))
 	e.GET("/red-envelope/:id", ErrHandler(s.getRedEnvelopeDetail))

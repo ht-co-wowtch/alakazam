@@ -130,6 +130,43 @@ func (p *Producer) Send(fun func(id int64) (*logicpb.PushMsg, error)) (int64, er
 	return pushMsg.Seq, nil
 }
 
+func (p *Producer) SendPrivate(keys []string, msg string, user *models.Member) (int64, error) {
+	if err := p.rate.perSec(user.Id); err != nil {
+		return 0, err
+	}
+	if err := p.rate.sameMsg(msg, user.Uid); err != nil {
+		return 0, err
+	}
+
+	msg, err := p.filterMessage(msg)
+	if err != nil {
+		return 0, err
+	}
+
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		u := scheme.User{
+			Id:     user.Id,
+			Uid:    user.Uid,
+			Name:   user.Name,
+			Avatar: ToAvatarName(user.Gender),
+		}
+
+		pushMsg, err := u.ToUser(id, msg).ToProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pushMsg.Keys = keys
+		pushMsg.Mid = user.Id
+		pushMsg.Message = msg
+		pushMsg.Type = logicpb.PushMsg_PUSH
+		pushMsg.MsgType = models.MESSAGE_TYPE
+		pushMsg.IsRaw = true
+
+		return pushMsg, nil
+	})
+}
+
 func (p *Producer) SendUser(rid []int32, msg string, user *models.Member) (int64, error) {
 	if err := p.rate.perSec(user.Id); err != nil {
 		return 0, err

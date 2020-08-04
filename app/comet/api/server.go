@@ -39,7 +39,7 @@ func (s *server) Ping(ctx context.Context, req *empty.Empty) (*empty.Empty, erro
 	return &empty.Empty{}, nil
 }
 
-// 踢人
+// 私密
 func (s *server) Push(ctx context.Context, req *pb.KeyReq) (*empty.Empty, error) {
 	for _, key := range req.Key {
 		if b := s.srv.Bucket(key); b != nil {

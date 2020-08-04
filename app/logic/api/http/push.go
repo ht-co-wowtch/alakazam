@@ -36,3 +36,34 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 
 	return err
 }
+
+type privateReq struct {
+	Keys []string `json:"keys" binding:"required"`
+
+	// user push message
+	Message string `json:"message" binding:"required,max=100"`
+}
+
+// 私密
+func (s *httpServer) pushPrivate(c *gin.Context) error {
+	var p privateReq
+	if err := c.ShouldBindJSON(&p); err != nil {
+		return err
+	}
+
+	user, err := s.member.GetMessageSession(c.GetString("uid"))
+
+	if err != nil {
+		return err
+	}
+
+	id, err := s.msg.message.SendPrivate(p.Keys, p.Message, user)
+
+	if err == nil {
+		c.JSON(http.StatusOK, gin.H{
+			"id": id,
+		})
+	}
+
+	return err
+}
