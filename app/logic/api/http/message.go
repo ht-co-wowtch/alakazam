@@ -23,13 +23,13 @@ type msg struct {
 }
 
 func (m *msg) user(req messageReq) (int64, error) {
-	user, chat, err := m.room.GetUserMessageSession(req.uid, req.RoomId)
+	user, chat, err := m.room.GetUserMessageSession(req.Uid, req.RoomId)
 	if err != nil {
 		return 0, err
 	}
 
 	if chat.DayLimit >= 1 && chat.DmlLimit+chat.DepositLimit > 0 {
-		money, err := m.client.GetDepositAndDml(chat.DayLimit, user.Uid, req.token)
+		money, err := m.client.GetDepositAndDml(chat.DayLimit, user.Uid, req.Token)
 		if err != nil {
 			return 0, err
 		}

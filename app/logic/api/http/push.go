@@ -11,9 +11,9 @@ type messageReq struct {
 	// user push message
 	Message string `json:"message" binding:"required,max=100"`
 
-	uid string `json:"-"`
+	Uid string `json:"-"`
 
-	token string `json:"-"`
+	Token string `json:"-"`
 }
 
 // 單一房間推送訊息
@@ -23,8 +23,8 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 		return err
 	}
 
-	p.token = c.GetString("token")
-	p.uid = c.GetString("uid")
+	p.Token = c.GetString("token")
+	p.Uid = c.GetString("uid")
 
 	id, err := s.msg.user(p)
 
