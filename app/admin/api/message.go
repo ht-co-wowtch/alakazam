@@ -461,3 +461,36 @@ Err:
 	})
 	return nil
 }
+
+type followReq struct {
+	RoomId int32  `json:"room_id" binding:"required"`
+	Uid    string `json:"uid" binding:"required"`
+	Total  int    `json:"total" binding:"required"`
+}
+
+func (s *httpServer) follow(c *gin.Context) error {
+	var req followReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		return err
+	}
+
+	m, err := s.member.GetSession(req.Uid)
+	if err != nil {
+		return err
+	}
+
+	user := scheme.User{
+		Name: m.Name,
+		Uid:  req.Uid,
+	}
+
+	id, err := s.message.SendFollow(req.RoomId, user, req.Total)
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id": id,
+	})
+	return nil
+}

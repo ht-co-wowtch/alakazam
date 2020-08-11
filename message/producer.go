@@ -292,6 +292,12 @@ func (p *Producer) SendConnect(rid int32, user *logicpb.User) (int64, error) {
 	})
 }
 
+func (p *Producer) SendFollow(rid int32, user scheme.User, total int) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		return scheme.NewFollowProto(id, rid, user, total)
+	})
+}
+
 func (p *Producer) SendMessage(rid []int32, msg scheme.Message, isRaw bool) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		now := time.Now()

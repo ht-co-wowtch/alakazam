@@ -77,6 +77,7 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.POST("/betsWin", api.ErrHandler(s.betsWin))
 	e.POST("/gift", api.ErrHandler(s.gift))
 	e.POST("/reward", api.ErrHandler(s.reward))
+	e.POST("/follow", api.ErrHandler(s.follow))
 
 	// 敏感詞
 	e.POST("/shield", api.ErrHandler(s.CreateShield))

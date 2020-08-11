@@ -23,6 +23,9 @@ const (
 
 	// 投注中獎打賞
 	BETS_WIN_REWARD = "bets_win_reward"
+
+	// 關注
+	FOLLOW = "follow"
 )
 
 // 訊息格式

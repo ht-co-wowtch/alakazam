@@ -528,6 +528,7 @@ Body
 | bet          | 跟投         |               |
 | gift         | 禮物         |               |
 | live_stream  | 直播         |               |
+| follow       | 關注         |               |
 
 
 
@@ -1127,7 +1128,29 @@ entity.type: 文字實體內容
 }
 ```
 
+關注訊息
 
+```json
+{
+   "id":3602,
+   "type":"follow",
+   "time":"14:13:29",
+   "timestamp":1597126409,
+   "display":null,
+   "user":{
+      "uid":"79a5ded9a5f34b57bed0786ae4cbb21b",
+      "name":"Sam",
+      "avatar":""
+   },
+   "uid":"",
+   "name":"",
+   "avatar":"",
+   "message":"",
+   "follow":{
+      "total":10
+   }
+}
+```
 
 開播訊息
 
@@ -1140,7 +1163,7 @@ entity.type: 文字實體內容
    "display":null,
    "user":null,
    "live_stream": {
-  	 "chat_id": 1,    
+  	 "chat_id": 1 
    }
 }
 ```
