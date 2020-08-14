@@ -1142,10 +1142,6 @@ entity.type: 文字實體內容
       "name":"Sam",
       "avatar":""
    },
-   "uid":"",
-   "name":"",
-   "avatar":"",
-   "message":"",
    "follow":{
       "total":10
    }
