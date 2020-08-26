@@ -63,6 +63,24 @@ func (m *msg) user(req messageReq) (int64, error) {
 	return id, err
 }
 
+func (m *msg) private(req messageReq) (int64, error) {
+	user, err := m.member.GetMessageSession(req.Uid)
+	if err != nil {
+		return 0, err
+	}
+
+	keys, err := m.member.GetKeys(req.ToUid)
+	if err != nil {
+		return 0, err
+	}
+
+	if len(keys) == 0 {
+		return 0, errors.ErrLogin
+	}
+
+	return m.message.SendPrivate(keys, req.Message, user)
+}
+
 func (m *msg) redEnvelope(req giveRedEnvelopeReq) (int64, client.RedEnvelopeReply, error) {
 	user, reply, err := m.member.GiveRedEnvelope(req.uid, req.token, member.RedEnvelope{
 		RoomId:  req.RoomId,

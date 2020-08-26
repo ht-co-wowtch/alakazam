@@ -50,6 +50,28 @@ func displayByUser(user User, message string) display {
 	}
 }
 
+// 私密Display
+func displayByPrivate(user User, message string) display {
+	return display{
+		User: displayUser{
+			Text:   user.Name,
+			Color:  MESSAGE_SYSTEM_COLOR,
+			Avatar: user.Avatar,
+		},
+		Title: displayText{
+			Text:            "私讯",
+			Color:           MESSAGE_COLOR,
+			BackgroundColor: "#F79EB6",
+		},
+		Message: displayMessage{
+			Text:            message,
+			Color:           MESSAGE_COLOR,
+			BackgroundColor: NONE_COLOR,
+		},
+		BackgroundColor: "#38A2DB7F",
+	}
+}
+
 // 主播Display
 func displayByStreamer(user User, message string) display {
 	return display{

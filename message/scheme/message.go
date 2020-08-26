@@ -12,6 +12,9 @@ const (
 	// 普通訊息
 	MESSAGE_TYPE = "message"
 
+	// 私密
+	PRIVATE_TYPE = "private_message"
+
 	// 紅包訊息
 	RED_ENVELOPE_TYPE = "red_envelope"
 
@@ -193,6 +196,13 @@ func (u User) ToUser(seq int64, message string) Message {
 	b := u.toBase(seq, message)
 	b.Type = MESSAGE_TYPE
 	b.Display = displayByUser(u, message)
+	return b
+}
+
+func (u User) ToPrivate(seq int64, message string) Message {
+	b := u.toBase(seq, message)
+	b.Type = PRIVATE_TYPE
+	b.Display = displayByPrivate(u, message)
 	return b
 }
 
