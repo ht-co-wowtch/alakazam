@@ -45,7 +45,7 @@ type privateReq struct {
 }
 
 // 私密
-func (s *httpServer) pushPrivate(c *gin.Context) error {
+func (s *httpServer) pushKey(c *gin.Context) error {
 	var p privateReq
 	if err := c.ShouldBindJSON(&p); err != nil {
 		return err
@@ -57,7 +57,7 @@ func (s *httpServer) pushPrivate(c *gin.Context) error {
 		return err
 	}
 
-	id, err := s.msg.message.SendPrivate(p.Keys, p.Message, user)
+	id, err := s.msg.message.SendKey(p.Keys, p.Message, user)
 
 	if err == nil {
 		c.JSON(http.StatusOK, gin.H{

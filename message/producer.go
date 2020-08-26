@@ -130,7 +130,7 @@ func (p *Producer) Send(fun func(id int64) (*logicpb.PushMsg, error)) (int64, er
 	return pushMsg.Seq, nil
 }
 
-func (p *Producer) SendPrivate(keys []string, msg string, user *models.Member) (int64, error) {
+func (p *Producer) SendKey(keys []string, msg string, user *models.Member) (int64, error) {
 	if err := p.rate.perSec(user.Id); err != nil {
 		return 0, err
 	}
