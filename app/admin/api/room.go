@@ -134,6 +134,16 @@ func (s *httpServer) AddManage(c *gin.Context) error {
 		return err
 	}
 
+	keys, err := s.member.GetKeys(params.Uid)
+	if err != nil {
+		return err
+	}
+	m, _ := s.member.Get(params.Uid)
+	r, _ := s.room.Get(int(params.RoomId))
+	connect := room.NewPbConnect(m, r, "", 0)
+
+	_, _ = s.message.SendPermission(keys, m, *connect.Permission)
+
 	c.Status(http.StatusNoContent)
 	return nil
 }
@@ -158,6 +168,16 @@ func (s *httpServer) DeleteManage(c *gin.Context) error {
 	if err := s.room.DeleteManage(params.RoomId, params.Uid); err != nil {
 		return err
 	}
+
+	keys, err := s.member.GetKeys(params.Uid)
+	if err != nil {
+		return err
+	}
+	m, _ := s.member.Get(params.Uid)
+	r, _ := s.room.Get(int(params.RoomId))
+	connect := room.NewPbConnect(m, r, "", 0)
+
+	_, _ = s.message.SendPermission(keys, m, *connect.Permission)
 
 	c.Status(http.StatusNoContent)
 	return nil

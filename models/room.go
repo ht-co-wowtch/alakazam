@@ -152,6 +152,18 @@ func (r *RoomManage) TableName() string {
 }
 
 func (s *Store) AddManage(id, mid int64) (int64, error) {
+	ok, err := s.d.Where("room_id = ?", id).
+		Where("member_id = ?", mid).
+		Exist(&RoomManage{})
+
+	if err != nil {
+		return 0, err
+	}
+
+	if ok {
+		return 1, nil
+	}
+
 	return s.d.InsertOne(&RoomManage{
 		RoomId:   id,
 		MemberId: mid,

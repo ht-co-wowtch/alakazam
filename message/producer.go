@@ -325,6 +325,37 @@ func (p *Producer) SendConnect(rid int32, user *logicpb.User) (int64, error) {
 	})
 }
 
+func (p *Producer) SendPermission(keys []string, user *models.Member, permission logicpb.Permission) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		msg := struct {
+			scheme.Message
+			Permission logicpb.Permission `json:"permission"`
+		}{
+			Message: scheme.Message{
+				Id:   id,
+				Type: "permission",
+			},
+			Permission: permission,
+		}
+
+		bm, err := json.Marshal(msg)
+		if err != nil {
+			return nil, err
+		}
+
+		return &logicpb.PushMsg{
+			Keys:    keys,
+			Seq:     id,
+			Mid:     user.Id,
+			Op:      pb.OpRaw,
+			Msg:     bm,
+			Type:    logicpb.PushMsg_PUSH,
+			MsgType: models.MESSAGE_TYPE,
+			IsRaw:   true,
+		}, nil
+	})
+}
+
 func (p *Producer) SendFollow(rid int32, user scheme.User, total int) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		return scheme.NewFollowProto(id, rid, user, total)

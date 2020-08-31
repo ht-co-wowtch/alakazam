@@ -111,7 +111,7 @@ func (c *chat) newConnectReply(user *models.Member, room models.Room, key string
 		return nil, errors.ErrBlockade
 	}
 
-	connect := newPbConnect(user, room, key, int32(room.Id))
+	connect := NewPbConnect(user, room, key, int32(room.Id))
 	connect.Status = true
 
 	return &pb.ConnectReply{
@@ -282,7 +282,7 @@ func (c *chat) GetOnline(server string) (*Online, error) {
 	return c.cache.getOnline(server)
 }
 
-func newPbConnect(user *models.Member, room models.Room, key string, roomId int32) *pb.Connect {
+func NewPbConnect(user *models.Member, room models.Room, key string, roomId int32) *pb.Connect {
 	connect := &pb.Connect{
 		Uid:    user.Uid,
 		Key:    key,
