@@ -81,11 +81,7 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 				Expired: redEnvelope.ExpireAt.Format(time.RFC3339),
 			}
 
-			m := read.ToMessage(msgId, scheme.User{
-				Uid:    user.Uid,
-				Name:   user.Name,
-				Avatar: ToAvatarName(user.Gender),
-			}, redEnvelope.Message)
+			m := read.ToMessage(msgId, scheme.NewUser(user), redEnvelope.Message)
 
 			m.Time = msg.Message[msgId].SendAt.Format("15:04:05")
 			m.Timestamp = msg.Message[msgId].SendAt.Unix()
@@ -98,12 +94,7 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 			if user.Id == member.RootMid {
 				m = scheme.NewRoot().ToAdmin(msgId, msg.Message[msgId].Message)
 			} else {
-				u := scheme.User{
-					Uid:    user.Uid,
-					Name:   user.Name,
-					Avatar: ToAvatarName(user.Gender),
-				}
-				m = u.ToUser(msgId, msg.Message[msgId].Message)
+				m = scheme.NewUser(user).ToUser(msgId, msg.Message[msgId].Message)
 			}
 
 			m.Time = msg.Message[msgId].SendAt.Format("15:04:05")

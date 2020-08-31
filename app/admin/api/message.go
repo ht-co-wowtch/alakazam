@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -123,11 +122,8 @@ func (s *httpServer) bets(c *gin.Context) error {
 		return err
 	}
 
-	user := scheme.User{
-		Name:   m.Name,
-		Uid:    req.Uid,
-		Avatar: message.ToAvatarName(m.Gender),
-	}
+	m.Uid = req.Uid
+	user := scheme.NewUser(*m)
 
 	bet := scheme.Bet{
 		GameId:       req.GameId,
@@ -173,11 +169,8 @@ func (s *httpServer) betsWin(c *gin.Context) error {
 		return err
 	}
 
-	user := scheme.User{
-		Name:   m.Name,
-		Uid:    req.Uid,
-		Avatar: message.ToAvatarName(m.Gender),
-	}
+	m.Uid = req.Uid
+	user := scheme.NewUser(*m)
 
 	ws, err := s.member.GetWs(req.Uid)
 	if err != nil {
@@ -243,16 +236,14 @@ func (s *httpServer) gift(c *gin.Context) error {
 			return err
 		}
 
-		user = scheme.User{
-			Name:   m.Name,
-			Uid:    req.Uid,
-			Avatar: message.ToAvatarName(m.Gender),
-		}
+		m.Uid = req.Uid
+		user = scheme.NewUser(*m)
 	} else {
 		user = scheme.User{
 			Name:   req.UserName,
 			Uid:    req.Uid,
 			Avatar: req.UserAvatar,
+			Type:   models.Player,
 		}
 	}
 
@@ -300,16 +291,14 @@ func (s *httpServer) reward(c *gin.Context) error {
 			return err
 		}
 
-		user = scheme.User{
-			Name:   m.Name,
-			Uid:    req.Uid,
-			Avatar: message.ToAvatarName(m.Gender),
-		}
+		m.Uid = req.Uid
+		user = scheme.NewUser(*m)
 	} else {
 		user = scheme.User{
 			Name:   req.UserName,
 			Uid:    req.Uid,
 			Avatar: req.UserAvatar,
+			Type:   models.Player,
 		}
 	}
 
@@ -479,12 +468,7 @@ func (s *httpServer) follow(c *gin.Context) error {
 		return err
 	}
 
-	user := scheme.User{
-		Name: m.Name,
-		Uid:  req.Uid,
-	}
-
-	id, err := s.message.SendFollow(req.RoomId, user, req.Total)
+	id, err := s.message.SendFollow(req.RoomId, scheme.NewUser(*m), req.Total)
 	if err != nil {
 		return err
 	}

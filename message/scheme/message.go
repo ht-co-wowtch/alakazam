@@ -5,6 +5,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"time"
 )
 
@@ -190,6 +191,18 @@ type User struct {
 
 	// 頭像
 	Avatar string `json:"avatar"`
+
+	Type int `json:"type"`
+}
+
+func NewUser(member models.Member) User {
+	return User{
+		Id:     member.Id,
+		Uid:    member.Uid,
+		Name:   member.Name,
+		Type:   member.Type,
+		Avatar: ToAvatarName(member.Gender),
+	}
 }
 
 func (u User) ToUser(seq int64, message string) Message {
@@ -280,4 +293,25 @@ func NewConnect(seq int64, username string) Message {
 		Time:      now.Format("15:04:05"),
 		Timestamp: now.Unix(),
 	}
+}
+
+const (
+	avatarFemale = "female"
+	avatarMale   = "male"
+	avatarOther  = "other"
+	avatarRoot   = "root"
+)
+
+func ToAvatarName(code int32) string {
+	switch code {
+	case 0:
+		return avatarFemale
+	case 1:
+		return avatarMale
+	case 2:
+		return avatarOther
+	case 99:
+		return avatarRoot
+	}
+	return avatarOther
 }

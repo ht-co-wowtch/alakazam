@@ -7,7 +7,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -99,7 +98,7 @@ func (m *msg) redEnvelope(req giveRedEnvelopeReq) (int64, client.RedEnvelopeRepl
 		Expired: reply.ExpireAt.Format(time.RFC3339),
 	}
 
-	msgId, err := m.message.SendRedEnvelope([]int32{int32(req.RoomId)}, req.Message, toUserMessage(user), redEnvelope)
+	msgId, err := m.message.SendRedEnvelope([]int32{int32(req.RoomId)}, req.Message, scheme.NewUser(*user), redEnvelope)
 
 	if err != nil {
 		log.Error("send red envelope message error",
@@ -110,13 +109,4 @@ func (m *msg) redEnvelope(req giveRedEnvelopeReq) (int64, client.RedEnvelopeRepl
 	}
 
 	return msgId, reply, err
-}
-
-func toUserMessage(user *models.Member) scheme.User {
-	return scheme.User{
-		Id:     user.Id,
-		Uid:    user.Uid,
-		Name:   user.Name,
-		Avatar: message.ToAvatarName(user.Gender),
-	}
 }

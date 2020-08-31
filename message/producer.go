@@ -144,14 +144,7 @@ func (p *Producer) SendKey(keys []string, msg string, user *models.Member) (int6
 	}
 
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
-		u := scheme.User{
-			Id:     user.Id,
-			Uid:    user.Uid,
-			Name:   user.Name,
-			Avatar: ToAvatarName(user.Gender),
-		}
-
-		pushMsg, err := u.ToUser(id, msg).ToProto()
+		pushMsg, err := scheme.NewUser(*user).ToUser(id, msg).ToProto()
 		if err != nil {
 			return nil, err
 		}
@@ -181,12 +174,7 @@ func (p *Producer) SendUser(rid []int32, msg string, user *models.Member) (int64
 	}
 
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
-		u := scheme.User{
-			Id:     user.Id,
-			Uid:    user.Uid,
-			Name:   user.Name,
-			Avatar: ToAvatarName(user.Gender),
-		}
+		u := scheme.NewUser(*user)
 
 		var message scheme.Message
 
@@ -221,14 +209,7 @@ func (p *Producer) SendPrivate(keys []string, msg string, user *models.Member) (
 	}
 
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
-		u := scheme.User{
-			Id:     user.Id,
-			Uid:    user.Uid,
-			Name:   user.Name,
-			Avatar: ToAvatarName(user.Gender),
-		}
-
-		pushMsg, err := u.ToPrivate(id, msg).ToProto()
+		pushMsg, err := scheme.NewUser(*user).ToPrivate(id, msg).ToProto()
 		if err != nil {
 			return nil, err
 		}
