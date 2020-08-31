@@ -1,8 +1,10 @@
-package api
+package http
 
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"net/http"
 )
 
@@ -17,6 +19,18 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	if err := c.ShouldBindJSON(&params); err != nil {
 		return err
 	}
+
+	m, err := s.member.Get(c.GetString("uid"))
+	if err != nil {
+		return err
+	}
+
+	switch m.Type {
+	case models.STREAMER, models.MANAGE:
+	default:
+		return errors.ErrForbidden
+	}
+
 	if err := s.member.SetBanned(params.Uid, params.Expired, false); err != nil {
 		return err
 	}
@@ -34,6 +48,18 @@ func (s *httpServer) removeBanned(c *gin.Context) error {
 	if err := binding.Validator.ValidateStruct(&params); err != nil {
 		return err
 	}
+
+	m, err := s.member.Get(c.GetString("uid"))
+	if err != nil {
+		return err
+	}
+
+	switch m.Type {
+	case models.STREAMER, models.MANAGE:
+	default:
+		return errors.ErrForbidden
+	}
+
 	if err := s.member.RemoveBanned(params.Uid); err != nil {
 		return err
 	}

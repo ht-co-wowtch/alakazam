@@ -70,6 +70,10 @@ func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, 
 }
 
 func handler(e *gin.Engine, s httpServer) {
+	// 禁言
+	e.POST("/banned/:uid", s.authUid, ErrHandler(s.setBanned))
+	e.DELETE("/banned/:uid", s.authUid, ErrHandler(s.removeBanned))
+
 	e.POST("/push/room", s.authUid, ErrHandler(s.pushRoom))
 	e.POST("/push/key", s.authUid, ErrHandler(s.pushKey))
 	e.POST("/red-envelope", s.authUid, ErrHandler(s.giveRedEnvelope))
