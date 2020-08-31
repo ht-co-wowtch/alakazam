@@ -22,21 +22,25 @@ type Room interface {
 	GetTopMessage(msgId int64, t int) ([]int32, models.Message, error)
 	AddTopMessage(rids []int32, seq int64, message string, ts []int) error
 	DeleteTopMessage(rids []int32, msgId int64, t int) error
+	AddManage(rid int64, uid string) error
+	DeleteManage(rid int64, uid string) error
 	Online() (map[int32]int32, error)
 }
 
 type room struct {
 	db     *models.Store
+	mc     member.Cache
 	c      Cache
 	member *member.Member
 	cli    *client.Client
 }
 
-func New(db *models.Store, cache *redis.Client, member *member.Member, cli *client.Client) Room {
+func New(db *models.Store, cache *redis.Client, m *member.Member, cli *client.Client) Room {
 	return &room{
 		db:     db,
 		c:      newCache(cache),
-		member: member,
+		mc:     member.NewCache(cache),
+		member: m,
 		cli:    cli,
 	}
 }
@@ -228,6 +232,56 @@ func (r *room) DeleteTopMessage(rids []int32, msgId int64, t int) error {
 	}
 
 	return r.c.deleteChatBulletinMessage(rids)
+}
+
+func (r *room) AddManage(rid int64, uid string) error {
+	return r.setManage(rid, uid, true)
+}
+
+func (r *room) DeleteManage(rid int64, uid string) error {
+	return r.setManage(rid, uid, false)
+}
+
+func (r *room) setManage(rid int64, uid string, set bool) error {
+	m, err := r.member.Get(uid)
+	if err != nil {
+		return err
+	}
+
+	if set {
+		_, err = r.db.AddManage(rid, m.Id)
+	} else {
+		_, err = r.db.DeleteManage(rid, m.Id)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	room, err := r.c.get(int(rid))
+	if err != nil {
+		return err
+	}
+
+	if room.Manages == nil {
+		room.Manages = make(map[int64]bool)
+	}
+
+	_, ok := room.Manages[m.Id]
+
+	if set && !ok {
+		room.Manages[m.Id] = true
+	} else if !set && ok {
+		delete(room.Manages, m.Id)
+	}
+
+	if err := r.c.setChat(room, nil, nil); err != nil {
+		return err
+	}
+
+	_, err = r.member.Reload(uid, room)
+
+	return err
 }
 
 func (r *room) Online() (map[int32]int32, error) {

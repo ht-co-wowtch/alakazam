@@ -22,6 +22,7 @@ type Chat interface {
 	Get(uid string) (*models.Member, error)
 	GetSession(uid string) (*models.Member, error)
 	GetMessageSession(uid string) (*models.Member, error)
+	Reload(uid string, room models.Room) (*models.Member, error)
 	Login(room models.Room, token, server string) (*models.Member, string, error)
 	Logout(uid, key string) (bool, error)
 	ChangeRoom(uid, key string, rid int) error
@@ -38,7 +39,7 @@ func New(db models.Chat, cache *redis.Client, cli *client.Client) *Member {
 	return &Member{
 		db:  db,
 		cli: cli,
-		c:   newCache(cache),
+		c:   NewCache(cache),
 	}
 }
 
@@ -174,6 +175,20 @@ func (m *Member) Get(uid string) (*models.Member, error) {
 		return nil, err
 	}
 	return member, nil
+}
+
+func (m *Member) Reload(uid string, room models.Room) (*models.Member, error) {
+	u, err := m.db.Find(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, ok := room.Manages[u.Id]; ok {
+		u.Type = models.MANAGE
+	}
+
+	_, err = m.c.set(u)
+	return u, err
 }
 
 func (m *Member) GetUserName(uid string) (string, error) {

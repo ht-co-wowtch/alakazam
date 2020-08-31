@@ -91,15 +91,22 @@ func (c *cache) setChat(room models.Room, topMessage, bulletinMessage []byte) er
 		return err
 	}
 
-	tx := c.c.Pipeline()
 	key := keyRoom(room.Id)
-	tx.HMSet(key, map[string]interface{}{
-		roomDataHKey:        b1,
-		roomTopMsgHKey:      topMessage,
-		roomBulletinMsgHKey: bulletinMessage,
-	})
-	tx.Expire(key, roomExpired)
-	_, err = tx.Exec()
+
+	if topMessage == nil || bulletinMessage == nil {
+		c.c.HSet(key, roomDataHKey, b1)
+	} else {
+		tx := c.c.Pipeline()
+
+		tx.HMSet(key, map[string]interface{}{
+			roomDataHKey:        b1,
+			roomTopMsgHKey:      topMessage,
+			roomBulletinMsgHKey: bulletinMessage,
+		})
+		tx.Expire(key, roomExpired)
+		_, err = tx.Exec()
+	}
+
 	return err
 }
 

@@ -65,6 +65,8 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.PUT("/room/:id", api.ErrHandler(s.UpdateRoom))
 	e.GET("/room/:id", api.ErrHandler(s.GetRoom))
 	e.DELETE("/room/:id", api.ErrHandler(s.DeleteRoom))
+	e.POST("/room/manage", api.ErrHandler(s.AddManage))
+	e.DELETE("/room/:id/manage/:uid", api.ErrHandler(s.DeleteManage))
 	e.POST("/room/notice", api.ErrHandler(s.notice))
 	e.GET("/online", api.ErrHandler(s.online))
 

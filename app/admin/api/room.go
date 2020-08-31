@@ -120,6 +120,49 @@ func (s *httpServer) DeleteRoom(c *gin.Context) error {
 	return nil
 }
 
+func (s *httpServer) AddManage(c *gin.Context) error {
+	var params struct {
+		RoomId int64  `json:"room_id" binding:"required"`
+		Uid    string `json:"uid" binding:"required,len=32"`
+	}
+
+	if err := c.ShouldBindJSON(&params); err != nil {
+		return err
+	}
+
+	if err := s.room.AddManage(params.RoomId, params.Uid); err != nil {
+		return err
+	}
+
+	c.Status(http.StatusNoContent)
+	return nil
+}
+
+func (s *httpServer) DeleteManage(c *gin.Context) error {
+	rid, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return err
+	}
+
+	params := struct {
+		RoomId int64  `json:"room_id" binding:"required"`
+		Uid    string `form:"uid" binding:"required,len=32"`
+	}{
+		RoomId: int64(rid),
+		Uid:    c.Param("uid"),
+	}
+	if err := binding.Validator.ValidateStruct(&params); err != nil {
+		return err
+	}
+
+	if err := s.room.DeleteManage(params.RoomId, params.Uid); err != nil {
+		return err
+	}
+
+	c.Status(http.StatusNoContent)
+	return nil
+}
+
 func (s *httpServer) online(c *gin.Context) error {
 	o, err := s.room.Online()
 	if err == nil {

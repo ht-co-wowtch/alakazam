@@ -44,7 +44,7 @@ type cache struct {
 	expire time.Duration
 }
 
-func newCache(client *redis.Client) Cache {
+func NewCache(client *redis.Client) Cache {
 	return &cache{
 		c:      client,
 		expire: time.Minute * 30,

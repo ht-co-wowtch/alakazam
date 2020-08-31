@@ -13,6 +13,8 @@ const (
 type IChat interface {
 	GetChat(id int) (Room, []RoomTopMessage, error)
 	GetManage(id int) ([]int64, error)
+	AddManage(id, mid int64) (int64, error)
+	DeleteManage(id, mid int64) (int64, error)
 }
 
 type Room struct {
@@ -115,10 +117,19 @@ func (s *Store) GetChat(id int) (Room, []RoomTopMessage, error) {
 
 }
 
+func (s *Store) DeleteRoom(id int) (int64, error) {
+	r := Room{
+		Status: false,
+	}
+	return s.d.Cols("status").
+		Where("id = ?", id).
+		Update(&r)
+}
+
 func (s *Store) GetManage(id int) ([]int64, error) {
 	ids := []int64{}
 
-	err := s.d.Table("room_manages").
+	err := s.d.Table(&RoomManage{}).
 		Select("member_id").
 		Where("room_id = ?", id).
 		Find(&ids)
@@ -130,11 +141,26 @@ func (s *Store) GetManage(id int) ([]int64, error) {
 	return ids, nil
 }
 
-func (s *Store) DeleteRoom(id int) (int64, error) {
-	r := Room{
-		Status: false,
-	}
-	return s.d.Cols("status").
-		Where("id = ?", id).
-		Update(&r)
+type RoomManage struct {
+	RoomId int64 `json:"room_id"`
+
+	MemberId int64 `json:"member_id"`
+}
+
+func (r *RoomManage) TableName() string {
+	return "room_manages"
+}
+
+func (s *Store) AddManage(id, mid int64) (int64, error) {
+	return s.d.InsertOne(&RoomManage{
+		RoomId:   id,
+		MemberId: mid,
+	})
+}
+
+func (s *Store) DeleteManage(id, mid int64) (int64, error) {
+	return s.d.Table("room_manages").
+		Where("room_id = ?", id).
+		Where("member_id = ?", mid).
+		Delete(&RoomManage{})
 }
