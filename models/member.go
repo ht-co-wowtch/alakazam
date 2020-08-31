@@ -30,6 +30,9 @@ const (
 
 	// 直播主
 	STREAMER = 3
+
+	// 房管
+	MANAGE = 4
 )
 
 type Member struct {

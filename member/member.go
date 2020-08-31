@@ -22,7 +22,7 @@ type Chat interface {
 	Get(uid string) (*models.Member, error)
 	GetSession(uid string) (*models.Member, error)
 	GetMessageSession(uid string) (*models.Member, error)
-	Login(rid int, token, server string) (*models.Member, string, error)
+	Login(room models.Room, token, server string) (*models.Member, string, error)
 	Logout(uid, key string) (bool, error)
 	ChangeRoom(uid, key string, rid int) error
 	Heartbeat(uid string) error
@@ -46,7 +46,7 @@ var (
 	errInsertMember = errors.New("insert member")
 )
 
-func (m *Member) Login(rid int, token, server string) (*models.Member, string, error) {
+func (m *Member) Login(room models.Room, token, server string) (*models.Member, string, error) {
 	user, err := m.cli.Auth(token)
 	if err != nil {
 		return nil, "", err
@@ -84,16 +84,20 @@ func (m *Member) Login(rid int, token, server string) (*models.Member, string, e
 		}
 	}
 
+	if _, ok := room.Manages[u.Id]; ok {
+		u.Type = models.MANAGE
+	}
+
 	key := uuid.New().String()
 
-	if err = m.c.login(u, rid, key); err != nil {
+	if err = m.c.login(u, room.Id, key); err != nil {
 		return nil, "", err
 	} else {
 		log.Info(
 			"conn connected",
 			zap.String("key", key),
 			zap.String("uid", u.Uid),
-			zap.Int("room_id", rid),
+			zap.Int("room_id", room.Id),
 			zap.String("server", server),
 		)
 	}

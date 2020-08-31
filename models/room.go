@@ -12,6 +12,7 @@ const (
 
 type IChat interface {
 	GetChat(id int) (Room, []RoomTopMessage, error)
+	GetManage(id int) ([]int64, error)
 }
 
 type Room struct {
@@ -48,6 +49,8 @@ type Room struct {
 	TopMessage []byte `xorm:"-"`
 
 	BulletinMessage []byte `xorm:"-"`
+
+	Manages map[int64]bool `xorm:"-"`
 }
 
 func (r *Room) TableName() string {
@@ -78,7 +81,7 @@ func (s *Store) GetRoom(roomId int) (Room, error) {
 
 func (s *Store) GetRoomTopMessage(id int) (RoomTopMessage, error) {
 	top := RoomTopMessage{}
-	ok, err := s.d.Where("`room_id` = ?", id).
+	ok, err := s.d.Where("room_id = ?", id).
 		Where("status = ?", true).
 		Get(&top)
 	if err != nil {
@@ -100,7 +103,7 @@ func (s *Store) GetChat(id int) (Room, []RoomTopMessage, error) {
 		Get(&room)
 
 	top := make([]RoomTopMessage, 0)
-	tx.Where("`room_id` = ?", id).Find(&top)
+	tx.Where("room_id = ?", id).Find(&top)
 
 	if err := tx.Commit(); err != nil {
 		return room, top, err
@@ -110,6 +113,21 @@ func (s *Store) GetChat(id int) (Room, []RoomTopMessage, error) {
 	}
 	return room, top, nil
 
+}
+
+func (s *Store) GetManage(id int) ([]int64, error) {
+	ids := []int64{}
+
+	err := s.d.Table("room_manages").
+		Select("member_id").
+		Where("room_id = ?", id).
+		Find(&ids)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ids, nil
 }
 
 func (s *Store) DeleteRoom(id int) (int64, error) {

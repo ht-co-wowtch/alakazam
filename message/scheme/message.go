@@ -213,6 +213,13 @@ func (u User) ToStreamer(seq int64, message string) Message {
 	return b
 }
 
+func (u User) ToManage(seq int64, message string) Message {
+	b := u.toBase(seq, message)
+	b.Type = MESSAGE_TYPE
+	b.Display = displayByManage(u, message)
+	return b
+}
+
 func (u User) ToAdmin(seq int64, message string) Message {
 	b := u.toBase(seq, message)
 	b.Type = MESSAGE_TYPE

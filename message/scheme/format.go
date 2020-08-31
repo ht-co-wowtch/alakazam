@@ -72,6 +72,28 @@ func displayByPrivate(user User, message string) display {
 	}
 }
 
+// 房管Display
+func displayByManage(user User, message string) display {
+	return display{
+		User: displayUser{
+			Text:   user.Name,
+			Color:  USER_COLOR,
+			Avatar: user.Avatar,
+		},
+		Level: displayText{
+			Text:            "房管",
+			Color:           MESSAGE_COLOR,
+			BackgroundColor: "#38A2DB",
+		},
+		Message: displayMessage{
+			Text:            message,
+			Color:           MESSAGE_COLOR,
+			BackgroundColor: NONE_COLOR,
+		},
+		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
+	}
+}
+
 // 主播Display
 func displayByStreamer(user User, message string) display {
 	return display{

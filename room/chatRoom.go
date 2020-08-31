@@ -77,7 +77,7 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 		return nil, errors.ErrRoomClose
 	}
 
-	user, key, err := c.member.Login(params.RoomID, params.Token, server)
+	user, key, err := c.member.Login(room, params.Token, server)
 	if err != nil {
 		return nil, err
 	}
@@ -175,6 +175,13 @@ func (c *chat) reloadChat(id int) (models.Room, error) {
 			return models.Room{}, errors.ErrNoRoom
 		}
 		return models.Room{}, err
+	}
+
+	if ids, err := c.db.GetManage(id); err == nil {
+		room.Manages = make(map[int64]bool)
+		for _, id := range ids {
+			room.Manages[id] = true
+		}
 	}
 
 	if len(msg) == 0 {
