@@ -85,10 +85,6 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 		}
 	}
 
-	if _, ok := room.Manages[u.Id]; ok {
-		u.Type = models.MANAGE
-	}
-
 	key := uuid.New().String()
 
 	if err = m.c.login(u, room.Id, key); err != nil {

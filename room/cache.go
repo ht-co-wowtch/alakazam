@@ -13,7 +13,6 @@ import (
 type Cache interface {
 	set(room models.Room) error
 	get(id int) (models.Room, error)
-	setChat(room models.Room, topMessage, bulletinMessage []byte) error
 	getChat(id int) (models.Room, error)
 	setChatTopMessage(rids []int32, message []byte) error
 	setChatBulletinMessage(rids []int32, message []byte) error
@@ -43,6 +42,8 @@ const (
 	roomDataHKey        = "data"
 	roomTopMsgHKey      = "top"
 	roomBulletinMsgHKey = "bulletin"
+	roomManagesHKey     = "manage"
+	roomBlockadeHKey    = "blockade"
 
 	// server name的前綴詞，用於存儲在redis當key
 	onlineKey = prefix + ":server_%s"
@@ -60,19 +61,6 @@ var (
 	roomExpired = time.Hour * 12
 )
 
-func (c *cache) set(room models.Room) error {
-	tx := c.c.Pipeline()
-	b, err := json.Marshal(room)
-	if err != nil {
-		return err
-	}
-	key := keyRoom(room.Id)
-	tx.HSet(key, roomDataHKey, b)
-	tx.Expire(key, roomExpired)
-	_, err = tx.Exec()
-	return err
-}
-
 func (c *cache) get(id int) (models.Room, error) {
 	b, err := c.c.HGet(keyRoom(id), roomDataHKey).Bytes()
 	if err != nil {
@@ -85,33 +73,42 @@ func (c *cache) get(id int) (models.Room, error) {
 	return r, nil
 }
 
-func (c *cache) setChat(room models.Room, topMessage, bulletinMessage []byte) error {
+func (c *cache) set(room models.Room) error {
+	key := keyRoom(room.Id)
+
+	tx := c.c.Pipeline()
+
+	data := map[string]interface{}{}
+
+	if room.TopMessage != nil {
+		data[roomTopMsgHKey] = room.TopMessage
+	}
+
+	if room.BulletinMessage != nil {
+		data[roomBulletinMsgHKey] = room.BulletinMessage
+	}
+
+	if room.Blockades != nil {
+		b, _ := json.Marshal(room.Blockades)
+		data[roomBlockadeHKey] = b
+	}
+
 	b1, err := json.Marshal(room)
 	if err != nil {
 		return err
 	}
 
-	key := keyRoom(room.Id)
+	data[roomDataHKey] = b1
 
-	if topMessage == nil || bulletinMessage == nil {
-		c.c.HSet(key, roomDataHKey, b1)
-	} else {
-		tx := c.c.Pipeline()
-
-		tx.HMSet(key, map[string]interface{}{
-			roomDataHKey:        b1,
-			roomTopMsgHKey:      topMessage,
-			roomBulletinMsgHKey: bulletinMessage,
-		})
-		tx.Expire(key, roomExpired)
-		_, err = tx.Exec()
-	}
+	tx.HMSet(key, data)
+	tx.Expire(key, roomExpired)
+	_, err = tx.Exec()
 
 	return err
 }
 
 func (c *cache) getChat(id int) (models.Room, error) {
-	room, err := c.c.HMGet(keyRoom(id), roomDataHKey, roomTopMsgHKey, roomBulletinMsgHKey).Result()
+	room, err := c.c.HMGet(keyRoom(id), roomDataHKey, roomTopMsgHKey, roomBulletinMsgHKey, roomBlockadeHKey).Result()
 	if err != nil {
 		return models.Room{}, err
 	}
@@ -129,6 +126,10 @@ func (c *cache) getChat(id int) (models.Room, error) {
 
 	if room[2] != nil {
 		r.BulletinMessage = []byte(room[2].(string))
+	}
+
+	if room[3] != nil {
+		_ = json.Unmarshal([]byte(room[3].(string)), &r.Blockades)
 	}
 
 	return r, err

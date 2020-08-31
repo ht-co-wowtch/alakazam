@@ -139,6 +139,11 @@ func (c *chat) GetUserMessageSession(uid string, rid int) (*models.Member, model
 	if err != nil {
 		return nil, models.Room{}, err
 	}
+
+	if _, ok := room.Manages[user.Id]; ok {
+		user.Type = models.MANAGE
+	}
+
 	return user, room, nil
 }
 
@@ -177,6 +182,13 @@ func (c *chat) reloadChat(id int) (models.Room, error) {
 		return models.Room{}, err
 	}
 
+	if ids, err := c.db.GetBlockade(id); err == nil {
+		room.Blockades = make(map[int64]bool)
+		for _, id := range ids {
+			room.Blockades[id] = true
+		}
+	}
+
 	if ids, err := c.db.GetManage(id); err == nil {
 		room.Manages = make(map[int64]bool)
 		for _, id := range ids {
@@ -184,40 +196,29 @@ func (c *chat) reloadChat(id int) (models.Room, error) {
 		}
 	}
 
-	if len(msg) == 0 {
-		if err = c.cache.set(room); err != nil {
-			return models.Room{}, err
-		}
-	} else {
-		var top []byte
-		var bulletin []byte
-
-		for _, m := range msg {
-			switch m.Type {
-			case models.TOP_MESSAGE:
-				if m.Type == models.TOP_MESSAGE {
-					top, err = json.Marshal(message.RoomTopMessageToMessage(m))
-					if err != nil {
-						log.Error("json Marshal for room top message", zap.Error(err), zap.Int("rid", id))
-					}
-				}
-				break
-			case models.BULLETIN_MESSAGE:
-				bulletin, err = json.Marshal(message.RoomBulletinMessageToMessage(m))
+	for _, m := range msg {
+		switch m.Type {
+		case models.TOP_MESSAGE:
+			if m.Type == models.TOP_MESSAGE {
+				room.TopMessage, err = json.Marshal(message.RoomTopMessageToMessage(m))
 				if err != nil {
-					log.Error("json Marshal for room bulletin message", zap.Error(err), zap.Int("rid", id))
+					log.Error("json Marshal for room top message", zap.Error(err), zap.Int("rid", id))
 				}
-				break
 			}
+			break
+		case models.BULLETIN_MESSAGE:
+			room.BulletinMessage, err = json.Marshal(message.RoomBulletinMessageToMessage(m))
+			if err != nil {
+				log.Error("json Marshal for room bulletin message", zap.Error(err), zap.Int("rid", id))
+			}
+			break
 		}
-
-		if err := c.cache.setChat(room, top, bulletin); err != nil {
-			return models.Room{}, err
-		}
-
-		room.TopMessage = top
-		room.BulletinMessage = bulletin
 	}
+
+	if err := c.cache.set(room); err != nil {
+		return models.Room{}, err
+	}
+
 	return room, nil
 }
 

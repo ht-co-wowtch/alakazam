@@ -258,7 +258,7 @@ func (r *room) setManage(rid int64, uid string, set bool) error {
 		return err
 	}
 
-	room, err := r.c.get(int(rid))
+	room, err := r.c.getChat(int(rid))
 	if err != nil {
 		return err
 	}
@@ -275,7 +275,11 @@ func (r *room) setManage(rid int64, uid string, set bool) error {
 		delete(room.Manages, m.Id)
 	}
 
-	if err := r.c.setChat(room, nil, nil); err != nil {
+	room.TopMessage = nil
+	room.BulletinMessage = nil
+	room.Blockades = nil
+
+	if err := r.c.set(room); err != nil {
 		return err
 	}
 
