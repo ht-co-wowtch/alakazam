@@ -50,6 +50,7 @@ message Permission {
     bool isMessage = 1 [(gogoproto.jsontag) = "is_message"];
 	bool isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
 	bool isBets = 3 [(gogoproto.jsontag) = "is_bets"];
+	bool isManage = 4 [(gogoproto.jsontag) = "is_manage"];
 }
 
 message PermissionMessage {
