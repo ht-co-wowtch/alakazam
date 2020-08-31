@@ -29,7 +29,7 @@ type Chat interface {
 	Heartbeat(uid, key, name, server string) error
 	RenewOnline(server string, roomCount map[int32]int32) (map[int32]int32, error)
 	GetRoom(rid int) (models.Room, error)
-	GetUserMessageSession(uid string, rid int) (*models.Member, models.Room, error)
+	GetMessageSession(uid string, rid int) (*models.Member, models.Room, error)
 	ChangeRoom(uid string, rid int, key string) (*pb.ConnectReply, error)
 	GetTopMessage(rid int) (scheme.Message, error)
 	GetOnline(server string) (*Online, error)
@@ -130,8 +130,8 @@ func (c *chat) newConnectReply(user *models.Member, room models.Room, key string
 	}, nil
 }
 
-func (c *chat) GetUserMessageSession(uid string, rid int) (*models.Member, models.Room, error) {
-	user, err := c.member.GetMessageSession(uid)
+func (c *chat) GetMessageSession(uid string, rid int) (*models.Member, models.Room, error) {
+	user, err := c.member.GetMessageSession(uid, rid)
 	if err != nil {
 		return nil, models.Room{}, err
 	}

@@ -21,7 +21,7 @@ const (
 type Chat interface {
 	Get(uid string) (*models.Member, error)
 	GetSession(uid string) (*models.Member, error)
-	GetMessageSession(uid string) (*models.Member, error)
+	GetMessageSession(uid string, rid int) (*models.Member, error)
 	Reload(uid string, room models.Room) (*models.Member, error)
 	Login(room models.Room, token, server string) (*models.Member, string, error)
 	Logout(uid, key string) (bool, error)
@@ -77,6 +77,13 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 		return u, "", nil
 	}
 
+	if room.Blockades != nil {
+		if _, ok := room.Blockades[u.Id]; ok {
+			u.IsBlockade = true
+			return u, "", nil
+		}
+	}
+
 	if u.Name != user.Name || u.Gender != user.Gender {
 		u.Name = user.Name
 		u.Gender = user.Gender
@@ -129,7 +136,7 @@ func (m *Member) GetWs(uid string) (map[string]string, error) {
 	return m.c.getWs(uid)
 }
 
-func (m *Member) GetMessageSession(uid string) (*models.Member, error) {
+func (m *Member) GetMessageSession(uid string, rid int) (*models.Member, error) {
 	member, err := m.GetSession(uid)
 	if err != nil {
 		return nil, err
@@ -138,7 +145,7 @@ func (m *Member) GetMessageSession(uid string) (*models.Member, error) {
 		return nil, errors.ErrMemberNoMessage
 	}
 
-	ok, err := m.c.isBanned(uid)
+	ok, err := m.c.isBanned(uid, rid)
 	if err != nil {
 		return nil, err
 	}

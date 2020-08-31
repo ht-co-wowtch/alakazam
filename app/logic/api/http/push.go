@@ -60,7 +60,7 @@ func (s *httpServer) pushKey(c *gin.Context) error {
 		return err
 	}
 
-	user, err := s.member.GetMessageSession(c.GetString("uid"))
+	user, err := s.member.GetSession(c.GetString("uid"))
 
 	if err != nil {
 		return err

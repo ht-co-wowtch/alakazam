@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (m *Member) SetBanned(uid string, sec int, isSystem bool) error {
+func (m *Member) SetBanned(uid string, rid, sec int, isSystem bool) error {
 	me, err := m.db.Find(uid)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -19,7 +19,7 @@ func (m *Member) SetBanned(uid string, sec int, isSystem bool) error {
 
 	expire := time.Duration(sec) * time.Second
 	if sec > 0 {
-		ok, err := m.c.setBanned(uid, expire)
+		ok, err := m.c.setBanned(uid, rid, expire)
 		if err != nil {
 			return err
 		}
@@ -52,8 +52,8 @@ func (m *Member) SetBanned(uid string, sec int, isSystem bool) error {
 	return nil
 }
 
-func (m *Member) SetBannedForSystem(uid string, sec int) (bool, error) {
-	if err := m.SetBanned(uid, sec, true); err != nil {
+func (m *Member) SetBannedForSystem(uid string, rid, sec int) (bool, error) {
+	if err := m.SetBanned(uid, sec, rid, true); err != nil {
 		return false, err
 	}
 
@@ -92,7 +92,7 @@ func (m *Member) SetBannedForSystem(uid string, sec int) (bool, error) {
 	return false, nil
 }
 
-func (m *Member) RemoveBanned(uid string) error {
+func (m *Member) RemoveBanned(uid string, rid int) error {
 	me, err := m.db.Find(uid)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -101,7 +101,7 @@ func (m *Member) RemoveBanned(uid string) error {
 		return err
 	}
 
-	ok, err := m.c.delBanned(uid)
+	ok, err := m.c.delBanned(uid, rid)
 	if err != nil {
 		return err
 	}

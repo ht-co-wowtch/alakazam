@@ -55,7 +55,7 @@ func handler(e *gin.Engine, s *httpServer) {
 
 	// 禁言
 	e.POST("/banned/:uid", api.ErrHandler(s.setBanned))
-	e.DELETE("/banned/:uid", api.ErrHandler(s.removeBanned))
+	e.DELETE("/banned/:uid/room/:id", api.ErrHandler(s.removeBanned))
 
 	// 踢人
 	e.DELETE("/kick/:uid", api.ErrHandler(s.kick))

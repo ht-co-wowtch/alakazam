@@ -22,7 +22,7 @@ type msg struct {
 }
 
 func (m *msg) user(req messageReq) (int64, error) {
-	user, chat, err := m.room.GetUserMessageSession(req.Uid, req.RoomId)
+	user, chat, err := m.room.GetMessageSession(req.Uid, req.RoomId)
 	if err != nil {
 		return 0, err
 	}
@@ -41,7 +41,7 @@ func (m *msg) user(req messageReq) (int64, error) {
 	id, err := m.message.SendUser([]int32{int32(req.RoomId)}, req.Message, user)
 
 	if err == errors.ErrRateSameMsg {
-		isBlockade, err := m.member.SetBannedForSystem(user.Uid, 10*60)
+		isBlockade, err := m.member.SetBannedForSystem(user.Uid, req.RoomId, 10*60)
 		if err != nil {
 			log.Error("set banned for rate same message", zap.Error(err), zap.String("uid", user.Uid))
 		}
@@ -63,7 +63,7 @@ func (m *msg) user(req messageReq) (int64, error) {
 }
 
 func (m *msg) private(req messageReq) (int64, error) {
-	user, _, err := m.room.GetUserMessageSession(req.Uid, req.RoomId)
+	user, _, err := m.room.GetMessageSession(req.Uid, req.RoomId)
 	if err != nil {
 		return 0, err
 	}

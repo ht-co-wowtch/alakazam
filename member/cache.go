@@ -14,7 +14,7 @@ const (
 
 	uidKey    = prefix + ":uid_h_%s"
 	uidWsKey  = prefix + ":uid_h_ws_%s"
-	bannedKey = prefix + ":b_%s"
+	bannedKey = prefix + ":b_%s-%d"
 
 	uidJsonHKey = "json"
 	uidNameHKey = "name"
@@ -34,9 +34,9 @@ type Cache interface {
 	refreshExpire(uid string) error
 	setName(name map[string]string) error
 	getName(uid []string) (map[string]string, error)
-	setBanned(uid string, expired time.Duration) (bool, error)
-	isBanned(uid string) (bool, error)
-	delBanned(uid string) (bool, error)
+	setBanned(uid string, rid int, expired time.Duration) (bool, error)
+	isBanned(uid string, rid int) (bool, error)
+	delBanned(uid string, rid int) (bool, error)
 }
 
 type cache struct {
@@ -59,8 +59,8 @@ func keyUidWs(uid string) string {
 	return fmt.Sprintf(uidWsKey, uid)
 }
 
-func keyBanned(uid string) string {
-	return fmt.Sprintf(bannedKey, uid)
+func keyBanned(uid string, rid int) string {
+	return fmt.Sprintf(bannedKey, uid, rid)
 }
 
 var (
@@ -211,20 +211,20 @@ func (c *cache) getName(uid []string) (map[string]string, error) {
 	return name, nil
 }
 
-func (c *cache) setBanned(uid string, expired time.Duration) (bool, error) {
-	ok, err := c.c.Set(keyBanned(uid), time.Now().Add(expired).Unix(), expired).Result()
+func (c *cache) setBanned(uid string, rid int, expired time.Duration) (bool, error) {
+	ok, err := c.c.Set(keyBanned(uid, rid), time.Now().Add(expired).Unix(), expired).Result()
 	if err != nil {
 		return false, err
 	}
 	return ok == OK, nil
 }
 
-func (c *cache) isBanned(uid string) (bool, error) {
-	aff, err := c.c.Exists(keyBanned(uid)).Result()
+func (c *cache) isBanned(uid string, rid int) (bool, error) {
+	aff, err := c.c.Exists(keyBanned(uid, rid)).Result()
 	return aff == 1, err
 }
 
-func (c *cache) delBanned(uid string) (bool, error) {
-	aff, err := c.c.Del(keyBanned(uid)).Result()
+func (c *cache) delBanned(uid string, rid int) (bool, error) {
+	aff, err := c.c.Del(keyBanned(uid, rid)).Result()
 	return aff == 1, err
 }
