@@ -122,7 +122,7 @@ func (s *httpServer) DeleteRoom(c *gin.Context) error {
 
 func (s *httpServer) AddManage(c *gin.Context) error {
 	var params struct {
-		RoomId int64  `json:"room_id" binding:"required"`
+		RoomId int    `json:"room_id" binding:"required"`
 		Uid    string `json:"uid" binding:"required,len=32"`
 	}
 
@@ -130,7 +130,7 @@ func (s *httpServer) AddManage(c *gin.Context) error {
 		return err
 	}
 
-	if err := s.room.AddManage(params.RoomId, params.Uid); err != nil {
+	if err := s.member.SetManage(params.Uid, params.RoomId, true); err != nil {
 		return err
 	}
 
@@ -155,20 +155,19 @@ func (s *httpServer) DeleteManage(c *gin.Context) error {
 	}
 
 	params := struct {
-		RoomId int64  `json:"room_id" binding:"required"`
+		RoomId int    `json:"room_id" binding:"required"`
 		Uid    string `form:"uid" binding:"required,len=32"`
 	}{
-		RoomId: int64(rid),
+		RoomId: rid,
 		Uid:    c.Param("uid"),
 	}
 	if err := binding.Validator.ValidateStruct(&params); err != nil {
 		return err
 	}
 
-	if err := s.room.DeleteManage(params.RoomId, params.Uid); err != nil {
+	if err := s.member.SetManage(params.Uid, params.RoomId, false); err != nil {
 		return err
 	}
-
 	keys, err := s.member.GetKeys(params.Uid)
 	if err != nil {
 		return err

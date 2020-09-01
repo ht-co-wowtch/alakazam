@@ -135,15 +135,11 @@ func (c *chat) GetMessageSession(uid string, rid int) (*models.Member, models.Ro
 	if err != nil {
 		return nil, models.Room{}, err
 	}
+
 	room, err := c.GetRoom(rid)
 	if err != nil {
 		return nil, models.Room{}, err
 	}
-
-	if _, ok := room.Manages[user.Id]; ok {
-		user.Type = models.MANAGE
-	}
-
 	return user, room, nil
 }
 
@@ -180,20 +176,6 @@ func (c *chat) reloadChat(id int) (models.Room, error) {
 			return models.Room{}, errors.ErrNoRoom
 		}
 		return models.Room{}, err
-	}
-
-	if ids, err := c.db.GetBlockade(id); err == nil {
-		room.Blockades = make(map[int64]bool)
-		for _, id := range ids {
-			room.Blockades[id] = true
-		}
-	}
-
-	if ids, err := c.db.GetManage(id); err == nil {
-		room.Manages = make(map[int64]bool)
-		for _, id := range ids {
-			room.Manages[id] = true
-		}
 	}
 
 	for _, m := range msg {

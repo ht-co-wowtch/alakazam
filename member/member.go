@@ -22,7 +22,7 @@ type Chat interface {
 	Get(uid string) (*models.Member, error)
 	GetSession(uid string) (*models.Member, error)
 	GetMessageSession(uid string, rid int) (*models.Member, error)
-	Reload(uid string, room models.Room) (*models.Member, error)
+	GetByRoom(uid string, rid int) (*models.Member, error)
 	Login(room models.Room, token, server string) (*models.Member, string, error)
 	Logout(uid, key string) (bool, error)
 	ChangeRoom(uid, key string, rid int) error
@@ -53,12 +53,9 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 		return nil, "", err
 	}
 
-	u, err := m.db.Find(user.Uid)
-	if err != nil {
-		if err != sql.ErrNoRows {
-			return nil, "", err
-		}
+	u, err := m.GetByRoom(user.Uid, room.Id)
 
+	if err == errors.ErrNoMember {
 		u = &models.Member{
 			Uid:    user.Uid,
 			Name:   user.Name,
@@ -72,16 +69,12 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 		if !ok {
 			return nil, "", errInsertMember
 		}
-	}
-	if u.IsBlockade {
-		return u, "", nil
+	} else if err != nil {
+		return nil, "", err
 	}
 
-	if room.Blockades != nil {
-		if _, ok := room.Blockades[u.Id]; ok {
-			u.IsBlockade = true
-			return u, "", nil
-		}
+	if u.IsBanned {
+		return u, "", nil
 	}
 
 	if u.Name != user.Name || u.Gender != user.Gender {
@@ -116,6 +109,21 @@ func (m *Member) ChangeRoom(uid, key string, rid int) error {
 	return m.c.setWs(uid, key, rid)
 }
 
+func (m *Member) SetManage(uid string, rid int, set bool) error {
+	member, err := m.GetByRoom(uid, rid)
+	if err != nil {
+		return err
+	}
+
+	member.IsManage = set
+
+	if err = m.db.SetPermission(*member); err != nil {
+		return err
+	}
+
+	return m.c.set(member)
+}
+
 func (m *Member) Kick(uid string) ([]string, error) {
 	keys, err := m.c.getKeys(uid)
 	if err != nil {
@@ -137,11 +145,15 @@ func (m *Member) GetWs(uid string) (map[string]string, error) {
 }
 
 func (m *Member) GetMessageSession(uid string, rid int) (*models.Member, error) {
-	member, err := m.GetSession(uid)
+	member, err := m.GetByRoom(uid, rid)
 	if err != nil {
 		return nil, err
 	}
-	if !member.IsMessage {
+
+	if member.IsBlockade {
+		return nil, errors.ErrBlockade
+	}
+	if member.IsBanned {
 		return nil, errors.ErrMemberNoMessage
 	}
 
@@ -152,6 +164,11 @@ func (m *Member) GetMessageSession(uid string, rid int) (*models.Member, error) 
 	if ok {
 		return nil, errors.ErrMemberBanned
 	}
+
+	if member.IsManage {
+		member.Type = models.MANAGE
+	}
+
 	return member, nil
 }
 
@@ -159,9 +176,6 @@ func (m *Member) GetSession(uid string) (*models.Member, error) {
 	member, err := m.Get(uid)
 	if err != nil {
 		return nil, err
-	}
-	if member.IsBlockade {
-		return nil, errors.ErrBlockade
 	}
 	if member.Type == models.Guest {
 		return nil, errors.ErrLogin
@@ -180,17 +194,31 @@ func (m *Member) Get(uid string) (*models.Member, error) {
 	return member, nil
 }
 
-func (m *Member) Reload(uid string, room models.Room) (*models.Member, error) {
-	u, err := m.db.Find(uid)
-	if err != nil {
+func (m *Member) GetByRoom(uid string, rid int) (*models.Member, error) {
+	u, err := m.c.getByRoom(uid, rid)
+
+	if err == redis.Nil {
+		u, err = m.db.Find(uid)
+
+		if err == sql.ErrNoRows {
+			return nil, errors.ErrNoMember
+		}
+		if err != nil {
+			return nil, err
+		}
+
+	} else if err != nil {
 		return nil, err
 	}
 
-	if _, ok := room.Manages[u.Id]; ok {
-		u.Type = models.MANAGE
+	if u.RoomId != rid {
+		p, _ := m.db.Permission(u.Id, rid)
+
+		u.IsBanned = p.IsBanned
+		u.IsBlockade = p.IsBlockade
+		u.IsManage = p.IsManage
 	}
 
-	_, err = m.c.set(u)
 	return u, err
 }
 
@@ -258,7 +286,7 @@ func (m *Member) Fetch(uid string) (*models.Member, error) {
 		}
 		return nil, err
 	}
-	if _, err := m.c.set(dbMember); err != nil {
+	if err := m.c.set(dbMember); err != nil {
 		return nil, err
 	}
 	return member, nil

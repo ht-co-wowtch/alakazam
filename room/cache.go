@@ -42,8 +42,6 @@ const (
 	roomDataHKey        = "data"
 	roomTopMsgHKey      = "top"
 	roomBulletinMsgHKey = "bulletin"
-	roomManagesHKey     = "manage"
-	roomBlockadeHKey    = "blockade"
 
 	// server name的前綴詞，用於存儲在redis當key
 	onlineKey = prefix + ":server_%s"
@@ -88,11 +86,6 @@ func (c *cache) set(room models.Room) error {
 		data[roomBulletinMsgHKey] = room.BulletinMessage
 	}
 
-	if room.Blockades != nil {
-		b, _ := json.Marshal(room.Blockades)
-		data[roomBlockadeHKey] = b
-	}
-
 	b1, err := json.Marshal(room)
 	if err != nil {
 		return err
@@ -108,7 +101,7 @@ func (c *cache) set(room models.Room) error {
 }
 
 func (c *cache) getChat(id int) (models.Room, error) {
-	room, err := c.c.HMGet(keyRoom(id), roomDataHKey, roomTopMsgHKey, roomBulletinMsgHKey, roomBlockadeHKey).Result()
+	room, err := c.c.HMGet(keyRoom(id), roomDataHKey, roomTopMsgHKey, roomBulletinMsgHKey).Result()
 	if err != nil {
 		return models.Room{}, err
 	}
@@ -126,10 +119,6 @@ func (c *cache) getChat(id int) (models.Room, error) {
 
 	if room[2] != nil {
 		r.BulletinMessage = []byte(room[2].(string))
-	}
-
-	if room[3] != nil {
-		_ = json.Unmarshal([]byte(room[3].(string)), &r.Blockades)
 	}
 
 	return r, err

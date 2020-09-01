@@ -12,9 +12,6 @@ const (
 
 type IChat interface {
 	GetChat(id int) (Room, []RoomTopMessage, error)
-	GetManage(id int) ([]int64, error)
-	AddManage(id, mid int64) (int64, error)
-	DeleteManage(id, mid int64) (int64, error)
 }
 
 type Room struct {
@@ -48,11 +45,13 @@ type Room struct {
 	// 建立時間
 	CreateAt time.Time `json:"-"`
 
-	TopMessage []byte `xorm:"-"`
+	TopMessage []byte `json:"-" xorm:"-"`
 
-	BulletinMessage []byte `xorm:"-"`
+	BulletinMessage []byte `json:"-" xorm:"-"`
 
 	Manages map[int64]bool `xorm:"-"`
+
+	Blockades map[int64]bool `json:"-" xorm:"-"`
 }
 
 func (r *Room) TableName() string {
@@ -124,55 +123,4 @@ func (s *Store) DeleteRoom(id int) (int64, error) {
 	return s.d.Cols("status").
 		Where("id = ?", id).
 		Update(&r)
-}
-
-func (s *Store) GetManage(id int) ([]int64, error) {
-	ids := []int64{}
-
-	err := s.d.Table(&RoomManage{}).
-		Select("member_id").
-		Where("room_id = ?", id).
-		Find(&ids)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return ids, nil
-}
-
-type RoomManage struct {
-	RoomId int64 `json:"room_id"`
-
-	MemberId int64 `json:"member_id"`
-}
-
-func (r *RoomManage) TableName() string {
-	return "room_manages"
-}
-
-func (s *Store) AddManage(id, mid int64) (int64, error) {
-	ok, err := s.d.Where("room_id = ?", id).
-		Where("member_id = ?", mid).
-		Exist(&RoomManage{})
-
-	if err != nil {
-		return 0, err
-	}
-
-	if ok {
-		return 1, nil
-	}
-
-	return s.d.InsertOne(&RoomManage{
-		RoomId:   id,
-		MemberId: mid,
-	})
-}
-
-func (s *Store) DeleteManage(id, mid int64) (int64, error) {
-	return s.d.Table("room_manages").
-		Where("room_id = ?", id).
-		Where("member_id = ?", mid).
-		Delete(&RoomManage{})
 }

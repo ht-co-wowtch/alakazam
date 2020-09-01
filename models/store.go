@@ -29,6 +29,8 @@ func init() {
 
 type Chat interface {
 	Find(uid string) (*Member, error)
+	Permission(id int64, rid int) (Permission, error)
+	SetPermission(member Member) error
 	CreateUser(member *Member) (bool, error)
 	UpdateUser(member *Member) (bool, error)
 	GetMembers(ids []int64) ([]Member, error)

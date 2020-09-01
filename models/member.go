@@ -36,18 +36,35 @@ const (
 )
 
 type Member struct {
-	Id         int64     `xorm:"pk autoincr"`
-	Uid        string    `json:"uid"`
-	Name       string    `json:"name"`
-	Type       int       `json:"type"`
-	Gender     int32     `json:"gender"`
-	IsMessage  bool      `json:"is_message"`
-	IsBlockade bool      `json:"is_blockade"`
-	CreateAt   time.Time `json:"-"`
+	Id       int64     `xorm:"pk autoincr"`
+	Uid      string    `json:"uid"`
+	Name     string    `json:"name"`
+	Type     int       `json:"type"`
+	Gender   int32     `json:"gender"`
+	CreateAt time.Time `json:"-"`
+
+	RoomId     int  `json:"-" xorm:"-"`
+	IsBanned   bool `json:"-" xorm:"-"`
+	IsBlockade bool `json:"-" xorm:"-"`
+	IsManage   bool `json:"-" xorm:"-"`
+
+	IsMessage bool `json:"is_message"`
 }
 
 func (r *Member) TableName() string {
 	return "members"
+}
+
+type Permission struct {
+	RoomId     int64
+	MemberId   int64
+	IsBanned   bool
+	IsBlockade bool
+	IsManage   bool
+}
+
+func (r *Permission) TableName() string {
+	return "room_user_permissions"
 }
 
 // 新增會員
@@ -73,12 +90,51 @@ func (s *Store) Find(uid string) (*Member, error) {
 	if !ok {
 		return nil, sql.ErrNoRows
 	}
+
 	return m, err
+}
+
+func (s *Store) Permission(id int64, rid int) (Permission, error) {
+	p := Permission{}
+	_, err := s.d.Where("room_id = ?", rid).Where("member_id = ?", id).Get(&p)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return Permission{}, nil
+		}
+		return Permission{}, err
+	}
+
+	return p, nil
+}
+
+func (s *Store) SetPermission(member Member) error {
+	data := &Permission{
+		IsBanned:   member.IsBanned,
+		IsBlockade: member.IsBlockade,
+		IsManage:   member.IsManage,
+	}
+
+	aff, err := s.d.Cols("is_banned", "is_blockade", "is_manage").
+		Where("room_id = ?", member.RoomId).
+		Where("member_id = ?", member.Id).
+		Update(data)
+
+	if err != nil {
+		return err
+	}
+
+	if aff == 0 {
+		data.RoomId = int64(member.RoomId)
+		data.MemberId = member.Id
+		aff, err = s.d.InsertOne(data)
+	}
+
+	return err
 }
 
 func (s *Store) GetMembers(ids []int64) ([]Member, error) {
 	m := make([]Member, 0)
-	err := s.d.Table(&Member{}).Find(&m)
+	err := s.d.Table(&Member{}).In("id", ids).Find(&m)
 	return m, err
 }
 

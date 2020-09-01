@@ -6,6 +6,7 @@ import (
 	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"strconv"
 	"time"
 )
 
@@ -16,7 +17,7 @@ const (
 	uidWsKey  = prefix + ":uid_h_ws_%s"
 	bannedKey = prefix + ":b_%s-%d"
 
-	uidJsonHKey = "json"
+	uidDataHKey = "data"
 	uidNameHKey = "name"
 
 	OK = "OK"
@@ -24,8 +25,9 @@ const (
 
 type Cache interface {
 	login(member *models.Member, rid int, key string) error
-	set(member *models.Member) (bool, error)
+	set(member *models.Member) error
 	get(uid string) (*models.Member, error)
+	getByRoom(uid string, rid int) (*models.Member, error)
 	getKeys(uid string) ([]string, error)
 	getWs(uid string) (map[string]string, error)
 	setWs(uid, key string, rid int) error
@@ -75,12 +77,15 @@ func (c *cache) login(member *models.Member, rid int, key string) error {
 		return err
 	}
 
+	isb, _ := json.Marshal([]bool{member.IsBanned, member.IsBlockade, member.IsManage})
+
 	tx := c.c.Pipeline()
 
 	uidKey := keyUid(member.Uid)
 	c1 := tx.HMSet(uidKey, map[string]interface{}{
-		uidJsonHKey: b,
-		uidNameHKey: member.Name,
+		uidDataHKey:       b,
+		uidNameHKey:       member.Name,
+		strconv.Itoa(rid): isb,
 	})
 
 	uidWsKey := keyUidWs(member.Uid)
@@ -104,24 +109,73 @@ func (c *cache) login(member *models.Member, rid int, key string) error {
 	return err
 }
 
-func (c *cache) set(member *models.Member) (bool, error) {
+func (c *cache) set(member *models.Member) error {
 	b, err := json.Marshal(member)
 	if err != nil {
-		return false, err
+		return err
 	}
-	return c.c.HSet(keyUid(member.Uid), uidJsonHKey, b).Result()
+
+	data := map[string]interface{}{
+		uidDataHKey: b,
+	}
+
+	if member.RoomId != 0 {
+		isb, _ := json.Marshal([]bool{member.IsBanned, member.IsBlockade, member.IsManage})
+		data[strconv.Itoa(member.RoomId)] = isb
+	}
+
+	key := keyUid(member.Uid)
+	tx := c.c.Pipeline()
+	tx.HMSet(key, data)
+	tx.Expire(key, c.expire)
+	_, err = tx.Exec()
+
+	return err
 }
 
 func (c *cache) get(uid string) (*models.Member, error) {
-	b, err := c.c.HGet(keyUid(uid), uidJsonHKey).Bytes()
+	b, err := c.c.HGet(keyUid(uid), uidDataHKey).Bytes()
 	if err != nil {
 		return nil, err
 	}
-	var m models.Member
-	if err := json.Unmarshal(b, &m); err != nil {
+
+	m := new(models.Member)
+	if err := json.Unmarshal(b, m); err != nil {
 		return nil, err
 	}
-	return &m, nil
+	return m, nil
+}
+
+func (c *cache) getByRoom(uid string, rid int) (*models.Member, error) {
+	member, err := c.c.HMGet(keyUid(uid), uidDataHKey, strconv.Itoa(rid)).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	if member[0] == nil {
+		return nil, redis.Nil
+	}
+
+	m := new(models.Member)
+	if err := json.Unmarshal([]byte(member[0].(string)), &m); err != nil {
+		return nil, err
+	}
+
+	if member[1] == nil {
+		return m, nil
+	}
+
+	var is []bool
+	if err := json.Unmarshal([]byte(member[1].(string)), &is); err != nil {
+		return nil, err
+	}
+
+	m.RoomId = rid
+	m.IsBanned = is[0]
+	m.IsBlockade = is[1]
+	m.IsManage = is[2]
+
+	return m, nil
 }
 
 func (c *cache) getKeys(uid string) ([]string, error) {
