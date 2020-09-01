@@ -39,7 +39,6 @@ type Chat interface {
 	DeleteBanned(uid string) (int64, error)
 	SetBannedLog(mid int64, sec time.Duration, isSystem bool) (bool, error)
 	GetTodaySystemBannedLog(mid int64) ([]BannedLog, error)
-	UpdateIsMessage(mid int64, isMessage bool) (bool, error)
 }
 
 type Store struct {

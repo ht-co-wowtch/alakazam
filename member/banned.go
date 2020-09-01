@@ -1,51 +1,39 @@
 package member
 
 import (
-	"database/sql"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"time"
 )
 
 func (m *Member) SetBanned(uid string, rid, sec int, isSystem bool) error {
-	me, err := m.db.Find(uid)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return errors.ErrNoMember
-		}
-		return err
-	}
-
 	expire := time.Duration(sec) * time.Second
 	if sec > 0 {
-		ok, err := m.c.setBanned(uid, rid, expire)
+		if err := m.c.setBanned(uid, rid, expire); err != nil {
+			return err
+		}
+	} else if sec == -1 {
+		u, err := m.GetByRoom(uid, rid)
 		if err != nil {
 			return err
 		}
-		if !ok {
-			return errors.New("set banned cache failure")
-		}
-	} else if sec == -1 {
-		if !me.IsMessage {
+
+		if u.IsBanned {
 			return nil
 		}
 
-		_, err := m.db.UpdateIsMessage(me.Id, false)
-		if err != nil {
+		u.IsBanned = true
+
+		if err := m.db.SetPermission(*u); err != nil {
 			return err
 		}
 
-		expire = time.Duration(0)
-
-		me.IsMessage = false
-		_, err = m.c.set(me)
-		if err != nil {
-			return err
-		}
+		return m.c.set(u)
 	}
 
-	ok, err := m.db.SetBannedLog(me.Id, expire, isSystem)
+	u, _ := m.c.get(uid)
+
+	ok, err := m.db.SetBannedLog(u.Id, expire, isSystem)
 	if err != nil || !ok {
 		log.Error("set banned log", zap.Error(err), zap.Bool("action", ok))
 	}
@@ -57,11 +45,8 @@ func (m *Member) SetBannedForSystem(uid string, rid, sec int) (bool, error) {
 		return false, err
 	}
 
-	me, err := m.db.Find(uid)
+	me, err := m.c.get(uid)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return false, errors.ErrNoMember
-		}
 		return false, err
 	}
 
@@ -82,9 +67,8 @@ func (m *Member) SetBannedForSystem(uid string, rid, sec int) (bool, error) {
 				}
 			}
 
-			ok, err := m.SetBlockade(uid)
-			if err != nil || !ok {
-				log.Error("set blockade for set banned", zap.Error(err), zap.Bool("action", ok), zap.Int64("mid", me.Id))
+			if err := m.SetBlockade(uid, rid, true); err != nil {
+				log.Error("set blockade for set banned", zap.Error(err), zap.Int64("mid", me.Id))
 			}
 			return true, nil
 		}
@@ -93,36 +77,20 @@ func (m *Member) SetBannedForSystem(uid string, rid, sec int) (bool, error) {
 }
 
 func (m *Member) RemoveBanned(uid string, rid int) error {
-	me, err := m.db.Find(uid)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return errors.ErrNoMember
-		}
-		return err
-	}
-
-	ok, err := m.c.delBanned(uid, rid)
+	u, err := m.c.getByRoom(uid, rid)
 	if err != nil {
 		return err
 	}
 
-	// 如果redis內沒有禁言時效資料且用戶發言狀態為true
-	if me.IsMessage && !ok {
-		return nil
+	if err = m.c.delBanned(uid, rid); err != nil {
+		return err
 	}
 
-	if !me.IsMessage {
-		ok, err := m.db.UpdateIsMessage(me.Id, true)
-		if err != nil {
-			return err
-		}
-		if ok {
-			me.IsMessage = true
-			_, err = m.c.set(me)
-			if err != nil {
-				return err
-			}
-		}
+	u.IsBanned = false
+
+	if err := m.db.SetPermission(*u); err != nil {
+		return err
 	}
-	return nil
+
+	return m.c.set(u)
 }

@@ -71,8 +71,12 @@ func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, 
 
 func handler(e *gin.Engine, s httpServer) {
 	// 禁言
-	e.POST("/banned/:uid", s.authUid, ErrHandler(s.setBanned))
-	e.DELETE("/banned/:uid", s.authUid, ErrHandler(s.removeBanned))
+	e.POST("/room/banned", s.authUid, ErrHandler(s.setBanned))
+	e.DELETE("/room/:id/banned/:uid", s.authUid, ErrHandler(s.removeBanned))
+
+	// 封鎖
+	e.POST("/blockade/:uid", s.authUid, ErrHandler(s.setBlockade))
+	e.DELETE("/blockade/:uid", s.authUid, ErrHandler(s.removeBlockade))
 
 	e.POST("/push/room", s.authUid, ErrHandler(s.pushRoom))
 	e.POST("/push/key", s.authUid, ErrHandler(s.pushKey))

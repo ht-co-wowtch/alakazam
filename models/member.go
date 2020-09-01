@@ -47,8 +47,6 @@ type Member struct {
 	IsBanned   bool `json:"-" xorm:"-"`
 	IsBlockade bool `json:"-" xorm:"-"`
 	IsManage   bool `json:"-" xorm:"-"`
-
-	IsMessage bool `json:"is_message"`
 }
 
 func (r *Member) TableName() string {
@@ -69,7 +67,6 @@ func (r *Permission) TableName() string {
 
 // 新增會員
 func (s *Store) CreateUser(member *Member) (bool, error) {
-	member.IsMessage = true
 	member.CreateAt = time.Now()
 	aff, err := s.d.InsertOne(member)
 	return aff == 1, err
@@ -114,19 +111,22 @@ func (s *Store) SetPermission(member Member) error {
 		IsManage:   member.IsManage,
 	}
 
-	aff, err := s.d.Cols("is_banned", "is_blockade", "is_manage").
-		Where("room_id = ?", member.RoomId).
+	ok, err := s.d.Where("room_id = ?", member.RoomId).
 		Where("member_id = ?", member.Id).
-		Update(data)
-
+		Exist(data)
 	if err != nil {
 		return err
 	}
 
-	if aff == 0 {
+	if ok {
+		_, err = s.d.Cols("is_banned", "is_blockade", "is_manage").
+			Where("room_id = ?", member.RoomId).
+			Where("member_id = ?", member.Id).
+			Update(data)
+	} else {
 		data.RoomId = int64(member.RoomId)
 		data.MemberId = member.Id
-		aff, err = s.d.InsertOne(data)
+		_, err = s.d.InsertOne(data)
 	}
 
 	return err
@@ -142,13 +142,4 @@ func (s *Store) GetMembersByUid(uid []string) ([]Member, error) {
 	m := make([]Member, 0)
 	err := s.d.In("uid", uid).Find(&m)
 	return m, err
-}
-
-func (s *Store) UpdateIsMessage(mid int64, isMessage bool) (bool, error) {
-	aff, err := s.d.Cols("is_message").
-		Where("id = ?", mid).
-		Update(&Member{
-			IsMessage: isMessage,
-		})
-	return aff == 1, err
 }
