@@ -115,6 +115,7 @@ func (m *Member) SetManage(uid string, rid int, set bool) error {
 		return err
 	}
 
+	member.RoomId = rid
 	member.IsManage = set
 
 	if err = m.db.SetPermission(*member); err != nil {

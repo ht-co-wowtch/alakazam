@@ -10,6 +10,7 @@ func (m *Member) SetBlockade(uid string, rid int, set bool) error {
 		return nil
 	}
 
+	member.RoomId = rid
 	member.IsBlockade = set
 
 	if err := m.db.SetPermission(*member); err != nil {

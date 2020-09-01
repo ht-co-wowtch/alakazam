@@ -22,6 +22,7 @@ func (m *Member) SetBanned(uid string, rid, sec int, isSystem bool) error {
 			return nil
 		}
 
+		u.RoomId = rid
 		u.IsBanned = true
 
 		if err := m.db.SetPermission(*u); err != nil {
@@ -31,7 +32,10 @@ func (m *Member) SetBanned(uid string, rid, sec int, isSystem bool) error {
 		return m.c.set(u)
 	}
 
-	u, _ := m.c.get(uid)
+	u, err := m.c.get(uid)
+	if err != nil {
+		return err
+	}
 
 	ok, err := m.db.SetBannedLog(u.Id, expire, isSystem)
 	if err != nil || !ok {
@@ -86,6 +90,7 @@ func (m *Member) RemoveBanned(uid string, rid int) error {
 		return err
 	}
 
+	u.RoomId = rid
 	u.IsBanned = false
 
 	if err := m.db.SetPermission(*u); err != nil {
