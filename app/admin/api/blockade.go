@@ -3,20 +3,22 @@ package api
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"net/http"
+	"strconv"
 )
 
 func (s *httpServer) setBlockade(c *gin.Context) error {
-	uid := c.Param("uid")
-	ok, err := s.member.SetBlockade(uid)
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return err
 	}
-	if !ok {
-		return errors.ErrNoRows
+
+	uid := c.Param("uid")
+
+	if err := s.member.SetBlockade(uid, id, true); err != nil {
+		return err
 	}
 
 	keys, err := s.member.Kick(uid)
@@ -45,13 +47,14 @@ func (s *httpServer) setBlockade(c *gin.Context) error {
 }
 
 func (s *httpServer) removeBlockade(c *gin.Context) error {
-	ok, err := s.member.RemoveBlockade(c.Param("uid"))
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return err
 	}
-	if !ok {
-		return errors.ErrNoRows
+	if err := s.member.SetBlockade(c.Param("uid"), id, false); err != nil {
+		return err
 	}
+
 	c.Status(http.StatusNoContent)
 	return nil
 }

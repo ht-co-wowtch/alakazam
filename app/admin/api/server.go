@@ -50,8 +50,8 @@ func NewServer(conf *web.Conf, member *member.Member, producer *message.Producer
 
 func handler(e *gin.Engine, s *httpServer) {
 	// 封鎖
-	e.POST("/blockade/:uid", api.ErrHandler(s.setBlockade))
-	e.DELETE("/blockade/:uid", api.ErrHandler(s.removeBlockade))
+	e.POST("/blockade/:uid/room/:id", api.ErrHandler(s.setBlockade))
+	e.DELETE("/blockade/:uid/room/:id", api.ErrHandler(s.removeBlockade))
 
 	// 禁言
 	e.POST("/banned/:uid", api.ErrHandler(s.setBanned))
