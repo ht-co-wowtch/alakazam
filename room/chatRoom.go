@@ -33,6 +33,8 @@ type Chat interface {
 	ChangeRoom(uid string, rid int, key string) (*pb.ConnectReply, error)
 	GetTopMessage(rid int) (scheme.Message, error)
 	GetOnline(server string) (*Online, error)
+	GetManages(rid int) ([]memberList, error)
+	GetBlockades(rid int) ([]memberList, error)
 }
 
 type chat struct {
@@ -263,6 +265,47 @@ func (c *chat) GetTopMessage(rid int) (scheme.Message, error) {
 
 func (c *chat) GetOnline(server string) (*Online, error) {
 	return c.cache.getOnline(server)
+}
+
+type memberList struct {
+	Uid  string `json:"uid"`
+	Name string `json:"name"`
+}
+
+func (c *chat) GetManages(rid int) ([]memberList, error) {
+	ms, err := c.db.GetManages(rid)
+	if err != nil {
+		return nil, err
+	}
+
+	d := []memberList{}
+
+	for _, v := range ms {
+		d = append(d, memberList{
+			Uid:  v.Uid,
+			Name: v.Name,
+		})
+	}
+
+	return d, nil
+}
+
+func (c *chat) GetBlockades(rid int) ([]memberList, error) {
+	ms, err := c.db.GetBlockades(rid)
+	if err != nil {
+		return nil, err
+	}
+
+	d := []memberList{}
+
+	for _, v := range ms {
+		d = append(d, memberList{
+			Uid:  v.Uid,
+			Name: v.Name,
+		})
+	}
+
+	return d, nil
 }
 
 func NewPbConnect(user *models.Member, room models.Room, key string, roomId int32) *pb.Connect {

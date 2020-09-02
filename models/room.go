@@ -5,13 +5,10 @@ import (
 	"time"
 )
 
-const (
-	LOTTERY_TYPE = 1
-	LIVE_TYPE    = 2
-)
-
 type IChat interface {
 	GetChat(id int) (Room, []RoomTopMessage, error)
+	GetManages(rid int) ([]Member, error)
+	GetBlockades(rid int) ([]Member, error)
 }
 
 type Room struct {
@@ -123,4 +120,26 @@ func (s *Store) DeleteRoom(id int) (int64, error) {
 	return s.d.Cols("status").
 		Where("id = ?", id).
 		Update(&r)
+}
+
+func (s *Store) GetManages(rid int) ([]Member, error) {
+	var m []Member
+	err := s.d.SQL("SELECT b.`name`, b.uid "+
+		"FROM room_user_permissions as a "+
+		"INNER JOIN members as b on a.member_id = b.id "+
+		"WHERE a.room_id = ? AND is_manage = 1", rid,
+	).Find(&m)
+
+	return m, err
+}
+
+func (s *Store) GetBlockades(rid int) ([]Member, error) {
+	var m []Member
+	err := s.d.SQL("SELECT b.`name`, b.uid "+
+		"FROM room_user_permissions as a "+
+		"INNER JOIN members as b on a.member_id = b.id "+
+		"WHERE a.room_id = ? AND a.is_blockade = 1", rid,
+	).Find(&m)
+
+	return m, err
 }

@@ -73,3 +73,32 @@ func (s *httpServer) isManage(rid int, uid string) error {
 
 	return nil
 }
+
+type memberList struct {
+	Uid  string `json:"uid"`
+	Name string `json:"name"`
+}
+
+func (s *httpServer) manageList(c *gin.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	ms, err := s.msg.room.GetManages(id)
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, ms)
+	return nil
+}
+
+func (s *httpServer) blockadeList(c *gin.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	ms, err := s.msg.room.GetBlockades(id)
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, ms)
+	return nil
+}
