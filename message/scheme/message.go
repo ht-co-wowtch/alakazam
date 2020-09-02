@@ -92,7 +92,7 @@ func (m Message) ToRoomProto(rid []int32) (*logicpb.PushMsg, error) {
 }
 
 // 顯示訊息資料格式
-type display struct {
+type Display struct {
 	// 顯示用戶
 	User interface{} `json:"user"`
 
@@ -250,6 +250,14 @@ func (u User) ToSystem(seq int64, message string) Message {
 	b := u.toBase(seq, message)
 	b.Type = MESSAGE_TYPE
 	b.Display = displayBySystem(message)
+	return b
+}
+
+func (u User) DisplayToMessage(seq int64, display Display) Message {
+	m := display.Message.(displayMessage)
+	b := u.toBase(seq, m.Text)
+	b.Type = MESSAGE_TYPE
+	b.Display = m
 	return b
 }
 

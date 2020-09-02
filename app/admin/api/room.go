@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -143,6 +144,7 @@ func (s *httpServer) AddManage(c *gin.Context) error {
 	connect := room.NewPbConnect(m, r, "", 0)
 
 	_, _ = s.message.SendPermission(keys, m, *connect.Permission)
+	_, _ = s.message.SendDisplay([]int32{int32(params.RoomId)}, scheme.NewRoot(), scheme.DisplayBySetManage(m.Name))
 
 	c.Status(http.StatusNoContent)
 	return nil

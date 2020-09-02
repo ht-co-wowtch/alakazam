@@ -361,6 +361,12 @@ func (p *Producer) SendMessage(rid []int32, msg scheme.Message, isRaw bool) (int
 	})
 }
 
+func (p *Producer) SendDisplay(rid []int32, user scheme.User, display scheme.Display) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		return user.DisplayToMessage(id, display).ToRoomProto(rid)
+	})
+}
+
 func (p *Producer) Kick(msg string, keys []string) error {
 	m := struct {
 		Message string `json:"message"`

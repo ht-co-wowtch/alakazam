@@ -29,8 +29,8 @@ const (
 )
 
 // 用戶Display
-func displayByUser(user User, message string) display {
-	return display{
+func displayByUser(user User, message string) Display {
+	return Display{
 		User: displayUser{
 			Text:   user.Name,
 			Color:  USER_COLOR,
@@ -51,8 +51,8 @@ func displayByUser(user User, message string) display {
 }
 
 // 私密Display
-func displayByPrivate(user User, message string) display {
-	return display{
+func displayByPrivate(user User, message string) Display {
+	return Display{
 		User: displayUser{
 			Text:   user.Name,
 			Color:  MESSAGE_SYSTEM_COLOR,
@@ -73,8 +73,8 @@ func displayByPrivate(user User, message string) display {
 }
 
 // 房管Display
-func displayByManage(user User, message string) display {
-	return display{
+func displayByManage(user User, message string) Display {
+	return Display{
 		User: displayUser{
 			Text:   user.Name,
 			Color:  USER_COLOR,
@@ -95,8 +95,8 @@ func displayByManage(user User, message string) display {
 }
 
 // 主播Display
-func displayByStreamer(user User, message string) display {
-	return display{
+func displayByStreamer(user User, message string) Display {
+	return Display{
 		User: displayUser{
 			Text:   user.Name,
 			Color:  MESSAGE_SYSTEM_COLOR,
@@ -117,8 +117,8 @@ func displayByStreamer(user User, message string) display {
 }
 
 // 管理員Display
-func displayByAdmin(message string) display {
-	return display{
+func displayByAdmin(message string) Display {
+	return Display{
 		Title: displayText{
 			Text:            member.RootName,
 			Color:           MESSAGE_COLOR,
@@ -134,9 +134,9 @@ func displayByAdmin(message string) display {
 }
 
 // 跟投Display
-func displayByBets(user User, gameName string, amount int) display {
+func displayByBets(user User, gameName string, amount int) Display {
 	msg := "用户" + user.Name + "在" + gameName + "下注" + strconv.Itoa(amount) + "元"
-	return display{
+	return Display{
 		Title: displayText{
 			Text:            member.System,
 			Color:           MESSAGE_COLOR,
@@ -156,8 +156,8 @@ func displayByBets(user User, gameName string, amount int) display {
 }
 
 // 投注中獎Display
-func displayByBetsWin(user User, gameName string) display {
-	return display{
+func displayByBetsWin(user User, gameName string) Display {
+	return Display{
 		Title: displayText{
 			Text:            "中奖",
 			Color:           MESSAGE_COLOR,
@@ -175,9 +175,9 @@ func displayByBetsWin(user User, gameName string) display {
 	}
 }
 
-// 禮物 display
-func displayByGift(user User, name string) display {
-	return display{
+// 禮物 Display
+func displayByGift(user User, name string) Display {
+	return Display{
 		Title: displayText{
 			Text:            member.System,
 			Color:           MESSAGE_COLOR,
@@ -195,9 +195,9 @@ func displayByGift(user User, name string) display {
 	}
 }
 
-// 打賞 display
-func displayByReward(user User, amount float64) display {
-	return display{
+// 打賞 Display
+func displayByReward(user User, amount float64) Display {
+	return Display{
 		Title: displayText{
 			Text:            member.System,
 			Color:           MESSAGE_COLOR,
@@ -216,8 +216,8 @@ func displayByReward(user User, amount float64) display {
 }
 
 // 系統Display
-func displayBySystem(message string) display {
-	return display{
+func displayBySystem(message string) Display {
+	return Display{
 		Title: displayText{
 			Text:            member.System,
 			Color:           MESSAGE_COLOR,
@@ -232,9 +232,37 @@ func displayBySystem(message string) display {
 	}
 }
 
+// 房管通知Display
+func DisplayBySetManage(username string) Display {
+	msg := "用户" + username + "已被主播设置为"
+	return Display{
+		Title: displayText{
+			Text:            member.System,
+			Color:           MESSAGE_COLOR,
+			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
+		},
+		Message: displayMessage{
+			Text:            msg + "房管",
+			Color:           MESSAGE_SYSTEM_COLOR,
+			BackgroundColor: NONE_COLOR,
+			Entity: []textEntity{
+				usernameTextEntity(username, 2),
+				textEntity{
+					Type:            "text",
+					Offset:          utf8.RuneCountInString(msg),
+					Length:          2,
+					Color:           "#FFFFFF",
+					BackgroundColor: "#38A2DB",
+				},
+			},
+		},
+		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
+	}
+}
+
 // 進場Display
-func displayByConnect(username string) display {
-	return display{
+func displayByConnect(username string) Display {
+	return Display{
 		Level: displayText{
 			Text:            "会员",
 			Color:           MESSAGE_COLOR,
