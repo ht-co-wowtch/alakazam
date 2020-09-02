@@ -356,6 +356,7 @@ Operation = `6`=> 單筆訊息
 | Value           | 說明         |
 | --------------- | ------------ |
 | message         | 一般         |
+| private_message | 私訊         |
 | top             | 置頂         |
 | bulletin        | 進場公告     |
 | red_envelope    | 紅包         |
@@ -365,155 +366,10 @@ Operation = `6`=> 單筆訊息
 | bets_win_reward | 投注中獎打賞 |
 | open_live       | 開播         |
 | close_live      | 關播         |
-
-
-
-Body 
-
-```json
-{
-   "id":4001,
-   "type":"message",
-   "time":"12:37:00",
-   "timestamp":1567579890,
-   "display":{
-      "user":{
-         "text":"sam78",
-         "color":"#E9E645",
-         "avatar":"female"
-      },
-      "level":{
-         "text":"vip1",
-         "color":"#DF3030",
-         "background_color":"#86777F"
-      },
-      "title":{
-         "text":"房管",
-         "color":"#E5C4C4",
-         "background_color":"#332121"
-      },
-      "message":{
-         "text":"sam78 測試",
-         "color":"#DF3030",
-         "background_color":"#0000003f",
-         "entity":[
-            {
-               "type":"username",
-               "offset":0,
-               "length":5,
-               "color":"#A680B8",
-               "background_color":"#0000003f"
-            },
-            {
-               "type":"button",
-               "offset":6,
-               "length":2,
-               "color":"#E5C4C4",
-               "background_color":"#A680B8"
-            }
-         ]
-      },
-      "background_color":"#0000003f",
-      "background_image":{
-         "type":"linear-gradient",
-         "to":"right",
-         "color":{
-            "0":"#FC881380",
-            "99":"#FC881300"
-         }
-      }
-   },
-   "user":{
-      "uid":"3d641b03d4d548dbb3a73a2197811261",
-      "name":"sam78",
-      "avatar":"female"
-   },
-   "red_envelope":{
-      "id":"0d641b03d4d548dbb3a73a2197811261",
-      "token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjY4NzkzMTMsImlkIjoiMWI5MTZiNDc4YzBjNGZjMzhmMGE0MzE1NjMwNjExMTQiLCJ1aWQiOiIwZDY0MWIwM2Q0ZDU0OGRiYjNhNzNhMjE5NzgxMTI2MSJ9.pgyltHiT11XcZySJPiuetV35OXU-wgQ4XtU_UTzwghU",
-      "expired":"2019-08-27T12:15:13+08:00"
-   },
-   "bet":{
-      "game_id":4567,
-      "game_name":"六合彩",
-      "period_number":1234,
-      "count":2,
-      "total_amount":25,
-      "bets":[
-         {
-            "name":"冠軍",
-            "odds_code":"1.pos.1",
-            "items":[
-               "9",
-               "tiger"
-            ],
-            "trans_items":[
-               "9",
-               "虎"
-            ],
-            "amount":15
-         },
-         {
-            "name":"亞軍",
-            "odds_code":"2.pos.1",
-            "items":[
-
-            ],
-            "trans_items":[
-
-            ],
-            "amount":10
-         }
-      ]
-   },
-   "gift":{
-      "gift_id":1,
-      "total_amount":10,
-      "amount":5,
-      "combo":{
-         "count":1,
-         "duration_ms":2000
-      },
-      "hint_box":{
-         "duration_ms":3000,
-         "background_image":"https://assets.292801.com/awcp/logo/hPH6edsqSY.png"
-      },
-      "show_animation":false,
-      "message":"sam78 打賞10元",
-      "entity":[
-         {
-            "type":"username",
-            "offset":0,
-            "length":5,
-            "color":"#A680B8",
-            "background_color":"#0000003f"
-         }
-      ]
-   },
-   "bets_win_reward":{
-      "text":"恭喜您中奖 金额＄1,010.01 打賞主播",
-      "color":"#FFFFAA",
-      "background_color":"#F8565699",
-      "entity":[
-         {
-            "type":"button",
-            "offset":18,
-            "length":4,
-            "color":"#FFFFAA",
-            "background_color":"#F85656"
-         }
-      ]
-   },
-   "live_stream":{
-      "chat_id":1
-   }
-}
-```
-
+| permission      | 權限         |
 
 
 ![arch](./doc/message/live_message.png)
-
 
 
 | 欄位名稱     | 說明         | 格式          |
@@ -650,6 +506,14 @@ gift: 禮物
 | entity.color              | 字體顏色               | #000000     |
 | entity.background_color   | 標籤背景               | #A680B8     |
 
+permission: 權限
+
+| 欄位名稱 | 說明      | 格式 |
+| -------- | --------- | ---- |
+| is_message  | 是否禁言 | boolean  |
+| is_red_envelope  | 是否發/搶紅包 | boolean  |
+| is_bets  | 是否發跟投 | boolean  |
+| is_manage  | 是否為房管 | boolean  |
 
 
 live_stream: 直播
@@ -711,6 +575,45 @@ entity.type: 文字實體內容
 ```
 
 ![arch](./doc/message/user.png)
+
+私訊
+
+```json
+{
+    "id": 14003,
+    "type": "private_message",
+    "time": "10:55:17",
+    "timestamp": 1599015317,
+    "display": {
+        "user": {
+            "text": "Sam",
+            "color": "#FFFFAA",
+            "avatar": "male"
+        },
+        "level": null,
+        "title": {
+            "text": "私讯",
+            "color": "#FFFFFF",
+            "background_color": "#F79EB6"
+        },
+        "message": {
+            "text": "測試",
+            "color": "#FFFFFF",
+            "background_color": "#00000000",
+            "entity": null
+        },
+        "background_color": "#38A2DB7F",
+        "background_image": null
+    },
+    "user": {
+        "uid": "79a5ded9a5f34b57bed0786ae4cbb21b",
+        "name": "Sam",
+        "avatar": "male",
+        "type": 2
+    }
+}
+```
+
 
 公告(管理員)
 
@@ -1177,11 +1080,27 @@ entity.type: 文字實體內容
    "display":null,
    "user":null,
    "live_stream": {
-  	 "chat_id": 1,    
+  	 "chat_id": 1 
    }
 }
 ```
 
+permission
+
+```json
+{
+    "id": 14004,
+    "type": "permission",
+    "display": null,
+    "user": null,
+    "permission": {
+        "is_message": true,
+        "is_red_envelope": true,
+        "is_bets": false,
+        "is_manage": false
+    }
+}
+```
 
 
 #### Change Room Reply
