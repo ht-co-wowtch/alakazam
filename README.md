@@ -456,6 +456,7 @@ user: 發訊息人資料
 | uid      | 發訊息人 會員uuid        | string |
 | name     | 發訊息人名稱             | string |
 | avatar   | 頭像名稱 [類型](#avatar) | string |
+| type     | 身份(一般`2` 主播`3` 房管`4`) | int |
 
 
 
@@ -569,7 +570,8 @@ entity.type: 文字實體內容
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
       "name":"sam78",
-      "avatar":"female"
+      "avatar":"female",
+      "type": 2
    }
 }
 ```
@@ -643,7 +645,8 @@ entity.type: 文字實體內容
    "user":{
       "uid":"root",
       "name":"管理员",
-      "avatar":"root"
+      "avatar":"root",
+      "type": 2
    }
 }
 ```
@@ -677,7 +680,8 @@ entity.type: 文字實體內容
    "user":{
       "uid":"root",
       "name":"管理員",
-      "avatar":"root"
+      "avatar":"root",
+      "type": 2
    }
 }
 ```
@@ -830,7 +834,8 @@ entity.type: 文字實體內容
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
       "name":"sam78",
-      "avatar":"female"
+      "avatar":"female",
+      "type": 2
    },
    "gift":{
       "gift_id":1,
@@ -888,7 +893,8 @@ entity.type: 文字實體內容
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
       "name":"sam78",
-      "avatar":"female"
+      "avatar":"female",
+      "type": 2
    },
    "gift":{
       "gift_id":0,
@@ -946,7 +952,8 @@ entity.type: 文字實體內容
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
       "name":"sam78",
-      "avatar":"female"
+      "avatar":"female",
+      "type": 2
    },
    "red_envelope":{
       "id":"0d641b03d4d548dbb3a73a2197811261",
@@ -993,7 +1000,9 @@ entity.type: 文字實體內容
    },
    "user":{
       "uid":"3d641b03d4d548dbb3a73a2197811261",
-      "name":"sam78"
+      "name":"sam78",
+      "avatar":"female",
+      "type": 2
    },
    "bet":{
       "game_id":4567,
@@ -1043,7 +1052,8 @@ entity.type: 文字實體內容
    "user":{
       "uid":"79a5ded9a5f34b57bed0786ae4cbb21b",
       "name":"Sam",
-      "avatar":""
+      "avatar":"",
+      "type": 2
    },
    "follow":{
       "total":10
