@@ -152,7 +152,7 @@ const (
 )
 
 func (m *MysqlConsumer) Push(msg *pb.PushMsg) error {
-	if msg.MsgType > 0 {
+	if msg.MsgType > 0 && msg.Room != nil {
 		m.consumer[msg.Room[0]%m.consumerCount] <- msg
 	}
 	return nil
