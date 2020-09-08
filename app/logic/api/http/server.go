@@ -77,6 +77,8 @@ func handler(e *gin.Engine, s httpServer) {
 	e.GET("/room/:id/manage", ErrHandler(s.manageList))
 	e.GET("/room/:id/blockade", ErrHandler(s.blockadeList))
 
+	e.GET("/room/:id/user/:uid", ErrHandler(s.user))
+
 	e.POST("/push/room", s.authUid, ErrHandler(s.pushRoom))
 	e.POST("/push/key", s.authUid, ErrHandler(s.pushKey))
 	e.POST("/red-envelope", s.authUid, ErrHandler(s.giveRedEnvelope))

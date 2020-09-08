@@ -74,9 +74,35 @@ func (s *httpServer) isManage(rid int, uid string) error {
 	return nil
 }
 
-type memberList struct {
-	Uid  string `json:"uid"`
-	Name string `json:"name"`
+func (s *httpServer) user(c *gin.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	params := struct {
+		RoomId int    `json:"room_id" binding:"required"`
+		Uid    string `json:"uid" binding:"required,len=32"`
+	}{
+		RoomId: id,
+		Uid:    c.Param("uid"),
+	}
+	if err := binding.Validator.ValidateStruct(&params); err != nil {
+		return err
+	}
+
+	m, err := s.member.GetByRoom(params.Uid, params.RoomId)
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"uid":         m.Uid,
+		"name":        m.Name,
+		"type":        m.Type,
+		"is_banned":   m.IsBanned,
+		"is_blockade": m.IsBlockade,
+		"is_manage":   m.IsManage,
+	})
+
+	return nil
 }
 
 func (s *httpServer) manageList(c *gin.Context) error {
