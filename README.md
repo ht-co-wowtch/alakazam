@@ -300,9 +300,11 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 | permission.is_message              | true: 可聊天，false: 不可聊天                |
 | permission.is_red_envelope         | true: 可發/搶紅包，false: 不可發/搶紅包      |
 | permission.is_bets                 | true: 可跟注，false: 不可跟注                |
+| permission.is_manage               | true: 房管，false: 不是房管                |
 | permission_message.is_message      | 進入房間後關於發言相關提示訊息               |
 | permission_message.is_red_envelope | 進入房間後關於搶/發紅包相關提示訊息          |
 | permission_message.is_bets         | 進入房間後關於跟注相關提示訊息               |
+| permission_message.is_manage       | 你已被主播设为房管人员               |
 
 進入房間有幾種狀況，原因都會寫在`message`
 
@@ -1099,16 +1101,24 @@ permission
 
 ```json
 {
-    "id": 14004,
-    "type": "permission",
-    "display": null,
-    "user": null,
-    "permission": {
-        "is_message": true,
-        "is_red_envelope": true,
-        "is_bets": false,
-        "is_manage": false
-    }
+   "id":15404,
+   "type":"permission",
+   "time": "12:37:00",
+   "timestamp": 1567579890, 
+   "display":null,
+   "user":null,
+   "permission":{
+      "is_message":true,
+      "is_red_envelope":true,
+      "is_bets":false,
+      "is_manage":false
+   },
+   "permission_message":{
+      "is_message":"",
+      "is_red_envelope":"",
+      "is_bets":"请先登入会员",
+      "is_manage":"你已被主播取消房管人员资格"
+   }
 }
 ```
 
@@ -1129,7 +1139,8 @@ Operation = `8`=> 回覆更換房間結果
     "permission": {
         "is_message": false,
         "is_red_envelope": false,
-        "is_bets": false
+        "is_bets": false,
+        "is_mag": 
     },
     "permission_message": {
         "is_message": "聊天室目前禁言状态，无法发言",

@@ -143,7 +143,7 @@ func (s *httpServer) AddManage(c *gin.Context) error {
 	r, _ := s.room.Get(int(params.RoomId))
 	connect := room.NewPbConnect(m, r, "", 0)
 
-	_, _ = s.message.SendPermission(keys, m, *connect.Permission)
+	_, _ = s.message.SendPermission(keys, m, *connect)
 	_, _ = s.message.SendDisplay([]int32{int32(params.RoomId)}, scheme.NewRoot(), scheme.DisplayBySetManage(m.Name))
 
 	c.Status(http.StatusNoContent)
@@ -178,7 +178,7 @@ func (s *httpServer) DeleteManage(c *gin.Context) error {
 	r, _ := s.room.Get(int(params.RoomId))
 	connect := room.NewPbConnect(m, r, "", 0)
 
-	_, _ = s.message.SendPermission(keys, m, *connect.Permission)
+	_, _ = s.message.SendPermission(keys, m, *connect)
 
 	c.Status(http.StatusNoContent)
 	return nil

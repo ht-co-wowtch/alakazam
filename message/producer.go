@@ -306,17 +306,29 @@ func (p *Producer) SendConnect(rid int32, user *logicpb.User) (int64, error) {
 	})
 }
 
-func (p *Producer) SendPermission(keys []string, user *models.Member, permission logicpb.Permission) (int64, error) {
+func (p *Producer) SendPermission(keys []string, user *models.Member, connect logicpb.Connect) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		if connect.Permission.IsManage {
+			connect.PermissionMessage.IsManage = "你已被主播设为房管人员"
+		} else {
+			connect.PermissionMessage.IsManage = "你已被主播取消房管人员资格"
+		}
+
+		now := time.Now()
+
 		msg := struct {
 			scheme.Message
-			Permission logicpb.Permission `json:"permission"`
+			Permission        logicpb.Permission        `json:"permission"`
+			PermissionMessage logicpb.PermissionMessage `json:"permission_message"`
 		}{
 			Message: scheme.Message{
-				Id:   id,
-				Type: "permission",
+				Id:        id,
+				Type:      "permission",
+				Time:      now.Format("15:04:05"),
+				Timestamp: now.Unix(),
 			},
-			Permission: permission,
+			Permission:        *connect.Permission,
+			PermissionMessage: *connect.PermissionMessage,
 		}
 
 		bm, err := json.Marshal(msg)
