@@ -243,7 +243,7 @@ func (s *httpServer) gift(c *gin.Context) error {
 			Name:   req.UserName,
 			Uid:    req.Uid,
 			Avatar: req.UserAvatar,
-			Type:   models.Player,
+			Type:   "player",
 		}
 	}
 
@@ -298,7 +298,7 @@ func (s *httpServer) reward(c *gin.Context) error {
 			Name:   req.UserName,
 			Uid:    req.Uid,
 			Avatar: req.UserAvatar,
-			Type:   models.Player,
+			Type:   "player",
 		}
 	}
 

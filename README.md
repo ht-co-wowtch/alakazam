@@ -456,7 +456,7 @@ user: 發訊息人資料
 | uid      | 發訊息人 會員uuid        | string |
 | name     | 發訊息人名稱             | string |
 | avatar   | 頭像名稱 [類型](#avatar) | string |
-| type     | 身份(一般`2` 主播`3` 房管`4`) | int |
+| type     | 身份(訪客`guest` 營運`market` 一般`player` 主播`streamer` 房管`manage`) | string |
 
 
 

@@ -192,7 +192,7 @@ type User struct {
 	// 頭像
 	Avatar string `json:"avatar"`
 
-	Type int `json:"type"`
+	Type string `json:"type"`
 }
 
 func NewUser(member models.Member) User {
@@ -200,7 +200,7 @@ func NewUser(member models.Member) User {
 		Id:     member.Id,
 		Uid:    member.Uid,
 		Name:   member.Name,
-		Type:   member.Type,
+		Type:   ToType(member.Type),
 		Avatar: ToAvatarName(member.Gender),
 	}
 }
@@ -322,4 +322,18 @@ func ToAvatarName(code int32) string {
 		return avatarRoot
 	}
 	return avatarOther
+}
+
+func ToType(t int) string {
+	switch t {
+	case 1:
+		return "market"
+	case 2:
+		return "player"
+	case 3:
+		return "streamer"
+	case 4:
+		return "manage"
+	}
+	return "guest"
 }
