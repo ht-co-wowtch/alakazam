@@ -268,8 +268,9 @@ func (c *chat) GetOnline(server string) (*Online, error) {
 }
 
 type memberList struct {
-	Uid  string `json:"uid"`
-	Name string `json:"name"`
+	Uid    string `json:"uid"`
+	Name   string `json:"name"`
+	Avatar string `json:"avatar"`
 }
 
 func (c *chat) GetManages(rid int) ([]memberList, error) {
@@ -282,8 +283,9 @@ func (c *chat) GetManages(rid int) ([]memberList, error) {
 
 	for _, v := range ms {
 		d = append(d, memberList{
-			Uid:  v.Uid,
-			Name: v.Name,
+			Uid:    v.Uid,
+			Name:   v.Name,
+			Avatar: scheme.ToAvatarName(v.Gender),
 		})
 	}
 
@@ -300,8 +302,9 @@ func (c *chat) GetBlockades(rid int) ([]memberList, error) {
 
 	for _, v := range ms {
 		d = append(d, memberList{
-			Uid:  v.Uid,
-			Name: v.Name,
+			Uid:    v.Uid,
+			Name:   v.Name,
+			Avatar: scheme.ToAvatarName(v.Gender),
 		})
 	}
 

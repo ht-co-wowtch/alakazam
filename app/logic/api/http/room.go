@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"net/http"
 	"strconv"
 )
@@ -97,6 +98,7 @@ func (s *httpServer) user(c *gin.Context) error {
 		"uid":         m.Uid,
 		"name":        m.Name,
 		"type":        m.Type,
+		"avatar":      scheme.ToAvatarName(m.Gender),
 		"is_banned":   m.IsBanned,
 		"is_blockade": m.IsBlockade,
 		"is_manage":   m.IsManage,
