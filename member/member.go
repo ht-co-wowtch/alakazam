@@ -223,6 +223,22 @@ func (m *Member) GetByRoom(uid string, rid int) (*models.Member, error) {
 	return u, err
 }
 
+func (m *Member) GetStatus(uid string, rid int) (*models.Member, error) {
+	u, err := m.GetByRoom(uid, rid)
+	if err != nil {
+		return nil, err
+	}
+
+	if !u.IsBanned {
+		u.IsBanned, err = m.c.isBanned(uid, rid)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return u, nil
+}
+
 func (m *Member) GetUserName(uid string) (string, error) {
 	members, err := m.GetUserNames([]string{uid})
 	if err != nil {

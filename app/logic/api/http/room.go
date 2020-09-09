@@ -89,7 +89,7 @@ func (s *httpServer) user(c *gin.Context) error {
 		return err
 	}
 
-	m, err := s.member.GetByRoom(params.Uid, params.RoomId)
+	m, err := s.member.GetStatus(params.Uid, params.RoomId)
 	if err != nil {
 		return err
 	}
