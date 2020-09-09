@@ -139,7 +139,7 @@ func (s *httpServer) AddManage(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	m, _ := s.member.Get(params.Uid)
+	m, _ := s.member.GetByRoom(params.Uid, params.RoomId)
 	r, _ := s.room.Get(int(params.RoomId))
 	connect := room.NewPbConnect(m, r, "", 0)
 
@@ -174,7 +174,7 @@ func (s *httpServer) DeleteManage(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	m, _ := s.member.Get(params.Uid)
+	m, _ := s.member.GetByRoom(params.Uid, params.RoomId)
 	r, _ := s.room.Get(int(params.RoomId))
 	connect := room.NewPbConnect(m, r, "", 0)
 
