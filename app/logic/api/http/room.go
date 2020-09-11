@@ -97,7 +97,7 @@ func (s *httpServer) user(c *gin.Context) error {
 	c.JSON(http.StatusOK, gin.H{
 		"uid":         m.Uid,
 		"name":        m.Name,
-		"type":        m.Type,
+		"type":        scheme.ToType(m.Type),
 		"avatar":      scheme.ToAvatarName(m.Gender),
 		"is_banned":   m.IsBanned,
 		"is_blockade": m.IsBlockade,
