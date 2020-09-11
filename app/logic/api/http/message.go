@@ -63,7 +63,7 @@ func (m *msg) user(req messageReq) (int64, error) {
 }
 
 func (m *msg) private(req messageReq) (int64, error) {
-	user, _, err := m.room.GetMessageSession(req.Uid, req.RoomId)
+	user, err := m.member.GetSession(req.Uid)
 	if err != nil {
 		return 0, err
 	}
@@ -74,7 +74,7 @@ func (m *msg) private(req messageReq) (int64, error) {
 	}
 
 	if len(keys) == 0 {
-		return 0, errors.ErrLogin
+		return 0, errors.ErrNoOnline
 	}
 
 	return m.message.SendPrivate(keys, req.Message, user)

@@ -33,6 +33,7 @@ var (
 	ErrMemberBanned    = errdefs.Unauthorized(2009, "您在禁言状态，无法发言")
 	ErrBlockade        = errdefs.Unauthorized(2010, "您在封鎖状态，无法进入聊天室")
 	ErrForbidden       = errdefs.InvalidParameter(2011, "无操作权限")
+	ErrNoOnline       = errdefs.Unauthorized(2012, "用户不在线上")
 
 	// 								金額	30**
 
