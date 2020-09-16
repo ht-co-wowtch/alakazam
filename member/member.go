@@ -73,7 +73,7 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 		return nil, "", err
 	}
 
-	if u.IsBlockade {
+	if u.Blockade() {
 		return u, "", nil
 	}
 
@@ -115,7 +115,7 @@ func (m *Member) SetManage(uid string, rid int, set bool) error {
 		return err
 	}
 
-	member.RoomId = rid
+	member.Permission.RoomId = int64(rid)
 	member.IsManage = set
 
 	if err = m.db.SetRoomPermission(*member); err != nil {
@@ -155,10 +155,10 @@ func (m *Member) GetMessageSession(uid string, rid int) (*models.Member, error) 
 		return nil, err
 	}
 
-	if member.IsBlockade {
+	if member.Blockade() {
 		return nil, errors.ErrBlockade
 	}
-	if !member.IsMessage {
+	if member.Banned() {
 		return nil, errors.ErrMemberNoMessage
 	}
 
@@ -216,18 +216,10 @@ func (m *Member) GetByRoom(uid string, rid int) (*models.Member, error) {
 		return nil, err
 	}
 
-	if u.RoomId != rid {
-		p, _ := m.db.RoomPermission(u.Id, rid)
-
-		if u.IsMessage {
-			u.IsMessage = !p.IsBanned
-		}
-
-		if !u.IsBlockade {
-			u.IsBlockade = p.IsBlockade
-		}
-
-		u.IsManage = p.IsManage
+	if u.Permission.RoomId != int64(rid) {
+		u.Permission, _ = m.db.RoomPermission(u.Id, rid)
+		u.Permission.RoomId = int64(rid)
+		err = m.c.set(u)
 	}
 
 	return u, err
@@ -239,13 +231,10 @@ func (m *Member) GetStatus(uid string, rid int) (*models.Member, error) {
 		return nil, err
 	}
 
-	if u.IsMessage {
-		isBanned, err := m.c.isBanned(uid, rid)
-		if err != nil {
+	if !u.Banned() {
+		if u.Permission.IsBanned, err = m.c.isBanned(uid, rid); err != nil {
 			return nil, err
 		}
-
-		u.IsMessage = !isBanned
 	}
 
 	return u, nil

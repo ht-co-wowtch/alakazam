@@ -99,9 +99,9 @@ func (s *httpServer) user(c *gin.Context) error {
 		"name":        m.Name,
 		"type":        scheme.ToType(m.Type),
 		"avatar":      scheme.ToAvatarName(m.Gender),
-		"is_banned":   m.IsBanned,
-		"is_blockade": m.IsBlockade,
-		"is_manage":   m.IsManage,
+		"is_banned":   m.Banned(),
+		"is_blockade": m.Blockade(),
+		"is_manage":   m.Permission.IsManage,
 	})
 
 	return nil

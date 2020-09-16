@@ -36,21 +36,34 @@ const (
 )
 
 type Member struct {
-	Id         int64     `xorm:"pk autoincr"`
-	Uid        string    `json:"uid"`
-	Name       string    `json:"name"`
-	Type       int       `json:"type"`
-	IsMessage  bool      `json:"is_message"`
-	IsBlockade bool      `json:"is_blockade"`
-	Gender     int32     `json:"gender"`
-	CreateAt   time.Time `json:"-"`
-
-	RoomId   int  `json:"-" xorm:"-"`
-	IsManage bool `json:"-" xorm:"-"`
+	Id         int64      `xorm:"pk autoincr"`
+	Uid        string     `json:"uid"`
+	Name       string     `json:"name"`
+	Type       int        `json:"type"`
+	IsMessage  bool       `json:"is_message"`
+	IsBlockade bool       `json:"is_blockade"`
+	IsManage   bool       `json:"-" xorm:"-"`
+	Permission Permission `json:"-" xorm:"-"`
+	Gender     int32      `json:"gender"`
+	CreateAt   time.Time  `json:"-"`
 }
 
 func (r *Member) TableName() string {
 	return "members"
+}
+
+func (r Member) Banned() bool {
+	if r.IsMessage {
+		return r.Permission.IsBanned
+	}
+	return true
+}
+
+func (r Member) Blockade() bool {
+	if !r.IsBlockade {
+		return r.Permission.IsBlockade
+	}
+	return true
 }
 
 type Permission struct {
@@ -96,15 +109,21 @@ func (s *Store) setUserPermission(uid, name string, is bool) (bool, error) {
 	aff, err := s.d.Cols(name).
 		Where("id = ?", m.Id).
 		Update(&Member{
-			IsMessage:  is,
+			IsMessage:  !is,
 			IsBlockade: is,
 		})
 
 	if err == nil && !is {
-		_, err = s.d.Cols(name).
+		k := map[string]string{
+			"is_blockade": "is_blockade",
+			"is_message":  "is_banned",
+		}
+
+		_, err = s.d.Cols(k[name]).
 			Where("member_id = ?", m.Id).
 			Update(&Permission{
-				IsBlockade: false,
+				IsBanned:   is,
+				IsBlockade: is,
 			})
 	}
 
@@ -137,13 +156,9 @@ func (s *Store) RoomPermission(id int64, rid int) (Permission, error) {
 }
 
 func (s *Store) SetRoomPermission(member Member) error {
-	data := &Permission{
-		IsBanned:   !member.IsMessage,
-		IsBlockade: member.IsBlockade,
-		IsManage:   member.IsManage,
-	}
+	data := &member.Permission
 
-	ok, err := s.d.Where("room_id = ?", member.RoomId).
+	ok, err := s.d.Where("room_id = ?", member.Permission.RoomId).
 		Where("member_id = ?", member.Id).
 		Exist(data)
 	if err != nil {
@@ -152,11 +167,11 @@ func (s *Store) SetRoomPermission(member Member) error {
 
 	if ok {
 		_, err = s.d.Cols("is_banned", "is_blockade", "is_manage").
-			Where("room_id = ?", member.RoomId).
+			Where("room_id = ?", member.Permission.RoomId).
 			Where("member_id = ?", member.Id).
 			Update(data)
 	} else {
-		data.RoomId = int64(member.RoomId)
+		data.RoomId = int64(member.Permission.RoomId)
 		data.MemberId = member.Id
 		_, err = s.d.InsertOne(data)
 	}

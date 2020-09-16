@@ -40,6 +40,7 @@ type Cache interface {
 	getName(uid []string) (map[string]string, error)
 	setBanned(uid string, rid int, expired time.Duration) error
 	delBanned(uid string, rid int) error
+	delAllBanned(uid string) error
 	isBanned(uid string, rid int) (bool, error)
 }
 
@@ -79,7 +80,11 @@ func (c *cache) login(member *models.Member, rid int, key string) error {
 		return err
 	}
 
-	isb, _ := json.Marshal([]bool{member.IsMessage, member.IsBlockade, member.IsManage})
+	isb, _ := json.Marshal([]bool{
+		member.Permission.IsBanned,
+		member.Permission.IsBlockade,
+		member.Permission.IsManage,
+	})
 
 	tx := c.c.Pipeline()
 
@@ -111,30 +116,6 @@ func (c *cache) login(member *models.Member, rid int, key string) error {
 	return err
 }
 
-func (c *cache) clearRoom(uid string) error {
-	m, err := c.get(uid)
-	if err != nil {
-		return err
-	}
-
-	b, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-
-	tx := c.c.Pipeline()
-	uidKey := keyUid(m.Uid)
-	tx.Del(uidKey)
-	tx.HMSet(uidKey, map[string]interface{}{
-		uidDataHKey: b,
-		uidNameHKey: m.Name,
-	})
-	tx.Expire(uidKey, c.expire)
-
-	_, err = tx.Exec()
-	return err
-}
-
 func (c *cache) set(member *models.Member) error {
 	b, err := json.Marshal(member)
 	if err != nil {
@@ -145,9 +126,14 @@ func (c *cache) set(member *models.Member) error {
 		uidDataHKey: b,
 	}
 
-	if member.RoomId != 0 {
-		isb, _ := json.Marshal([]bool{member.IsMessage, member.IsBlockade, member.IsManage})
-		data[strconv.Itoa(member.RoomId)] = isb
+	if member.Permission.RoomId != 0 {
+		isb, _ := json.Marshal([]bool{
+			member.Permission.IsBanned,
+			member.Permission.IsBlockade,
+			member.Permission.IsManage,
+		})
+
+		data[strconv.Itoa(int(member.Permission.RoomId))] = isb
 	}
 
 	key := keyUid(member.Uid)
@@ -196,10 +182,10 @@ func (c *cache) getByRoom(uid string, rid int) (*models.Member, error) {
 		return nil, err
 	}
 
-	m.RoomId = rid
-	m.IsMessage = is[0]
-	m.IsBlockade = is[1]
-	m.IsManage = is[2]
+	m.Permission.RoomId = int64(rid)
+	m.Permission.IsBanned = is[0]
+	m.Permission.IsBlockade = is[1]
+	m.Permission.IsManage = is[2]
 
 	return m, nil
 }
@@ -273,6 +259,30 @@ func (c *cache) delete(uid string) (bool, error) {
 	return true, nil
 }
 
+func (c *cache) clearRoom(uid string) error {
+	m, err := c.get(uid)
+	if err != nil {
+		return err
+	}
+
+	b, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+
+	tx := c.c.Pipeline()
+	uidKey := keyUid(m.Uid)
+	tx.Del(uidKey)
+	tx.HMSet(uidKey, map[string]interface{}{
+		uidDataHKey: b,
+		uidNameHKey: m.Name,
+	})
+	tx.Expire(uidKey, c.expire)
+
+	_, err = tx.Exec()
+	return err
+}
+
 func (c *cache) refreshExpire(uid string) error {
 	tx := c.c.Pipeline()
 	tx.Expire(keyUid(uid), c.expire)
@@ -320,7 +330,47 @@ func (c *cache) delBanned(uid string, rid int) error {
 	return err
 }
 
+func (c *cache) delAllBanned(uid string) error {
+	keys, err := c.scanKeys(fmt.Sprintf("%s:b_%s-*", prefix, uid))
+	if err != nil {
+		return err
+	}
+
+	if len(keys) == 0 {
+		return nil
+	}
+
+	_, err = c.c.Del(keys...).Result()
+	return err
+}
+
 func (c *cache) isBanned(uid string, rid int) (bool, error) {
 	aff, err := c.c.Exists(keyBanned(uid, rid), keyBanned(uid, 0)).Result()
 	return aff == 1, err
+}
+
+func (c *cache) scanKeys(key string) ([]string, error) {
+	var keys []string
+	var cur uint64
+	var err error
+
+	for {
+		var tmpKeys []string
+		tmpKeys, cur, err = c.c.Scan(cur, key, 100).Result()
+		if err != nil {
+			return nil, err
+		}
+
+		if len(tmpKeys) == 0 {
+			break
+		}
+
+		keys = append(keys, tmpKeys...)
+
+		if cur == 0 {
+			break
+		}
+	}
+
+	return keys, nil
 }

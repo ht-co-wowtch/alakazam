@@ -1,6 +1,7 @@
 package member
 
 import (
+	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"time"
@@ -18,14 +19,14 @@ func (m *Member) SetBanned(uid string, rid, sec int, isSystem bool) error {
 			return err
 		}
 
-		if u.IsBanned {
+		if u.Banned() {
 			return nil
 		}
 
-		u.RoomId = rid
-		u.IsBanned = true
+		u.Permission.RoomId = int64(rid)
+		u.Permission.IsBanned = true
 
-		if err := m.db.SetPermission(*u); err != nil {
+		if err := m.db.SetRoomPermission(*u); err != nil {
 			return err
 		}
 
@@ -41,6 +42,33 @@ func (m *Member) SetBanned(uid string, rid, sec int, isSystem bool) error {
 	if err != nil || !ok {
 		log.Error("set banned log", zap.Error(err), zap.Bool("action", ok))
 	}
+	return nil
+}
+
+func (m *Member) SetBannedAll(uid string, sec int) error {
+	expire := time.Duration(sec) * time.Second
+	if sec > 0 {
+		if err := m.c.setBanned(uid, 0, expire); err != nil {
+			return err
+		}
+	} else if sec == -1 {
+		if _, err := m.db.SetUserBanned(uid, true); err != nil {
+			return err
+		}
+
+		member, err := m.Get(uid)
+		if err != nil {
+			if err == errors.ErrLogin {
+				return nil
+			}
+			return err
+		}
+
+		member.IsMessage = false
+
+		return m.c.set(member)
+	}
+
 	return nil
 }
 
@@ -90,12 +118,34 @@ func (m *Member) RemoveBanned(uid string, rid int) error {
 		return err
 	}
 
-	u.RoomId = rid
-	u.IsBanned = false
+	u.Permission.RoomId = int64(rid)
+	u.Permission.IsBanned = false
 
-	if err := m.db.SetPermission(*u); err != nil {
+	if err := m.db.SetRoomPermission(*u); err != nil {
 		return err
 	}
 
 	return m.c.set(u)
+}
+
+func (m *Member) RemoveBannedAll(uid string) error {
+	if _, err := m.db.SetUserBanned(uid, false); err != nil {
+		return err
+	}
+
+	if err := m.c.delAllBanned(uid); err != nil {
+		return err
+	}
+
+	member, err := m.Get(uid)
+	if err != nil {
+		if err == errors.ErrLogin {
+			return nil
+		}
+		return err
+	}
+
+	member.IsMessage = true
+
+	return m.c.set(member)
 }

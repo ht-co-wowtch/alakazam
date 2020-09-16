@@ -4,15 +4,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"net/http"
-	"strconv"
 )
 
 // 設定禁言
 func (s *httpServer) setBanned(c *gin.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, err := getId(c)
+	if err != nil {
+		return err
+	}
 
 	params := struct {
-		RoomId  int    `json:"room_id" binding:"required"`
+		RoomId  int    `json:"room_id"`
 		Uid     string `json:"uid" binding:"required,len=32"`
 		Expired int    `json:"expired" binding:"required"`
 	}{
@@ -22,19 +24,28 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	if err := c.ShouldBindJSON(&params); err != nil {
 		return err
 	}
-	if err := s.member.SetBanned(params.Uid, params.RoomId, params.Expired, false); err != nil {
+
+	if id == 0 {
+		if err := s.member.SetBannedAll(params.Uid, params.Expired); err != nil {
+			return err
+		}
+	} else if err := s.member.SetBanned(params.Uid, params.RoomId, params.Expired, false); err != nil {
 		return err
 	}
+
 	c.Status(http.StatusNoContent)
 	return nil
 }
 
 // 解除禁言
 func (s *httpServer) removeBanned(c *gin.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, err := getId(c)
+	if err != nil {
+		return err
+	}
 
 	params := struct {
-		RoomId int    `json:"room_id" binding:"required"`
+		RoomId int    `json:"room_id"`
 		Uid    string `json:"uid" binding:"required,len=32"`
 	}{
 		RoomId: id,
@@ -43,7 +54,12 @@ func (s *httpServer) removeBanned(c *gin.Context) error {
 	if err := binding.Validator.ValidateStruct(&params); err != nil {
 		return err
 	}
-	if err := s.member.RemoveBanned(params.Uid, params.RoomId); err != nil {
+
+	if id == 0 {
+		if err := s.member.RemoveBannedAll(params.Uid); err != nil {
+			return err
+		}
+	} else if err := s.member.RemoveBanned(params.Uid, params.RoomId); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)

@@ -8,12 +8,8 @@ func (m *Member) SetBlockade(uid string, rid int, set bool) error {
 		return err
 	}
 
-	if member.IsBlockade == set {
-		return nil
-	}
-
-	member.RoomId = rid
-	member.IsBlockade = set
+	member.Permission.RoomId = int64(rid)
+	member.Permission.IsBlockade = set
 
 	if err := m.db.SetRoomPermission(*member); err != nil {
 		return err

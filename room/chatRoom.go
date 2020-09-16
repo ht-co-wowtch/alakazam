@@ -109,7 +109,7 @@ func (c *chat) ChangeRoom(uid string, rid int, key string) (*pb.ConnectReply, er
 }
 
 func (c *chat) newConnectReply(user *models.Member, room models.Room, key string) (*pb.ConnectReply, error) {
-	if user.IsBlockade {
+	if user.Blockade() {
 		return nil, errors.ErrBlockade
 	}
 
@@ -326,7 +326,7 @@ func NewPbConnect(user *models.Member, room models.Room, key string, roomId int3
 		if !room.IsMessage {
 			permissionMsg.IsMessage = errors.RoomBanned
 			permission.IsMessage = false
-		} else if user.IsBanned {
+		} else if user.Banned() {
 			permissionMsg.IsMessage = errors.MemberBanned
 		} else {
 			permission.IsMessage = true
