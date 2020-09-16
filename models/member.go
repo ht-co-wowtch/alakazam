@@ -36,17 +36,17 @@ const (
 )
 
 type Member struct {
-	Id       int64     `xorm:"pk autoincr"`
-	Uid      string    `json:"uid"`
-	Name     string    `json:"name"`
-	Type     int       `json:"type"`
-	Gender   int32     `json:"gender"`
-	CreateAt time.Time `json:"-"`
+	Id         int64     `xorm:"pk autoincr"`
+	Uid        string    `json:"uid"`
+	Name       string    `json:"name"`
+	Type       int       `json:"type"`
+	IsMessage  bool      `json:"is_message"`
+	IsBlockade bool      `json:"is_blockade"`
+	Gender     int32     `json:"gender"`
+	CreateAt   time.Time `json:"-"`
 
-	RoomId     int  `json:"-" xorm:"-"`
-	IsBanned   bool `json:"-" xorm:"-"`
-	IsBlockade bool `json:"-" xorm:"-"`
-	IsManage   bool `json:"-" xorm:"-"`
+	RoomId   int  `json:"-" xorm:"-"`
+	IsManage bool `json:"-" xorm:"-"`
 }
 
 func (r *Member) TableName() string {
@@ -79,6 +79,38 @@ func (s *Store) UpdateUser(member *Member) (bool, error) {
 	return aff == 1, err
 }
 
+func (s *Store) SetUserBlockade(uid string, is bool) (bool, error) {
+	return s.setUserPermission(uid, "is_blockade", is)
+}
+
+func (s *Store) SetUserBanned(uid string, is bool) (bool, error) {
+	return s.setUserPermission(uid, "is_message", is)
+}
+
+func (s *Store) setUserPermission(uid, name string, is bool) (bool, error) {
+	m, err := s.Find(uid)
+	if err != nil {
+		return false, err
+	}
+
+	aff, err := s.d.Cols(name).
+		Where("id = ?", m.Id).
+		Update(&Member{
+			IsMessage:  is,
+			IsBlockade: is,
+		})
+
+	if err == nil && !is {
+		_, err = s.d.Cols(name).
+			Where("member_id = ?", m.Id).
+			Update(&Permission{
+				IsBlockade: false,
+			})
+	}
+
+	return aff == 1, err
+}
+
 // 找會員
 func (s *Store) Find(uid string) (*Member, error) {
 	m := new(Member)
@@ -91,7 +123,7 @@ func (s *Store) Find(uid string) (*Member, error) {
 	return m, err
 }
 
-func (s *Store) Permission(id int64, rid int) (Permission, error) {
+func (s *Store) RoomPermission(id int64, rid int) (Permission, error) {
 	p := Permission{}
 	_, err := s.d.Where("room_id = ?", rid).Where("member_id = ?", id).Get(&p)
 	if err != nil {
@@ -104,9 +136,9 @@ func (s *Store) Permission(id int64, rid int) (Permission, error) {
 	return p, nil
 }
 
-func (s *Store) SetPermission(member Member) error {
+func (s *Store) SetRoomPermission(member Member) error {
 	data := &Permission{
-		IsBanned:   member.IsBanned,
+		IsBanned:   !member.IsMessage,
 		IsBlockade: member.IsBlockade,
 		IsManage:   member.IsManage,
 	}

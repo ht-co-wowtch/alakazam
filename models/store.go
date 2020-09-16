@@ -29,34 +29,26 @@ func init() {
 
 type Chat interface {
 	Find(uid string) (*Member, error)
-	Permission(id int64, rid int) (Permission, error)
-	SetPermission(member Member) error
 	CreateUser(member *Member) (bool, error)
 	UpdateUser(member *Member) (bool, error)
+	SetUserBlockade(uid string, is bool) (bool, error)
+	SetUserBanned(uid string, is bool) (bool, error)
 	GetMembers(ids []int64) ([]Member, error)
 	GetMembersByUid(uid []string) ([]Member, error)
-	SetBlockade(uid string) (int64, error)
-	DeleteBanned(uid string) (int64, error)
 	SetBannedLog(mid int64, sec time.Duration, isSystem bool) (bool, error)
 	GetTodaySystemBannedLog(mid int64) ([]BannedLog, error)
+	RoomPermission(id int64, rid int) (Permission, error)
+	SetRoomPermission(member Member) error
 }
 
 type Store struct {
 	d *xorm.EngineGroup
 }
 
-func Table() []interface{} {
-	return tables
-}
-
 func NewStore(c *database.Conf) *Store {
 	return &Store{
 		d: NewORM(c),
 	}
-}
-
-func NewChat(c *database.Conf) Chat {
-	return NewStore(c)
 }
 
 func NewORM(c *database.Conf) *xorm.EngineGroup {

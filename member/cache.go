@@ -29,10 +29,12 @@ type Cache interface {
 	get(uid string) (*models.Member, error)
 	getByRoom(uid string, rid int) (*models.Member, error)
 	getKeys(uid string) ([]string, error)
+	getRoomKeys(uid string, rid int) ([]string, error)
 	getWs(uid string) (map[string]string, error)
 	setWs(uid, key string, rid int) error
 	logout(uid, key string) (bool, error)
 	delete(uid string) (bool, error)
+	clearRoom(uid string) error
 	refreshExpire(uid string) error
 	setName(name map[string]string) error
 	getName(uid []string) (map[string]string, error)
@@ -77,7 +79,7 @@ func (c *cache) login(member *models.Member, rid int, key string) error {
 		return err
 	}
 
-	isb, _ := json.Marshal([]bool{member.IsBanned, member.IsBlockade, member.IsManage})
+	isb, _ := json.Marshal([]bool{member.IsMessage, member.IsBlockade, member.IsManage})
 
 	tx := c.c.Pipeline()
 
@@ -109,6 +111,30 @@ func (c *cache) login(member *models.Member, rid int, key string) error {
 	return err
 }
 
+func (c *cache) clearRoom(uid string) error {
+	m, err := c.get(uid)
+	if err != nil {
+		return err
+	}
+
+	b, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+
+	tx := c.c.Pipeline()
+	uidKey := keyUid(m.Uid)
+	tx.Del(uidKey)
+	tx.HMSet(uidKey, map[string]interface{}{
+		uidDataHKey: b,
+		uidNameHKey: m.Name,
+	})
+	tx.Expire(uidKey, c.expire)
+
+	_, err = tx.Exec()
+	return err
+}
+
 func (c *cache) set(member *models.Member) error {
 	b, err := json.Marshal(member)
 	if err != nil {
@@ -120,7 +146,7 @@ func (c *cache) set(member *models.Member) error {
 	}
 
 	if member.RoomId != 0 {
-		isb, _ := json.Marshal([]bool{member.IsBanned, member.IsBlockade, member.IsManage})
+		isb, _ := json.Marshal([]bool{member.IsMessage, member.IsBlockade, member.IsManage})
 		data[strconv.Itoa(member.RoomId)] = isb
 	}
 
@@ -171,7 +197,7 @@ func (c *cache) getByRoom(uid string, rid int) (*models.Member, error) {
 	}
 
 	m.RoomId = rid
-	m.IsBanned = is[0]
+	m.IsMessage = is[0]
 	m.IsBlockade = is[1]
 	m.IsManage = is[2]
 
@@ -186,6 +212,22 @@ func (c *cache) getKeys(uid string) ([]string, error) {
 	var keys []string
 	for key, _ := range maps {
 		keys = append(keys, key)
+	}
+	return keys, nil
+}
+
+func (c *cache) getRoomKeys(uid string, rid int) ([]string, error) {
+	maps, err := c.c.HGetAll(keyUidWs(uid)).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	sRid := strconv.Itoa(rid)
+	var keys []string
+	for key, id := range maps {
+		if id == sRid {
+			keys = append(keys, key)
+		}
 	}
 	return keys, nil
 }
@@ -279,6 +321,6 @@ func (c *cache) delBanned(uid string, rid int) error {
 }
 
 func (c *cache) isBanned(uid string, rid int) (bool, error) {
-	aff, err := c.c.Exists(keyBanned(uid, rid)).Result()
+	aff, err := c.c.Exists(keyBanned(uid, rid), keyBanned(uid, 0)).Result()
 	return aff == 1, err
 }

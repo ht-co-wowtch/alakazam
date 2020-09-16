@@ -10,20 +10,27 @@ import (
 )
 
 func (s *httpServer) setBlockade(c *gin.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return err
-	}
-
+	keys := []string{}
 	uid := c.Param("uid")
-
-	if err := s.member.SetBlockade(uid, id, true); err != nil {
+	id, err := getId(c)
+	if err != nil {
 		return err
 	}
 
-	keys, err := s.member.Kick(uid)
-	if err != nil {
-		return err
+	if id == 0 {
+		if err := s.member.SetBlockadeAll(uid, true); err != nil {
+			return err
+		}
+		if keys, err = s.member.Kick(uid); err != nil {
+			return err
+		}
+	} else {
+		if err := s.member.SetBlockade(uid, id, true); err != nil {
+			return err
+		}
+		if keys, err = s.member.GetRoomKeys(uid, id); err != nil {
+			return err
+		}
 	}
 
 	var msg string
@@ -47,14 +54,34 @@ func (s *httpServer) setBlockade(c *gin.Context) error {
 }
 
 func (s *httpServer) removeBlockade(c *gin.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := getId(c)
 	if err != nil {
 		return err
 	}
-	if err := s.member.SetBlockade(c.Param("uid"), id, false); err != nil {
+
+	if id == 0 {
+		if err := s.member.SetBlockadeAll(c.Param("uid"), false); err != nil {
+			return err
+		}
+	} else if err := s.member.SetBlockade(c.Param("uid"), id, false); err != nil {
 		return err
 	}
 
 	c.Status(http.StatusNoContent)
 	return nil
+}
+
+func getId(c *gin.Context) (int, error) {
+	id := 0
+	idr := c.Param("id")
+
+	if idr != "" {
+		var err error
+		id, err = strconv.Atoi(idr)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	return id, nil
 }
