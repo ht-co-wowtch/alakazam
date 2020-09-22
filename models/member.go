@@ -81,6 +81,7 @@ func (r *Permission) TableName() string {
 // 新增會員
 func (s *Store) CreateUser(member *Member) (bool, error) {
 	member.CreateAt = time.Now()
+	member.IsMessage = true
 	aff, err := s.d.InsertOne(member)
 	return aff == 1, err
 }
