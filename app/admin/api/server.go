@@ -91,6 +91,7 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.DELETE("/shield/:id", api.ErrHandler(s.DeleteShield))
 
 	// 會員資料
+	e.GET("/room/:id/user/:uid", api.ErrHandler(s.profile))
 	e.PUT("/profile/:token/renew", api.ErrHandler(s.renew))
 }
 
