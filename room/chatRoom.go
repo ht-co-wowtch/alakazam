@@ -338,7 +338,7 @@ func NewPbConnect(user *models.Member, room models.Room, key string, roomId int3
 			permissionMsg.IsBets = errors.NoLoginMessage
 		}
 
-		if user.IsManage {
+		if user.Permission.IsManage {
 			permission.IsManage = true
 		}
 

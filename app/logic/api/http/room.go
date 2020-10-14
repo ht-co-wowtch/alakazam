@@ -68,7 +68,7 @@ func (s *httpServer) isManage(rid int, uid string) error {
 		return err
 	}
 
-	if !member.IsManage {
+	if !member.Permission.IsManage {
 		return errors.ErrForbidden
 	}
 

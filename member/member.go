@@ -117,7 +117,6 @@ func (m *Member) SetManage(uid string, rid int, set bool) error {
 
 	member.Permission.RoomId = int64(rid)
 	member.Permission.IsManage = set
-	member.IsManage = set
 
 	if err = m.db.SetRoomPermission(*member); err != nil {
 		return err
@@ -169,10 +168,6 @@ func (m *Member) GetMessageSession(uid string, rid int) (*models.Member, error) 
 	}
 	if ok {
 		return nil, errors.ErrMemberBanned
-	}
-
-	if member.IsManage {
-		member.Type = models.MANAGE
 	}
 
 	return member, nil

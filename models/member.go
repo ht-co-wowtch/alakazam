@@ -42,7 +42,6 @@ type Member struct {
 	Type       int        `json:"type"`
 	IsMessage  bool       `json:"is_message"`
 	IsBlockade bool       `json:"is_blockade"`
-	IsManage   bool       `json:"-" xorm:"-"`
 	Permission Permission `json:"-" xorm:"-"`
 	Gender     int32      `json:"gender"`
 	CreateAt   time.Time  `json:"-"`

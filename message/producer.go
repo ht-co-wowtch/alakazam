@@ -178,12 +178,11 @@ func (p *Producer) SendUser(rid []int32, msg string, user *models.Member) (int64
 
 		var message scheme.Message
 
-		switch user.Type {
-		case models.STREAMER:
+		if user.Type == models.STREAMER {
 			message = u.ToStreamer(id, msg)
-		case models.MANAGE:
+		} else if user.Permission.IsManage {
 			message = u.ToManage(id, msg)
-		default:
+		} else {
 			message = u.ToUser(id, msg)
 		}
 
