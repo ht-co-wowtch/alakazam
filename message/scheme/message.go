@@ -257,7 +257,7 @@ func (u User) DisplayToMessage(seq int64, display Display) Message {
 	m := display.Message.(displayMessage)
 	b := u.toBase(seq, m.Text)
 	b.Type = MESSAGE_TYPE
-	b.Display = m
+	b.Display = display
 	return b
 }
 
