@@ -68,7 +68,7 @@ func (m *msg) private(req messageReq) (int64, error) {
 		return 0, err
 	}
 
-	keys, err := m.member.GetKeys(req.ToUid)
+	keys, err := m.member.GetRoomKeys(req.ToUid, req.RoomId)
 	if err != nil {
 		return 0, err
 	}
