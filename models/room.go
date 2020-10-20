@@ -124,7 +124,7 @@ func (s *Store) DeleteRoom(id int) (int64, error) {
 
 func (s *Store) GetManages(rid int) ([]Member, error) {
 	var m []Member
-	err := s.d.SQL("SELECT b.`name`, b.uid "+
+	err := s.d.SQL("SELECT b.name, b.uid, b.gender "+
 		"FROM room_user_permissions as a "+
 		"INNER JOIN members as b on a.member_id = b.id "+
 		"WHERE a.room_id = ? AND is_manage = 1", rid,
