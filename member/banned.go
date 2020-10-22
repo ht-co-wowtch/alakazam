@@ -73,7 +73,7 @@ func (m *Member) SetBannedAll(uid string, sec int) error {
 }
 
 func (m *Member) SetBannedForSystem(uid string, rid, sec int) (bool, error) {
-	if err := m.SetBanned(uid, sec, rid, true); err != nil {
+	if err := m.SetBanned(uid, rid, sec, true); err != nil {
 		return false, err
 	}
 
