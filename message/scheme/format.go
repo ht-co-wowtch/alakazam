@@ -233,8 +233,14 @@ func displayBySystem(message string) Display {
 }
 
 // 房管通知Display
-func DisplayBySetManage(username string) Display {
-	msg := "用户" + username + "已被主播设置为"
+func DisplayBySetManage(username string, set bool) Display {
+	var msg string
+	if set {
+		msg = "用户" + username + "已被主播设置为"
+	} else {
+		msg = "用户" + username + "已被主播解除"
+	}
+
 	return Display{
 		Title: displayText{
 			Text:            member.System,
