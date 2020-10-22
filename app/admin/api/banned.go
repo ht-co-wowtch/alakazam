@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"net/http"
 )
 
@@ -32,6 +33,13 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	} else if err := s.member.SetBanned(params.Uid, params.RoomId, params.Expired, false); err != nil {
 		return err
 	}
+
+	m, _ := s.member.Get(params.Uid)
+	_, _ = s.message.SendDisplay(
+		[]int32{int32(params.RoomId)},
+		scheme.NewRoot(),
+		scheme.DisplayBySetBanned(m.Name, params.Expired, true),
+	)
 
 	c.Status(http.StatusNoContent)
 	return nil

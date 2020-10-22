@@ -266,6 +266,42 @@ func DisplayBySetManage(username string, set bool) Display {
 	}
 }
 
+// 禁言通知Display
+func DisplayBySetBanned(username string, expired int, set bool) Display {
+	var text string
+	msg := "用户" + username + "已被主播"
+	if set {
+		text += msg + "禁言" + strconv.Itoa(expired) + "分钟"
+	} else {
+		msg += "解除"
+		text = msg + "禁言"
+	}
+
+	return Display{
+		Title: displayText{
+			Text:            member.System,
+			Color:           MESSAGE_COLOR,
+			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
+		},
+		Message: displayMessage{
+			Text:            text,
+			Color:           MESSAGE_SYSTEM_COLOR,
+			BackgroundColor: NONE_COLOR,
+			Entity: []textEntity{
+				usernameTextEntity(username, 2),
+				textEntity{
+					Type:            "text",
+					Offset:          utf8.RuneCountInString(msg),
+					Length:          2,
+					Color:           "#FFFFFF",
+					BackgroundColor: "#38A2DB",
+				},
+			},
+		},
+		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
+	}
+}
+
 // 進場Display
 func displayByConnect(username string) Display {
 	return Display{
