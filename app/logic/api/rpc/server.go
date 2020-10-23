@@ -68,7 +68,7 @@ func (s *server) ConnectSuccessReply(ctx context.Context, req *pb.ConnectSuccess
 		return &pb.PingReply{}, nil
 	}
 
-	_, err := s.message.SendConnect(req.RoomId, req.User)
+	_, err := s.message.SendConnect(req.RoomId, req.User, req.IsManage)
 	return &pb.PingReply{}, err
 }
 

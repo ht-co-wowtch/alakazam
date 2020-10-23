@@ -22,10 +22,11 @@ func (s *Server) Connect(c context.Context, p *cometpb.Proto) (*logicpb.ConnectR
 }
 
 // 進入某個房間成功回應
-func (s *Server) ConnectSuccessReply(c context.Context, rid int32, user *logicpb.User) (*logicpb.PingReply, error) {
+func (s *Server) ConnectSuccessReply(c context.Context, rid int32, user *logicpb.User, connect *logicpb.Connect) (*logicpb.PingReply, error) {
 	return s.logic.ConnectSuccessReply(c, &logicpb.ConnectSuccessReq{
-		RoomId: rid,
-		User:   user,
+		RoomId:   rid,
+		User:     user,
+		IsManage: connect.Permission.IsManage,
 	})
 }
 
@@ -140,7 +141,7 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 		}
 
 		if reply.IsConnectSuccessReply {
-			if _, e := s.ConnectSuccessReply(ctx, ch.Room.ID, reply.User); e != nil {
+			if _, e := s.ConnectSuccessReply(ctx, ch.Room.ID, reply.User, reply.Connect); e != nil {
 				log.Error("connect success reply", zap.Error(e), zap.Int32("rid", ch.Room.ID), zap.Any("user", reply.User))
 			}
 		}

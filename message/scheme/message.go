@@ -292,12 +292,12 @@ func ToMessage(msgByte []byte) (Message, error) {
 	return msg, err
 }
 
-func NewConnect(seq int64, username string) Message {
+func NewConnect(seq int64, level, username string) Message {
 	now := time.Now()
 	return Message{
 		Id:        seq,
 		Type:      "hint",
-		Display:   displayByConnect(username),
+		Display:   displayByConnect(level, username),
 		Time:      now.Format("15:04:05"),
 		Timestamp: now.Unix(),
 	}

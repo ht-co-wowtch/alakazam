@@ -303,10 +303,10 @@ func DisplayBySetBanned(username string, expired int, set bool) Display {
 }
 
 // 進場Display
-func displayByConnect(username string) Display {
+func displayByConnect(level, username string) Display {
 	return Display{
 		Level: displayText{
-			Text:            "会员",
+			Text:            level,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#7FC355",
 		},

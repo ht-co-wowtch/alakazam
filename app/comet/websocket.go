@@ -242,7 +242,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 	serverHeartbeat := s.RandServerHearbeat()
 
 	if connect.IsConnectSuccessReply {
-		if _, e := s.ConnectSuccessReply(ctx, ch.Room.ID, connect.User); e != nil {
+		if _, e := s.ConnectSuccessReply(ctx, ch.Room.ID, connect.User, connect.Connect); e != nil {
 			log.Error("connect success reply", zap.Error(e), zap.Int32("rid", ch.Room.ID), zap.Any("user", connect.User))
 		}
 	}

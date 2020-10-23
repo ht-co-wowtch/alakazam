@@ -299,9 +299,14 @@ func (p *Producer) SendBetsWinReward(keys []string, user scheme.User, amount flo
 	})
 }
 
-func (p *Producer) SendConnect(rid int32, user *logicpb.User) (int64, error) {
+func (p *Producer) SendConnect(rid int32, user *logicpb.User, isManage bool) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
-		return scheme.NewConnect(id, user.Name).ToRoomProto([]int32{rid})
+		level := "会员"
+
+		if isManage {
+			level = "房管"
+		}
+		return scheme.NewConnect(id, level, user.Name).ToRoomProto([]int32{rid})
 	})
 }
 
