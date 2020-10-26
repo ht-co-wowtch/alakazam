@@ -224,6 +224,23 @@ func (p *Producer) SendPrivate(keys []string, msg string, user *models.Member) (
 	})
 }
 
+func (p *Producer) SendPrivateReply(keys []string, user *models.Member) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		pushMsg, err := scheme.NewUser(*user).ToPrivateReply(id).ToProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pushMsg.Keys = keys
+		pushMsg.Mid = user.Id
+		pushMsg.Type = logicpb.PushMsg_PUSH
+		pushMsg.MsgType = models.MESSAGE_TYPE
+		pushMsg.IsRaw = true
+
+		return pushMsg, nil
+	})
+}
+
 func (p *Producer) SendSystem(rid []int32, msg string) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		return scheme.NewRoot().ToSystem(id, msg).ToRoomProto(rid)

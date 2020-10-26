@@ -219,6 +219,15 @@ func (u User) ToPrivate(seq int64, message string) Message {
 	return b
 }
 
+func (u User) ToPrivateReply(seq int64) Message {
+	display := displayByPrivateReply(u)
+	m := display.Message.(displayMessage)
+	b := u.toBase(seq, m.Text)
+	b.Type = PRIVATE_TYPE
+	b.Display = display
+	return b
+}
+
 func (u User) ToStreamer(seq int64, message string) Message {
 	b := u.toBase(seq, message)
 	b.Type = MESSAGE_TYPE

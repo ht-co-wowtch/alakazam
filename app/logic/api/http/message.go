@@ -77,13 +77,15 @@ func (m *msg) private(req messageReq) (int64, error) {
 		return 0, errors.ErrNoOnline
 	}
 
+	_, err = m.message.SendPrivate(keys, req.Message, user)
+
 	// 主播端也需要接收到此訊息
 	mKeys, err := m.member.GetKeys(req.Uid)
 	if err != nil {
 		return 0, err
 	}
 
-	return m.message.SendPrivate(append(keys, mKeys...), req.Message, user)
+	return m.message.SendPrivateReply(mKeys, user)
 }
 
 func (m *msg) redEnvelope(req giveRedEnvelopeReq) (int64, client.RedEnvelopeReply, error) {

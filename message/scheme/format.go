@@ -72,6 +72,31 @@ func displayByPrivate(user User, message string) Display {
 	}
 }
 
+// 私密回應Display
+func displayByPrivateReply(user User) Display {
+	return Display{
+		User: displayUser{
+			Text:   user.Name,
+			Color:  MESSAGE_SYSTEM_COLOR,
+			Avatar: user.Avatar,
+		},
+		Title: displayText{
+			Text:            "私讯",
+			Color:           MESSAGE_COLOR,
+			BackgroundColor: "#F79EB6",
+		},
+		Message: displayMessage{
+			Text:            "对 " + user.Name + " 送出私密讯息",
+			Color:           MESSAGE_SYSTEM_COLOR,
+			BackgroundColor: NONE_COLOR,
+			Entity: []textEntity{
+				usernameTextEntity(user.Name, 1),
+			},
+		},
+		BackgroundColor: "#38A2DB7F",
+	}
+}
+
 // 房管Display
 func displayByManage(user User, message string) Display {
 	return Display{
