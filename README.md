@@ -16,15 +16,13 @@
 
 ## Quick Start
 
-TODO 
-
-## Dependencies
-
-TODO
+```
+make run
+``` 
 
 ## Architecture
 
-TODO
+![arch](./doc/architecture.png)
 
 ## Features
 
