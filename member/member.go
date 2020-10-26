@@ -154,6 +154,9 @@ func (m *Member) GetMessageSession(uid string, rid int) (*models.Member, error) 
 	if err != nil {
 		return nil, err
 	}
+	if member.Type == models.Guest {
+		return nil, errors.ErrLogin
+	}
 
 	if member.Blockade() {
 		return nil, errors.ErrBlockade
