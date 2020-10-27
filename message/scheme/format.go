@@ -296,7 +296,7 @@ func DisplayBySetBanned(username string, expired int, set bool) Display {
 	var text string
 	msg := "用户" + username + "已被主播"
 	if set {
-		text += msg + "禁言" + strconv.Itoa(expired) + "分钟"
+		text += msg + "禁言" + strconv.Itoa(expired/60) + "分钟"
 	} else {
 		msg += "解除"
 		text = msg + "禁言"
