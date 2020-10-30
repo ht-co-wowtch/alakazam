@@ -1,4 +1,4 @@
-.PHONY: all test clean
+.PHONY: all clean
 
 GOCMD=go
 GOBUILD=$(GOCMD) build
@@ -44,12 +44,6 @@ stop:
 	pkill -f bin/seq
 	pkill -f bin/message
 
-migrate:
-	bin/logic -c logic.yml -migrate=true
-
-burrow_prometheus:
-	cd metrics/burrow/prometheus && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags '-s -w' -o ./bin/burrow_prometheus
-
 proto-build: proto-logic proto-comet proto-seq
 
 proto-logic:
@@ -75,28 +69,3 @@ proto-seq:
 	--proto_path=${GOPATH}/src/github.com/golang/protobuf/ptypes \
 	--proto_path=. \
 	--go_out=plugins=grpc:. *.proto
-
-test:
-	sh test/unit
-
-test-cover: test cover
-
-cover:
-	if [ -f coverage.out ]; then \
-		go tool cover -html coverage.out -o coverage.html; \
-	fi
-
-docker-clean:
-	docker rmi `docker images -q --filter 'reference=alakaza*'`
-
-docker-clean-service:
-	docker rmi `docker images -q --filter 'reference=alakazam_*'`
-
-docker-build:
-	docker build -t $(REGISTRY_NAME) .
-
-docker-build-service:
-	cd docker && sh build.sh
-
-docker-run:
-	docker run --name alakazam_logic -it -d -v logic.yml:/logic.yml alakazam_logic
