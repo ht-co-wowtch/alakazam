@@ -25,7 +25,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 		return err
 	}
 
-	if err := s.isManage(params.RoomId, params.Uid); err != nil {
+	if err := s.isManage(params.RoomId, c.GetString("uid")); err != nil {
 		return err
 	}
 
