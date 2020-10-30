@@ -135,16 +135,19 @@ func (s *httpServer) AddManage(c *gin.Context) error {
 		return err
 	}
 
-	keys, err := s.member.GetKeys(params.Uid)
+	keys, err := s.member.GetRoomKeys(params.Uid, params.RoomId)
 	if err != nil {
 		return err
 	}
+
 	m, _ := s.member.GetByRoom(params.Uid, params.RoomId)
-	r, _ := s.room.Get(int(params.RoomId))
+	r, _ := s.room.Get(params.RoomId)
 	connect := room.NewPbConnect(m, r, "", 0)
 
-	_, _ = s.message.SendPermission(keys, m, *connect)
-	_, _ = s.message.SendDisplay([]int32{int32(params.RoomId)}, scheme.NewRoot(), scheme.DisplayBySetManage(m.Name, true))
+	if len(keys) > 0 {
+		_, _ = s.message.SendPermission(keys, m, *connect)
+		_, _ = s.message.SendDisplay([]int32{int32(params.RoomId)}, scheme.NewRoot(), scheme.DisplayBySetManage(m.Name, true))
+	}
 
 	c.Status(http.StatusNoContent)
 	return nil
