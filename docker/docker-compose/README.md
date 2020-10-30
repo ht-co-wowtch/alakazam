@@ -2,11 +2,11 @@
 
 整合 alakazam 的環境與服務。
 
-- [目錄解說](目錄解說)
+- [目錄解說](#目錄解說)
 - [開始使用](#開始使用)
-  - [登入 GitLab Container Registry](#登入 GitLab Container Registry)
-  - [Database Migration](#Database Migration)
-  - [MySQL initdb](#MySQL initdb)
+  - [登入 GitLab Container Registry](#登入-gitlab-container-registry)
+  - [Database Migration](#database-migration)
+  - [MySQL initdb](#mysql-initdb)
   - [啟動與停止服務](#啟動與停止服務)
   - [啟動metrics](#啟動metrics)
 
