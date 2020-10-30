@@ -34,12 +34,14 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 		return err
 	}
 
-	m, _ := s.member.Get(params.Uid)
-	_, _ = s.message.SendDisplay(
-		[]int32{int32(params.RoomId)},
-		scheme.NewRoot(),
-		scheme.DisplayBySetBanned(m.Name, params.Expired, true),
-	)
+	name, _ := s.member.GetUserName(params.Uid)
+	if params.RoomId > 0 {
+		_, _ = s.message.SendDisplay(
+			[]int32{int32(params.RoomId)},
+			scheme.NewRoot(),
+			scheme.DisplayBySetBanned(name, params.Expired, true),
+		)
+	}
 
 	c.Status(http.StatusNoContent)
 	return nil
