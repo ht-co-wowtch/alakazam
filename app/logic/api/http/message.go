@@ -85,6 +85,11 @@ func (m *msg) private(req messageReq) (int64, error) {
 		return 0, err
 	}
 
+	user, err = m.member.GetSession(req.ToUid)
+	if err != nil {
+		return 0, err
+	}
+
 	return m.message.SendPrivateReply(mKeys, user)
 }
 
