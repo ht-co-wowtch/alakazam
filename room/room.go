@@ -51,9 +51,6 @@ type Status struct {
 	// 儲值&打碼量發話限制
 	Limit Limit `json:"limit"`
 
-	// 房間屬於誰
-	Uid string `json:"uid"`
-
 	// 觀眾數倍率
 	AudienceRatio float64 `json:"audience_ratio"`
 
