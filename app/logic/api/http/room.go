@@ -59,11 +59,11 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	}
 
 	params := struct {
-		RoomId  int
+		RoomId  string
 		Uid     string
 		Expired int `form:"expired"`
 	}{
-		RoomId: id,
+		RoomId: c.Param("id"),
 		Uid:    c.Param("uid"),
 	}
 
@@ -73,7 +73,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	}
 
 	//below GetString("uid") come from authenticationHandler middleware at request very first
-	if err := s.isManage(params.RoomId, c.GetString("uid")); err != nil {
+	if err := s.isManage(id, c.GetString("uid")); err != nil {
 		return err
 	}
 
