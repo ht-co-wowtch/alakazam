@@ -22,7 +22,7 @@ var (
 // 聊天室後台
 type AdminConfig struct {
 	Host string
-	Post string
+	Port string
 	// admin url
 	Uri string
 	// 禁言用戶url, 最後一個f命名表示為format 格式的字串
