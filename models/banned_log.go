@@ -23,6 +23,7 @@ func (s *Store) SetBannedLog(mid int64, sec time.Duration, isSystem bool) (bool,
 		Sec:      int(sec.Seconds()),
 		IsSystem: isSystem,
 		ExpireAt: time.Now().Add(sec),
+		CreateAt: time.Now(),
 	})
 	return aff == 1, err
 }
