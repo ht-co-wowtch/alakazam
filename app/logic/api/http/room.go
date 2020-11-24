@@ -11,6 +11,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 )
 
 // Original 設定禁言
@@ -82,11 +83,10 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 		        ]);
 	*/
 	adminBannedUrl := fmt.Sprintf(s.adminBannedUrlf, params.Uid, params.RoomId)
-	log.Debugf("adminBannedUrl: %s", adminBannedUrl)
+	log.Debug("DEBUG adminBannedUrl", zap.String("adminBannedUrl", adminBannedUrl))
 	resp, err := http.Post(adminBannedUrl, "application/json", strings.NewReader("{expired:30}"))
 
 	if err != nil {
-		log.Errorf("After admin request banned Error: %s", err)
 		return err
 	}
 	defer resp.Body.Close()
