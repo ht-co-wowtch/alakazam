@@ -2,6 +2,13 @@ package http
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httputil"
+	"runtime"
+	"strings"
+	"time"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/conf"
@@ -14,19 +21,14 @@ import (
 	web "gitlab.com/jetfueltw/cpw/micro/http"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
-	"io/ioutil"
-	"net/http"
-	"net/http/httputil"
-	"runtime"
-	"strings"
-	"time"
 )
 
 type httpServer struct {
-	member  *member.Member
-	history *message.History
-	jwt     *member.Jwt
-	msg     *msg
+	member          *member.Member
+	history         *message.History
+	jwt             *member.Jwt
+	msg             *msg
+	adminBannedUrlf string
 }
 
 func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, room room.Chat, client *client.Client, history *message.History) *http.Server {
@@ -46,6 +48,7 @@ func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, 
 			message: message,
 			member:  me,
 		},
+		adminBannedUrlf: conf.Admin.Bannedf,
 	}
 
 	c := cors.Config{

@@ -1,8 +1,10 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -10,7 +12,8 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 )
 
-// 設定禁言
+// Original 設定禁言
+/*
 func (s *httpServer) setBanned(c *gin.Context) error {
 
 	id, err := strconv.Atoi(c.Param("id"))
@@ -33,17 +36,61 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	}
 
 	//below GetString("uid") come from authenticationHandler middleware at request very first
-	/*
-		if err := s.isManage(params.RoomId, c.GetString("uid")); err != nil {
-			return err
-		}
-	*/
+	if err := s.isManage(params.RoomId, c.GetString("uid")); err != nil {
+		return err
+	}
 
 	isSystem := false
 	if err := s.member.SetBanned(params.Uid, params.RoomId, params.Expired, isSystem); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)
+	return nil
+}*/
+
+// 透過Admin去設定禁言
+func (s *httpServer) setBanned(c *gin.Context) error {
+
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return err
+	}
+
+	params := struct {
+		RoomId  int
+		Uid     string
+		Expired int `form:"expired"`
+	}{
+		RoomId: id,
+		Uid:    c.Param("uid"),
+	}
+
+	if c.ShouldBind(&params) != nil {
+		// default expired is 30
+		params.Expired = int(30)
+	}
+
+	//below GetString("uid") come from authenticationHandler middleware at request very first
+	if err := s.isManage(params.RoomId, c.GetString("uid")); err != nil {
+		return err
+	}
+
+	/*
+		return $this->api('POST', "banned/{$uid}/room/{$chatId}", [
+		            'expired' => $expired,
+		        ]);
+	*/
+	adminBannedUrl := fmt.Sprintf(s.adminBannedUrlf, params.Uid, params.RoomId)
+
+	resp, err := http.Post(adminBannedUrl, "application/json", strings.NewReader("{expired:30}"))
+
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	c.Status(http.StatusNoContent)
+
 	return nil
 }
 

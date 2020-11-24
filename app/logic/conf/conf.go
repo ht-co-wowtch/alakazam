@@ -1,6 +1,9 @@
 package conf
 
 import (
+	"fmt"
+	"time"
+
 	"gitlab.com/jetfueltw/cpw/micro/client"
 	"gitlab.com/jetfueltw/cpw/micro/config"
 	"gitlab.com/jetfueltw/cpw/micro/database"
@@ -8,7 +11,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/http"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
-	"time"
 
 	"github.com/spf13/viper"
 )
@@ -17,7 +19,18 @@ var (
 	Conf *Config
 )
 
+// 聊天室後台
+type AdminConfig struct {
+	Host string
+	Post string
+	// admin url
+	Uri string
+	// 禁言用戶url, 最後一個f命名表示為format 格式的字串
+	Bannedf string
+}
+
 type Config struct {
+	Admin      *AdminConfig
 	RPCServer  *grpc.Conf
 	HTTPServer *http.Conf
 	DB         *database.Conf
@@ -87,5 +100,17 @@ func Read(path string) error {
 	if err != nil {
 		return err
 	}
+
+	// http://xxx.xxx.xxx.xxx:xxxx
+	adminUrl := fmt.Sprintf("http://%s:%s", v.GetString("admin.host"), v.GetString("admin.port"))
+	// http://xxx.xxx.xxx.xxx:xxx/banned/:uid/room/:id (參考Admin專案的route: https://gitlab.com/jetfueltw/cpw/alakazam/-/blob/develop/app/admin/api/server.go)
+	adminBannedUrl := fmt.Sprintf("%s/banned/%%s/room/%%s", adminUrl)
+	Conf.Admin = &AdminConfig{
+		Host:    v.GetString("admin.host"),
+		Port:    v.GetString("admin.port"),
+		Uri:     adminUrl,
+		Bannedf: adminBannedUrl,
+	}
+
 	return log.Start(l)
 }

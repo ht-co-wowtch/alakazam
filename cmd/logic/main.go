@@ -2,14 +2,15 @@ package main
 
 import (
 	"flag"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
 	"gitlab.com/jetfueltw/cpw/micro/log"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 var (
