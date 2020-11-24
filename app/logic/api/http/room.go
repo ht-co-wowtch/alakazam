@@ -1,35 +1,44 @@
 package http
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
-	"net/http"
-	"strconv"
 )
 
 // 設定禁言
 func (s *httpServer) setBanned(c *gin.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
+
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return err
+	}
 
 	params := struct {
-		RoomId  int    `json:"room_id" binding:"required"`
-		Uid     string `json:"uid" binding:"required,len=32"`
-		Expired int    `json:"expired" binding:"required"`
+		RoomId  int
+		Uid     string
+		Expired int `form:"expired"`
 	}{
 		RoomId: id,
 		Uid:    c.Param("uid"),
 	}
-	if err := c.ShouldBindJSON(&params); err != nil {
-		return err
+
+	if c.ShouldBind(&params) != nil {
+		// default expired is 30
+		params.Expired = int(30)
 	}
 
+	//below GetString("uid") come from authenticationHandler middleware at request very first
 	if err := s.isManage(params.RoomId, c.GetString("uid")); err != nil {
 		return err
 	}
 
-	if err := s.member.SetBanned(params.Uid, params.RoomId, params.Expired, false); err != nil {
+	isSystem := false
+	if err := s.member.SetBanned(params.Uid, params.RoomId, params.Expired, isSystem); err != nil {
 		return err
 	}
 	c.Status(http.StatusNoContent)
