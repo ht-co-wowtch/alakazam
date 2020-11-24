@@ -104,6 +104,7 @@ func Read(path string) error {
 	// http://xxx.xxx.xxx.xxx:xxxx
 	adminUrl := fmt.Sprintf("%s:%s", v.GetString("admin.host"), v.GetString("admin.port"))
 	// http://xxx.xxx.xxx.xxx:xxx/banned/:uid/room/:id (參考Admin專案的route: https://gitlab.com/jetfueltw/cpw/alakazam/-/blob/develop/app/admin/api/server.go)
+	// http://alakazam-admin-service:3112 (stage example)
 	adminBannedUrl := fmt.Sprintf("%s/banned/%%s/room/%%s", adminUrl)
 	Conf.Admin = &AdminConfig{
 		Host:    v.GetString("admin.host"),

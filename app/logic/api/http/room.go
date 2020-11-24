@@ -84,7 +84,8 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	*/
 	adminBannedUrl := fmt.Sprintf(s.adminBannedUrlf, params.Uid, params.RoomId)
 	log.Debug("DEBUG adminBannedUrl", zap.String("adminBannedUrl", adminBannedUrl))
-	resp, err := http.Post(adminBannedUrl, "application/json", strings.NewReader("{expired:30}"))
+
+	resp, err := http.Post(adminBannedUrl, "application/json", strings.NewReader("{\"expired\":30}"))
 
 	if err != nil {
 		return err
