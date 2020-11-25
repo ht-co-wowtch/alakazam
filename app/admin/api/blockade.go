@@ -14,6 +14,7 @@ import (
 func (s *httpServer) setBlockade(c *gin.Context) error {
 	keys := []string{}
 	uid := c.Param("uid")
+	//id 就是roomId
 	id, err := getId(c)
 	if err != nil {
 		return err
@@ -48,7 +49,19 @@ func (s *httpServer) setBlockade(c *gin.Context) error {
 			msg = fmt.Sprintf("封锁成功，將執行中断该用户所在的%d个连线", len(keys))
 		}
 	}
+	/**/
 
+	name, _ := s.member.GetUserName(uid)
+	log.Debug("setBlockade", zap.Int("RoomId", id), zap.String("uid", uid), zap.String("name", name))
+	if id > 0 {
+		_, _ = s.message.SendDisplay(
+			[]int32{int32(id)},
+			scheme.NewRoot(),
+			scheme.DisplayByUnBlock(name, 0, true),
+		)
+	}
+
+	/**/
 	c.JSON(http.StatusOK, gin.H{
 		"msg": msg,
 	})
