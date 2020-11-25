@@ -52,48 +52,40 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 
 // 透過Admin去設定禁言
 func (s *httpServer) setBanned(c *gin.Context) error {
-
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return err
-	}
-
+	// 會收到前端傳入的參數有
+	//   id 指的是房間id
+	//   uid 指的是要被banned 的 user id
+	//   expired 禁言秒數(預設是30秒)
 	params := struct {
-		RoomId  string
-		Uid     string
-		Expired int `form:"expired"`
-	}{
-		RoomId: c.Param("id"),
-		Uid:    c.Param("uid"),
-	}
+		RoomId  int    `json:"room_id" binding:"required"`
+		Uid     string `json:"uid" binding:"required,len=32"`
+		Expired int    `json:"expired" binding:"required"`
+	}{}
 
-	if c.ShouldBind(&params) != nil {
-		// default expired is 30
-		params.Expired = int(30)
-	}
-
-	//below GetString("uid") come from authenticationHandler middleware at request very first
-	if err := s.isManage(id, c.GetString("uid")); err != nil {
+	if err := c.ShouldBindJSON(&params); err != nil {
 		return err
 	}
 
-	/*
-		return $this->api('POST', "banned/{$uid}/room/{$chatId}", [
-		            'expired' => $expired,
-		        ]);
-	*/
-	adminBannedUrl := fmt.Sprintf(s.adminBannedUrlf, params.Uid, params.RoomId)
-	log.Debug("DEBUG adminBannedUrl", zap.String("adminBannedUrl", adminBannedUrl))
+	// c.GetString("uid") 是從一開始的middleware 就設定,表示驗證過的當前使用者
+	if err := s.isManage(params.RoomId, c.GetString("uid")); err != nil {
+		return err
+	}
 
-	resp, err := http.Post(adminBannedUrl, "application/json", strings.NewReader("{\"expired\":30}"))
+	adminBannedUrl := fmt.Sprintf(s.adminBannedUrlf, params.Uid, params.RoomId)
+	log.Debug("DEBUG adminBannedUrl", zap.String("adminBannedUrl", adminBannedUrl), zap.String("RoomId/id", c.Param("id")), zap.String("uid", c.Param("uid")), zap.Int("expired", params.Expired))
+
+	resp, err := http.Post(adminBannedUrl, "application/json", strings.NewReader(`{"expired":30}`))
 
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
+	//if status code not in HTTP 200 serial
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return errors.New("admin service banned error")
+	}
 
 	c.Status(http.StatusNoContent)
-
 	return nil
 }
 
