@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
+	"strings"
+	"time"
+
 	kafka "github.com/Shopify/sarama"
 	"github.com/go-redis/redis"
 	"github.com/gogo/protobuf/proto"
@@ -17,9 +21,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"golang.org/x/net/html"
-	"regexp"
-	"strings"
-	"time"
 )
 
 type Producer struct {

@@ -46,11 +46,16 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 
 	name, _ := s.member.GetUserName(uid)
 	if roomId > 0 {
-		_, _ = s.message.SendDisplay(
+		xid, err := s.message.SendDisplay(
 			[]int32{int32(roomId)},
 			scheme.NewRoot(),
 			scheme.DisplayBySetBanned(name, exp.Expired, true),
 		)
+		log.Debug("setBanned SendDisplay", zap.Int("name", name))
+		if err != nil {
+			log.Error("SendDisplayErr", zap.Error(err))
+		}
+		log.Debug("SendDisplay", zap.Int64("xid", xid))
 	}
 
 	log.Debugf("setBanned response %d", http.StatusNoContent)
