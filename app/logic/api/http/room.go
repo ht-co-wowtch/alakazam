@@ -10,8 +10,6 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
-	"gitlab.com/jetfueltw/cpw/micro/log"
-	"go.uber.org/zap"
 )
 
 // Original 設定禁言
@@ -50,16 +48,16 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	return nil
 }*/
 
-// 透過Admin去設定禁言
+// 透過聊天室Admin去設定禁言
 func (s *httpServer) setBanned(c *gin.Context) error {
 	// 會收到前端傳入的參數有
-	//   id 指的是房間id
+	//   id 指的是房間id(roomId)
 	//   uid 指的是要被banned 的 user id
 	var (
 		err     error
 		roomId  int
 		uid     string
-		expired = `{"expired":600}` //預設禁言 30秒
+		expired = `{"expired":600}` //預設禁言10分鐘 (600/60)
 	)
 
 	roomId, err = strconv.Atoi(c.Param("id"))
@@ -78,10 +76,11 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	if err := s.isManage(roomId, c.GetString("uid")); err != nil {
 		return err
 	}
+
+	// 透過聊天室Admin去設定禁言
 	// s.adminBannedUrlf 參考 logic/api/conf/conf.go
 	// 格式為 "127.0.0.1:3112/banned/%%s/room/%%d"
 	adminBannedUrl := fmt.Sprintf(s.adminBannedUrlf, uid, roomId)
-	log.Debug("DEBUG adminBannedUrl", zap.String("adminBannedUrl", adminBannedUrl), zap.String("RoomId/id", c.Param("id")), zap.String("uid", c.Param("uid")), zap.String("expired", expired))
 
 	resp, err := http.Post(adminBannedUrl, "application/json", strings.NewReader(expired))
 
@@ -94,8 +93,6 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return errors.New("admin service banned error: " + resp.Status)
 	}
-
-	log.Debugf("recv admin setBanned status: %s, code: %d", resp.Status, resp.StatusCode)
 
 	c.Status(http.StatusNoContent)
 	return nil

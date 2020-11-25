@@ -106,7 +106,8 @@ log:
   # 不跟Info Level(包含) 以下的log輸出在同一個位置
   errorAloneOutput: true
               
-#聊天室admin
+#聊天室admin (要讓logic知道admin的位置,禁言用)
 admin:
   host: 127.0.0.1
+  # stage 上預設會是80 port, 底下可以不用設定
   port: 3112

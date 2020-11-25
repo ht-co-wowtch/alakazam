@@ -12,7 +12,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// New
 func (s *httpServer) setBanned(c *gin.Context) error {
 	var (
 		err    error
@@ -53,17 +52,16 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 		)
 		log.Debug("setBanned SendDisplay", zap.String("name", name))
 		if err != nil {
-			log.Error("SendDisplayErr", zap.Error(err))
+			log.Error("setBanned SendDisplay Err", zap.Error(err))
 		}
 		log.Debug("SendDisplay", zap.Int64("msg_id", xid))
 	}
 
-	log.Debugf("setBanned response %d", http.StatusNoContent)
 	c.Status(http.StatusNoContent)
 	return nil
 }
 
-// 設定禁言
+// old 設定禁言
 /*
 func (s *httpServer) setBanned(c *gin.Context) error {
 
