@@ -69,7 +69,8 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 
 	uid = c.Param("uid")
 	l := len(uid)
-	if uid < 32 || uid > 32 {
+	//uid 必須是32個字元的字串
+	if l < 32 || l > 32 {
 		return errors.New("[set banned] invalid user id")
 	}
 
