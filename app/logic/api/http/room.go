@@ -59,7 +59,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 		err     error
 		roomId  int
 		uid     string
-		expired = `{"expired":30}` //預設禁言 30秒
+		expired = `{"expired":600}` //預設禁言 30秒
 	)
 
 	roomId, err = strconv.Atoi(c.Param("id"))
