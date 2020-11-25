@@ -1,18 +1,35 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
-	"net/http"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+
+	"go.uber.org/zap"
 )
 
 // 設定禁言
 func (s *httpServer) setBanned(c *gin.Context) error {
+
 	id, err := getId(c)
 	if err != nil {
 		return err
 	}
+
+	// start
+	exp := struct {
+		Expired int `json:"expired"`
+	}{}
+	if err := c.BodyParser(&exp); err != nil {
+		log.Error("BodyParser", zap.Error(err))
+	} else {
+		log.Debug("setBanned", zap.Int("expired", exp.Expired))
+	}
+	log.Debug("setBanned", zap.Int("roomid", id), zap.String("uid", c.Param("uid")))
+	// end
 
 	params := struct {
 		RoomId  int    `json:"room_id"`
@@ -22,9 +39,13 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 		RoomId: id,
 		Uid:    c.Param("uid"),
 	}
+
 	if err := c.ShouldBindJSON(&params); err != nil {
 		return err
 	}
+	// start
+	log.Debug("setBanned", zap.Int("params.RoomId", params.RoomId), zap.String("params.Uid", params.Uid), zap.Int("params.Expired", params.Expired))
+	// end
 
 	if id == 0 {
 		if err := s.member.SetBannedAll(params.Uid, params.Expired); err != nil {
@@ -43,6 +64,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 		)
 	}
 
+	log.Debugf("setBanned response %d", http.StatusNoContent)
 	c.Status(http.StatusNoContent)
 	return nil
 }

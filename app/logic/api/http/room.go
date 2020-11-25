@@ -88,11 +88,14 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
+
 	defer resp.Body.Close()
 	//if status code not in HTTP 200 serial
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return errors.New("admin service banned error: " + resp.Status)
 	}
+
+	log.Debugf("recv admin setBanned status: %s, code: %d", resp.Status, resp.StatusCode)
 
 	c.Status(http.StatusNoContent)
 	return nil
