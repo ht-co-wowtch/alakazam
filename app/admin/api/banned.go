@@ -51,7 +51,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 			scheme.NewRoot(),
 			scheme.DisplayBySetBanned(name, exp.Expired, true),
 		)
-		log.Debug("setBanned SendDisplay", zap.Int("name", name))
+		log.Debug("setBanned SendDisplay", zap.String("name", name))
 		if err != nil {
 			log.Error("SendDisplayErr", zap.Error(err))
 		}
@@ -85,6 +85,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 		return err
 	}
 
+	log.Debug("setBanned", zap.Int("RoomId", params.RoomId), zap.String("Uid", params.Uid), zap.Int("Expired", params.Expired))
 	if id == 0 {
 		if err := s.member.SetBannedAll(params.Uid, params.Expired); err != nil {
 			return err
