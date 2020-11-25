@@ -55,26 +55,33 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	// 會收到前端傳入的參數有
 	//   id 指的是房間id
 	//   uid 指的是要被banned 的 user id
-	//   expired 禁言秒數(預設是30秒)
-	params := struct {
-		RoomId  int    `json:"room_id" binding:"required"`
-		Uid     string `json:"uid" binding:"required,len=32"`
-		Expired int    `json:"expired" binding:"required"`
-	}{}
+	var (
+		err     error
+		roomId  int
+		uid     string
+		expired = `{"expired":30}` //預設禁言 30秒
+	)
 
-	if err := c.ShouldBindJSON(&params); err != nil {
+	roomId, err = strconv.Atoi(c.Param("id"))
+	if err != nil {
 		return err
+	}
+
+	uid = c.Param("uid")
+	l := len(uid)
+	if uid < 32 || uid > 32 {
+		return errors.New("[set banned] invalid user id")
 	}
 
 	// c.GetString("uid") 是從一開始的middleware 就設定,表示驗證過的當前使用者
-	if err := s.isManage(params.RoomId, c.GetString("uid")); err != nil {
+	if err := s.isManage(roomId, c.GetString("uid")); err != nil {
 		return err
 	}
 
-	adminBannedUrl := fmt.Sprintf(s.adminBannedUrlf, params.Uid, params.RoomId)
-	log.Debug("DEBUG adminBannedUrl", zap.String("adminBannedUrl", adminBannedUrl), zap.String("RoomId/id", c.Param("id")), zap.String("uid", c.Param("uid")), zap.Int("expired", params.Expired))
+	adminBannedUrl := fmt.Sprintf(s.adminBannedUrlf, uid, roomId)
+	log.Debug("DEBUG adminBannedUrl", zap.String("adminBannedUrl", adminBannedUrl), zap.String("RoomId/id", c.Param("id")), zap.String("uid", c.Param("uid")), zap.String("expired", expired))
 
-	resp, err := http.Post(adminBannedUrl, "application/json", strings.NewReader(`{"expired":30}`))
+	resp, err := http.Post(adminBannedUrl, "application/json", strings.NewReader(expired))
 
 	if err != nil {
 		return err
@@ -82,7 +89,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	defer resp.Body.Close()
 	//if status code not in HTTP 200 serial
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return errors.New("admin service banned error")
+		return errors.New("admin service banned error: " + resp.Status)
 	}
 
 	c.Status(http.StatusNoContent)
