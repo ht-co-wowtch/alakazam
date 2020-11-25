@@ -130,6 +130,16 @@ func (s *httpServer) removeBanned(c *gin.Context) error {
 	} else if err := s.member.RemoveBanned(params.Uid, params.RoomId); err != nil {
 		return err
 	}
+	/**************************/
+	name, _ := s.member.GetUserName(params.Uid)
+	if params.RoomId > 0 {
+		_, _ = s.message.SendDisplay(
+			[]int32{int32(params.RoomId)},
+			scheme.NewRoot(),
+			scheme.DisplayBySetBanned(name, 0, false),
+		)
+	}
+	/**************************/
 	c.Status(http.StatusNoContent)
 	return nil
 }
