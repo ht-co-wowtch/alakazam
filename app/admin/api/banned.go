@@ -30,9 +30,9 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	uid = c.Param("uid")
 
 	if err := c.ShouldBind(&exp); err != nil {
-		log.Error("setBanned ShouldBind", zap.Error(err))
+		log.Error("setBanned Error", zap.Error(err))
 	} else {
-		log.Debug("setBanned ShoudBind", zap.Int("expired", exp.Expired))
+		log.Debug("setBanned expired", zap.Int("expired", exp.Expired))
 	}
 	log.Debug("setBanned", zap.Int("roomid", roomId), zap.String("uid", uid))
 
@@ -55,7 +55,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 		if err != nil {
 			log.Error("SendDisplayErr", zap.Error(err))
 		}
-		log.Debug("SendDisplay", zap.Int64("xid", xid))
+		log.Debug("SendDisplay", zap.Int64("msg_id", xid))
 	}
 
 	log.Debugf("setBanned response %d", http.StatusNoContent)

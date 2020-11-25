@@ -1,9 +1,10 @@
 package scheme
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"strconv"
 	"unicode/utf8"
+
+	"gitlab.com/jetfueltw/cpw/alakazam/member"
 )
 
 const (
@@ -294,9 +295,9 @@ func DisplayBySetManage(username string, set bool) Display {
 // 禁言通知Display
 func DisplayBySetBanned(username string, expired int, set bool) Display {
 	var text string
-	msg := "用户" + username + "已被主播"
+	msg := "用户" + username + "已被"
 	if set {
-		text += msg + "禁言" + strconv.Itoa(expired/60/60) + "分钟"
+		text += msg + "禁言" + strconv.Itoa(expired/60) + "分钟"
 	} else {
 		msg += "解除"
 		text = msg + "禁言"
