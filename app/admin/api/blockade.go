@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 )
