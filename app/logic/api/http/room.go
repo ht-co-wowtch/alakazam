@@ -80,7 +80,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	}
 	// s.adminBannedUrlf 參考 logic/api/conf/conf.go
 	// 格式為 "127.0.0.1:3112/banned/%%s/room/%%d"
-	adminBannedUrl := fmt.Sprintf(s.adminBannedUrlf, uid, roomId)
+	adminBannedUrl := fmt.Sprintf(s.adminBannedUrlf, uid, int(10))
 	log.Debug("DEBUG adminBannedUrl", zap.String("adminBannedUrl", adminBannedUrl), zap.String("RoomId/id", c.Param("id")), zap.String("uid", c.Param("uid")), zap.String("expired", expired))
 
 	resp, err := http.Post(adminBannedUrl, "application/json", strings.NewReader(expired))
