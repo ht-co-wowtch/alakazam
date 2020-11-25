@@ -2,11 +2,12 @@ package api
 
 import (
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
-	"net/http"
-	"strconv"
 )
 
 func (s *httpServer) setBlockade(c *gin.Context) error {
@@ -54,19 +55,30 @@ func (s *httpServer) setBlockade(c *gin.Context) error {
 }
 
 func (s *httpServer) removeBlockade(c *gin.Context) error {
-	id, err := getId(c)
+	roomId, err := getId(c)
 	if err != nil {
 		return err
 	}
 
-	if id == 0 {
-		if err := s.member.SetBlockadeAll(c.Param("uid"), false); err != nil {
+	uid := c.Param("uid")
+	if roomId == 0 {
+		if err := s.member.SetBlockadeAll(uid, false); err != nil {
 			return err
 		}
-	} else if err := s.member.SetBlockade(c.Param("uid"), id, false); err != nil {
+	} else if err := s.member.SetBlockade(uid, roomId, false); err != nil {
 		return err
 	}
 
+	name, _ := s.member.GetUserName(uid)
+	log.Debug("removeBlockade ", zap.Int("RoomId", roomId), zap.String("uid", uid), zap.String("name", name))
+
+	if roomId > 0 {
+		_, _ = s.message.SendDisplay(
+			[]int32{int32(roomId)},
+			scheme.NewRoot(),
+			scheme.DisplayByUnBlock(name, 0, false),
+		)
+	}
 	c.Status(http.StatusNoContent)
 	return nil
 }

@@ -328,6 +328,42 @@ func DisplayBySetBanned(username string, expired int, set bool) Display {
 	}
 }
 
+// 主播解封Display
+func DisplayByUnBlock(username string, expired int, set bool) Display {
+	var text string
+	msg := "用户" + username + "已被"
+	if set {
+		text += msg + "封鎖" // + strconv.Itoa(expired/60) + "分钟"
+	} else {
+		msg += "解除"
+		text = msg + "封鎖"
+	}
+
+	return Display{
+		Title: displayText{
+			Text:            member.System,
+			Color:           MESSAGE_COLOR,
+			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
+		},
+		Message: displayMessage{
+			Text:            text,
+			Color:           MESSAGE_SYSTEM_COLOR,
+			BackgroundColor: NONE_COLOR,
+			Entity: []textEntity{
+				usernameTextEntity(username, 2),
+				textEntity{
+					Type:            "text",
+					Offset:          utf8.RuneCountInString(msg),
+					Length:          2,
+					Color:           "#FFFFFF",
+					BackgroundColor: "#38A2DB",
+				},
+			},
+		},
+		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
+	}
+}
+
 // 進場Display
 func displayByConnect(level, username string) Display {
 	return Display{
