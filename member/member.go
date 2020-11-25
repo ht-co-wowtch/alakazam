@@ -2,6 +2,7 @@ package member
 
 import (
 	"database/sql"
+
 	"github.com/go-redis/redis"
 	"github.com/google/uuid"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
