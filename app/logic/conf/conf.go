@@ -22,7 +22,6 @@ var (
 // 聊天室後台
 type AdminConfig struct {
 	Host string
-	Port string
 	// admin url
 	Uri string
 	// 禁言用戶url, 最後一個f命名表示為format 格式的字串
@@ -101,14 +100,13 @@ func Read(path string) error {
 		return err
 	}
 
-	// http://xxx.xxx.xxx.xxx:xxxx
-	adminUrl := fmt.Sprintf("%s:%s", v.GetString("admin.host"), v.GetString("admin.port"))
+	// http://xxx.xxx.xxx.xxx (在stage 預設會是80 port, 所以不用在上port)
+	adminUrl := fmt.Sprintf("%s", v.GetString("admin.host"))
 	// http://xxx.xxx.xxx.xxx:xxx/banned/:uid/room/:id (參考Admin專案的route: https://gitlab.com/jetfueltw/cpw/alakazam/-/blob/develop/app/admin/api/server.go)
 	// http://alakazam-admin-service:3112 (stage example)
 	adminBannedUrl := fmt.Sprintf("%s/banned/%%s/room/%%d", adminUrl)
 	Conf.Admin = &AdminConfig{
 		Host:    v.GetString("admin.host"),
-		Port:    v.GetString("admin.port"),
 		Uri:     adminUrl,
 		Bannedf: adminBannedUrl,
 	}
