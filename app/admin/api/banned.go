@@ -36,15 +36,6 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	}
 	log.Debug("setBanned", zap.Int("roomid", roomId), zap.String("uid", uid))
 
-	params := struct {
-		RoomId  int    `json:"room_id"`
-		Uid     string `json:"uid" binding:"required,len=32"`
-		Expired int    `json:"expired" binding:"required"`
-	}{
-		RoomId: id,
-		Uid:    c.Param("uid"),
-	}
-
 	if roomId == 0 {
 		if err := s.member.SetBannedAll(uid, exp.Expired); err != nil {
 			return err
