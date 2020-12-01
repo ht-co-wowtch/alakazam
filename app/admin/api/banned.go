@@ -21,10 +21,10 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 			Expired int `json:"expired"`
 		}{}
 	)
-	roomId, err = strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return err
-	}
+
+	// 當request為 /banned/:uid , c.Param("id")為空字串,因此strconv.Atoi會丟error,這裡忽略掉error,因為底下roomId允許為 0
+	// 當request為 /banned/:uid/room/:id , roomId 會得到一個roomid
+	roomId, _ = strconv.Atoi(c.Param("id"))
 
 	uid = c.Param("uid")
 
