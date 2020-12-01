@@ -28,7 +28,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 
 	uid = c.Param("uid")
 
-	if err := c.ShouldBind(&exp); err != nil {
+	if err = c.ShouldBind(&exp); err != nil {
 		log.Error("setBanned Error", zap.Error(err))
 	} else {
 		log.Debug("setBanned expired", zap.Int("expired", exp.Expired))
