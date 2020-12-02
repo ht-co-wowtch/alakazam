@@ -238,7 +238,7 @@ func (s *httpServer) gift(c *gin.Context) error {
 	}
 
 	memberType := scheme.ToType(m.Type)
-	log.Debug("Gift",
+	log.Debug("禮物",
 		zap.String("uid", req.Uid),
 		zap.String("name", m.Name),
 		zap.Int("(member)type", m.Type),
@@ -296,11 +296,21 @@ func (s *httpServer) reward(c *gin.Context) error {
 		return err
 	}
 
+	m, err := s.member.GetSession(req.Uid)
+	if err != nil {
+		return err
+	}
+
+	memberType := scheme.ToType(m.Type)
+	log.Debug("打賞",
+		zap.String("uid", req.Uid),
+		zap.String("name", m.Name),
+		zap.Int("(member)type", m.Type),
+		zap.String("memberType", memberType),
+		zap.Bool("isMessage", m.IsMessage),
+		zap.Bool("isBlockade", m.IsBlockade))
+
 	if req.UserName == "" {
-		m, err := s.member.GetSession(req.Uid)
-		if err != nil {
-			return err
-		}
 
 		m.Uid = req.Uid
 		user = scheme.NewUser(*m)
@@ -309,7 +319,7 @@ func (s *httpServer) reward(c *gin.Context) error {
 			Name:   req.UserName,
 			Uid:    req.Uid,
 			Avatar: req.UserAvatar,
-			Type:   "player",
+			Type:   memberType,
 		}
 	}
 
