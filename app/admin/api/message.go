@@ -1,6 +1,10 @@
 package api
 
 import (
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
@@ -8,9 +12,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
-	"net/http"
-	"strconv"
-	"time"
 )
 
 type customReq struct {
@@ -230,12 +231,22 @@ func (s *httpServer) gift(c *gin.Context) error {
 		return err
 	}
 
-	if req.UserName == "" {
-		m, err := s.member.GetSession(req.Uid)
-		if err != nil {
-			return err
-		}
+	m, err := s.member.GetSession(req.Uid)
+	//若member 為guest, GetSession就會拋出err
+	if err != nil {
+		return err
+	}
 
+	memberType := scheme.ToType(m.Type)
+	log.Debug("Gift",
+		zap.String("uid", req.Uid),
+		zap.String("name", m.Name),
+		zap.Int("(member)type", m.Type),
+		zap.String("memberType", memberType),
+		zap.Bool("isMessage", m.IsMessage),
+		zap.Bool("isBlockade", m.IsBlockade))
+
+	if req.UserName == "" {
 		m.Uid = req.Uid
 		user = scheme.NewUser(*m)
 	} else {
@@ -243,7 +254,7 @@ func (s *httpServer) gift(c *gin.Context) error {
 			Name:   req.UserName,
 			Uid:    req.Uid,
 			Avatar: req.UserAvatar,
-			Type:   "player",
+			Type:   memberType,
 		}
 	}
 
