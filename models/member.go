@@ -123,7 +123,7 @@ func (s *Store) setUserPermission(uid, colName string, is bool) (bool, error) {
 			IsBlockade: is,
 		})
 
-	log.Debug("db setUserPermission affected row", zap.Int("affectedRow", aff))
+	log.Debug("db setUserPermission affected row", zap.Int64("affectedRow", aff))
 
 	//解禁
 	if err == nil && !is {
