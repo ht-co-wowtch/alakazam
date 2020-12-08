@@ -75,9 +75,11 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	uid = c.Param("uid")
 
 	log.Debug("setBanned expired",
-		zap.String("roomId", roomId),
+		zap.String("expired", expired),
+		zap.Int("roomId", roomId),
 		zap.String("uid", uid))
 
+	log.Debug("setBanned", zap.String("c.GetString(uid)", c.GetString("uid")))
 	l := len(uid)
 	//uid 必須是32個字元的字串
 	if l < 32 || l > 32 {
