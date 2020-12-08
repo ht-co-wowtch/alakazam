@@ -10,6 +10,9 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+
+	"go.uber.org/zap"
 )
 
 // Original 設定禁言
@@ -60,12 +63,21 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 		expired = `{"expired":600}` //預設禁言10分鐘 (600/60)
 	)
 
+	log.Debug("setBanned expired",
+		zap.String("c.Param(id)", c.Param("id")),
+		zap.String("c.Param(uid)", c.Param("uid")))
+
 	roomId, err = strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return err
 	}
 
 	uid = c.Param("uid")
+
+	log.Debug("setBanned expired",
+		zap.String("roomId", roomId),
+		zap.String("uid", uid))
+
 	l := len(uid)
 	//uid 必須是32個字元的字串
 	if l < 32 || l > 32 {
@@ -81,10 +93,11 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	// s.adminBannedUrlf 參考 logic/api/conf/conf.go
 	// 格式為 "127.0.0.1:3112/banned/%%s/room/%%d"
 	adminBannedUrl := fmt.Sprintf(s.adminBannedUrlf, uid, roomId)
-
+	log.Debug("setBanned", zap.String("admin url", adminBannedUrl))
 	resp, err := http.Post(adminBannedUrl, "application/json", strings.NewReader(expired))
 
 	if err != nil {
+		log.Error("setBanned admin Error", zap.Error(err))
 		return err
 	}
 
