@@ -107,16 +107,18 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 
 // 解除禁言
 func (s *httpServer) removeBanned(c *gin.Context) error {
-	id, err := getId(c)
+	roomId, err := getId(c)
 	if err != nil {
 		return err
 	}
+
+	log.Debug("removeBanned ", zap.Int("getId(c)", roomId))
 
 	params := struct {
 		RoomId int    `json:"room_id"`
 		Uid    string `json:"uid" binding:"required,len=32"`
 	}{
-		RoomId: id,
+		RoomId: roomId,
 		Uid:    c.Param("uid"),
 	}
 
@@ -127,7 +129,7 @@ func (s *httpServer) removeBanned(c *gin.Context) error {
 		return err
 	}
 
-	if id == 0 {
+	if roomId == 0 {
 		if err := s.member.RemoveBannedAll(params.Uid); err != nil {
 			log.Error("removeBanned RemoveBannedAll", zap.Error(err))
 			return err

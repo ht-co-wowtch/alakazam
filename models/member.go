@@ -3,6 +3,9 @@ package models
 import (
 	"database/sql"
 	"time"
+
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 )
 
 const (
@@ -100,26 +103,37 @@ func (s *Store) SetUserBanned(uid string, is bool) (bool, error) {
 	return s.setUserPermission(uid, "is_message", is)
 }
 
-func (s *Store) setUserPermission(uid, name string, is bool) (bool, error) {
+func (s *Store) setUserPermission(uid, colName string, is bool) (bool, error) {
+	//用uid找出聊天室中的 member_id
 	m, err := s.Find(uid)
 	if err != nil {
 		return false, err
 	}
 
-	aff, err := s.d.Cols(name).
+	log.Debug("db setUserPermission",
+		zap.String("uid", uid),
+		zap.String("columnName", colName),
+		zap.Bool("bool", is),
+		zap.String("Name", m.Name))
+
+	aff, err := s.d.Cols(colName).
 		Where("id = ?", m.Id).
 		Update(&Member{
 			IsMessage:  !is,
 			IsBlockade: is,
 		})
 
+	log.Debuf("db setUserPermission affected row", zap.Int("affectedRow", aff))
+
+	//解禁
 	if err == nil && !is {
+
 		k := map[string]string{
 			"is_blockade": "is_blockade",
 			"is_message":  "is_banned",
 		}
-
-		_, err = s.d.Cols(k[name]).
+		//s.d.Exec("UPDATE room_user_permissions SET is_banned=0 , is_blockade=0 WHERE member_id = ?", m.Id)
+		_, err = s.d.Cols(k[colName]).
 			Where("member_id = ?", m.Id).
 			Update(&Permission{
 				IsBanned:   is,

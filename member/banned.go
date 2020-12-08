@@ -1,10 +1,11 @@
 package member
 
 import (
+	"time"
+
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
-	"time"
 )
 
 func (m *Member) SetBanned(uid string, rid, sec int, isSystem bool) error {
@@ -47,16 +48,22 @@ func (m *Member) SetBanned(uid string, rid, sec int, isSystem bool) error {
 
 func (m *Member) SetBannedAll(uid string, sec int) error {
 	expire := time.Duration(sec) * time.Second
+	log.Debug("member/banned-SetBannedAll", zap.String("uid", uid), zap.Int("sec", sec), zap.Duration("expire", expire))
 	if sec > 0 {
 		if err := m.c.setBanned(uid, 0, expire); err != nil {
 			return err
 		}
 	} else if sec == -1 {
+
 		if _, err := m.db.SetUserBanned(uid, true); err != nil {
 			return err
 		}
 
 		member, err := m.Get(uid)
+		log.Debug("member/banned-SetBannedAll m.Get(uid)",
+			zap.Int64("sec", member.Id),
+			zap.String("uid", member.Uid))
+
 		if err != nil {
 			if err == errors.ErrLogin {
 				return nil
@@ -129,6 +136,8 @@ func (m *Member) RemoveBanned(uid string, rid int) error {
 }
 
 func (m *Member) RemoveBannedAll(uid string) error {
+
+	zap.Debug("member/banned-RemoveBannedAll", zap.String("uid", uid))
 	if _, err := m.db.SetUserBanned(uid, false); err != nil {
 		return err
 	}
@@ -138,6 +147,7 @@ func (m *Member) RemoveBannedAll(uid string) error {
 	}
 
 	member, err := m.Get(uid)
+
 	if err != nil {
 		if err == errors.ErrLogin {
 			return nil
@@ -146,6 +156,11 @@ func (m *Member) RemoveBannedAll(uid string) error {
 	}
 
 	member.IsMessage = true
+
+	zap.Debug("member/banned-RemoveBannedAll m.Get(uid)",
+		zap.Int64("uid", member.Id),
+		zap.String("uid", member.Uid),
+		zap.Bool("isMessage", member.IsMessage))
 
 	return m.c.set(member)
 }
