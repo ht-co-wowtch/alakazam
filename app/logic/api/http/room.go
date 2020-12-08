@@ -110,7 +110,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	defer resp.Body.Close()
 	//if status code not in HTTP 200 serial
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		log.Debug("setBanned admin response", zap.String(resp.Status))
+		log.Debug("setBanned admin response", zap.String("repStatus", resp.Status))
 		return errors.ErrForbidden
 	}
 
