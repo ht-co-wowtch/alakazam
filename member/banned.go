@@ -137,7 +137,7 @@ func (m *Member) RemoveBanned(uid string, rid int) error {
 
 func (m *Member) RemoveBannedAll(uid string) error {
 
-	zap.Debug("member/banned-RemoveBannedAll", zap.String("uid", uid))
+	log.Debug("member/banned-RemoveBannedAll", zap.String("uid", uid))
 	if _, err := m.db.SetUserBanned(uid, false); err != nil {
 		return err
 	}
@@ -157,7 +157,7 @@ func (m *Member) RemoveBannedAll(uid string) error {
 
 	member.IsMessage = true
 
-	zap.Debug("member/banned-RemoveBannedAll m.Get(uid)",
+	log.Debug("member/banned-RemoveBannedAll m.Get(uid)",
 		zap.Int64("uid", member.Id),
 		zap.String("uid", member.Uid),
 		zap.Bool("isMessage", member.IsMessage))
