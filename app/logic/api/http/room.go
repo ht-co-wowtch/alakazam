@@ -69,7 +69,8 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 
 	roomId, err = strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return err
+		log.Error("setBanned-strconv.Atoi(c.Param(id))", zap.Error(err))
+		return errors.ErrNoRoom
 	}
 
 	uid = c.Param("uid")
@@ -83,12 +84,15 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	l := len(uid)
 	//uid 必須是32個字元的字串
 	if l < 32 || l > 32 {
-		return errors.New("[set banned] invalid user id")
+		//return errors.New("[set banned] invalid user id")
+		log.Error("setBanned-len(uid)", zap.Error(err))
+		return errors.ErrLogin
 	}
 
 	// c.GetString("uid") 是從一開始的middleware 就設定,表示驗證過的當前使用者
 	if err := s.isManage(roomId, c.GetString("uid")); err != nil {
-		return err
+		log.Error("setBanned-isManage", zap.Error(err))
+		return errors.ErrForbidden
 	}
 
 	// 透過聊天室Admin去設定禁言
@@ -99,14 +103,15 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	resp, err := http.Post(adminBannedUrl, "application/json", strings.NewReader(expired))
 
 	if err != nil {
-		log.Error("setBanned admin Error", zap.Error(err))
+		log.Error("setBanned send admin Error", zap.Error(err))
 		return err
 	}
 
 	defer resp.Body.Close()
 	//if status code not in HTTP 200 serial
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return errors.New("admin service banned error: " + resp.Status)
+		log.Debug("setBanned admin response", zap.String(resp.Status))
+		return errors.ErrForbidden
 	}
 
 	c.Status(http.StatusNoContent)
