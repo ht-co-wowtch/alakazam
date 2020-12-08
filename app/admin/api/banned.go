@@ -119,15 +119,21 @@ func (s *httpServer) removeBanned(c *gin.Context) error {
 		RoomId: id,
 		Uid:    c.Param("uid"),
 	}
+
+	log.Debug("removeBanned ", zap.Int("RoomId", params.RoomId), zap.String("uid", params.Uid))
+
 	if err := binding.Validator.ValidateStruct(&params); err != nil {
+		log.Error("removeBanned Validate", zap.Error(err))
 		return err
 	}
 
 	if id == 0 {
 		if err := s.member.RemoveBannedAll(params.Uid); err != nil {
+			log.Error("removeBanned RemoveBannedAll", zap.Error(err))
 			return err
 		}
 	} else if err := s.member.RemoveBanned(params.Uid, params.RoomId); err != nil {
+		log.Error("removeBanned RemoveBanned", zap.Error(err))
 		return err
 	}
 	/**************************/
