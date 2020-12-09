@@ -136,31 +136,33 @@ func (m *Member) RemoveBanned(uid string, rid int) error {
 }
 
 func (m *Member) RemoveBannedAll(uid string) error {
+	var (
+		isSuccess bool
+		err       error
+		banned    = false
+	)
 
-	log.Debug("member/banned-RemoveBannedAll", zap.String("uid", uid))
-	if _, err := m.db.SetUserBanned(uid, false); err != nil {
-		return err
-	}
-
-	if err := m.c.delAllBanned(uid); err != nil {
-		return err
-	}
-
-	member, err := m.Get(uid)
-
-	if err != nil {
-		if err == errors.ErrLogin {
-			return nil
+	if isSuccess, err = m.db.SetUserBanned(uid, banned); isSuccess {
+		//解Banned 成功
+		if err = m.c.delAllBanned(uid); err != nil {
+			return err
 		}
+
+		member, err := m.Get(uid)
+
+		if err != nil {
+			log.Error("member/banned.go RemoveBannedAll.1", zap.Error(err))
+			if err == errors.ErrLogin {
+				return nil
+			}
+			return err
+		}
+
+		member.IsMessage = true
+		return m.c.set(member)
+
+	} else {
+		log.Error("member/banned.go RemoveBannedAll.2", zap.Error(err))
 		return err
 	}
-
-	member.IsMessage = true
-
-	log.Debug("member/banned-RemoveBannedAll m.Get(uid)",
-		zap.Int64("uid", member.Id),
-		zap.String("uid", member.Uid),
-		zap.Bool("isMessage", member.IsMessage))
-
-	return m.c.set(member)
 }

@@ -112,7 +112,8 @@ func (s *httpServer) removeBanned(c *gin.Context) error {
 		return err
 	}
 
-	log.Debug("removeBanned ", zap.Int("getId(c)", roomId))
+	// roomId->0
+	log.Debug("gin removeBanned", zap.Int("getId(c)", roomId))
 
 	params := struct {
 		RoomId int    `json:"room_id"`
@@ -122,26 +123,26 @@ func (s *httpServer) removeBanned(c *gin.Context) error {
 		Uid:    c.Param("uid"),
 	}
 
-	log.Debug("removeBanned ", zap.Int("RoomId", params.RoomId), zap.String("uid", params.Uid))
+	// roomId->0 uid->xxxxx
+	log.Debug("gin removeBanned", zap.Int("RoomId", params.RoomId), zap.String("uid", params.Uid))
 
 	if err := binding.Validator.ValidateStruct(&params); err != nil {
-		log.Error("removeBanned Validate", zap.Error(err))
+		log.Error("gin removeBanned Validate", zap.Error(err))
 		return err
 	}
 
 	if roomId == 0 {
 		if err := s.member.RemoveBannedAll(params.Uid); err != nil {
-			log.Error("removeBanned RemoveBannedAll", zap.Error(err))
+			log.Error("gin removeBanned RemoveBannedAll", zap.Error(err))
 			return err
 		}
 	} else if err := s.member.RemoveBanned(params.Uid, params.RoomId); err != nil {
-		log.Error("removeBanned RemoveBanned", zap.Error(err))
+		log.Error("gin removeBanned RemoveBanned", zap.Error(err))
 		return err
 	}
 	/**************************/
 	/*
 		name, _ := s.member.GetUserName(params.Uid)
-		log.Debug("removeBanned ", zap.String("name", name))
 		if params.RoomId > 0 {
 			_, _ = s.message.SendDisplay(
 				[]int32{int32(params.RoomId)},

@@ -110,7 +110,7 @@ func (s *Store) setUserPermission(uid, colName string, is bool) (bool, error) {
 		return false, err
 	}
 
-	log.Debug("db setUserPermission",
+	log.Debug("models/member.go setUserPermission",
 		zap.String("uid", uid),
 		zap.String("columnName", colName),
 		zap.Bool("bool", is),
@@ -145,12 +145,13 @@ func (s *Store) setUserPermission(uid, colName string, is bool) (bool, error) {
 		}
 		//s.d.Exec("UPDATE room_user_permissions SET is_banned=0 , is_blockade=0 WHERE member_id = ?", m.Id)
 		// update room_user_permission
-		_, err = s.d.Cols(k[colName]).
+		aff2, err = s.d.Cols(k[colName]).
 			Where("member_id = ?", m.Id).
 			Update(&Permission{
 				IsBanned:   is,
 				IsBlockade: is,
 			})
+		log.Debug("db setUserPermission aff2", zap.Int64("affectedRow", aff2))
 	}
 
 	return aff == 1, err
