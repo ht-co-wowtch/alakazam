@@ -48,22 +48,18 @@ func (m *Member) SetBanned(uid string, rid, sec int, isSystem bool) error {
 
 func (m *Member) SetBannedAll(uid string, sec int) error {
 	expire := time.Duration(sec) * time.Second
-	log.Debug("member/banned.go SetBannedAll", zap.String("uid", uid), zap.Int("sec", sec), zap.Duration("expire", expire))
-
 	if sec > 0 {
+		//似乎是想利用redis的時間進行控制
+		log.Debug("member/banned.go 設定快取時間", zap.String("uid", uid), zap.Int("sec", sec))
 		if err := m.c.setBanned(uid, 0, expire); err != nil {
 			return err
 		}
 	} else if sec == -1 {
-
 		if _, err := m.db.SetUserBanned(uid, true); err != nil {
 			return err
 		}
 
 		member, err := m.Get(uid)
-		log.Debug("member/banned-SetBannedAll m.Get(uid)",
-			zap.Int64("sec", member.Id),
-			zap.String("uid", member.Uid))
 
 		if err != nil {
 			if err == errors.ErrLogin {
@@ -71,12 +67,9 @@ func (m *Member) SetBannedAll(uid string, sec int) error {
 			}
 			return err
 		}
-
 		member.IsMessage = false
-
 		return m.c.set(member)
 	}
-
 	return nil
 }
 
@@ -138,34 +131,31 @@ func (m *Member) RemoveBanned(uid string, rid int) error {
 
 func (m *Member) RemoveBannedAll(uid string) error {
 	var (
-		isSuccess bool
-		err       error
-		banned    = false
+		err    error
+		banned = false
 	)
 
-	if isSuccess, err = m.db.SetUserBanned(uid, banned); isSuccess {
-
-		//解Banned 成功
-		if err = m.c.delAllBanned(uid); err != nil {
-			log.Error("member/banned.go RemoveBannedAll.0", zap.Error(err))
-			return err
-		}
-
-		member, err := m.Get(uid)
-
-		if err != nil {
-			log.Error("member/banned.go RemoveBannedAll.1", zap.Error(err))
-			if err == errors.ErrLogin {
-				return nil
-			}
-			return err
-		}
-
-		member.IsMessage = true
-		return m.c.set(member)
-
-	} else {
-		log.Error("member/banned.go RemoveBannedAll.2", zap.Error(err))
+	_, err = m.db.SetUserBanned(uid, banned)
+	if err != nil {
 		return err
 	}
+
+	//解Banned 成功
+	if err = m.c.delAllBanned(uid); err != nil {
+		log.Error("member/banned.go RemoveBannedAll.0", zap.Error(err))
+		return err
+	}
+
+	member, err := m.Get(uid)
+
+	if err != nil {
+		log.Error("member/banned.go RemoveBannedAll.1", zap.Error(err))
+		if err == errors.ErrLogin {
+			return nil
+		}
+		return err
+	}
+
+	member.IsMessage = true
+	return m.c.set(member)
 }

@@ -112,9 +112,6 @@ func (s *httpServer) removeBanned(c *gin.Context) error {
 		return err
 	}
 
-	// roomId->0
-	log.Debug("gin removeBanned", zap.Int("getId(c)", roomId))
-
 	params := struct {
 		RoomId int    `json:"room_id"`
 		Uid    string `json:"uid" binding:"required,len=32"`
@@ -123,7 +120,6 @@ func (s *httpServer) removeBanned(c *gin.Context) error {
 		Uid:    c.Param("uid"),
 	}
 
-	// roomId->0 uid->xxxxx
 	log.Debug("gin removeBanned", zap.Int("RoomId", params.RoomId), zap.String("uid", params.Uid))
 
 	if err := binding.Validator.ValidateStruct(&params); err != nil {
