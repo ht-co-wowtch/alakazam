@@ -130,7 +130,7 @@ func (s *Store) setUserPermission(uid, colName string, is bool) (bool, error) {
 	aff, err := s.d.Cols(colName).
 		Where("uid = ?", uid).
 		Update(&Member{
-			IsMessage:  is,
+			IsMessage:  !is,
 			IsBlockade: is,
 		})
 		//		affected, err := s.d.Exec("UPDATE room_user_permissions SET is_banned=0 , is_blockade=0 WHERE member_id = ?", m.Id)

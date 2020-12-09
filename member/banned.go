@@ -48,7 +48,8 @@ func (m *Member) SetBanned(uid string, rid, sec int, isSystem bool) error {
 
 func (m *Member) SetBannedAll(uid string, sec int) error {
 	expire := time.Duration(sec) * time.Second
-	log.Debug("member/banned-SetBannedAll", zap.String("uid", uid), zap.Int("sec", sec), zap.Duration("expire", expire))
+	log.Debug("member/banned.go SetBannedAll", zap.String("uid", uid), zap.Int("sec", sec), zap.Duration("expire", expire))
+
 	if sec > 0 {
 		if err := m.c.setBanned(uid, 0, expire); err != nil {
 			return err
@@ -143,8 +144,10 @@ func (m *Member) RemoveBannedAll(uid string) error {
 	)
 
 	if isSuccess, err = m.db.SetUserBanned(uid, banned); isSuccess {
+
 		//解Banned 成功
 		if err = m.c.delAllBanned(uid); err != nil {
+			log.Error("member/banned.go RemoveBannedAll.0", zap.Error(err))
 			return err
 		}
 
