@@ -130,7 +130,7 @@ func (s *Store) setUserPermission(uid, colName string, is bool) (bool, error) {
 	aff, err := s.d.Cols(colName).
 		Where("uid = ?", uid).
 		Update(&Member{
-			IsMessage:  is,
+			IsMessage:  !is,
 			IsBlockade: is,
 		})
 		//		affected, err := s.d.Exec("UPDATE room_user_permissions SET is_banned=0 , is_blockade=0 WHERE member_id = ?", m.Id)
@@ -145,13 +145,17 @@ func (s *Store) setUserPermission(uid, colName string, is bool) (bool, error) {
 		}
 		//s.d.Exec("UPDATE room_user_permissions SET is_banned=0 , is_blockade=0 WHERE member_id = ?", m.Id)
 		// update room_user_permission
-		aff2, err := s.d.Cols(k[colName]).
+		if aff2, err := s.d.Cols(k[colName]).
 			Where("member_id = ?", m.Id).
 			Update(&Permission{
 				IsBanned:   is,
 				IsBlockade: is,
-			})
-		log.Debug("db setUserPermission aff2", zap.Int64("affectedRow", aff2))
+			}); err != nil {
+			log.Error("db setUserPermission Err", zap.Error(err))
+		} else {
+			log.Debug("db setUserPermission aff2", zap.Int64("affectedRow", aff2))
+
+		}
 	}
 
 	return aff == 1, err
