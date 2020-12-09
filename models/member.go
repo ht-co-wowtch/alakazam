@@ -114,15 +114,26 @@ func (s *Store) setUserPermission(uid, colName string, is bool) (bool, error) {
 		zap.String("uid", uid),
 		zap.String("columnName", colName),
 		zap.Bool("bool", is),
-		zap.String("Name", m.Name))
+		zap.String("Name", m.Name),
+		zap.Int64("id", m.Id))
 
+	//TODO: suspection
+	/*  // update members table
 	aff, err := s.d.Cols(colName).
 		Where("id = ?", m.Id).
 		Update(&Member{
 			IsMessage:  !is,
 			IsBlockade: is,
 		})
+	*/
 
+	aff, err := s.d.Cols(colName).
+		Where("uid = ?", uid).
+		Update(&Member{
+			IsMessage:  is,
+			IsBlockade: is,
+		})
+		//		affected, err := s.d.Exec("UPDATE room_user_permissions SET is_banned=0 , is_blockade=0 WHERE member_id = ?", m.Id)
 	log.Debug("db setUserPermission affected row", zap.Int64("affectedRow", aff))
 
 	//解禁
@@ -133,6 +144,7 @@ func (s *Store) setUserPermission(uid, colName string, is bool) (bool, error) {
 			"is_message":  "is_banned",
 		}
 		//s.d.Exec("UPDATE room_user_permissions SET is_banned=0 , is_blockade=0 WHERE member_id = ?", m.Id)
+		// update room_user_permission
 		_, err = s.d.Cols(k[colName]).
 			Where("member_id = ?", m.Id).
 			Update(&Permission{
