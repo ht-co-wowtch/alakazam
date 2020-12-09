@@ -29,7 +29,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	uid = c.Param("uid")
 
 	if err = c.ShouldBind(&exp); err != nil {
-		log.Error("setBanned Error", zap.Error(err))
+		log.Error("gin setBanned ShouldBind Error", zap.Error(err))
 	} else {
 		log.Debug("gin setBanned expired", zap.Int("expired", exp.Expired))
 	}
@@ -45,65 +45,19 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 
 	name, _ := s.member.GetUserName(uid)
 	if roomId > 0 {
-		xid, err := s.message.SendDisplay(
+		_, err := s.message.SendDisplay(
 			[]int32{int32(roomId)},
 			scheme.NewRoot(),
 			scheme.DisplayBySetBanned(name, exp.Expired, true),
 		)
-		log.Debug("setBanned SendDisplay", zap.String("name", name))
 		if err != nil {
 			log.Error("setBanned SendDisplay Err", zap.Error(err))
 		}
-		log.Debug("SendDisplay", zap.Int64("msg_id", xid))
 	}
 
 	c.Status(http.StatusNoContent)
 	return nil
 }
-
-// old 設定禁言
-/*
-func (s *httpServer) setBanned(c *gin.Context) error {
-
-	id, err := getId(c)
-	if err != nil {
-		return err
-	}
-
-	params := struct {
-		RoomId  int    `json:"room_id"`
-		Uid     string `json:"uid" binding:"required,len=32"`
-		Expired int    `json:"expired" binding:"required"`
-	}{
-		RoomId: id,
-		Uid:    c.Param("uid"),
-	}
-
-	if err := c.ShouldBindJSON(&params); err != nil {
-		return err
-	}
-
-	log.Debug("setBanned", zap.Int("RoomId", params.RoomId), zap.String("Uid", params.Uid), zap.Int("Expired", params.Expired))
-	if id == 0 {
-		if err := s.member.SetBannedAll(params.Uid, params.Expired); err != nil {
-			return err
-		}
-	} else if err := s.member.SetBanned(params.Uid, params.RoomId, params.Expired, false); err != nil {
-		return err
-	}
-
-	name, _ := s.member.GetUserName(params.Uid)
-	if params.RoomId > 0 {
-		_, _ = s.message.SendDisplay(
-			[]int32{int32(params.RoomId)},
-			scheme.NewRoot(),
-			scheme.DisplayBySetBanned(name, params.Expired, true),
-		)
-	}
-	c.Status(http.StatusNoContent)
-	return nil
-}
-*/
 
 // 解除禁言
 func (s *httpServer) removeBanned(c *gin.Context) error {

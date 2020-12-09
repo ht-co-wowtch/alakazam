@@ -38,10 +38,10 @@ func (m *Member) SetBanned(uid string, rid, sec int, isSystem bool) error {
 	if err != nil {
 		return err
 	}
-
 	ok, err := m.db.SetBannedLog(u.Id, expire, isSystem)
 	if err != nil || !ok {
 		log.Error("set banned log", zap.Error(err), zap.Bool("action", ok))
+		return err
 	}
 	return nil
 }
@@ -50,10 +50,11 @@ func (m *Member) SetBannedAll(uid string, sec int) error {
 	expire := time.Duration(sec) * time.Second
 	if sec > 0 {
 		//似乎是想利用redis的時間進行控制
-		log.Debug("member/banned.go 設定快取時間", zap.String("uid", uid), zap.Int("sec", sec))
+		log.Debug("member/banned.go 設定redis禁言快取時間", zap.String("uid", uid), zap.Int("sec", sec))
 		if err := m.c.setBanned(uid, 0, expire); err != nil {
 			return err
 		}
+
 	} else if sec == -1 {
 		if _, err := m.db.SetUserBanned(uid, true); err != nil {
 			return err
