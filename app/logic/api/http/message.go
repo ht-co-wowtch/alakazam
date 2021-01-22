@@ -2,6 +2,8 @@ package http
 
 import (
 	"fmt"
+	"time"
+
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
@@ -11,7 +13,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
-	"time"
 )
 
 type msg struct {
