@@ -135,6 +135,13 @@ func (s *httpServer) bets(c *gin.Context) error {
 		Orders:       req.Bets,
 	}
 
+	log.Debug("跟投",
+		zap.Int("GameId", req.GameId),
+		zap.String("GameName", req.GameName),
+		zap.Int("期號", req.PeriodNumber),
+		zap.Int("count", raq.Count),
+		zap.Int32s("RoomId", req.RoomId))
+
 	id, err := s.message.SendBets(req.RoomId, user, bet)
 	if err != nil {
 		return err
