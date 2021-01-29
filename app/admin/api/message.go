@@ -139,7 +139,7 @@ func (s *httpServer) bets(c *gin.Context) error {
 		zap.Int("GameId", req.GameId),
 		zap.String("GameName", req.GameName),
 		zap.Int("期號", req.PeriodNumber),
-		zap.Int("count", raq.Count),
+		zap.Int("count", req.Count),
 		zap.Int32s("RoomId", req.RoomId))
 
 	id, err := s.message.SendBets(req.RoomId, user, bet)
