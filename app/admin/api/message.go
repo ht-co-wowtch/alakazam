@@ -495,7 +495,7 @@ func dbgMessageType(id int, mtype string) {
 	} else {
 		rst = fmt.Sprintf("訊息型態 %s  找不到", mtype)
 	}
-	log.Info(topic, zap.Int("msgId", id), zap.String("type", mttype), zap.String("FYI", rst))
+	log.Info(topic, zap.Int("msgId", id), zap.String("type", mtype), zap.String("FYI", rst))
 }
 
 func (s *httpServer) deleteTopMessage(c *gin.Context) error {
