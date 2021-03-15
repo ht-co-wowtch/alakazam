@@ -483,21 +483,19 @@ Err:
 }
 */
 
-func dbgMessageType(mtype string) {
+func dbgMessageType(id int, mtype string) {
 	topic := "操作訊息型態"
+	var rst string
 	if mtype == "" {
-		log.Info(topic, zap.String("FYI", "空字串,無法取得訊息操作型態"))
-		return
+		rst = fmt.Sprintf("空字串,無法取得訊息操作型態")
+	} else if mtype == "top" {
+		rst = "頂置訊息"
+	} else if mtype == "bulletin" {
+		rst = "公告訊息"
+	} else {
+		rst = fmt.Sprintf("訊息型態 %s  找不到", mtype)
 	}
-	if mtype == "top" {
-		log.Info(topic, zap.String("type", "頂置訊息"))
-		return
-	}
-	if mtype == "bulletin" {
-		log.Info(topic, zap.String("type", "公告訊息"))
-		return
-	}
-	log.Info(topic, zap.String("FYI", fmt.Sprintf("FYI", "訊息型態 %s  找不到", mtype)))
+	log.Info(topic, zap.Int("msgId", id), zap.String("type", c.Query("type")), zap.String("FYI", rst))
 }
 
 func (s *httpServer) deleteTopMessage(c *gin.Context) error {
@@ -513,8 +511,7 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 
 	t, ok := delMessageType[c.Query("type")]
 
-	log.Info("取消置頂訊息", zap.Int("msgId", id), zap.String("type", c.Query("type")))
-	dbgMessageType(c.Query("type"))
+	dbgMessageType(id, c.Query("type"))
 
 	if ok {
 		var topMsg models.Message
@@ -523,8 +520,7 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 		rid, topMsg, err = s.room.GetTopMessage(msgId, t)
 
 		if err != nil {
-			log.Error("取消置頂訊息 GetTopMessage Err", zap.Error(err))
-			log.Info("取消置頂訊息", zap.String("FYI", "訊息id (msgId)找不到,可能訊息Id之前已被刪除了"))
+			log.Errorf("取消置頂訊息 GetTopMessage Err, FYI:%s", fmt.Sprintf("訊息id (msgId)找不到,可能訊息Id之前已被刪除了,%s", err))
 			//回傳空資料,表示資料之前已被移除了
 			c.JSON(http.StatusOK, gin.H{"id": msgId, "message": "", "room_id": ""})
 			return nil
@@ -532,12 +528,12 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 
 		if t == models.TOP_MESSAGE {
 			if err := s.message.CloseTop(msgId, rid); err != nil {
-				log.Error("取消置頂訊息 CloseTop Err", zap.Error(err))
+				log.Errorf("取消置頂訊息 CloseTop, FYI:%s", fmt.Sprintf("訊息id (msgId)找不到,可能訊息Id之前已被刪除了,%s", err))
 				return err
 			}
 		}
 		if err := s.room.DeleteTopMessage(rid, msgId, t); err != nil {
-			log.Error("取消置頂訊息 DeleteTopMessage Err", zap.Error(err))
+			log.Errorf("取消置頂訊息 DeleteTopMessage, FYI:%s", fmt.Sprintf("訊息id (msgId)找不到,可能訊息Id之前已被刪除了,%s", err))
 			return err
 		}
 		msg = topMsg.Message
