@@ -486,18 +486,18 @@ Err:
 func dbgMessageType(mtype string) {
 	topic := "操作訊息型態"
 	if mtype == "" {
-		log.Info(topic, zap.String("空字串,無法取得訊息操作型態"))
+		log.Info(topic, zap.String("FYI", "空字串,無法取得訊息操作型態"))
 		return
 	}
 	if mtype == "top" {
-		log.Info(topic, zap.String("頂置訊息"))
+		log.Info(topic, zap.String("type", "頂置訊息"))
 		return
 	}
 	if mtype == "bulletin" {
-		log.Info(topic, zap.String("公告訊息"))
+		log.Info(topic, zap.String("type", "公告訊息"))
 		return
 	}
-	log.Info(topic, fmt.Sprintf("訊息型態 %s  找不到", mtype))
+	log.Info(topic, zap.String("FYI", fmt.Sprintf("FYI", "訊息型態 %s  找不到", mtype)))
 }
 
 func (s *httpServer) deleteTopMessage(c *gin.Context) error {
@@ -510,10 +510,11 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 	var rid []int32
 	var msg string
 	msgId := int64(id)
+
 	t, ok := delMessageType[c.Query("type")]
 
 	log.Info("取消置頂訊息", zap.Int("msgId", id), zap.String("type", c.Query("type")))
-	dbgMessageType(t)
+	dbgMessageType(c.Query("type"))
 
 	if ok {
 		var topMsg models.Message
@@ -523,7 +524,7 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 
 		if err != nil {
 			log.Error("取消置頂訊息 GetTopMessage Err", zap.Error(err))
-			log.Info("取消置頂訊息", zap.String("訊息id (msgId)找不到,可能訊息Id之前已被刪除了"))
+			log.Info("取消置頂訊息", zap.String("FYI", "訊息id (msgId)找不到,可能訊息Id之前已被刪除了"))
 			//回傳空資料,表示資料之前已被移除了
 			c.JSON(http.StatusOK, gin.H{"id": msgId, "message": "", "room_id": ""})
 			return nil
@@ -541,7 +542,7 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 		}
 		msg = topMsg.Message
 	} else {
-		log.Info("取消置頂訊息", zap.String(fmt.Sprintf("訊息型態錯誤 %s  找不到", mtype)))
+		log.Info("取消置頂訊息", zap.String("訊息型態錯誤", fmt.Sprintf("訊息型態錯誤 %s  找不到", c.Query("type"))))
 		return errors.ErrNoRows
 	}
 
