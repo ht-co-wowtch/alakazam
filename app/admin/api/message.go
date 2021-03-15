@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -430,9 +431,11 @@ var delMessageType = map[string]int{
 }
 
 // 取消置頂訊息
+/*
 func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		log.Error("取消置頂訊息,c.Param(id)解析錯誤", zap.Error(err), zap.String(c.Param("id")))
 		return err
 	}
 
@@ -469,6 +472,77 @@ Err:
 			rid = []int32{}
 			msg = "没有资料"
 		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":      msgId,
+		"message": msg,
+		"room_id": rid,
+	})
+	return nil
+}
+*/
+
+func dbgMessageType(mtype string) {
+	topic := "操作訊息型態"
+	if mtype == "" {
+		log.Info(topic, zap.String("空字串,無法取得訊息操作型態"))
+		return
+	}
+	if mtype == "top" {
+		log.Info(topic, zap.String("頂置訊息"))
+		return
+	}
+	if mtype == "bulletin" {
+		log.Info(topic, zap.String("公告訊息"))
+		return
+	}
+	log.Info(topic, fmt.Sprintf("訊息型態 %s  找不到", mtype))
+}
+
+func (s *httpServer) deleteTopMessage(c *gin.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		log.Errorf("取消置頂訊息,c.Param(id)=%s 解析錯誤", c.Param("id"))
+		return err
+	}
+
+	var rid []int32
+	var msg string
+	msgId := int64(id)
+	t, ok := delMessageType[c.Query("type")]
+
+	log.Info("取消置頂訊息", zap.Int("msgId", id), zap.String("type", c.Query("type")))
+	dbgMessageType(t)
+
+	if ok {
+		var topMsg models.Message
+
+		//FYI: alakazam/room/room.go
+		rid, topMsg, err = s.room.GetTopMessage(msgId, t)
+
+		if err != nil {
+			log.Error("取消置頂訊息 GetTopMessage Err", zap.Error(err))
+			log.Info("取消置頂訊息", zap.String("訊息id (msgId)找不到,可能訊息Id之前已被刪除了"))
+			//回傳空資料,表示資料之前已被移除了
+			c.JSON(http.StatusOK, gin.H{"id": msgId, "message": "", "room_id": ""})
+			return nil
+		}
+
+		if t == models.TOP_MESSAGE {
+			if err := s.message.CloseTop(msgId, rid); err != nil {
+				log.Error("取消置頂訊息 CloseTop Err", zap.Error(err))
+				return err
+			}
+		}
+		if err := s.room.DeleteTopMessage(rid, msgId, t); err != nil {
+			log.Error("取消置頂訊息 DeleteTopMessage Err", zap.Error(err))
+			return err
+		}
+		msg = topMsg.Message
+	} else {
+		log.Info("取消置頂訊息", zap.String(fmt.Sprintf("訊息型態錯誤 %s  找不到", mtype)))
+		return errors.ErrNoRows
 	}
 
 	c.JSON(http.StatusOK, gin.H{
