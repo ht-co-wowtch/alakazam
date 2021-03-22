@@ -484,7 +484,7 @@ Err:
 */
 
 func dbgMessageType(id int, mtype string) {
-	topic := "操作訊息型態"
+	topic := "1.操作訊息型態"
 	var rst string
 	if mtype == "" {
 		rst = fmt.Sprintf("空字串,無法取得訊息操作型態")
@@ -501,7 +501,7 @@ func dbgMessageType(id int, mtype string) {
 func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		log.Errorf("取消置頂訊息,c.Param(id)=%s 解析錯誤", c.Param("id"))
+		log.Errorf("0.取消置頂訊息,c.Param(id)=%s 解析錯誤", c.Param("id"))
 		return err
 	}
 
@@ -520,7 +520,7 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 		rid, topMsg, err = s.room.GetTopMessage(msgId, t)
 
 		if err != nil {
-			log.Errorf("取消置頂訊息 GetTopMessage Err, FYI:%s", fmt.Sprintf("訊息id (msgId)找不到,可能訊息Id之前已被刪除了,%s", err))
+			log.Errorf("2.取消置頂訊息 GetTopMessage Err, FYI:%s", fmt.Sprintf("可能訊息之前已被刪除了root cause (%s)", err))
 			//回傳空資料,表示資料之前已被移除了
 			c.JSON(http.StatusOK, gin.H{"id": msgId, "message": "", "room_id": ""})
 			return nil
@@ -528,17 +528,28 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 
 		if t == models.TOP_MESSAGE {
 			if err := s.message.CloseTop(msgId, rid); err != nil {
-				log.Errorf("取消置頂訊息 CloseTop, FYI:%s", fmt.Sprintf("訊息id (msgId)找不到,可能訊息Id之前已被刪除了,%s", err))
+				log.Errorf("2.取消置頂訊息 CloseTop, FYI:%s", fmt.Sprintf("%s", err))
 				return err
 			}
 		}
 		if err := s.room.DeleteTopMessage(rid, msgId, t); err != nil {
-			log.Errorf("取消置頂訊息 DeleteTopMessage, FYI:%s", fmt.Sprintf("訊息id (msgId)找不到,可能訊息Id之前已被刪除了,%s", err))
+			log.Errorf("2.取消置頂訊息 DeleteTopMessage, FYI:%s", fmt.Sprintf("s", err))
+			c.JSON(http.StatusOK, gin.H{
+				"id":      msgId,
+				"message": err.Error(),
+				"room_id": rid,
+			})
 			return err
 		}
 		msg = topMsg.Message
+		log.Info("2.成功取消置頂",
+			zap.Int("msgId", id),
+			zap.String("msg", msg),
+			zap.String("roomid", rid),
+			zap.String("type", topMsg.Type),
+			zap.Time("SendAt", topMsg.SendAt.Format(time.RFC3339)))
 	} else {
-		log.Info("取消置頂訊息", zap.String("訊息型態錯誤", fmt.Sprintf("訊息型態錯誤 %s  找不到", c.Query("type"))))
+		log.Info("2.取消置頂訊息", zap.String("訊息型態錯誤", fmt.Sprintf("訊息型態錯誤 %s  找不到", c.Query("type"))))
 		return errors.ErrNoRows
 	}
 

@@ -3,6 +3,8 @@ package room
 import (
 	"database/sql"
 	"encoding/json"
+	"time"
+
 	"github.com/go-redis/redis"
 	"github.com/go-sql-driver/mysql"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
@@ -11,7 +13,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"time"
 )
 
 type Room interface {

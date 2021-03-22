@@ -3,6 +3,10 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
+	"net/url"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
@@ -10,9 +14,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
-	"net/http"
-	"net/url"
-	"strconv"
 )
 
 func (s *httpServer) CreateRoom(c *gin.Context) error {
@@ -117,6 +118,13 @@ func (s *httpServer) DeleteRoom(c *gin.Context) error {
 	if err := s.room.Delete(rid); err != nil {
 		return err
 	}
+	//TODO
+	/*
+	 找出房間所有人,進行廣播房間關閉
+	  s.message.Kick("你被踢出房间，因为被封锁", keys)
+	   1. find all user in room
+
+	*/
 	c.Status(http.StatusNoContent)
 	return nil
 }
