@@ -431,7 +431,7 @@ var delMessageType = map[string]int{
 }
 
 // 取消置頂訊息
-/*
+/* Junx 原來的 src (被註解是因為workaround ticket 3004)
 func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
