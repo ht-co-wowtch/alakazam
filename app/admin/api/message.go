@@ -545,9 +545,9 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 		log.Info("2.成功取消置頂",
 			zap.Int("msgId", id),
 			zap.String("msg", msg),
-			zap.String("roomid", rid),
+			zap.Int32s("roomid", rid),
 			zap.String("type", topMsg.Type),
-			zap.Time("SendAt", topMsg.SendAt.Format(time.RFC3339)))
+			zap.Time("SendAt", topMsg.SendAt))
 	} else {
 		log.Info("2.取消置頂訊息", zap.String("訊息型態錯誤", fmt.Sprintf("訊息型態錯誤 %s  找不到", c.Query("type"))))
 		return errors.ErrNoRows
