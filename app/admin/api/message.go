@@ -533,7 +533,7 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 			}
 		}
 		if err := s.room.DeleteTopMessage(rid, msgId, t); err != nil {
-			log.Errorf("2.取消置頂訊息 DeleteTopMessage, FYI:%s", fmt.Sprintf("s", err))
+			log.Errorf("2.取消置頂訊息 DeleteTopMessage, FYI:%s", fmt.Sprintf("%s", err))
 			c.JSON(http.StatusOK, gin.H{
 				"id":      msgId,
 				"message": err.Error(),
