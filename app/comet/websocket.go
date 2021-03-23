@@ -4,6 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net"
+	"strings"
+	"time"
+
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
@@ -13,10 +18,6 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"io"
-	"net"
-	"strings"
-	"time"
 )
 
 const (
@@ -245,6 +246,8 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 		if _, e := s.ConnectSuccessReply(ctx, ch.Room.ID, connect.User, connect.Connect); e != nil {
 			log.Error("connect success reply", zap.Error(e), zap.Int32("rid", ch.Room.ID), zap.Any("user", connect.User))
 		}
+		//Dbg
+		log.Info("<join room>", zap.Int32("roomid", ch.Room.ID), zap.Any("user", c.connect.User))
 	}
 
 	for {
