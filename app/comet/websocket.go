@@ -247,7 +247,12 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 			log.Error("connect success reply", zap.Error(e), zap.Int32("rid", ch.Room.ID), zap.Any("user", connect.User))
 		}
 		//Dbg
-		log.Info("<join room>", zap.Int32("roomid", ch.Room.ID), zap.Any("user", connect.User))
+		log.Info("<join room>",
+			zap.Int32("roomid", ch.Room.ID),
+			zap.String("uid", connect.User.Uid),
+			zap.Any("name", connect.User.Name),
+			zap.Int32("type", connect.User.Gender),
+			zap.Int64("id", connect.User.Id))
 	}
 
 	for {
