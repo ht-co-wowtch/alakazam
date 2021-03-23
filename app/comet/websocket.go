@@ -9,11 +9,13 @@ import (
 	"strings"
 	"time"
 
+	"gitlab.com/jetfuel/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	xtime "gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
+	"gitlab.com/jetfueltw/cpw/micro/database"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -24,12 +26,24 @@ const (
 	maxInt = 1<<31 - 1
 )
 
-// 開始監聽Websocket
-func InitWebsocket(server *Server, host string, accept int) (err error) {
+// 開始監聽Websocket, ZDbg(dbConf)
+func InitWebsocket(server *Server, host string, accept int, dbConf *database.Conf) (err error) {
 	var (
 		listener *net.TCPListener
 		addr     *net.TCPAddr
+
+		//ZDbg
+		closedRoomIds []int
+		db            = models.NewStore(dbConf)
 	)
+
+	//ZDbg
+	closedRoomIds, err = db.GetClosedRoomIds()
+	if err != nil {
+		return
+	}
+
+	log.Info("Closed Room`s RoomIDs", zap.Int64s("roomids", closedRoomIds))
 
 	// 監聽Tcp Port
 	if addr, err = net.ResolveTCPAddr("tcp", host); err != nil {

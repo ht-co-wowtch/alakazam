@@ -2,18 +2,19 @@ package main
 
 import (
 	"flag"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/api"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
-	"gitlab.com/jetfueltw/cpw/micro/log"
 	"math/rand"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
 	"time"
+
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/api"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
+	"gitlab.com/jetfueltw/cpw/micro/log"
 )
 
 var (
@@ -37,7 +38,16 @@ func main() {
 	// server tcp 連線
 	srv := comet.NewServer(conf.Conf)
 	log.Infof("websocket prot [%s]", conf.Conf.Websocket.Addr)
+
+	//ZDbg
+	log.Infof("conf.DB %v", conf.DB)
+
+	/*ZDbg
 	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Addr, runtime.NumCPU()); err != nil {
+		panic(err)
+	}*/
+
+	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Addr, runtime.NumCPU(), conf.DB); err != nil {
 		panic(err)
 	}
 

@@ -77,6 +77,16 @@ func (s *Store) GetRoom(roomId int) (Room, error) {
 	return r, err
 }
 
+/*
+GetClosedRoomIds - 撈出所有被關閉的房間Id
+ticket:5791 (WR)
+*/
+func (s *Store) GetClosedRoomIds() ([]int, error) {
+	var roomIds []int
+	err := s.d.SQL("SELECT id FROM rooms WHERE status = 0").Find(&roomIds)
+	return roomIds, err
+}
+
 func (s *Store) GetRoomTopMessage(id int) (RoomTopMessage, error) {
 	top := RoomTopMessage{}
 	ok, err := s.d.Where("room_id = ?", id).

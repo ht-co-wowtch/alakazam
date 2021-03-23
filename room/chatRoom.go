@@ -3,6 +3,8 @@ package room
 import (
 	"database/sql"
 	"encoding/json"
+	"time"
+
 	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
@@ -14,7 +16,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"gopkg.in/go-playground/validator.v8"
-	"time"
 )
 
 var v *validator.Validate
@@ -55,59 +56,6 @@ func NewChat(db models.IChat, cache *redis.Client, member member.Chat, cli *clie
 	}
 }
 
-func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
-	var params struct {
-		// 帳務中心+版的認證token
-		Token string `json:"token" binding:"required"`
-
-		// client要進入的room
-		RoomID int `json:"room_id" binding:"required"`
-	}
-
-	if err := json.Unmarshal(token, &params); err != nil {
-		return nil, err
-	}
-	if err := v.Struct(&params); err != nil {
-		return nil, err
-	}
-
-	room, err := c.getChat(params.RoomID)
-	if err != nil {
-		return nil, err
-	}
-	if !room.Status {
-		return nil, errors.ErrRoomClose
-	}
-
-	user, key, err := c.member.Login(room, params.Token, server)
-	if err != nil {
-		return nil, err
-	}
-
-	return c.newConnectReply(user, room, key)
-}
-
-func (c *chat) ChangeRoom(uid string, rid int, key string) (*pb.ConnectReply, error) {
-	room, err := c.getChat(rid)
-	if err != nil {
-		return nil, err
-	}
-	if !room.Status {
-		return nil, errors.ErrRoomClose
-	}
-
-	user, err := c.member.Get(uid)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := c.member.ChangeRoom(uid, key, rid); err != nil {
-		return nil, err
-	}
-
-	return c.newConnectReply(user, room, key)
-}
-
 func (c *chat) newConnectReply(user *models.Member, room models.Room, key string) (*pb.ConnectReply, error) {
 	if user.Blockade() {
 		return nil, errors.ErrBlockade
@@ -130,19 +78,6 @@ func (c *chat) newConnectReply(user *models.Member, room models.Room, key string
 		},
 		IsConnectSuccessReply: true,
 	}, nil
-}
-
-func (c *chat) GetMessageSession(uid string, rid int) (*models.Member, models.Room, error) {
-	user, err := c.member.GetMessageSession(uid, rid)
-	if err != nil {
-		return nil, models.Room{}, err
-	}
-
-	room, err := c.GetRoom(rid)
-	if err != nil {
-		return nil, models.Room{}, err
-	}
-	return user, room, nil
 }
 
 func (c *chat) get(id int) (models.Room, error) {
@@ -204,6 +139,72 @@ func (c *chat) reloadChat(id int) (models.Room, error) {
 	}
 
 	return room, nil
+}
+
+func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
+	var params struct {
+		// 帳務中心+版的認證token
+		Token string `json:"token" binding:"required"`
+
+		// client要進入的room
+		RoomID int `json:"room_id" binding:"required"`
+	}
+
+	if err := json.Unmarshal(token, &params); err != nil {
+		return nil, err
+	}
+	if err := v.Struct(&params); err != nil {
+		return nil, err
+	}
+
+	room, err := c.getChat(params.RoomID)
+	if err != nil {
+		return nil, err
+	}
+	if !room.Status {
+		return nil, errors.ErrRoomClose
+	}
+
+	user, key, err := c.member.Login(room, params.Token, server)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.newConnectReply(user, room, key)
+}
+
+func (c *chat) ChangeRoom(uid string, rid int, key string) (*pb.ConnectReply, error) {
+	room, err := c.getChat(rid)
+	if err != nil {
+		return nil, err
+	}
+	if !room.Status {
+		return nil, errors.ErrRoomClose
+	}
+
+	user, err := c.member.Get(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := c.member.ChangeRoom(uid, key, rid); err != nil {
+		return nil, err
+	}
+
+	return c.newConnectReply(user, room, key)
+}
+
+func (c *chat) GetMessageSession(uid string, rid int) (*models.Member, models.Room, error) {
+	user, err := c.member.GetMessageSession(uid, rid)
+	if err != nil {
+		return nil, models.Room{}, err
+	}
+
+	room, err := c.GetRoom(rid)
+	if err != nil {
+		return nil, models.Room{}, err
+	}
+	return user, room, nil
 }
 
 func (r *chat) Disconnect(uid, key string) (bool, error) {

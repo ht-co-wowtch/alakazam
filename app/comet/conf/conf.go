@@ -3,11 +3,13 @@ package conf
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/spf13/viper"
 	"gitlab.com/jetfueltw/cpw/micro/config"
+	"gitlab.com/jetfueltw/cpw/micro/database"
 	"gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
-	"time"
 )
 
 var (
@@ -15,8 +17,9 @@ var (
 	Conf *Config
 )
 
-// Config is comet config.
+// Config is comet config. ZDbg
 type Config struct {
+	DB          *database.Conf
 	Websocket   *Websocket
 	TCP         *TCP
 	Protocol    *Protocol
@@ -192,5 +195,8 @@ func New(v *viper.Viper) (*Config, error) {
 		RoutineAmount: uint64(b.GetInt("routineAmount")),
 		RoutineSize:   b.GetInt("routineSize"),
 	}
+
+	//ZDbg
+	conf.DB, err = database.ReadViper(v.Sub("database"))
 	return conf, nil
 }
