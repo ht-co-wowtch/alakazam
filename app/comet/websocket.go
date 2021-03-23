@@ -43,7 +43,7 @@ func InitWebsocket(server *Server, host string, accept int, dbConf *database.Con
 		return
 	}
 
-	log.Info("Closed Room`s RoomIDs", zap.Int32s("roomids", closedRoomIds))
+	log.Info("Closed Room`s RoomIDs", zap.Any("roomids", closedRoomIds))
 
 	// 監聽Tcp Port
 	if addr, err = net.ResolveTCPAddr("tcp", host); err != nil {
