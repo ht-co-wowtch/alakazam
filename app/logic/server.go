@@ -2,6 +2,10 @@ package logic
 
 import (
 	"context"
+	"net"
+	"net/http"
+	"time"
+
 	goRedis "github.com/go-redis/redis"
 	api "gitlab.com/jetfueltw/cpw/alakazam/app/logic/api/http"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/api/rpc"
@@ -16,9 +20,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"google.golang.org/grpc"
-	"net"
-	"net/http"
-	"time"
 )
 
 const (
@@ -43,18 +44,39 @@ type Server struct {
 }
 
 func New(c *conf.Config) *Server {
+
 	ctx, cancel := context.WithCancel(context.Background())
+
 	cache := redis.New(c.Redis)
+
 	db := models.NewStore(c.DB)
+
 	cli := client.New(c.Nidoran)
-	seqCli, err := rpccli.NewClient(c.Seq)
+
+	seqRPClient, err := rpccli.NewClient(c.Seq)
 	if err != nil {
 		panic(err)
 	}
-	messageProducer := message.NewProducer(c.Kafka.Brokers, c.Kafka.Topic, seqpb.NewSeqClient(seqCli), cache, db)
+
+	//seqpb.NewSeqClient RPC Client for seq
+	messageProducer := message.NewProducer(
+		c.Kafka.Brokers,
+		c.Kafka.Topic,
+		seqpb.NewSeqClient(seqRPClient),
+		cache, db)
+
 	memberCli := member.New(db, cache, cli)
+
 	chat := room.NewChat(db, cache, memberCli, cli, c.Heartbeat)
-	httpServer := api.NewServer(c, memberCli, messageProducer, chat, cli, message.NewHistory(db, cache, memberCli))
+
+	httpServer := api.NewServer(
+		c,
+		memberCli,
+		messageProducer,
+		chat,
+		cli,
+		message.NewHistory(db, cache, memberCli))
+
 	rpcServer := rpc.New(c.RPCServer, chat, messageProducer)
 
 	log.Infof("http server port [%s]", c.HTTPServer.Addr)

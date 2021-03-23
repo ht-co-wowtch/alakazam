@@ -87,7 +87,10 @@ func handler(e *gin.Engine, s httpServer) {
 	e.POST("/red-envelope", s.authUid, ErrHandler(s.giveRedEnvelope))
 	e.PUT("/red-envelope", s.authUid, ErrHandler(s.takeRedEnvelope))
 	e.GET("/red-envelope/:id", ErrHandler(s.getRedEnvelopeDetail))
-	e.GET("/message/:room", ErrHandler(s.getMessage))
+
+	//Zbg
+	//	e.GET("/message/:room", ErrHandler(s.getMessage))
+	e.GET("/message/:room", s.authUid, ErrHandler(s.getMessage))
 }
 
 func authenticationHandler(c *gin.Context) {
