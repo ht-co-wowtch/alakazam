@@ -40,14 +40,14 @@ func main() {
 	log.Infof("websocket prot [%s]", conf.Conf.Websocket.Addr)
 
 	//ZDbg
-	log.Infof("conf.DB %v", conf.DB)
+	log.Infof("conf.DB %v", conf.Conf.DB)
 
 	/*ZDbg
 	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Addr, runtime.NumCPU()); err != nil {
 		panic(err)
 	}*/
 
-	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Addr, runtime.NumCPU(), conf.DB); err != nil {
+	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Addr, runtime.NumCPU(), conf.Conf.DB); err != nil {
 		panic(err)
 	}
 
