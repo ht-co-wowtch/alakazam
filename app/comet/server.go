@@ -72,7 +72,7 @@ func NewServer(c *conf.Config) *Server {
 	// TODO hostname 先寫死 後續需要註冊中心來sync
 	s.name = "hostname"
 
-	go ZDbgKick(models.NewStore(c.DB))
+	go s.ZDbgKick(models.NewStore(c.DB))
 
 	// 統計線上各房間人數
 	go s.onlineproc()
@@ -87,7 +87,7 @@ func (s *Server) ZDbgKick(store *models.Store) {
 	)
 	//ZDbg
 	for {
-		<-Time.Tick(time.Second * 60)
+		<-time.Tick(time.Second * 60)
 		closedRoomIds, err = store.GetClosedRoomIds()
 		if err != nil {
 			return
@@ -95,7 +95,7 @@ func (s *Server) ZDbgKick(store *models.Store) {
 		log.Info("New Server - Closed Room`s RoomIDs", zap.Any("roomids", closedRoomIds))
 		//Caution: No Lock here
 		for _, roomId := range closedRoomIds {
-			for _, bkt := range s.Buckets {
+			for _, bkt := range s.buckets {
 				bkt.DelClosedRoom(roomId)
 			}
 		}

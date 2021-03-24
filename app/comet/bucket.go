@@ -204,7 +204,8 @@ func (b *Bucket) DelRoom(room *Room) {
 }
 
 //ZDbg
-func (b *Bucket) DelClosedRoom(rid int32) {
+func (b *Bucket) DelClosedRoom(roomid int) {
+	rid := int32(roomid)
 	b.cLock.RLock()
 	if room, ok := b.rooms[rid]; ok {
 		room.Close()
