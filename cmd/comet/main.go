@@ -30,14 +30,13 @@ func main() {
 	if err := conf.Read(confPath); err != nil {
 		panic(err)
 	}
-	log.Infof("Using config file: [%s]", confPath)
 
 	rand.Seed(time.Now().UTC().UnixNano())
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// server tcp 連線
 	srv := comet.NewServer(conf.Conf)
-	log.Infof("websocket prot [%s]", conf.Conf.Websocket.Addr)
+	//log.Infof("websocket prot [%s]", conf.Conf.Websocket.Addr)
 
 	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Addr, runtime.NumCPU(), conf.Conf.DB); err != nil {
 		panic(err)
@@ -45,7 +44,7 @@ func main() {
 
 	// 啟動grpc server
 	rpcSrv := api.New(conf.Conf.RPCServer, srv)
-	log.Infof("rpc server port [%s]", conf.Conf.RPCServer.Addr)
+	//log.Infof("rpc server port [%s]", conf.Conf.RPCServer.Addr)
 
 	metrics.RunHttp(conf.Conf.MetricsAddr)
 

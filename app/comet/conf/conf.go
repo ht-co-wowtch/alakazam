@@ -196,7 +196,6 @@ func New(v *viper.Viper) (*Config, error) {
 		RoutineSize:   b.GetInt("routineSize"),
 	}
 
-	//ZDbg
 	conf.DB, err = database.ReadViper(v.Sub("database"))
 	return conf, nil
 }

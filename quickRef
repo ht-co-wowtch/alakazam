@@ -1,4 +1,4 @@
-使用 log 要import 底下兩個 lib
+1) 使用 log 要import 底下兩個 lib
 
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
@@ -15,3 +15,33 @@
 		zap.Int("count", req.Count),
 		zap.Int32s("RoomId", req.RoomId))
 
+2) 使用DB
+ 0) 在 Alakzam/confg/comet-example.yaml加上 database section
+
+ 在app/comet/conf/conf.go 
+ 1) 
+     import "gitlab.com/jetfueltw.cpw/micro/database"
+
+ 2) type Config struct 加入 *database.Conf
+
+	  type Config struct {
+	       DB *database.Conf	  
+		   ..
+	  }
+ 3)
+	func New(v *vuper.Viper) (*Config, error) {
+		...
+		//加上
+		conf.DB, err = database.ReadViper(v.Sub("database"))
+	}
+ 
+  在 Alakzam/cmd/comet/main.go 
+ 4) 可以使用 confg.Conf.DB 組態了 
+
+  在所需的component上生成 db access object
+ 5) 例如在 app/comet/websocket.go 的 InitWebsocket method中
+    import "gitlab.com/jetfueltw/cpw/alakazam/models"
+		"gitlab.com/jetfueltw/cpw/micro/database"
+
+    db = models.NewStore(conf.Conf.DB)
+	db.GetClosedRoomIds()

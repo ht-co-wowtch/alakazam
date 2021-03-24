@@ -15,7 +15,7 @@ import (
 type Channel struct {
 	// 該user進入的房間
 	Room *Room
-
+kk
 	// 讀寫異步的grpc.Proto緩型Pool
 	protoRing Ring
 
