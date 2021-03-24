@@ -6,6 +6,8 @@ import (
 
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 )
 
 // 用於管理Room與Channel關於推送的邏輯
@@ -199,6 +201,17 @@ func (b *Bucket) DelRoom(room *Room) {
 	delete(b.rooms, room.ID)
 	b.cLock.Unlock()
 	room.Close()
+}
+
+//ZDbg
+func (b *Bucket) DelClosedRoom(rid int32) {
+	b.cLock.RLock()
+	if room, ok := b.rooms[rid]; ok {
+		room.Close()
+		log.Info("Kick User from roomid", zap.Int32("roomId", rid))
+		delete(b.rooms, room.ID)
+	}
+	b.cLock.RUnlock()
 }
 
 // logic service透過grpc推送給某個房間訊息

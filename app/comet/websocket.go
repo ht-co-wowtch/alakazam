@@ -11,11 +11,9 @@ import (
 
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
 	xtime "gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
-	"gitlab.com/jetfueltw/cpw/micro/database"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -27,23 +25,11 @@ const (
 )
 
 // 開始監聽Websocket, ZDbg(dbConf)
-func InitWebsocket(server *Server, host string, accept int, dbConf *database.Conf) (err error) {
+func InitWebsocket(server *Server, host string, accept int) (err error) {
 	var (
 		listener *net.TCPListener
 		addr     *net.TCPAddr
-
-		//ZDbg
-		closedRoomIds []int
-		db            = models.NewStore(dbConf)
 	)
-
-	//ZDbg
-	closedRoomIds, err = db.GetClosedRoomIds()
-	if err != nil {
-		return
-	}
-
-	log.Info("Closed Room`s RoomIDs", zap.Any("roomids", closedRoomIds))
 
 	// 監聽Tcp Port
 	if addr, err = net.ResolveTCPAddr("tcp", host); err != nil {
@@ -213,12 +199,19 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 	// websocket連線等待read做auth
 	if p, err = ch.protoRing.Set(); err == nil {
 		if connect, err = s.authWebsocket(ctx, ws, ch, p); err == nil {
+			//roomid 從前端送來
 			rid = connect.Connect.RoomID
 			hb = time.Duration(connect.Heartbeat)
 
 			// 將user Channel放到某一個Bucket內做保存
 			b = s.Bucket(ch.Key)
 			err = b.Put(rid, ch)
+
+			//ZDbg
+			dbgBuckets := s.Buckets()
+			for i, bkt := range dbgBuckets {
+				log.Info(fmt.Sprintf("Bucket-%d", i), zap.Any("Bucket", *bkt))
+			}
 
 			// 如Bucket的room是新建立的，可能人數只有當前進入該Bucket的人(1)
 			// 但該room實際人數可能並非(1)，可能是(5)，這樣落差感會滿大且需等
