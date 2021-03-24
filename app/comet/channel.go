@@ -3,8 +3,8 @@ package comet
 import (
 	"sync"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
 )
 
 // 用於推送消息給user，可以把這個識別user在聊天室內的地址
@@ -15,7 +15,7 @@ import (
 type Channel struct {
 	// 該user進入的房間
 	Room *Room
-kk
+
 	// 讀寫異步的grpc.Proto緩型Pool
 	protoRing Ring
 
