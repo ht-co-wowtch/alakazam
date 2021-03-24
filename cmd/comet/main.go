@@ -38,7 +38,7 @@ func main() {
 	srv := comet.NewServer(conf.Conf)
 	//log.Infof("websocket prot [%s]", conf.Conf.Websocket.Addr)
 
-	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Addr, runtime.NumCPU(), conf.Conf.DB); err != nil {
+	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Addr, runtime.NumCPU()); err != nil {
 		panic(err)
 	}
 
