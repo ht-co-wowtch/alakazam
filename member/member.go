@@ -92,7 +92,7 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 		return nil, "", err
 	} else {
 		log.Info(
-			"conn connected",
+			"[logic/member/member.go connected]",
 			zap.String("key", key),
 			zap.String("uid", u.Uid),
 			zap.Int("room_id", room.Id),

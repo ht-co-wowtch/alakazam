@@ -422,7 +422,9 @@ func (s *Server) authWebsocket(ctx context.Context, ws websocket.Conn, ch *Chann
 		}
 	}
 
+	//送到logic進行驗證,取得key
 	c, err := s.Connect(ctx, p)
+
 	if err != nil {
 		s, _ := status.FromError(err)
 		connect := &logicpb.Connect{

@@ -153,6 +153,7 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 	if err := json.Unmarshal(token, &params); err != nil {
 		return nil, err
 	}
+	//驗證comet送來的參數
 	if err := v.Struct(&params); err != nil {
 		return nil, err
 	}
