@@ -207,12 +207,6 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 			b = s.Bucket(ch.Key)
 			err = b.Put(rid, ch)
 
-			//ZDbg
-			dbgBuckets := s.Buckets()
-			for i, bkt := range dbgBuckets {
-				log.Info(fmt.Sprintf("Bucket-%d", i), zap.Any("Bucket", *bkt))
-			}
-
 			// 如Bucket的room是新建立的，可能人數只有當前進入該Bucket的人(1)
 			// 但該room實際人數可能並非(1)，可能是(5)，這樣落差感會滿大且需等
 			// 到再次統計人數時才會矯正room人數，給定一個變數放置所有room總人數
@@ -254,7 +248,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 			log.Error("connect success reply", zap.Error(e), zap.Int32("rid", ch.Room.ID), zap.Any("user", connect.User))
 		}
 		//Dbg
-		log.Info("<join room>",
+		log.Info("[comet/websocket.go]<join room>",
 			zap.Int32("roomid", ch.Room.ID),
 			zap.String("uid", connect.User.Uid),
 			zap.Any("name", connect.User.Name),

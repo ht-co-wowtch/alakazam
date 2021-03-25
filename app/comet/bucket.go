@@ -203,13 +203,12 @@ func (b *Bucket) DelRoom(room *Room) {
 	room.Close()
 }
 
-//ZDbg
 func (b *Bucket) DelClosedRoom(roomid int) {
 	rid := int32(roomid)
 	b.cLock.RLock()
 	if room, ok := b.rooms[rid]; ok {
 		room.Close()
-		log.Info("Kick User from roomid", zap.Int32("roomId", rid))
+		log.Info("[comet/bucket.go] Kick Users from roomid", zap.Int32("roomId", rid))
 		delete(b.rooms, room.ID)
 	}
 	b.cLock.RUnlock()

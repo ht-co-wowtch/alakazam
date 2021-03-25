@@ -10,8 +10,6 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/grpc"
-	"gitlab.com/jetfueltw/cpw/micro/log"
-	"go.uber.org/zap"
 )
 
 const (
@@ -70,29 +68,28 @@ func NewServer(c *conf.Config) *Server {
 	}
 
 	// TODO hostname 先寫死 後續需要註冊中心來sync
-	s.name = "hostname"
+	//s.name = "hostname"
+	s.name = "comet/server.go"
 
-	go s.ZDbgKick(models.NewStore(c.DB))
+	go s.KickClosedRoomUserPeriod(models.NewStore(c.DB))
 
 	// 統計線上各房間人數
 	go s.onlineproc()
 	return s
 }
 
-func (s *Server) ZDbgKick(store *models.Store) {
+func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 
 	var (
 		closedRoomIds []int
 		err           error
 	)
-	//ZDbg
 	for {
 		<-time.Tick(time.Second * 60)
 		closedRoomIds, err = store.GetClosedRoomIds()
 		if err != nil {
 			return
 		}
-		log.Info("New Server - Closed Room`s RoomIDs", zap.Any("roomids", closedRoomIds))
 		//Caution: No Lock here
 		for _, roomId := range closedRoomIds {
 			for _, bkt := range s.buckets {
