@@ -10,6 +10,8 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/grpc"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 )
 
 const (
@@ -85,9 +87,10 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 		err           error
 	)
 	for {
-		<-time.Tick(time.Second * 60)
+		<-time.Tick(time.Second * 30)
 		closedRoomIds, err = store.GetClosedRoomIds()
 		if err != nil {
+			log.Error("[server.go]KickClosedRoomUserPeriod", zap.Error(err))
 			return
 		}
 		//Caution: No Lock here

@@ -3,12 +3,11 @@
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
 
+	log.Info("[channel.go]Conn close", zap.String("uid", c.Uid), zap.String("name", c.Name))
+	log.Error("[file]subject", zap.Error(err), zap.Int32s("rids", p.RoomId))
 	log.Info(topic, zap.Int("msgId", id), zap.String("type", mtype), zap.String("FYI", rst))
-	log.Error("add top message for admin push api", zap.Error(err), zap.Int32s("rids", p.RoomId))
-	log.Info(topic, zap.Int("msgId", id), zap.String("type", mtype), zap.String("FYI", rst))
-	log.Errorf("0.取消置頂訊息,c.Param(id)=%s 解析錯誤", c.Param("id"))
-	log.Error("add top message for admin push api", zap.Error(err), zap.Int32s("rids", p.RoomId))
-	log.Debug("跟投",
+	log.Errorf("[file]0.取消置頂訊息,c.Param(id)=%s 解析錯誤", c.Param("id"))
+	log.Debug("[file]跟投",
 		zap.Int("GameId", req.GameId),
 		zap.String("GameName", req.GameName),
 		zap.Int("期號", req.PeriodNumber),

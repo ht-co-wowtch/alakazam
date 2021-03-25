@@ -5,6 +5,8 @@ import (
 
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 )
 
 // 用於推送消息給user，可以把這個識別user在聊天室內的地址
@@ -85,5 +87,6 @@ func (c *Channel) Signal() {
 
 // 關閉連線flag
 func (c *Channel) Close() {
+	log.Info("[channel.go]Conn close", zap.String("uid", c.Uid), zap.String("name", c.Name))
 	c.signal <- pb.ProtoFinish
 }
