@@ -2,14 +2,15 @@ package main
 
 import (
 	"flag"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"gitlab.com/jetfueltw/cpw/alakazam/app/job"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
 	"gitlab.com/jetfueltw/cpw/micro/log"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 var (
@@ -25,13 +26,11 @@ func main() {
 	if err := conf.Read(confPath); err != nil {
 		panic(err)
 	}
-	log.Infof("Using config file: [%s]", confPath)
+	//log.Infof("Using config file: [%s]", confPath)
 
 	j := job.New(conf.Conf)
 	j.Run()
 	metrics.RunHttp(conf.Conf.MetricsAddr)
-
-	log.Info("start success")
 
 	// 接收到close signal的處理
 	c := make(chan os.Signal, 1)

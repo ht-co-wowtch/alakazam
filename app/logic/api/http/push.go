@@ -1,8 +1,9 @@
 package http
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type messageReq struct {
@@ -38,9 +39,7 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 	}
 
 	if err == nil {
-		c.JSON(http.StatusOK, gin.H{
-			"id": id,
-		})
+		c.JSON(http.StatusOK, gin.H{"id": id})
 	}
 
 	return err

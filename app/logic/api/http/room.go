@@ -63,35 +63,31 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 		expired = `{"expired":600}` //預設禁言10分鐘 (600/60)
 	)
 
-	log.Debug("setBanned expired",
-		zap.String("c.Param(id)", c.Param("id")),
-		zap.String("c.Param(uid)", c.Param("uid")))
+	log.Debug("[room.go]setBanned expired", zap.String("c.Param(id)", c.Param("id")), zap.String("c.Param(uid)", c.Param("uid")))
 
 	roomId, err = strconv.Atoi(c.Param("id"))
+
 	if err != nil {
-		log.Error("setBanned-strconv.Atoi(c.Param(id))", zap.Error(err))
+		log.Error("[room.go]setBanned-strconv.Atoi(c.Param(id))", zap.Error(err))
 		return errors.ErrNoRoom
 	}
 
 	uid = c.Param("uid")
 
-	log.Debug("setBanned expired",
-		zap.String("expired", expired),
-		zap.Int("roomId", roomId),
-		zap.String("uid", uid))
+	log.Debug("[room.go]setBanned", zap.String("expired", expired), zap.Int("roomId", roomId), zap.String("c.GetString(uid)", c.GetString("uid")))
 
-	log.Debug("setBanned", zap.String("c.GetString(uid)", c.GetString("uid")))
 	l := len(uid)
+
 	//uid 必須是32個字元的字串
 	if l < 32 || l > 32 {
 		//return errors.New("[set banned] invalid user id")
-		log.Error("setBanned-len(uid)", zap.Error(err))
+		log.Error("[room.go]setBanned-len(uid)", zap.Error(err))
 		return errors.ErrLogin
 	}
 
 	// c.GetString("uid") 是從一開始的middleware 就設定,表示驗證過的當前使用者
 	if err := s.isManage(roomId, c.GetString("uid")); err != nil {
-		log.Error("setBanned-isManage", zap.Error(err))
+		log.Error("[room.go]setBanned-isManage", zap.Error(err))
 		return errors.ErrForbidden
 	}
 
@@ -99,7 +95,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	// s.adminBannedUrlf 參考 logic/api/conf/conf.go
 	// 格式為 "127.0.0.1:3112/banned/%%s/room/%%d"
 	adminBannedUrl := fmt.Sprintf(s.adminBannedUrlf, uid, roomId)
-	log.Debug("setBanned", zap.String("admin url", adminBannedUrl))
+	//log.Debug("setBanned", zap.String("admin url", adminBannedUrl))
 	resp, err := http.Post(adminBannedUrl, "application/json", strings.NewReader(expired))
 
 	if err != nil {

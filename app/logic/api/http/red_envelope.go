@@ -1,8 +1,9 @@
 package http
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type giveRedEnvelopeReq struct {
@@ -25,6 +26,7 @@ type giveRedEnvelopeReq struct {
 	token string `json:"-"`
 }
 
+//送紅包
 func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	var arg giveRedEnvelopeReq
 	if err := c.ShouldBindJSON(&arg); err != nil {
@@ -50,6 +52,7 @@ type takeRedEnvelope struct {
 	Token string `json:"token" binding:"required"`
 }
 
+//領紅包
 func (s *httpServer) takeRedEnvelope(c *gin.Context) error {
 	arg := new(takeRedEnvelope)
 	if err := c.ShouldBindJSON(arg); err != nil {

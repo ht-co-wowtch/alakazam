@@ -3,12 +3,13 @@ package job
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
-	"sync"
 )
 
 // 處理訊息結構

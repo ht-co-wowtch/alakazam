@@ -2,6 +2,7 @@ package job
 
 import (
 	"context"
+
 	"github.com/Shopify/sarama"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
@@ -9,7 +10,9 @@ import (
 
 // Job is push job.
 type Job struct {
-	consume  *consume
+	consume *consume
+
+	// 這是Kafka consumer wrapper
 	consumer *message.Consumer
 	ctx      context.Context
 	cancel   context.CancelFunc
@@ -48,6 +51,7 @@ func New(c *conf.Config) *Job {
 	return j
 }
 
+//After Job initialize, Job`s Run method will be execute immeditaely
 func (j *Job) Run() {
 	go j.consumer.Run(j.consume)
 }

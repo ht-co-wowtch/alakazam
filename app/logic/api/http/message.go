@@ -115,7 +115,7 @@ func (m *msg) redEnvelope(req giveRedEnvelopeReq) (int64, client.RedEnvelopeRepl
 	msgId, err := m.message.SendRedEnvelope([]int32{int32(req.RoomId)}, req.Message, scheme.NewUser(*user), redEnvelope)
 
 	if err != nil {
-		log.Error("send red envelope message error",
+		log.Error("[message.go]redEnvelope",
 			zap.Error(err),
 			zap.String("uid", user.Uid),
 			zap.String("order", reply.Order),

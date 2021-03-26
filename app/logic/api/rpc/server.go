@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
@@ -13,6 +14,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
 	// use gzip decoder
 	_ "google.golang.org/grpc/encoding/gzip"
 )
@@ -43,7 +45,7 @@ func (s *server) Ping(ctx context.Context, req *pb.PingReq) (*pb.PingReply, erro
 func (s *server) Connect(ctx context.Context, req *pb.ConnectReq) (*pb.ConnectReply, error) {
 	connect, err := s.room.Connect(req.Server, req.Token)
 	if err != nil {
-		log.Error("grpc connect", zap.Error(err), zap.String("data", string(req.Token)))
+		log.Error("[rpc/server.go]grpc connect", zap.Error(err), zap.String("data", string(req.Token)))
 		switch e := err.(type) {
 		case errdefs.Error:
 			return &pb.ConnectReply{}, status.Error(codes.FailedPrecondition, err.Error())
@@ -76,10 +78,10 @@ func (s *server) ConnectSuccessReply(ctx context.Context, req *pb.ConnectSuccess
 func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.DisconnectReply, error) {
 	has, err := s.room.Disconnect(req.Uid, req.Key)
 	if err != nil {
-		log.Error("grpc disconnect", zap.Error(err), zap.String("uid", req.Uid))
+		log.Error("[rpc/server.go]Disconnect", zap.Error(err), zap.String("uid", req.Uid))
 		return &pb.DisconnectReply{}, err
 	} else {
-		log.Info("conn disconnect", zap.String("uid", req.Uid), zap.String("key", req.Key))
+		log.Info("[rpc/server.go]Disconnect", zap.String("uid", req.Uid), zap.String("key", req.Key))
 	}
 	return &pb.DisconnectReply{Has: has}, nil
 }
@@ -88,7 +90,7 @@ func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.Dis
 func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.ConnectReply, error) {
 	p, err := s.room.ChangeRoom(req.Uid, int(req.RoomID), req.Key)
 	if err != nil {
-		log.Error("grpc change room", zap.Error(err), zap.Int32("rid", req.RoomID))
+		log.Error("[rpc/server.go]ChangeRoom", zap.Error(err), zap.Int32("rid", req.RoomID))
 		switch e := err.(type) {
 		case errdefs.Error:
 			return &pb.ConnectReply{}, status.Error(codes.FailedPrecondition, err.Error())
@@ -109,7 +111,7 @@ func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.Con
 // 重置user redis過期時間
 func (s *server) Heartbeat(ctx context.Context, req *pb.HeartbeatReq) (*pb.HeartbeatReply, error) {
 	if err := s.room.Heartbeat(req.Uid, req.Key, req.Name, req.Server); err != nil {
-		log.Error("grpc heart beat", zap.Error(err), zap.String("uid", req.Uid), zap.Int32("room_id", req.RoomId))
+		log.Error("[rpc/server.go]Heartbeat", zap.Error(err), zap.String("uid", req.Uid), zap.Int32("room_id", req.RoomId))
 		return &pb.HeartbeatReply{}, err
 	}
 	return &pb.HeartbeatReply{}, nil
@@ -119,7 +121,7 @@ func (s *server) Heartbeat(ctx context.Context, req *pb.HeartbeatReq) (*pb.Heart
 func (s *server) RenewOnline(ctx context.Context, req *pb.OnlineReq) (*pb.OnlineReply, error) {
 	allRoomCount, err := s.room.RenewOnline(req.Server, req.RoomCount)
 	if err != nil {
-		log.Error("grpc renew online", zap.Error(err), zap.String("server", req.Server))
+		log.Error("[rpc/server.go]RenewOnline", zap.Error(err), zap.String("server", req.Server))
 		return &pb.OnlineReply{}, err
 	}
 	return &pb.OnlineReply{

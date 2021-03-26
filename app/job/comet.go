@@ -3,13 +3,14 @@ package job
 import (
 	"context"
 	"fmt"
+	"sync/atomic"
+	"time"
+
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
 	"gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
-	"sync/atomic"
-	"time"
 )
 
 // 與Comet server 建立grpc client
@@ -56,7 +57,7 @@ type Comet struct {
 	cancel context.CancelFunc
 }
 
-// new a comet
+// Comet 生成時即開始監聽kafaka , 並將收到資料rpc到Comet Server
 func NewComet(c *conf.Comet) (*Comet, error) {
 	cmt := &Comet{
 		roomChan:      make([]chan *pb.BroadcastRoomReq, c.RoutineSize),
@@ -90,6 +91,7 @@ func (c *Comet) BroadcastRoom(arg *pb.BroadcastRoomReq) {
 }
 
 // 多個房間推送
+// consume.go對Comet.go推送Kafaka訊息
 func (c *Comet) Broadcast(arg *pb.BroadcastReq) {
 	c.broadcastChan <- arg
 }
