@@ -29,11 +29,11 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	uid = c.Param("uid")
 
 	if err = c.ShouldBind(&exp); err != nil {
-		log.Error("gin setBanned ShouldBind Error", zap.Error(err))
+		log.Error("[banned.go]setBanned ShouldBind Error", zap.Error(err))
 	} else {
-		log.Debug("gin setBanned expired", zap.Int("expired", exp.Expired))
+		log.Debug("[banned.go]setBanned expired", zap.Int("expired", exp.Expired))
 	}
-	log.Debug("gin setBanned", zap.Int("roomid", roomId), zap.String("uid", uid))
+	log.Debug("[banned.go]setBanned", zap.Int("roomid", roomId), zap.String("uid", uid))
 
 	if roomId == 0 {
 		if err := s.member.SetBannedAll(uid, exp.Expired); err != nil {
@@ -51,7 +51,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 			scheme.DisplayBySetBanned(name, exp.Expired, true),
 		)
 		if err != nil {
-			log.Error("setBanned SendDisplay Err", zap.Error(err))
+			log.Error("[banned.go]SendDisplay Err", zap.Error(err))
 		}
 	}
 
@@ -74,20 +74,20 @@ func (s *httpServer) removeBanned(c *gin.Context) error {
 		Uid:    c.Param("uid"),
 	}
 
-	log.Debug("gin removeBanned", zap.Int("RoomId", params.RoomId), zap.String("uid", params.Uid))
+	log.Debug("[banned.go]removeBanned", zap.Int("RoomId", params.RoomId), zap.String("uid", params.Uid))
 
 	if err := binding.Validator.ValidateStruct(&params); err != nil {
-		log.Error("gin removeBanned Validate", zap.Error(err))
+		log.Error("[banned.go]removeBanned Validate", zap.Error(err))
 		return err
 	}
 
 	if roomId == 0 {
 		if err := s.member.RemoveBannedAll(params.Uid); err != nil {
-			log.Error("gin removeBanned RemoveBannedAll", zap.Error(err))
+			log.Error("[banned.go]RemoveBannedAll", zap.Error(err))
 			return err
 		}
 	} else if err := s.member.RemoveBanned(params.Uid, params.RoomId); err != nil {
-		log.Error("gin removeBanned RemoveBanned", zap.Error(err))
+		log.Error("[banned.go]removeBanned", zap.Error(err))
 		return err
 	}
 	/**************************/

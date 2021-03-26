@@ -43,7 +43,7 @@ func (s *httpServer) setBlockade(c *gin.Context) error {
 		err = s.message.Kick("你被踢出房间，因为被封锁", keys)
 
 		if err != nil {
-			log.Error("kick member message for set blockade", zap.Error(err), zap.String("uid", uid))
+			log.Error("[blockade.go]kick member message for set blockade", zap.Error(err), zap.String("uid", uid))
 			msg = "封锁成功，但执行聊天室踢人失败"
 		} else {
 			msg = fmt.Sprintf("封锁成功，將執行中断该用户所在的%d个连线", len(keys))
@@ -52,7 +52,7 @@ func (s *httpServer) setBlockade(c *gin.Context) error {
 	/**/
 
 	name, _ := s.member.GetUserName(uid)
-	log.Debug("setBlockade", zap.Int("RoomId", id), zap.String("uid", uid), zap.String("name", name))
+	log.Debug("[blockade.go]setBlockade", zap.Int("RoomId", id), zap.String("uid", uid), zap.String("name", name))
 	if id > 0 {
 		_, _ = s.message.SendDisplay(
 			[]int32{int32(id)},
@@ -84,7 +84,7 @@ func (s *httpServer) removeBlockade(c *gin.Context) error {
 	}
 
 	name, _ := s.member.GetUserName(uid)
-	log.Debug("removeBlockade ", zap.Int("RoomId", roomId), zap.String("uid", uid), zap.String("name", name))
+	log.Debug("[blockade.go]removeBlockade ", zap.Int("RoomId", roomId), zap.String("uid", uid), zap.String("name", name))
 
 	if roomId > 0 {
 		_, _ = s.message.SendDisplay(
