@@ -2,6 +2,9 @@ package api
 
 import (
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	api "gitlab.com/jetfueltw/cpw/alakazam/app/logic/api/http"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
@@ -9,7 +12,8 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	web "gitlab.com/jetfueltw/cpw/micro/http"
-	"net/http"
+	"gitlab.com/jetfueltw/cpw/micro/log"
+	"go.uber.org/zap"
 )
 
 type httpServer struct {
@@ -43,6 +47,18 @@ func NewServer(conf *web.Conf, member *member.Member, producer *message.Producer
 		nidoran:      nidoran,
 		noticeUrl:    make(map[string]string),
 	}
+
+	//--------------------------
+	go func() {
+		var rid = int(6)
+		log.Infof("After 3 minute rid %d will remove", rid)
+		time.Tick(time.Minute * 3)
+		if err := srv.room.Delete(rid); err != nil {
+			log.Error("[file]rm rid:6", zap.Error(err))
+		}
+		log.Infof("remove rid %d completed", rid)
+	}()
+	//--------------------------
 
 	handler(engine, srv)
 	return web.NewServer(conf, engine)

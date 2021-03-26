@@ -133,7 +133,9 @@ func (r *room) Delete(id int) error {
 }
 
 func (r *room) Get(id int) (models.Room, error) {
+
 	room, err := r.db.GetRoom(id)
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return models.Room{}, errors.ErrNoRows
