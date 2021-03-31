@@ -70,8 +70,8 @@ func NewServer(c *conf.Config) *Server {
 	}
 
 	// TODO hostname 先寫死 後續需要註冊中心來sync
+	// 坑: 底下的 hostname字串會被用於 room/room.go - Online method中
 	s.name = "hostname"
-	//s.name = "comet/server.go"
 
 	go s.KickClosedRoomUserPeriod(models.NewStore(c.DB))
 

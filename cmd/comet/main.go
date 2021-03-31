@@ -51,6 +51,8 @@ func main() {
 	// 接收到close signal的處理
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
+
+	// 底下這是什麼鳥寫法!@#$@#$$!$!
 	for {
 		s := <-c
 		log.Infof("comet close get a signal %s", s.String())
@@ -65,4 +67,17 @@ func main() {
 			return
 		}
 	}
+	/*
+		    TODO: remove for infinite looping
+			switch <-c {
+			case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
+				rpcSrv.GracefulStop()
+				srv.Close()
+				log.Sync()
+			case syscall.SIGHUP:
+			default:
+				return
+			}
+
+	*/
 }

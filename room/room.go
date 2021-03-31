@@ -231,6 +231,7 @@ func (r *room) DeleteTopMessage(rids []int32, msgId int64, t int) error {
 }
 
 func (r *room) Online() (map[int32]int32, error) {
+	//底下的hostname會用於快取的key,與comet/server.go - NewServer - s.name = "hostname"
 	online, err := r.c.getOnline("hostname")
 	if err != nil {
 		return nil, err
