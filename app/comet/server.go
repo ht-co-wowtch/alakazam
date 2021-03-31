@@ -70,8 +70,8 @@ func NewServer(c *conf.Config) *Server {
 	}
 
 	// TODO hostname 先寫死 後續需要註冊中心來sync
-	//s.name = "hostname"
-	s.name = "comet/server.go"
+	s.name = "hostname"
+	//s.name = "comet/server.go"
 
 	go s.KickClosedRoomUserPeriod(models.NewStore(c.DB))
 
