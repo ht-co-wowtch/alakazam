@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	version = "v1.83.2"
+	version = "v1.83.3"
 	// 通知logic Refresh client連線狀態最小心跳時間
 	minServerHeartbeat = time.Minute * 10
 
@@ -102,12 +102,21 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 			log.Info("server.go-closed RoomIds", zap.Ints("closed roomIds", closedRoomIds))
 			log.Info("server.go-buckets", zap.Any("buckets", s.buckets))
 			//
+			var roomids []int32
 			for bidx, bkt := range s.buckets {
-				roomids := make([]int32, 0, len(bkt.rooms))
+
+				if len(bkt.rooms) > 0 {
+					roomids = make([]int32, 0, len(bkt.rooms))
+				}
+
 				for rid := range bkt.rooms {
 					roomids = append(roomids, rid)
 				}
-				log.Info("server.go", zap.Int("bucketNo", bidx), zap.Int32s("in bucket roomIds", roomids))
+
+				if len(roomids) > 0 {
+					log.Info("server.go", zap.Int("bucketNo", bidx), zap.Int32s("in bucket roomIds", roomids))
+					roomids = roomids[:0]
+				}
 			}
 		}
 
