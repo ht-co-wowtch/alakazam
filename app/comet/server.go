@@ -15,6 +15,7 @@ import (
 )
 
 const (
+	version = "v1.83.1"
 	// 通知logic Refresh client連線狀態最小心跳時間
 	minServerHeartbeat = time.Minute * 10
 
@@ -81,17 +82,22 @@ func NewServer(c *conf.Config) *Server {
 }
 
 func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
-
+	log.Info("Buckets", zap.Any("Buckets", s.buckets))
 	var (
 		closedRoomIds []int
 		err           error
+		counter       int
 	)
 	for {
-		<-time.Tick(time.Second * 30)
+		time.Sleep(time.Second * 10)
+		log.Info("KickClosedRoomUserPeriod", zap.Int("", counter), zap.String("versioni", version))
 		closedRoomIds, err = store.GetClosedRoomIds()
 		if err != nil {
 			log.Error("[server.go]KickClosedRoomUserPeriod", zap.Error(err))
 			return
+		}
+		if len(closedRoomIds) > 0 {
+			log.Info("關閉的聊天室房間(RoomIds)", zap.Ints("roomIds", closedRoomIds))
 		}
 		//Caution: No Lock here
 		for _, roomId := range closedRoomIds {
@@ -99,6 +105,7 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 				bkt.DelClosedRoom(roomId)
 			}
 		}
+		counter++
 	}
 }
 
