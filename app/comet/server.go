@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	version = "v1.83.3"
+	version = "v1.83.4"
 	// 通知logic Refresh client連線狀態最小心跳時間
 	minServerHeartbeat = time.Minute * 10
 
