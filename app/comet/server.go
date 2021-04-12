@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	version = "v1.83.4"
+	version = "v1.83.5"
 	// 通知logic Refresh client連線狀態最小心跳時間
 	minServerHeartbeat = time.Minute * 10
 
@@ -88,9 +88,9 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 		err           error
 		counter       int
 	)
-
+	var roomids []int32
 	for {
-		time.Sleep(time.Second * 60)
+		time.Sleep(time.Second * 30)
 		log.Info("server.go", zap.Int("counter", counter), zap.String("version", version))
 		closedRoomIds, err = store.GetClosedRoomIds()
 		if err != nil {
@@ -100,17 +100,16 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 
 		if len(closedRoomIds) > 0 {
 			log.Info("server.go-fetch from db", zap.Ints("closed roomIds", closedRoomIds))
-			//
-			var roomids []int32
+
 			for bidx, bkt := range s.buckets {
 
+				//如果bucket有房間被開啟,用roomids收集bucket所有的房間id
 				if len(bkt.rooms) > 0 {
 					roomids = make([]int32, 0, len(bkt.rooms))
-				}
-
-				//從map[int32]*room 取得room id
-				for rid := range bkt.rooms {
-					roomids = append(roomids, rid)
+					//從map[int32]*room 取得room id
+					for rid := range bkt.rooms {
+						roomids = append(roomids, rid)
+					}
 				}
 
 				if len(roomids) > 0 {
@@ -119,6 +118,7 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 					for _, roomID := range roomids {
 						for _, rid := range closedRoomIds {
 							if rid == int(roomID) {
+								log.Info("[server.go]FOUND", zap.Int("roomid", rid))
 								bkt.DelClosedRoom(rid)
 							}
 						}
