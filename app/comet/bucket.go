@@ -205,7 +205,6 @@ func (b *Bucket) DelRoom(room *Room) {
 
 func (b *Bucket) DelClosedRoom(roomid int) {
 	rid := int32(roomid)
-	log.Info("[app/comet/bucket.go]", zap.String("before", ""), zap.Int("roomid", roomid))
 
 	if room, ok := b.rooms[rid]; ok {
 		room.Close()
@@ -214,7 +213,6 @@ func (b *Bucket) DelClosedRoom(roomid int) {
 		delete(b.rooms, room.ID)
 		b.cLock.Unlock()
 	}
-	log.Info("[app/comet/bucket.go]", zap.String("after", ""))
 }
 
 // logic service透過grpc推送給某個房間訊息

@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	version = "v1.83.1"
+	version = "v1.83.2"
 	// 通知logic Refresh client連線狀態最小心跳時間
 	minServerHeartbeat = time.Minute * 10
 
@@ -88,17 +88,29 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 		err           error
 		counter       int
 	)
+
 	for {
-		time.Sleep(time.Second * 10)
-		log.Info("KickClosedRoomUserPeriod", zap.Int("", counter), zap.String("versioni", version))
+		time.Sleep(time.Second * 30)
+		log.Info("server.go", zap.Int("counter", counter), zap.String("version", version))
 		closedRoomIds, err = store.GetClosedRoomIds()
 		if err != nil {
-			log.Error("[server.go]KickClosedRoomUserPeriod", zap.Error(err))
+			log.Error("[server.go]ClosedRoomUserPeriod", zap.Error(err))
 			return
 		}
+
 		if len(closedRoomIds) > 0 {
-			log.Info("關閉的聊天室房間(RoomIds)", zap.Ints("roomIds", closedRoomIds))
+			log.Info("server.go-closed RoomIds", zap.Ints("closed roomIds", closedRoomIds))
+			log.Info("server.go-buckets", zap.Any("buckets", s.buckets))
+			//
+			for bidx, bkt := range s.buckets {
+				roomids := make([]int32, 0, len(bkt.rooms))
+				for rid := range bkt.rooms {
+					roomids = append(roomids, rid)
+				}
+				log.Info("server.go", zap.Int("bucketNo", bidx), zap.Int32s("in bucket roomIds", roomids))
+			}
 		}
+
 		//Caution: No Lock here
 		for _, roomId := range closedRoomIds {
 			for _, bkt := range s.buckets {
