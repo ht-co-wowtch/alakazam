@@ -90,7 +90,7 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 	)
 
 	for {
-		time.Sleep(time.Second * 30)
+		time.Sleep(time.Second * 60)
 		log.Info("server.go", zap.Int("counter", counter), zap.String("version", version))
 		closedRoomIds, err = store.GetClosedRoomIds()
 		if err != nil {
@@ -99,8 +99,7 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 		}
 
 		if len(closedRoomIds) > 0 {
-			log.Info("server.go-closed RoomIds", zap.Ints("closed roomIds", closedRoomIds))
-			log.Info("server.go-buckets", zap.Any("buckets", s.buckets))
+			log.Info("server.go-fetch from db", zap.Ints("closed roomIds", closedRoomIds))
 			//
 			var roomids []int32
 			for bidx, bkt := range s.buckets {
@@ -109,23 +108,35 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 					roomids = make([]int32, 0, len(bkt.rooms))
 				}
 
+				//從map[int32]*room 取得room id
 				for rid := range bkt.rooms {
 					roomids = append(roomids, rid)
 				}
 
 				if len(roomids) > 0 {
-					log.Info("server.go", zap.Int("bucketNo", bidx), zap.Int32s("in bucket roomIds", roomids))
+					log.Info("server.go[Bucket have room]", zap.Int("bucketNo", bidx), zap.Int32s("in bucket roomIds", roomids))
+
+					for _, roomID := range roomids {
+						for _, rid := range closedRoomIds {
+							if rid == int(roomID) {
+								bkt.DelClosedRoom(rid)
+							}
+						}
+					}
+
 					roomids = roomids[:0]
 				}
 			}
 		}
 
 		//Caution: No Lock here
-		for _, roomId := range closedRoomIds {
-			for _, bkt := range s.buckets {
-				bkt.DelClosedRoom(roomId)
-			}
-		}
+		/*
+			for _, roomId := range closedRoomIds {
+				for _, bkt := range s.buckets {
+					bkt.DelClosedRoom(roomId)
+				}
+			}*/
+
 		counter++
 	}
 }
