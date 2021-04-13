@@ -15,7 +15,6 @@ import (
 )
 
 const (
-	version = "v1.84.0"
 	// 通知logic Refresh client連線狀態最小心跳時間
 	minServerHeartbeat = time.Minute * 10
 
@@ -70,7 +69,6 @@ func NewServer(c *conf.Config) *Server {
 		s.buckets[i] = NewBucket(c.Bucket)
 	}
 
-	// TODO hostname 先寫死 後續需要註冊中心來sync
 	// 坑: 底下的 hostname字串會被用於 room/room.go - Online method中
 	s.name = "hostname"
 
@@ -82,11 +80,9 @@ func NewServer(c *conf.Config) *Server {
 }
 
 func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
-	log.Info("Buckets", zap.Any("Buckets", s.buckets))
 	var (
 		closedRoomIds []int
 		err           error
-		counter       int
 	)
 	var roomids []int32
 	for {
@@ -95,19 +91,15 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 		closedRoomIds, err = store.GetClosedRoomIds()
 
 		if err != nil {
-			log.Error("[server.go]ClosedRoomUserPeriod", zap.Error(err))
+			log.Error("[server.go]KickClosedRoomUserPeriod", zap.Error(err))
 			return
 		}
 
 		if len(closedRoomIds) > 0 {
-			log.Info("server.go-db",
-				zap.Int("counter", counter),
-				zap.String("version", version),
-				zap.Ints("closed roomIds", closedRoomIds))
 
 			for bidx, bkt := range s.buckets {
 
-				//如果bucket有房間被開啟,用roomids收集bucket所有的房間id
+				//如果bucket有房間被開啟,roomids收集bucket內所有開啟的房間id
 				if len(bkt.rooms) > 0 {
 					roomids = make([]int32, 0, len(bkt.rooms))
 					//從map[int32]*room 取得room id
@@ -116,16 +108,19 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 					}
 				}
 
+				//關閉的房間是否存在Bucket內,是,則關閉bucket房間,連同斷房間所有的連線
 				if len(roomids) > 0 {
-					log.Info("server.go[Bucket have room]",
+
+					log.Info("[server.go]Bucket have room",
 						zap.Int("bucketNo", bidx),
 						zap.Int32s("in bucket roomIds", roomids))
 
 					for _, roomID := range roomids {
 						for _, rid := range closedRoomIds {
 							if rid == int(roomID) {
-								log.Info("[server.go]FOUNDtoClose", zap.Int("roomid", rid))
+								log.Info("[server.go]Room be closed", zap.Int("roomid", rid))
 								bkt.DelClosedRoom(rid)
+								break
 							}
 						}
 					}
@@ -134,16 +129,6 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 				}
 			}
 		}
-
-		//Caution: No Lock here
-		/*
-			for _, roomId := range closedRoomIds {
-				for _, bkt := range s.buckets {
-					bkt.DelClosedRoom(roomId)
-				}
-			}*/
-
-		counter++
 	}
 }
 
