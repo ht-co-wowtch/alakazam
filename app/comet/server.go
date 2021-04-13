@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	version = "v1.83.5"
+	version = "v1.84.0"
 	// 通知logic Refresh client連線狀態最小心跳時間
 	minServerHeartbeat = time.Minute * 10
 
@@ -90,16 +90,20 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 	)
 	var roomids []int32
 	for {
-		time.Sleep(time.Second * 30)
-		log.Info("server.go", zap.Int("counter", counter), zap.String("version", version))
+
+		time.Sleep(time.Second * 20)
 		closedRoomIds, err = store.GetClosedRoomIds()
+
 		if err != nil {
 			log.Error("[server.go]ClosedRoomUserPeriod", zap.Error(err))
 			return
 		}
 
 		if len(closedRoomIds) > 0 {
-			log.Info("server.go-fetch from db", zap.Ints("closed roomIds", closedRoomIds))
+			log.Info("server.go-db",
+				zap.Int("counter", counter),
+				zap.String("version", version),
+				zap.Ints("closed roomIds", closedRoomIds))
 
 			for bidx, bkt := range s.buckets {
 
@@ -113,12 +117,14 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 				}
 
 				if len(roomids) > 0 {
-					log.Info("server.go[Bucket have room]", zap.Int("bucketNo", bidx), zap.Int32s("in bucket roomIds", roomids))
+					log.Info("server.go[Bucket have room]",
+						zap.Int("bucketNo", bidx),
+						zap.Int32s("in bucket roomIds", roomids))
 
 					for _, roomID := range roomids {
 						for _, rid := range closedRoomIds {
 							if rid == int(roomID) {
-								log.Info("[server.go]FOUND", zap.Int("roomid", rid))
+								log.Info("[server.go]FOUNDtoClose", zap.Int("roomid", rid))
 								bkt.DelClosedRoom(rid)
 							}
 						}
