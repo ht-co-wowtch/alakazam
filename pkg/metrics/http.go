@@ -1,12 +1,13 @@
 package metrics
 
 import (
+	"net/http"
+	"net/http/pprof"
+
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
-	"net/http"
-	"net/http/pprof"
 )
 
 func RunHttp(addr string) {
@@ -16,7 +17,9 @@ func RunHttp(addr string) {
 		e := gin.New()
 		e.GET("/metrics", gin.WrapH(promhttp.Handler()))
 		e.GET("/healthz", func(c *gin.Context) {
-			c.Status(http.StatusOK)
+			c.JSON(http.StatusOK, gin.H{
+				"status": "ok",
+			})
 		})
 		pprofHandler(e)
 		err := e.Run(addr)

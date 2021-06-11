@@ -5,14 +5,12 @@ ARG GOPROXY
 ENV GOPROXY=${GOPROXY}
 ENV GOPRIVATE=gitlab.com/jetfueltw/cpw
 
-RUN set -ex && apk add --no-cache git
-
 WORKDIR $GOPATH/src/gitlab.com/jetfueltw/cpw/alakazam
 
-COPY go.mod .
-COPY go.sum .
+COPY go.mod go.sum ./
 
-RUN git config --global url."https://gitlab+deploy-token-78991:HcgtGG-9MnBasMsTvNfo@gitlab.com/jetfueltw/cpw/micro".insteadOf "https://gitlab.com/jetfueltw/cpw/micro" && \
+RUN apk add --no-cache git && \
+    git config --global url."https://gitlab+deploy-token-78991:HcgtGG-9MnBasMsTvNfo@gitlab.com/jetfueltw/cpw/micro".insteadOf "https://gitlab.com/jetfueltw/cpw/micro" && \
     go mod download
 
 FROM build_module AS build
@@ -23,8 +21,6 @@ ENV GOOS=linux
 ENV GOARCH=amd64
 
 COPY . .
-
-RUN set -ex
 
 RUN go build -ldflags '-s -w' -o /logic cmd/logic/main.go && \
     go build -ldflags '-s -w' -o /comet cmd/comet/main.go && \
