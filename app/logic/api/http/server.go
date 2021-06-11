@@ -72,7 +72,13 @@ func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, 
 	return server
 }
 
+//used for aws ALB
+func healthz(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
 func handler(e *gin.Engine, s httpServer) {
+	e.GET("/healthz", healthz)
 	// 禁言
 	e.POST("/banned/:uid/room/:id", s.authUid, ErrHandler(s.setBanned))
 	e.DELETE("/banned/:uid/room/:id", s.authUid, ErrHandler(s.removeBanned))

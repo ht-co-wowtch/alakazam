@@ -50,6 +50,8 @@ func NewServer(conf *web.Conf, member *member.Member, producer *message.Producer
 }
 
 func handler(e *gin.Engine, s *httpServer) {
+
+	e.GET("/healthz", healthz)
 	// 封鎖
 	e.POST("/blockade/:uid", api.ErrHandler(s.setBlockade))
 	e.DELETE("/blockade/:uid", api.ErrHandler(s.removeBlockade))
@@ -104,4 +106,9 @@ func (s *httpServer) Close() error {
 		return fmt.Errorf("delay message producer close error(%v)", err)
 	}
 	return nil
+}
+
+//used for aws ALB
+func healthz(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
