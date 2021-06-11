@@ -60,6 +60,7 @@ func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, 
 	}
 
 	engine := web.NewHandler()
+	engine.GET("/healthz", healthz)
 	engine.Use(RecoverHandler, cors.New(c), authenticationHandler)
 	handler(engine, srv)
 	server := web.NewServer(conf.HTTPServer, engine)
@@ -78,7 +79,6 @@ func healthz(c *gin.Context) {
 }
 
 func handler(e *gin.Engine, s httpServer) {
-	e.GET("/healthz", healthz)
 	// 禁言
 	e.POST("/banned/:uid/room/:id", s.authUid, ErrHandler(s.setBanned))
 	e.DELETE("/banned/:uid/room/:id", s.authUid, ErrHandler(s.removeBanned))
