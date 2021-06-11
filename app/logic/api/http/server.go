@@ -60,6 +60,7 @@ func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, 
 	}
 
 	engine := web.NewHandler()
+	//healthz for aws alb
 	engine.GET("/healthz", healthz)
 	engine.Use(RecoverHandler, cors.New(c), authenticationHandler)
 	handler(engine, srv)
