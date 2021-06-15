@@ -25,6 +25,8 @@ const (
 	continuationFrameMaxRead = 100
 )
 
+// SedtReadDeadline
+
 // The message types are defined in RFC 6455, section 11.8.
 const (
 	// TextMessage denotes a text data message. The text message payload is

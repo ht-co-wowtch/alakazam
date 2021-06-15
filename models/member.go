@@ -6,6 +6,7 @@ import (
 
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
+	// _ "net/http/pprof"
 )
 
 const (

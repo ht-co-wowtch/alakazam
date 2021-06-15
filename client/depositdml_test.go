@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetDepositAndDmlByTime(t *testing.T) {
@@ -21,6 +22,15 @@ func TestGetDepositAndDmlByTime(t *testing.T) {
 	_, err = c.GetDepositAndDml(2, "", "")
 
 	assert.Nil(t, err)
+}
+
+var benchG uint64 //
+func BenchmarkGetDeposit(b *testing.B) {
+	var benchL uint64
+	for i := 0; i < b.N; i++ {
+		//benchL, _ := c.GetDepositAndDml(1, "", "")
+		benchG = benchL
+	}
 }
 
 func newMockDepositAndDmlClient(t *testing.T, day int) *Client {
