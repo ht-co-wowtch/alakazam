@@ -31,8 +31,11 @@ func (d *Store) SyncSeq(seq *Seq) (bool, error) {
 }
 
 func (d *Store) LoadSeq() ([]Seq, error) {
+
 	seq := make([]Seq, 0)
+
 	err := d.d.Table(&Seq{}).Find(&seq)
+
 	return seq, err
 }
 
@@ -41,11 +44,14 @@ func (d *Store) CreateSeq(batch int64) (int, error) {
 		Batch: batch,
 	}
 	aff, err := d.d.Master().InsertOne(&s)
+
 	if err != nil {
 		return 0, err
 	}
+
 	if aff != 1 {
 		return 0, errors.New("insert failure")
 	}
+
 	return s.Id, nil
 }

@@ -3,11 +3,13 @@ package room
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/go-redis/redis"
 	"github.com/zhenjl/cityhash"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"strconv"
-	"time"
+	// _ "net/http/pprof"
 )
 
 type Cache interface {
@@ -229,6 +231,7 @@ func (c *cache) addOnline(server string, online *Online) error {
 // Key用server name
 func (c *cache) addServerOnline(key string, hashKey string, online *Online) error {
 	b, err := json.Marshal(online)
+
 	if err != nil {
 		return err
 	}
@@ -266,6 +269,7 @@ func (c *cache) serverOnline(key string, hashKey string) (*Online, error) {
 	if err != nil && err != redis.Nil {
 		return nil, err
 	}
+
 	// b是一個json
 	// {
 	// 		"server":"ne0002de-MacBook-Pro.local",
