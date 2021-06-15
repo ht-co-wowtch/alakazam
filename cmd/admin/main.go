@@ -2,14 +2,15 @@ package main
 
 import (
 	"flag"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"gitlab.com/jetfueltw/cpw/alakazam/app/admin"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/admin/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
 	"gitlab.com/jetfueltw/cpw/micro/log"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 var (
@@ -17,6 +18,7 @@ var (
 )
 
 func main() {
+
 	cmd.LoadTimeZone()
 
 	flag.StringVar(&confPath, "c", "admin.yml", "default config path")
@@ -45,4 +47,5 @@ func main() {
 			return
 		}
 	}
+
 }
