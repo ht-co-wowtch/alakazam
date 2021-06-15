@@ -11,6 +11,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	web "gitlab.com/jetfueltw/cpw/micro/http"
+	//_ "net/http/pprof"
 )
 
 type httpServer struct {

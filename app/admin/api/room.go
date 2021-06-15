@@ -14,6 +14,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
+	//_ "net/http/pprof"
 )
 
 func (s *httpServer) CreateRoom(c *gin.Context) error {

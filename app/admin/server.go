@@ -2,6 +2,8 @@ package admin
 
 import (
 	"context"
+	"net/http"
+
 	goRedis "github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/admin/api"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/admin/conf"
@@ -14,16 +16,16 @@ import (
 	rpccli "gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
-	"net/http"
+	//_ "net/http/pprof"
 )
 
 type Server struct {
-	ctx          context.Context
-	cancel       context.CancelFunc
-	cache        *goRedis.Client
 	message      *message.Producer
 	delayMessage *message.DelayProducer
+	cancel       context.CancelFunc
+	cache        *goRedis.Client
 	httpServer   *http.Server
+	ctx          context.Context
 }
 
 func New(conf *conf.Config) *Server {

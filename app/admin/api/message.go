@@ -425,9 +425,32 @@ func (s *httpServer) giveRedEnvelope(c *gin.Context) error {
 	return nil
 }
 
-var delMessageType = map[string]int{
-	"top":      models.TOP_MESSAGE,
-	"bulletin": models.BULLETIN_MESSAGE,
+type followReq struct {
+	RoomId int32  `json:"room_id" binding:"required"`
+	Uid    string `json:"uid" binding:"required"`
+	Total  int    `json:"total" binding:"required"`
+}
+
+func (s *httpServer) follow(c *gin.Context) error {
+	var req followReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		return err
+	}
+
+	m, err := s.member.GetSession(req.Uid)
+	if err != nil {
+		return err
+	}
+
+	id, err := s.message.SendFollow(req.RoomId, scheme.NewUser(*m), req.Total)
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id": id,
+	})
+	return nil
 }
 
 // 取消置頂訊息
@@ -482,6 +505,11 @@ Err:
 	return nil
 }
 */
+
+var delMessageType = map[string]int{
+	"top":      models.TOP_MESSAGE,
+	"bulletin": models.BULLETIN_MESSAGE,
+}
 
 func dbgMessageType(id int, mtype string) {
 	topic := "1.操作訊息型態"
@@ -557,34 +585,6 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 		"id":      msgId,
 		"message": msg,
 		"room_id": rid,
-	})
-	return nil
-}
-
-type followReq struct {
-	RoomId int32  `json:"room_id" binding:"required"`
-	Uid    string `json:"uid" binding:"required"`
-	Total  int    `json:"total" binding:"required"`
-}
-
-func (s *httpServer) follow(c *gin.Context) error {
-	var req followReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return err
-	}
-
-	m, err := s.member.GetSession(req.Uid)
-	if err != nil {
-		return err
-	}
-
-	id, err := s.message.SendFollow(req.RoomId, scheme.NewUser(*m), req.Total)
-	if err != nil {
-		return err
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"id": id,
 	})
 	return nil
 }
