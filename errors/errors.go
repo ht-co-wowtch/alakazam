@@ -2,6 +2,7 @@ package errors
 
 import (
 	"encoding/json"
+
 	"gitlab.com/jetfueltw/cpw/micro/errdefs"
 	"gitlab.com/jetfueltw/cpw/micro/validation"
 	"gopkg.in/go-playground/validator.v8"
@@ -24,16 +25,16 @@ var (
 	// 								認證/會員	20**
 	ErrNoMember        = errdefs.NotFound(2001, "没有会员资料")
 	ErrTokenUid        = errdefs.Unauthorized(2002, "帐号资料认证失败")
-	ErrValidationToken = errdefs.Unauthorized(2003, "用户认证失败")
-	ErrClaimsToken     = errdefs.Unauthorized(2004, "用户认证失败")
-	ErrValidToken      = errdefs.Unauthorized(2005, "用户认证失败")
 	ErrLogin           = errdefs.Unauthorized(2006, NoLoginMessage)
 	ErrAuthorization   = errdefs.Unauthorized(2007, "Unauthorized")
 	ErrMemberNoMessage = errdefs.Unauthorized(2008, MemberBanned)
 	ErrMemberBanned    = errdefs.Unauthorized(2009, "您在禁言状态，无法发言")
+	ErrValidationToken = errdefs.Unauthorized(2003, "用户认证失败")
+	ErrClaimsToken     = errdefs.Unauthorized(2004, "用户认证失败")
+	ErrValidToken      = errdefs.Unauthorized(2005, "用户认证失败")
 	ErrBlockade        = errdefs.Unauthorized(2010, "您在封鎖状态，无法进入聊天室")
 	ErrForbidden       = errdefs.InvalidParameter(2011, "无操作权限")
-	ErrNoOnline       = errdefs.Unauthorized(2012, "用户不在线上")
+	ErrNoOnline        = errdefs.Unauthorized(2012, "用户不在线上")
 
 	// 								金額	30**
 
@@ -41,10 +42,10 @@ var (
 	ErrPublishAt = errdefs.InvalidParameter(4001, "预定发送时间不能大于现在")
 
 	// 								房間	50**
-	ErrNoRoom      = errdefs.NotFound(5001, "没有房间资料")
-	ErrRoomClose   = errdefs.NotFound(5002, "目前房间已关闭")
 	ErrRateMsg     = errdefs.TooManyRequests(5003, "1秒内只能发一则消息")
 	ErrRateSameMsg = errdefs.TooManyRequests(5004, "10秒内相同讯息3次，自动禁言10分钟")
+	ErrNoRoom      = errdefs.NotFound(5001, "没有房间资料")
+	ErrRoomClose   = errdefs.NotFound(5002, "目前房间已关闭")
 	// 5005
 	ErrRoomLimit     = "您无法发言，当前发言条件：前%d天充值不少于%d元；打码量不少于%d元"
 	ErrRoomNoMessage = errdefs.Unauthorized(5006, RoomBanned)
@@ -91,6 +92,7 @@ func init() {
 type output struct{}
 
 func (m output) Validation(e validator.ValidationErrors) interface{} {
+
 	return validation.ValidationErrorsMap(e)
 }
 
@@ -100,6 +102,7 @@ func (m output) GetValidationMessage() string {
 
 func (m output) JsonUnmarshalType(e *json.UnmarshalTypeError) interface{} {
 	return map[string]string{
+
 		e.Field: "栏位资料格式有误",
 	}
 }
@@ -108,15 +111,15 @@ func (m output) GetJsonUnmarshalTypeMessage() string {
 	return "栏位资料型态有误"
 }
 
-func (m output) GetInternalServer() string {
-	return "应用程序错误"
-}
-
 func (m output) Error(e *errdefs.Causer) string {
 	if err, ok := errMessage[e.Code]; ok {
 		return err
 	}
 	return "操作失败"
+}
+
+func (m output) GetInternalServer() string {
+	return "应用程序错误"
 }
 
 type Error struct {

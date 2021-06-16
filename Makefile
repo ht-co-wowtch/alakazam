@@ -25,8 +25,9 @@ build-debug: clean
 	$(GOBUILD) -gcflags "all=-N -l" -o bin/message cmd/message/main.go
 
 clean:
-	rm -rf bin/
-	mkdir bin/
+	@echo "rm bin && mkdir bin"
+	@rm -rf bin/
+	@mkdir bin/
 
 run:
 	nohup bin/logic -c logic.yml 2>&1 > bin/logic.log &

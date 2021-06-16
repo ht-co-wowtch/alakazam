@@ -11,6 +11,8 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
 	"gitlab.com/jetfueltw/cpw/micro/log"
+	// "net/http/pprof"
+	// "runtime/pprof"
 )
 
 var (
@@ -22,6 +24,7 @@ func main() {
 	cmd.LoadTimeZone()
 
 	flag.StringVar(&confPath, "c", "admin.yml", "default config path")
+
 	flag.Parse()
 	if err := conf.Read(confPath); err != nil {
 		panic(err)
@@ -37,7 +40,9 @@ func main() {
 	for {
 
 		s := <-c
+
 		log.Infof("logic get a signal %s", s.String())
+
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			srv.Close()

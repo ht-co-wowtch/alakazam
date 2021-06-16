@@ -11,6 +11,9 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
 	"gitlab.com/jetfueltw/cpw/micro/log"
+
+	// "net/http/pprof"
+	// "runtime/pprof"
 )
 
 var (
