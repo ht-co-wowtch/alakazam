@@ -23,11 +23,9 @@ var (
 type Room struct {
 	c *conf.Room
 
-	consume *consume
-
 	// 房間id
-	id int32
-
+	id      int32
+	consume *consume
 	// 發送訊息至房間訊息聚合的chan
 	proto chan *comet.Proto
 }
@@ -40,7 +38,9 @@ func NewRoom(consume *consume, id int32) (r *Room) {
 		consume: consume,
 		proto:   make(chan *comet.Proto, consume.rc.Batch*2),
 	}
+
 	go r.pushproc(r.c.Batch, r.c.Signal)
+
 	return
 }
 
@@ -79,15 +79,21 @@ func (r *Room) pushproc(batch int, sigTime time.Duration) {
 	// 控制多久才推送訊息給comet server
 	td := time.AfterFunc(sigTime, func() {
 		select {
+
 		case r.proto <- roomReadyProto:
+
 		default:
+			//cpu will idle here
 		}
 	})
 
 	defer td.Stop()
 	for {
+
 		if p = <-r.proto; p == nil {
+
 			break // exit
+
 		} else if p != roomReadyProto {
 			p.WriteTo(buf)
 

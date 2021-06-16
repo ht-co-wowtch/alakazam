@@ -11,6 +11,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/grpc"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
+	// _ "runtime/pprof"
 )
 
 // 與Comet server 建立grpc client
@@ -39,6 +40,9 @@ type Comet struct {
 	// 處理踢人
 	pushChan chan *pb.KeyReq
 
+	// 上下文，用來控制與grpc併發退出
+	ctx context.Context
+
 	// 決定併發單人訊息推送至comet的goroutine參數
 	// 使用原子鎖做遞增來平均分配給goroutine
 	pushChanNum uint64
@@ -49,9 +53,6 @@ type Comet struct {
 
 	// 開多少goroutine來併發訊息推送給comet
 	routineSize uint64
-
-	// 上下文，用來控制與grpc併發退出
-	ctx context.Context
 
 	// 上下文退出
 	cancel context.CancelFunc
@@ -69,35 +70,31 @@ func NewComet(c *conf.Comet) (*Comet, error) {
 	// 跟Comet servers建立grpc client
 	var err error
 	if cmt.client, err = newCometClient(c.Comet); err != nil {
+
 		return nil, err
 	}
+
 	cmt.ctx, cmt.cancel = context.WithCancel(context.Background())
 
 	// 開多個goroutine併發做send grpc client
 	for i := 0; i < c.RoutineSize; i++ {
+
 		cmt.roomChan[i] = make(chan *pb.BroadcastRoomReq, c.RoutineChan)
+
 		go cmt.process(cmt.roomChan[i], cmt.broadcastChan, cmt.pushChan)
+
 	}
 	return cmt, nil
 }
 
-// 房間訊息推送需要交由某個處理推送邏輯的goroutine
-// Comet自己會預先開好多個goroutine，每個goroutine內都有一把
-// 用於房間訊息推送chan，用原子鎖遞增%goroutine總數量來輪替
-// 由哪一個goroutine，也就是平均分配推送的量給各goroutine
-func (c *Comet) BroadcastRoom(arg *pb.BroadcastRoomReq) {
-	idx := atomic.AddUint64(&c.roomChanNum, 1) % c.routineSize
-	c.roomChan[idx] <- arg
+func (c *Comet) Push(arg *pb.KeyReq) {
+	c.pushChan <- arg
 }
 
 // 多個房間推送
 // consume.go對Comet.go推送Kafaka訊息
 func (c *Comet) Broadcast(arg *pb.BroadcastReq) {
 	c.broadcastChan <- arg
-}
-
-func (c *Comet) Push(arg *pb.KeyReq) {
-	c.pushChan <- arg
 }
 
 // 處理訊息推送給comet server
@@ -131,6 +128,15 @@ func (c *Comet) process(roomChan chan *pb.BroadcastRoomReq, broadcastChan chan *
 			return
 		}
 	}
+}
+
+// 房間訊息推送需要交由某個處理推送邏輯的goroutine
+// Comet自己會預先開好多個goroutine，每個goroutine內都有一把
+// 用於房間訊息推送chan，用原子鎖遞增%goroutine總數量來輪替
+// 由哪一個goroutine，也就是平均分配推送的量給各goroutine
+func (c *Comet) BroadcastRoom(arg *pb.BroadcastRoomReq) {
+	idx := atomic.AddUint64(&c.roomChanNum, 1) % c.routineSize
+	c.roomChan[idx] <- arg
 }
 
 // 關閉其他正在執行的goroutine
