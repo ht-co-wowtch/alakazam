@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 
+	// "runtime/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -15,6 +16,7 @@ func RunHttp(addr string) {
 		log.Infof("metrics server port [%s]", addr)
 		gin.SetMode(gin.ReleaseMode)
 		e := gin.New()
+
 		e.GET("/metrics", gin.WrapH(promhttp.Handler()))
 		e.GET("/healthz", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{

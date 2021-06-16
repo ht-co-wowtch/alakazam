@@ -7,6 +7,7 @@ WORKDIR /usr/local/bin
 
 COPY --from=base /usr/local/go/lib/time/zoneinfo.zip /usr/local/go/lib/time/zoneinfo.zip
 COPY --from=base /usr/local/bin/logic.yml config.yml
+
 COPY --from=base /usr/local/bin/logic .
 
 CMD ["logic", "-c", "config.yml"]

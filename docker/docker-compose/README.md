@@ -93,10 +93,12 @@ docker-compose up -d mysql
 
 ```bash
 // 啟動 
+
 docker-compose up -d kafka 
 docker-compose up -d alakazam 
 
 // 停止所有服務
+
 docker-compose down
 ```
 

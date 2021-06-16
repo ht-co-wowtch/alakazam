@@ -35,6 +35,7 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
 	for {
+
 		s := <-c
 		log.Infof("logic get a signal %s", s.String())
 		switch s {

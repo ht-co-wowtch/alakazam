@@ -20,6 +20,8 @@ import (
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
 	"google.golang.org/grpc"
+	// _	"net/http/pprof"
+	// "runtime/pprof"
 )
 
 const (
@@ -34,6 +36,7 @@ type Server struct {
 	message *message.Producer
 	client  *client.Client
 	member  *member.Member
+
 	// TODO Chat
 	room       room.Chat
 	httpServer *http.Server
@@ -54,6 +57,7 @@ func New(c *conf.Config) *Server {
 	cli := client.New(c.Nidoran)
 
 	seqRPClient, err := rpccli.NewClient(c.Seq)
+
 	if err != nil {
 		panic(err)
 	}
@@ -95,20 +99,23 @@ func New(c *conf.Config) *Server {
 	log.Infof("rpc server port [%s]", c.RPCServer.Addr)
 
 	s := &Server{
-		ctx:        ctx,
-		cancel:     cancel,
-		db:         db,
-		cache:      cache,
-		message:    messageProducer,
-		client:     cli,
-		member:     memberCli,
-		room:       chat,
+		ctx:     ctx,
+		cancel:  cancel,
+		db:      db,
+		client:  cli,
+		cache:   cache,
+		message: messageProducer,
+
+		member: memberCli,
+		room:   chat,
+
 		httpServer: httpServer,
 		rpc:        rpcServer,
 	}
 
 	_ = s.loadOnline()
 	go s.onlineproc()
+
 	return s
 }
 
@@ -127,21 +134,28 @@ func (s *Server) Close() {
 
 func (s *Server) onlineproc() {
 	for {
+
 		time.Sleep(onlineTick)
+
 		if err := s.loadOnline(); err != nil {
 			log.Errorf("onlineproc error(%v)", err)
 		}
 	}
 }
 
+// set pprof
 // 從redis拿出現在各房間人數
 func (s *Server) loadOnline() (err error) {
 	var (
 		roomCount = make(map[int32]int32)
 	)
+
 	var online *room.Online
+
+	// refector future
 	// TODO hostname 先寫死 後續需要註冊中心來sync
 	online, err = s.room.GetOnline("hostname")
+
 	if err != nil {
 		return
 	}
