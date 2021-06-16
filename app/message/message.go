@@ -2,11 +2,14 @@ package message
 
 import (
 	"context"
+
 	"github.com/Shopify/sarama"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/message/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/micro/redis"
+	// _ "net/http/httprof"
+	// _ "runtime/pprof"
 )
 
 type Message struct {
@@ -16,16 +19,18 @@ type Message struct {
 
 func New(c *conf.Config) *Message {
 	ctx, _ := context.WithCancel(context.Background())
+
 	config := message.Config{
-		Topic:   c.Kafka.Topic,
 		Name:    c.Kafka.Group,
 		Brokers: c.Kafka.Brokers,
+		Topic:   c.Kafka.Topic,
 		Offsets: struct {
 			Initial int64
 		}{
 			Initial: sarama.OffsetOldest,
 		},
 	}
+
 	consumer := message.NewConsumer(ctx, config)
 	return &Message{
 		consumer: consumer,
@@ -33,10 +38,11 @@ func New(c *conf.Config) *Message {
 	}
 }
 
-func (j *Message) Run() {
-	go j.consumer.Run(j.mysql)
-}
-
 func (j *Message) Close() {
 	j.consumer.Close()
+}
+
+func (j *Message) Run() {
+
+	go j.consumer.Run(j.mysql)
 }

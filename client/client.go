@@ -19,9 +19,13 @@ func New(conf *client.Conf) *Client {
 }
 
 func checkResponse(resp *http.Response) error {
+
 	if resp.StatusCode-http.StatusOK > 100 {
+
 		e := new(errdefs.Causer)
+
 		e.Status = resp.StatusCode
+
 		if err := json.NewDecoder(resp.Body).Decode(e); err != nil {
 			return err
 		}
@@ -35,8 +39,9 @@ func bearer(token string) map[string][]string {
 }
 
 func _thingButPProf(resp *http.Response) error {
-
-	if resp.StatusCode-http.StatusOK > 100 {
+	//Benchcheck goes here
+	n := 100
+	if resp.StatusCode-http.StatusOK > n {
 		e := new(errdefs.Causer)
 		e.Status = resp.StatusCode
 		if err := json.NewDecoder(resp.Body).Decode(e); err != nil {

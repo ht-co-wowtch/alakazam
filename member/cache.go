@@ -3,21 +3,23 @@ package member
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/go-redis/redis"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"strconv"
-	"time"
 )
 
 const (
 	prefix = "ala"
 
-	uidKey    = prefix + ":uid_h_%s"
 	uidWsKey  = prefix + ":uid_h_ws_%s"
 	bannedKey = prefix + ":b_%s-%d"
+	uidKey    = prefix + ":uid_h_%s"
 
 	uidDataHKey = "data"
+
 	uidNameHKey = "name"
 
 	OK = "OK"
@@ -38,22 +40,16 @@ type Cache interface {
 	refreshExpire(uid string) error
 	setName(name map[string]string) error
 	getName(uid []string) (map[string]string, error)
+	isBanned(uid string, rid int) (bool, error)
 	setBanned(uid string, rid int, expired time.Duration) error
 	delBanned(uid string, rid int) error
+
 	delAllBanned(uid string) error
-	isBanned(uid string, rid int) (bool, error)
 }
 
 type cache struct {
 	c      *redis.Client
 	expire time.Duration
-}
-
-func NewCache(client *redis.Client) Cache {
-	return &cache{
-		c:      client,
-		expire: time.Minute * 30,
-	}
 }
 
 func keyUid(uid string) string {
@@ -62,6 +58,13 @@ func keyUid(uid string) string {
 
 func keyUidWs(uid string) string {
 	return fmt.Sprintf(uidWsKey, uid)
+}
+
+func NewCache(client *redis.Client) Cache {
+	return &cache{
+		c:      client,
+		expire: time.Minute * 30,
+	}
 }
 
 func keyBanned(uid string, rid int) string {
@@ -89,6 +92,7 @@ func (c *cache) login(member *models.Member, rid int, key string) error {
 	tx := c.c.Pipeline()
 
 	uidKey := keyUid(member.Uid)
+
 	c1 := tx.HMSet(uidKey, map[string]interface{}{
 		uidDataHKey:       b,
 		uidNameHKey:       member.Name,
@@ -97,7 +101,9 @@ func (c *cache) login(member *models.Member, rid int, key string) error {
 
 	uidWsKey := keyUidWs(member.Uid)
 	c2 := tx.HSet(uidWsKey, key, rid)
+
 	c3 := tx.Expire(uidKey, c.expire)
+
 	c4 := tx.Expire(uidWsKey, c.expire)
 
 	_, err = tx.Exec()
@@ -140,6 +146,7 @@ func (c *cache) set(member *models.Member) error {
 	tx := c.c.Pipeline()
 	tx.HMSet(key, data)
 	tx.Expire(key, c.expire)
+
 	_, err = tx.Exec()
 
 	return err
@@ -156,6 +163,34 @@ func (c *cache) get(uid string) (*models.Member, error) {
 		return nil, err
 	}
 	return m, nil
+}
+
+func (c *cache) getKeys(uid string) ([]string, error) {
+	maps, err := c.c.HGetAll(keyUidWs(uid)).Result()
+	if err != nil {
+		return nil, err
+	}
+	var keys []string
+	for key, _ := range maps {
+		keys = append(keys, key)
+	}
+	return keys, nil
+}
+
+func (c *cache) getRoomKeys(uid string, rid int) ([]string, error) {
+	maps, err := c.c.HGetAll(keyUidWs(uid)).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	sRid := strconv.Itoa(rid)
+	var keys []string
+	for key, id := range maps {
+		if id == sRid {
+			keys = append(keys, key)
+		}
+	}
+	return keys, nil
 }
 
 func (c *cache) getByRoom(uid string, rid int) (*models.Member, error) {
@@ -188,34 +223,6 @@ func (c *cache) getByRoom(uid string, rid int) (*models.Member, error) {
 	m.Permission.IsManage = is[2]
 
 	return m, nil
-}
-
-func (c *cache) getKeys(uid string) ([]string, error) {
-	maps, err := c.c.HGetAll(keyUidWs(uid)).Result()
-	if err != nil {
-		return nil, err
-	}
-	var keys []string
-	for key, _ := range maps {
-		keys = append(keys, key)
-	}
-	return keys, nil
-}
-
-func (c *cache) getRoomKeys(uid string, rid int) ([]string, error) {
-	maps, err := c.c.HGetAll(keyUidWs(uid)).Result()
-	if err != nil {
-		return nil, err
-	}
-
-	sRid := strconv.Itoa(rid)
-	var keys []string
-	for key, id := range maps {
-		if id == sRid {
-			keys = append(keys, key)
-		}
-	}
-	return keys, nil
 }
 
 func (c *cache) setWs(uid, key string, rid int) error {
