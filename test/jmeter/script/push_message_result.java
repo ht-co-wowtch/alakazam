@@ -9,8 +9,8 @@ if (body.trim().length() == 0 || body == null) {
     JSONObject json = new JSONObject(body); 
 
     try {
-        if (json.getInt("id") == 0) {
-            AssertionResult.setFailureMessage("id is 0");
+        if (json.getInt("_id") == 0) {
+            AssertionResult.setFailureMessage("i_d is 0");
             AssertionResult.setFailure(true);
         }
     } catch (JSONException e) {
