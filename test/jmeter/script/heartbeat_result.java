@@ -22,3 +22,11 @@ if (!failureMessage.equals(empty)) {
     AssertionResult.setFailureMessage(failureMessage);
     AssertionResult.setFailure(true);
 }
+
+void TestChatSendBlock(String content) {
+	AssertionResult.setContent(content);
+	if(AssertionResponse.get() == null)
+	{
+		throw ApplicationExcaption("data not found");
+	}
+}

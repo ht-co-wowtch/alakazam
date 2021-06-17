@@ -10,22 +10,21 @@ import (
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
+	// _ "net/http/httpprof"
+	// _ "runtime/pprof"
 )
 
 // 處理訊息結構
 type consume struct {
-	rc *conf.Room
+	rc  *conf.Room
+	ctx context.Context
 
 	// 線上有運行哪些Comet server (不同host)
 	servers map[string]*Comet
-
 	// 讀寫鎖
 	roomsMutex sync.RWMutex
-
 	// 房間訊息聚合
 	rooms map[int32]*Room
-
-	ctx context.Context
 }
 
 // 訊息推送至comet server
@@ -39,11 +38,13 @@ func (c *consume) Push(pushMsg *logicpb.PushMsg) error {
 	// 單房間推送
 	case logicpb.PushMsg_ROOM:
 		if pushMsg.IsRaw {
+
 			for _, r := range pushMsg.Room {
 				c.getRoom(r).consume.broadcastRoomRawByte(r, pushMsg.Msg, pushMsg.Op)
 			}
 		} else {
 			for _, r := range pushMsg.Room {
+
 				if err := c.getRoom(r).Push(pushMsg.Msg, pushMsg.Op); err != nil {
 					return err
 				}
@@ -63,7 +64,9 @@ func (c *consume) broadcastRoomRawByte(roomID int32, body []byte, op int32) {
 	args := cometpb.BroadcastRoomReq{
 		RoomID: roomID,
 		Proto: &cometpb.Proto{
-			Op:   op,
+
+			Op: op,
+
 			Body: body,
 		},
 	}
@@ -75,9 +78,13 @@ func (c *consume) broadcastRoomRawByte(roomID int32, body []byte, op int32) {
 
 func (c *consume) pushRawByte(keys []string, body []byte, op int32) {
 	args := cometpb.KeyReq{
+
 		Key: keys,
+
 		Proto: &cometpb.Proto{
-			Op:   op,
+
+			Op: op,
+
 			Body: body,
 		},
 	}
@@ -93,9 +100,13 @@ func (c *consume) getRoom(roomID int32) *Room {
 	room, ok := c.rooms[roomID]
 	c.roomsMutex.RUnlock()
 	if !ok {
+
 		c.roomsMutex.Lock()
+
 		if room, ok = c.rooms[roomID]; !ok {
+
 			room = NewRoom(c, roomID)
+
 			c.rooms[roomID] = room
 		}
 		c.roomsMutex.Unlock()
@@ -106,7 +117,10 @@ func (c *consume) getRoom(roomID int32) *Room {
 
 // 移除房間訊息聚合
 func (c *consume) delRoom(roomID int32) {
+
 	c.roomsMutex.Lock()
+
 	delete(c.rooms, roomID)
+
 	c.roomsMutex.Unlock()
 }
