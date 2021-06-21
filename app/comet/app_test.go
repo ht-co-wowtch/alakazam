@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+func forTest() {
+	fmt.Println("")
+}
+
 func TestMain(m *testing.M) {
 	fmt.Println("TestMain start setup")
 	exitCode := m.Run()
