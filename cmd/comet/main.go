@@ -67,17 +67,4 @@ func main() {
 			return
 		}
 	}
-	/*
-		    TODO: remove for infinite looping
-			switch <-c {
-			case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-				rpcSrv.GracefulStop()
-				srv.Close()
-				log.Sync()
-			case syscall.SIGHUP:
-			default:
-				return
-			}
-
-	*/
 }
