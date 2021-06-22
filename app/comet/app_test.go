@@ -85,3 +85,36 @@ func TestClosureError(t *testing.T) {
 		})
 	}
 }
+
+/*
+type sqlDB interface {
+	Exec(query string, args ...interface{}) (sql.Result, error)
+}
+
+type mockDB struct{}
+
+func (mdb *mockDB) Exec(query string, args ...interface{}) (sql.Result, error) {
+	return nil, nil
+}
+
+func saveUser(db sqlDB, user *User) error {
+	if user.EmailAddress == "" {
+		return errors.New("user requires an email")
+	}
+	if len(user.Password) < 8 {
+		return errors.New("user password requires at least 8 characters")
+	}
+	hashedPassword, err := hash(user.Password)
+	if err != nil {
+		return err
+	}
+		_, err := db.Exec(` INSERT INTO member (password, email, createat) VALUES ($1, $2, $3);`, hashedPassword, user.EmailAddress, time.Now())
+	return err
+}
+
+func hash(password string) (string, error) {
+	const cost = 10
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), cost)
+	return string(bytes), err
+}
+*/
