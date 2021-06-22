@@ -7,10 +7,6 @@ import (
 	"time"
 )
 
-func forTest() {
-	fmt.Println("")
-}
-
 func TestMain(m *testing.M) {
 	fmt.Println("TestMain start setup")
 	exitCode := m.Run()
@@ -82,6 +78,9 @@ func TestClosureError(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		t.Run(fmt.Sprintf("i=%d", i), func(t *testing.T) {
 			t.Parallel()
+			/*
+				can pass fun goes here ..
+			*/
 		})
 	}
 }
