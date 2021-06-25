@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -52,19 +53,15 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
 
-	// 底下這是什麼鳥寫法!@#$@#$$!$!
-	for {
-		s := <-c
-		log.Infof("comet close get a signal %s", s.String())
-		switch s {
-		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-			rpcSrv.GracefulStop()
-			srv.Close()
-			log.Sync()
-			return
-		case syscall.SIGHUP:
-		default:
-			return
-		}
+	switch sig := <-c; sig {
+	case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
+		rpcSrv.GracefulStop()
+		srv.Close()
+		log.Sync()
+		fmt.Println("shutdown normally")
+	case syscall.SIGHUP:
+	default:
+		fmt.Println(sig.String())
 	}
+	fmt.Println("shutdown completed")
 }
