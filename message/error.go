@@ -2,6 +2,13 @@ package message
 
 import "fmt"
 
+type refectorError struct {
+	errs    []error
+	time    Time.time
+	occur   string
+	swallow bool
+}
+
 type messageError struct {
 	error   error
 	msgId   int64

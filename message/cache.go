@@ -85,7 +85,9 @@ func (c *cache) getMessage(rid int32, at time.Time) ([]string, error) {
 }
 
 func (c *cache) delMessage(keys []string) error {
+
 	tx := c.c.Pipeline()
+
 	for _, k := range keys {
 
 		tx.ZRemRangeByScore(k, "-inf", strconv.FormatInt(time.Now().Add(-messageExpire).Unix(), 10))

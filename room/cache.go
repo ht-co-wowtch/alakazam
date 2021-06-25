@@ -9,7 +9,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/zhenjl/cityhash"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	// _ "net/http/pprof"
+	// _ "runtime/pprof"
 )
 
 type Cache interface {
@@ -41,7 +41,8 @@ const (
 	// 房間的前綴詞，用於存儲在redis當key
 	roomKey = prefix + ":room_%d"
 
-	roomDataHKey        = "data"
+	roomDataHKey = "data"
+
 	roomTopMsgHKey      = "top"
 	roomBulletinMsgHKey = "bulletin"
 
@@ -62,11 +63,14 @@ var (
 )
 
 func (c *cache) get(id int) (models.Room, error) {
+
 	b, err := c.c.HGet(keyRoom(id), roomDataHKey).Bytes()
+
 	if err != nil {
 		return models.Room{}, err
 	}
 	var r models.Room
+
 	if err := json.Unmarshal(b, &r); err != nil {
 		return models.Room{}, err
 	}
@@ -74,6 +78,7 @@ func (c *cache) get(id int) (models.Room, error) {
 }
 
 func (c *cache) set(room models.Room) error {
+
 	key := keyRoom(room.Id)
 
 	tx := c.c.Pipeline()
@@ -103,7 +108,9 @@ func (c *cache) set(room models.Room) error {
 }
 
 func (c *cache) getChat(id int) (models.Room, error) {
+
 	room, err := c.c.HMGet(keyRoom(id), roomDataHKey, roomTopMsgHKey, roomBulletinMsgHKey).Result()
+
 	if err != nil {
 		return models.Room{}, err
 	}
@@ -172,6 +179,7 @@ func (c *cache) deleteChatTopMessage(rids []int32) error {
 	}
 
 	tx := c.c.Pipeline()
+
 	for _, k := range keys {
 		tx.HDel(k, roomTopMsgHKey)
 	}
@@ -191,6 +199,34 @@ func (c *cache) deleteChatBulletinMessage(rids []int32) error {
 	}
 	_, err := tx.Exec()
 	return err
+}
+
+func (c *cache) _useDefault(rids []int32) error {
+	//testing only
+	id := int(rids[0])
+
+	room, err := c.c.HMGet(keyRoom(id), roomDataHKey, roomTopMsgHKey, roomBulletinMsgHKey).Result()
+
+	if err != nil {
+		return models.Room{}, err
+	}
+	if room[0] == nil {
+		return models.Room{}, redis.Nil
+	}
+
+	var r models.Room
+	if err = json.Unmarshal([]byte(room[0].(string)), &r); err != nil {
+		return r, err
+	}
+	if room[1] != nil {
+		r.TopMessage = []byte(room[1].(string))
+	}
+
+	if room[2] != nil {
+		r.BulletinMessage = []byte(room[2].(string))
+	}
+
+	return r, err
 }
 
 type Online struct {
