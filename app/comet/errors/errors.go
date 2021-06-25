@@ -18,4 +18,7 @@ var (
 
 	// room
 	ErrRoomDroped = errors.New("room droped")
+
+	//testing
+	ErrRefactor = errors.New("踩到坑錯誤,請重購")
 )

@@ -164,6 +164,7 @@ func (s *Server) onlineproc() {
 		// 因為房間會分散在不同的bucket所以需要統計
 		for _, bucket := range s.buckets {
 			for roomID, count := range bucket.RoomsCount() {
+
 				roomCount[roomID] += count
 			}
 		}
@@ -175,7 +176,6 @@ func (s *Server) onlineproc() {
 		for _, bucket := range s.buckets {
 			bucket.UpRoomsCount(s.online)
 		}
-
 		// 每30秒統計一次發給logic
 		time.Sleep(time.Second * 30)
 	}

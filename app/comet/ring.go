@@ -5,6 +5,8 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 )
 
+//TODO: refactor 使用官方環形api
+
 // 用於控制讀寫異步grpc.Proto的環型Pool
 type Ring struct {
 	// 讀的游標
@@ -23,14 +25,11 @@ type Ring struct {
 	data []pb.Proto
 }
 
-func (r *Ring) Init(num int) {
-	r.init(uint64(num))
-}
-
 func (r *Ring) init(num uint64) {
 	// 如果num非2的公倍數則轉成2的公倍數
 	// 因為需保證讀寫游標與mask的&操作是可以對Proto做循環取得
 	if num&(num-1) != 0 {
+
 		for num&(num-1) != 0 {
 			num &= (num - 1)
 		}
@@ -52,6 +51,10 @@ func (r *Ring) Get() (*pb.Proto, error) {
 // 讀游標++
 func (r *Ring) GetAdv() {
 	r.rp++
+}
+
+func (r *Ring) Init(num int) {
+	r.init(uint64(num))
 }
 
 // 取用於寫的grpc.Proto，讀跟寫的游標不可相差大於等於Proto數量
@@ -96,6 +99,7 @@ func (r *Ring) SetAdv() {
 
 // 重置讀寫游標
 func (r *Ring) Reset() {
-	r.rp = 0
+	//need to check
 	r.wp = 0
+	r.rp = 0
 }

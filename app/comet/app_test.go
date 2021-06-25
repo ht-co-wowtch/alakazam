@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+/*
+testing template for other case
+NOTE: make sure, your util have been testing successfully as well
+*/
+
 func TestMain(m *testing.M) {
 	fmt.Println("TestMain start setup")
 	exitCode := m.Run()

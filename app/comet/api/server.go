@@ -2,14 +2,16 @@ package api
 
 import (
 	"context"
+	"net"
+	"time"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	rpc "gitlab.com/jetfueltw/cpw/micro/grpc"
 	"google.golang.org/grpc"
-	"net"
-	"time"
+	// _ "runtime/pprof"
 )
 
 // New comet grpc server.
@@ -45,7 +47,6 @@ func (s *server) Push(ctx context.Context, req *pb.KeyReq) (*empty.Empty, error)
 		if b := s.srv.Bucket(key); b != nil {
 			if ch := b.Channel(key); ch != nil {
 				_ = ch.Push(req.Proto)
-
 				if req.Proto.Op == pb.OpProtoFinish {
 					ch.Close()
 				}

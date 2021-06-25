@@ -16,7 +16,7 @@ message PushMsg {
     string message = 5;
     int32 msgType = 6;
     int64 mid = 7;
-    int64 seq = 8;
+    int64 seq = 8; //for msg search
     int32 op = 9;
     int64 sendAt = 10;
     bool isRaw = 11;
