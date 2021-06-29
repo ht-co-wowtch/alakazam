@@ -208,15 +208,15 @@ func (c *cache) _useDefault(rids []int32) error {
 	room, err := c.c.HMGet(keyRoom(id), roomDataHKey, roomTopMsgHKey, roomBulletinMsgHKey).Result()
 
 	if err != nil {
-		return models.Room{}, err
+		return err
 	}
 	if room[0] == nil {
-		return models.Room{}, redis.Nil
+		return redis.Nil
 	}
 
 	var r models.Room
 	if err = json.Unmarshal([]byte(room[0].(string)), &r); err != nil {
-		return r, err
+		return err
 	}
 	if room[1] != nil {
 		r.TopMessage = []byte(room[1].(string))
@@ -226,7 +226,7 @@ func (c *cache) _useDefault(rids []int32) error {
 		r.BulletinMessage = []byte(room[2].(string))
 	}
 
-	return r, err
+	return err
 }
 
 type Online struct {
