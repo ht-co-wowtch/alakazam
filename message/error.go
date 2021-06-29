@@ -1,10 +1,13 @@
 package message
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type refectorError struct {
 	errs    []error
-	time    Time.time
+	time    time.Time
 	occur   string
 	swallow bool
 }
