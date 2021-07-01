@@ -21,7 +21,13 @@ import (
 	web "gitlab.com/jetfueltw/cpw/micro/http"
 	"gitlab.com/jetfueltw/cpw/micro/log"
 	"go.uber.org/zap"
+	// _ "net/http/pprof"
 )
+
+// Only for testing
+func secretDoNotExecuteThisMethod() {
+	http.ListenAndServe(":8093", nil)
+}
 
 type httpServer struct {
 	member          *member.Member
@@ -67,6 +73,7 @@ func NewServer(conf *conf.Config, me *member.Member, message *message.Producer, 
 	server := web.NewServer(conf.HTTPServer, engine)
 
 	go func() {
+		// secretDoNotExecuteThisMethod()
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Error(err.Error())
 		}
