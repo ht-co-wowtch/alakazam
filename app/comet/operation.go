@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/encoding/gzip"
 	"google.golang.org/grpc/status"
+	// _ "runtime/pprof"
 )
 
 // 告知logic service有人想要進入某個房間
@@ -19,15 +20,6 @@ func (s *Server) Connect(c context.Context, p *cometpb.Proto) (*logicpb.ConnectR
 	return s.logic.Connect(c, &logicpb.ConnectReq{
 		Server: s.name,
 		Token:  p.Body,
-	})
-}
-
-// 進入某個房間成功回應
-func (s *Server) ConnectSuccessReply(c context.Context, rid int32, user *logicpb.User, connect *logicpb.Connect) (*logicpb.PingReply, error) {
-	return s.logic.ConnectSuccessReply(c, &logicpb.ConnectSuccessReq{
-		RoomId:   rid,
-		User:     user,
-		IsManage: connect.Permission.IsManage,
 	})
 }
 
@@ -55,14 +47,29 @@ func (s *Server) Heartbeat(ctx context.Context, ch *Channel) error {
 
 // 告知logic service現在房間的在線人數
 func (s *Server) RenewOnline(ctx context.Context, serverID string, rommCount map[int32]int32) (allRoom map[int32]int32, err error) {
+
 	reply, err := s.logic.RenewOnline(ctx, &logicpb.OnlineReq{
 		Server:    s.name,
 		RoomCount: rommCount,
 	}, grpc.UseCompressor(gzip.Name))
+
 	if err != nil {
 		return
 	}
+
 	return reply.AllRoomCount, nil
+}
+
+// 進入某個房間成功回應
+func (s *Server) ConnectSuccessReply(c context.Context, rid int32, user *logicpb.User, connect *logicpb.Connect) (*logicpb.PingReply, error) {
+
+	return s.logic.ConnectSuccessReply(c, &logicpb.ConnectSuccessReq{
+		RoomId: rid,
+
+		User: user,
+
+		IsManage: connect.Permission.IsManage,
+	})
 }
 
 type changeRoom struct {

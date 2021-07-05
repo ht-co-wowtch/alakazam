@@ -64,6 +64,7 @@ func NewServer(c *conf.Config) *Server {
 
 	// 初始化Bucket
 	s.buckets = make([]*Bucket, c.Bucket.Size)
+
 	s.bucketIdx = uint32(c.Bucket.Size)
 	for i := 0; i < c.Bucket.Size; i++ {
 		s.buckets[i] = NewBucket(c.Bucket)
@@ -79,6 +80,10 @@ func NewServer(c *conf.Config) *Server {
 	return s
 }
 
+const (
+	kickPeriod = time.Duration(time.Second * 20)
+)
+
 func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 	var (
 		closedRoomIds []int
@@ -87,7 +92,8 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 	var roomids []int32
 	for {
 
-		time.Sleep(time.Second * 20)
+		time.Sleep(kickPeriod)
+
 		closedRoomIds, err = store.GetClosedRoomIds()
 
 		if err != nil {
@@ -132,11 +138,6 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 	}
 }
 
-// 所有buckets
-func (s *Server) Buckets() []*Bucket {
-	return s.buckets
-}
-
 // 根據user key 採用CityHash32算法除於bucket總數的出來的餘數，來取出某個bucket
 // 用意在同時間針對不同房間做推播時可以避免使用到同一把鎖，降低鎖的競爭
 // 所以可以調高bucket來增加併發量，但同時會多佔用內存
@@ -153,6 +154,10 @@ func (s *Server) RandServerHearbeat() time.Duration {
 func (s *Server) Close() (err error) {
 	return
 }
+
+const (
+	checkOnlinePeriod = time.Duration(time.Second * 30)
+)
 
 // 統計各房間人數並發給logic service做更新
 // 因為logic有提供http獲得某房間人數
@@ -177,6 +182,11 @@ func (s *Server) onlineproc() {
 			bucket.UpRoomsCount(s.online)
 		}
 		// 每30秒統計一次發給logic
-		time.Sleep(time.Second * 30)
+		time.Sleep(checkOnlinePeriod)
 	}
+}
+
+// 所有buckets
+func (s *Server) Buckets() []*Bucket {
+	return s.buckets
 }

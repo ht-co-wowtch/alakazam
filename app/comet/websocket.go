@@ -18,7 +18,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	// _ "net/http/pprof"
+	// _ "runtime/pprof"
 )
 
 const (
@@ -80,6 +80,16 @@ func acceptWebsocket(server *Server, lis *net.TCPListener) {
 			r = 0
 		}
 	}
+}
+
+func authReply(ws websocket.Conn, p *pb.Proto, b []byte) (err error) {
+	p.Op = pb.OpAuthReply
+	p.Body = b
+	if err = p.WriteWebsocket(ws); err != nil {
+		return
+	}
+	err = ws.Flush()
+	return
 }
 
 // Websocket連線後的邏輯處理
@@ -487,14 +497,4 @@ func (s *Server) authWebsocket(ctx context.Context, ws websocket.Conn, ch *Chann
 	ch.Uid = c.User.Uid
 	ch.Name = c.User.Name
 	return c, nil
-}
-
-func authReply(ws websocket.Conn, p *pb.Proto, b []byte) (err error) {
-	p.Op = pb.OpAuthReply
-	p.Body = b
-	if err = p.WriteWebsocket(ws); err != nil {
-		return
-	}
-	err = ws.Flush()
-	return
 }
