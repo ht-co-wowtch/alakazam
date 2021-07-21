@@ -266,6 +266,7 @@ func (c *cache) delete(uid string) (bool, error) {
 	return true, nil
 }
 
+// 刪除房間快取
 func (c *cache) clearRoom(uid string) error {
 	m, err := c.get(uid)
 	if err != nil {

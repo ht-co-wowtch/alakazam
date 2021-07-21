@@ -401,6 +401,7 @@ func (p *Producer) SendDisplay(rid []int32, user scheme.User, display scheme.Dis
 	})
 }
 
+// 發送踢人訊息到kafka producer
 func (p *Producer) Kick(msg string, keys []string) error {
 	m := struct {
 		Message string `json:"message"`

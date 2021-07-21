@@ -81,7 +81,7 @@ func (s *httpServer) removeBanned(c *gin.Context) error {
 		return err
 	}
 
-	if roomId == 0 {
+	if roomId == 0 { // roomId表示所有房間
 		if err := s.member.RemoveBannedAll(params.Uid); err != nil {
 			log.Error("[banned.go]RemoveBannedAll", zap.Error(err))
 			return err

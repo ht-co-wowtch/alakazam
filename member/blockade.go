@@ -18,11 +18,14 @@ func (m *Member) SetBlockade(uid string, rid int, set bool) error {
 	return m.c.set(member)
 }
 
+// 更新會員封鎖狀態
 func (m *Member) SetBlockadeAll(uid string, set bool) error {
+	// 更新db中會員封鎖狀態
 	if _, err := m.db.SetUserBlockade(uid, set); err != nil {
 		return err
 	}
 
+	// 從cache或redis中取得會員資料
 	member, err := m.Get(uid)
 	if err != nil {
 		if err == errors.ErrLogin {
@@ -33,9 +36,11 @@ func (m *Member) SetBlockadeAll(uid string, set bool) error {
 
 	member.IsBlockade = set
 
+	// 更新cache中會員封鎖狀態
 	if err := m.c.set(member); err != nil {
 		return err
 	}
 
+	// 清除房間快取
 	return m.c.clearRoom(uid)
 }

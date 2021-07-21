@@ -146,7 +146,7 @@ func (s *httpServer) Close() error {
 
 var errInternalServer = errdefs.New(0, 0, "应用程序错误")
 
-// try catch log
+// try catch log middleware
 func RecoverHandler(c *gin.Context) {
 	defer func() {
 		if err := recover(); err != nil {

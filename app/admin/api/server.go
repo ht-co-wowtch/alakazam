@@ -31,7 +31,7 @@ func NewServer(conf *web.Conf, member *member.Member, producer *message.Producer
 		gin.SetMode(gin.ReleaseMode)
 	}
 	engine := web.NewHandler()
-	engine.Use(api.RecoverHandler)
+	engine.Use(api.RecoverHandler) // use RecoverHandler's middleware
 
 	delayMessage := message.NewDelayProducer(producer, nidoran)
 	delayMessage.Start()
@@ -46,22 +46,28 @@ func NewServer(conf *web.Conf, member *member.Member, producer *message.Producer
 		noticeUrl:    make(map[string]string),
 	}
 
-	handler(engine, srv)
+	handler(engine, srv) // http api router
 	return web.NewServer(conf, engine)
 }
 
+// http api router of admin
 func handler(e *gin.Engine, s *httpServer) {
 
+	// 心跳
 	e.GET("/healthz", healthz)
 	// 封鎖
+	// 全站
 	e.POST("/blockade/:uid", api.ErrHandler(s.setBlockade))
 	e.DELETE("/blockade/:uid", api.ErrHandler(s.removeBlockade))
+	// 單一房間
 	e.POST("/blockade/:uid/room/:id", api.ErrHandler(s.setBlockade))
 	e.DELETE("/blockade/:uid/room/:id", api.ErrHandler(s.removeBlockade))
 
 	// 禁言
+	// 全站
 	e.POST("/banned/:uid", api.ErrHandler(s.setBanned))
 	e.DELETE("/banned/:uid", api.ErrHandler(s.removeBanned))
+	// 單一房間
 	e.POST("/banned/:uid/room/:id", api.ErrHandler(s.setBanned))
 	e.DELETE("/banned/:uid/room/:id", api.ErrHandler(s.removeBanned))
 
@@ -79,10 +85,10 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.GET("/online", api.ErrHandler(s.online))
 
 	// 訊息
-	e.POST("/custom", api.ErrHandler(s.custom))
+	e.POST("/custom", api.ErrHandler(s.custom)) // todo
 	e.POST("/push", api.ErrHandler(s.push))
 	e.DELETE("/push/:id", api.ErrHandler(s.deleteTopMessage))
-	e.POST("/red-envelope", api.ErrHandler(s.giveRedEnvelope))
+	e.POST("/red-envelope", api.ErrHandler(s.giveRedEnvelope)) // 紅包
 	e.POST("/bets", api.ErrHandler(s.bets))
 	e.POST("/betsWin", api.ErrHandler(s.betsWin))
 	e.POST("/gift", api.ErrHandler(s.gift))
