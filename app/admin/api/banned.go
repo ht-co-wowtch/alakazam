@@ -12,6 +12,9 @@ import (
 	"go.uber.org/zap"
 )
 
+// 禁言
+// request: /banned/:uid 全站禁言
+// request: /banned/:uid/room/:id 個別房間禁言
 func (s *httpServer) setBanned(c *gin.Context) error {
 	var (
 		err    error
@@ -35,16 +38,17 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	}
 	log.Debug("[banned.go]setBanned", zap.Int("roomid", roomId), zap.String("uid", uid))
 
-	if roomId == 0 {
+
+	if roomId == 0 { // roomId為0，對所有房間禁言
 		if err := s.member.SetBannedAll(uid, exp.Expired); err != nil {
 			return err
 		}
-	} else if err := s.member.SetBanned(uid, roomId, exp.Expired, false); err != nil {
+	} else if err := s.member.SetBanned(uid, roomId, exp.Expired, false); err != nil { //對roomId房間進行禁言
 		return err
 	}
 
 	name, _ := s.member.GetUserName(uid)
-	if roomId > 0 {
+	if roomId > 0 { // 禁言失敗，向kafka producer發送訊息
 		_, err := s.message.SendDisplay(
 			[]int32{int32(roomId)},
 			scheme.NewRoot(),
@@ -81,7 +85,8 @@ func (s *httpServer) removeBanned(c *gin.Context) error {
 		return err
 	}
 
-	if roomId == 0 { // roomId表示所有房間
+	// roomId=0時，表示所有房間
+	if roomId == 0 {
 		if err := s.member.RemoveBannedAll(params.Uid); err != nil {
 			log.Error("[banned.go]RemoveBannedAll", zap.Error(err))
 			return err

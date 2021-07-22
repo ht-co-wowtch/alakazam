@@ -126,6 +126,7 @@ func (m *Member) RemoveBanned(uid string, rid int) error {
 	u.Permission.RoomId = int64(rid)
 	u.Permission.IsBanned = false
 
+	// 更新db中會員於個別房間權限
 	if err := m.db.SetRoomPermission(*u); err != nil {
 		return err
 	}
@@ -133,18 +134,21 @@ func (m *Member) RemoveBanned(uid string, rid int) error {
 	return m.c.set(u)
 }
 
+//  對全站解除禁言
 func (m *Member) RemoveBannedAll(uid string) error {
 	var (
 		err    error
 		banned = false
 	)
 
+	//解Banned
+	// db
 	_, err = m.db.SetUserBanned(uid, banned)
 	if err != nil {
 		return err
 	}
 
-	//解Banned 成功
+	// cahce
 	if err = m.c.delAllBanned(uid); err != nil {
 		log.Error("member/banned.go RemoveBannedAll.0", zap.Error(err))
 		return err
@@ -160,6 +164,7 @@ func (m *Member) RemoveBannedAll(uid string) error {
 		return err
 	}
 
+	// 更新會員cache
 	member.IsMessage = true
 	return m.c.set(member)
 }

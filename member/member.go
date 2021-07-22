@@ -126,6 +126,7 @@ func (m *Member) SetManage(uid string, rid int, set bool) error {
 	return m.c.set(member)
 }
 
+// 刪除會員所有房間快取
 func (m *Member) Kick(uid string) ([]string, error) {
 	keys, err := m.c.getKeys(uid)
 	if err != nil {

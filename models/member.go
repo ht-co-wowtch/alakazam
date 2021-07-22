@@ -44,9 +44,9 @@ type Member struct {
 	Uid        string     `json:"uid"`
 	Name       string     `json:"name"`
 	Type       int        `json:"type"`
-	IsMessage  bool       `json:"is_message"`
-	IsBlockade bool       `json:"is_blockade"`
-	Permission Permission `json:"-" xorm:"-"`
+	IsMessage  bool       `json:"is_message"` // 是否允許發言
+	IsBlockade bool       `json:"is_blockade"` // 是否被封鎖
+	Permission Permission `json:"-" xorm:"-"` // 格別房間權限
 	Gender     int32      `json:"gender"`
 	CreateAt   time.Time  `json:"-"`
 }
@@ -55,6 +55,7 @@ func (r *Member) TableName() string {
 	return "members"
 }
 
+// 是否被禁言
 func (r Member) Banned() bool {
 	if r.IsMessage {
 		return r.Permission.IsBanned
@@ -62,6 +63,7 @@ func (r Member) Banned() bool {
 	return true
 }
 
+//  是否被封鎖
 func (r Member) Blockade() bool {
 	if !r.IsBlockade {
 		return r.Permission.IsBlockade
@@ -69,6 +71,7 @@ func (r Member) Blockade() bool {
 	return true
 }
 
+// 個別房間權限
 type Permission struct {
 	RoomId     int64
 	MemberId   int64
@@ -89,6 +92,7 @@ func (s *Store) CreateUser(member *Member) (bool, error) {
 	return aff == 1, err
 }
 
+// 更新會員資料
 func (s *Store) UpdateUser(member *Member) (bool, error) {
 	aff, err := s.d.Cols("name", "gender").
 		Where("uid = ?", member.Uid).
@@ -96,14 +100,17 @@ func (s *Store) UpdateUser(member *Member) (bool, error) {
 	return aff == 1, err
 }
 
+// 全站禁言封鎖
 func (s *Store) SetUserBlockade(uid string, is bool) (bool, error) {
 	return s.setUserPermission(uid, "is_blockade", is)
 }
 
+// 全站禁言設定
 func (s *Store) SetUserBanned(uid string, is bool) (bool, error) {
 	return s.setUserPermission(uid, "is_message", is)
 }
 
+// 設定全站權限
 func (s *Store) setUserPermission(uid, colName string, is bool) (bool, error) {
 	//用uid找出聊天室中的 member_id
 	m, err := s.Find(uid)
@@ -144,7 +151,7 @@ func (s *Store) setUserPermission(uid, colName string, is bool) (bool, error) {
 	return aff == 1, err
 }
 
-// 找會員
+// 找會員 by uid
 func (s *Store) Find(uid string) (*Member, error) {
 	m := new(Member)
 	ok, err := s.d.Where("uid = ?", uid).
@@ -156,6 +163,7 @@ func (s *Store) Find(uid string) (*Member, error) {
 	return m, err
 }
 
+// 取得對房間權限
 func (s *Store) RoomPermission(id int64, rid int) (Permission, error) {
 	p := Permission{}
 	_, err := s.d.Where("room_id = ?", rid).Where("member_id = ?", id).Get(&p)
@@ -169,6 +177,7 @@ func (s *Store) RoomPermission(id int64, rid int) (Permission, error) {
 	return p, nil
 }
 
+// 設定對房間權限
 func (s *Store) SetRoomPermission(member Member) error {
 	data := &member.Permission
 
@@ -193,12 +202,14 @@ func (s *Store) SetRoomPermission(member Member) error {
 	return err
 }
 
+// 批次取得會員資料 By id
 func (s *Store) GetMembers(ids []int64) ([]Member, error) {
 	m := make([]Member, 0)
 	err := s.d.Table(&Member{}).In("id", ids).Find(&m)
 	return m, err
 }
 
+// 批次取得會員資料 By uid
 func (s *Store) GetMembersByUid(uid []string) ([]Member, error) {
 	m := make([]Member, 0)
 	err := s.d.In("uid", uid).Find(&m)

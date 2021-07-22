@@ -18,7 +18,8 @@ func (m *Member) SetBlockade(uid string, rid int, set bool) error {
 	return m.c.set(member)
 }
 
-// 更新會員封鎖狀態
+// 更新會員全站封鎖狀態
+// set: true 封鎖, false 解除封鎖
 func (m *Member) SetBlockadeAll(uid string, set bool) error {
 	// 更新db中會員封鎖狀態
 	if _, err := m.db.SetUserBlockade(uid, set); err != nil {
