@@ -29,11 +29,11 @@ make run
 1. comet: 用戶連結
 
    web socket Server
-   
+
    grpc server
 
 2. logic: 業務邏輯
-   
+
    http server
 
    grpc server
@@ -44,7 +44,7 @@ make run
 
 4. message: 訊息持久化處理
 
-5. seq: 
+5. seq:
 
 > `comet`．`logic`．`job` 為核心系統。
 

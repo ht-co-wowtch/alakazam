@@ -81,8 +81,8 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.DELETE("/room/:id", api.ErrHandler(s.DeleteRoom))
 	e.POST("/room/manage", api.ErrHandler(s.AddManage))
 	e.DELETE("/room/:id/manage/:uid", api.ErrHandler(s.DeleteManage))
-	e.POST("/room/notice", api.ErrHandler(s.notice))
-	e.GET("/online", api.ErrHandler(s.online))
+	e.POST("/room/notice", api.ErrHandler(s.notice)) // todo
+	e.GET("/online", api.ErrHandler(s.online)) // 所有房間在線人數
 
 	// 訊息
 	e.POST("/custom", api.ErrHandler(s.custom)) // todo

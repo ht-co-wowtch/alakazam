@@ -190,6 +190,7 @@ func (s *httpServer) DeleteManage(c *gin.Context) error {
 	return nil
 }
 
+// 所有房間在線人數
 func (s *httpServer) online(c *gin.Context) error {
 	o, err := s.room.Online()
 	if err == nil {
