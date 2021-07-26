@@ -11,14 +11,13 @@
   - [啟動metrics](#啟動metrics)
 
 
-
 ## 目錄解說
 
 [目錄](https://gitlab.com/jetfueltw/cpw/alakazam/tree/develop/docker/docker-compose)
 
 ```bash
 .
-├── Makefile # 
+├── Makefile
 ├── README.md
 ├── data
 ├── docker-compose.yml
@@ -36,28 +35,24 @@
 
 `mysql` : 存放mysql Dockerfile與初始化sql資料
 
-
-
 ## 開始使用
 
 git clone 到任何你喜歡的位子後，先 `cp .env.example .env` 再更改你需要的設定，例如：
+
 ```
 MYSQL_ROOT_PASS=root
 ```
 
-
-
 ### 登入 GitLab Container Registry
 
-先到 Gitlab 產生一個 [Personal Access Tokens](https://gitlab.com/profile/personal_access_tokens)，name 填 Container Registry（或其他好記的名字），scopes 勾選 read_registry，建立後記得把 token 記起來。  
-之後 terminal 輸入 `docker login -u yourname@cqcp.com.tw registry.gitlab.com`，密碼則是剛才產生的 token。
-
-
+先到 Gitlab 產生一個 [Personal Access Tokens](https://gitlab.com/-/profile/personal_access_tokens)，name 填 Container Registry（或其他好記的名字），scopes 勾選 read_registry，建立後記得把 token 記起來。  
+之後 terminal 輸入 `docker login -u <your email of docker hub> registry.gitlab.com`，密碼則是剛才產生的 token。
 
 ### Database Migration
 
 絕大多數的服務都依賴於資料庫，與正確的 schema 版本，在開始開發前，你需要先初始化資料庫。  
 第一次會預設建立 `platform`、`alakazam` 兩個資料庫，如果你在 .env 使用其他名字的話，你必須手動新增資料庫再跑 migrate。
+
 ```bash
 // 撤銷所有 migration
 make platform.rollback
@@ -72,9 +67,7 @@ make platform.seed
 make platform.reset
 ```
 
-
-
-### MySQL initdb
+### MySQL init db
 
 當第一次啟動 MySQL 時，會執行 `docker-entrypoint-initdb.d` 資料夾底下的 `.sh`、`.sql` 與 `.sql.gz`，你可以在裡面放初始化資料庫的語法。第一次啟動會跑一段時間才能訪問。  
 如果你想刪除所有資料庫並重跑 init，可以刪除 volume 後再啟動。
@@ -84,8 +77,6 @@ docker-compose down
 rm -rf ./data/mysql
 docker-compose up -d mysql
 ```
-
-
 
 ### 啟動與停止服務
 
@@ -101,8 +92,6 @@ docker-compose up -d alakazam
 
 docker-compose down
 ```
-
-
 
 ### 啟動metrics
 
