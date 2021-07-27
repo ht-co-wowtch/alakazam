@@ -10,7 +10,6 @@
   - [啟動與停止服務](#啟動與停止服務)
   - [啟動metrics](#啟動metrics)
 
-
 ## 目錄解說
 
 [目錄](https://gitlab.com/jetfueltw/cpw/alakazam/tree/develop/docker/docker-compose)
@@ -72,7 +71,7 @@ make platform.reset
 當第一次啟動 MySQL 時，會執行 `docker-entrypoint-initdb.d` 資料夾底下的 `.sh`、`.sql` 與 `.sql.gz`，你可以在裡面放初始化資料庫的語法。第一次啟動會跑一段時間才能訪問。  
 如果你想刪除所有資料庫並重跑 init，可以刪除 volume 後再啟動。
 
-```
+```bash
 docker-compose down
 rm -rf ./data/mysql
 docker-compose up -d mysql

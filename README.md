@@ -1,6 +1,4 @@
-
-
-# 聊天室
+# Alakazam 聊天室
 
 - [啟動聊天室](./docker/docker-compose/README.md)
 - [快速開始介接聊天室](#quick-reference)
@@ -16,9 +14,9 @@
 
 ## Quick Start
 
-```
+``` bash
 make run
-``` 
+```
 
 ## Architecture
 
@@ -136,8 +134,6 @@ TODO
 | 9     | [取消置頂訊息](#cancle-header-message-reply) | json   |
 | 20    | [聊天室踢人](#close-reply)                   | json   |
 
-
-
 ### Body
 
 聊天室的訊息內容
@@ -148,7 +144,7 @@ TODO
 
 > 本例子js只是解釋如何產生一個Protocol，實際寫法請自行實作
 
-```
+```bash
 // websocket傳輸模式要設定成binary
 ws.binaryType = 'arraybuffer'
 
@@ -191,33 +187,33 @@ ws.send(res.buffer)
 
 接收到回覆
 
-```
+```go
 ws.onmessage = function (evt) {
-	var data = evt.data
-	var dataView = new DataView(data, 0)
-	
-    // Protocol Package欄位內容
-	var packetLen = dataView.getInt32(0)
-	
-    // Protocol Header欄位內容
-	var headerLen = dataView.getInt16(4)
-	
-    // Protocol Operation欄位內容
-	var op = dataView.getInt32(6)
+   var data = evt.data
+   var dataView = new DataView(data, 0)
+
+   // Protocol Package欄位內容
+   var packetLen = dataView.getInt32(0)
+
+   // Protocol Header欄位內容
+   var headerLen = dataView.getInt16(4)
+
+   // Protocol Operation欄位內容
+   var op = dataView.getInt32(6)
     
-	switch (op) {
-   	    // 回覆進入房間結果
-		case 2:
-  		    // 擷取出body內容
-			var json = textDecoder.decode(data.slice(headerLen, packetLen))
-			var msgBody = JSON.parse(json)
-			console.log(msgBody)
-			break
-		// 回覆心跳結果，心跳body為空所以不做事	
-		case 4:
-			console.log("receive: heartbeat")
-			break
-	}
+   switch (op) {
+      // 回覆進入房間結果
+      case 2:
+         // 擷取出body內容
+         var json = textDecoder.decode(data.slice(headerLen, packetLen))
+         var msgBody = JSON.parse(json)
+         console.log(msgBody)
+         break
+      // 回覆心跳結果，心跳body為空所以不做事
+      case 4:
+         console.log("receive: heartbeat")
+         break
+   }
 }
 ```
 
@@ -227,7 +223,7 @@ ws.onmessage = function (evt) {
 
 ![arch](./doc/message.png)
 
-```
+```bash
 ws.onmessage = function (evt) {
     // 取出header
     var data = evt.data;
@@ -259,8 +255,6 @@ ws.onmessage = function (evt) {
     }
 }
 ```
-
-
 
 ### Response
 
@@ -306,7 +300,7 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 
 進入房間有幾種狀況，原因都會寫在`message`
 
-1. status => `true` 
+1. status => `true`
    1. 房間無法發話
    2. 用戶無法發話
    3. 沒有任何異常，為空值
@@ -329,19 +323,15 @@ Operation = `20`=> 踢出房間
 }
 ```
 
-
-
 #### Heartbeat Reply
 
 Operation = `4`=> 回覆心跳結果
 
-```
+```text
 body是內容是該房間在線人數，是一個int32
 ```
 
 ![arch](./doc/heartbeatReply.png)
-
-
 
 #### Message Reply
 
@@ -349,7 +339,7 @@ Operation = `6`=> 單筆訊息
 
 ![arch](./doc/message_raw.png)
 
-Ｍessage type 
+Ｍessage type
 
 每個message json 內都有一個type來判斷訊息種類
 
@@ -368,9 +358,7 @@ Operation = `6`=> 單筆訊息
 | close_live      | 關播         |
 | permission      | 權限         |
 
-
 ![arch](./doc/message/live_message.png)
-
 
 | 欄位名稱     | 說明         | 格式          |
 | ------------ | ------------ | ------------- |
@@ -386,8 +374,6 @@ Operation = `6`=> 單筆訊息
 | live_stream  | 直播         |               |
 | follow       | 關注         |               |
 
-
-
 display.user: 顯示用戶資料
 
 | 欄位名稱 | 說明                     | 格式    |
@@ -396,17 +382,13 @@ display.user: 顯示用戶資料
 | color    | 字體顏色                 | #000000 |
 | avatar   | 頭像名稱 [類型](#avatar) | string  |
 
-
-
-display.level: 發訊息人等級 
+display.level: 發訊息人等級
 
 | 欄位名稱         | 說明         | 格式    |
 | ---------------- | ------------ | ------- |
 | text             | 身份名稱     | string  |
 | color            | 字體顏色     | #000000 |
 | background_color | 字體背景顏色 | #000000 |
-
-
 
 display.title: 發訊息人身份
 
@@ -415,8 +397,6 @@ display.title: 發訊息人身份
 | text             | 身份名稱     | string  |
 | color            | 字體顏色     | #000000 |
 | background_color | 字體背景顏色 | #000000 |
-
-
 
 display.message: 訊息資料
 
@@ -447,8 +427,6 @@ display.background_image.`type`=linear-gradient
 | to       | 漸層方向 `right``left` | string |
 | color    | 顏色                   | array  |
 
-
-
 user: 發訊息人資料
 
 | 欄位名稱 | 說明                     | 格式   |
@@ -458,8 +436,6 @@ user: 發訊息人資料
 | avatar   | 頭像名稱 [類型](#avatar) | string |
 | type     | 身份(訪客`guest` 營運`market` 一般`player` 主播`streamer` 房管`manage`) | string |
 
-
-
 red_envelope: 紅包資料
 
 | 欄位名稱 | 說明          | 格式   |
@@ -467,8 +443,6 @@ red_envelope: 紅包資料
 | id       | 紅包id        | string |
 | token    | 搶紅包的token | string |
 | expired  | 紅包過期時間  | RF3339 |
-
-
 
 bet: 跟投
 
@@ -484,8 +458,6 @@ bet: 跟投
 | bets.items       | 組合號碼       | []string |
 | bets.trans_items | 組合號碼(中文) | []string |
 | bets.amount      | 下注金額       | int      |
-
-
 
 gift: 禮物
 
@@ -523,16 +495,12 @@ live_stream: 直播
 | -------- | --------- | ---- |
 | chat_id  | 直播間 id | int  |
 
-
-
 entity.type: 文字實體內容
 
 | 值       | 說明     | 格式   |
 | -------- | -------- | ------ |
 | username | user名稱 | string |
 | button   | 按鈕     | string |
-
-
 
 一般訊息(用戶)
 
@@ -615,7 +583,6 @@ entity.type: 文字實體內容
     }
 }
 ```
-
 
 公告(管理員)
 
@@ -963,8 +930,6 @@ entity.type: 文字實體內容
 }
 ```
 
-
-
 跟投訊息
 
 ```json
@@ -1077,8 +1042,6 @@ entity.type: 文字實體內容
 }
 ```
 
-
-
 關播訊息
 
 ```json
@@ -1090,7 +1053,7 @@ entity.type: 文字實體內容
    "display":null,
    "user":null,
    "live_stream": {
-  	 "chat_id": 1 
+      "chat_id": 1 
    }
 }
 ```
@@ -1119,7 +1082,6 @@ permission
    }
 }
 ```
-
 
 #### Change Room Reply
 
@@ -1176,8 +1138,6 @@ Operation = `9`=> 取消置頂訊息
 | ---- | ---------- | ---- |
 | id   | 置頂消息id | int  |
 
-
-
 ## Web Socket
 
 ### Room
@@ -1201,13 +1161,11 @@ Operation = `9`=> 取消置頂訊息
 | 成功             | [Response](#room-reply)   |
 | 失敗(非封鎖造成) | server會把websocket close |
 
-
-
 ### Heartbeat
 
 進入房間成功後websocket需要每分鐘做一次心跳，讓server確保websocket健康狀況，請利用送一個body為空的[Protocol](#protocol-body)，以下是一個簡單的js範例，至於為什麼這樣寫[請看](#buffer)
 
-```
+```go
 var headerBuf = new ArrayBuffer(rawHeaderLen);
 var headerView = new DataView(headerBuf, 0);
 headerView.setInt32(packetOffset, rawHeaderLen);
@@ -1222,8 +1180,6 @@ headerView.setInt32(opOffset, 3);
 | 成功 | [Response](#heartbeat-reply) |      |
 | 失敗 | 失敗就會close連線            |      |
 
-
-
 ### Change Room
 
 Boyd內容如下，Protocol Operation[參考](#operation)
@@ -1233,8 +1189,6 @@ Boyd內容如下，Protocol Operation[參考](#operation)
     "room_id": 1000
 }
 ```
-
-
 
 | name    | 說明     | 格式   |      |
 | ------- | -------- | ------ | ---- |
@@ -1257,8 +1211,6 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 | male   | 男性頭像![arch](./doc/avatar/male.svg)      |
 | other  | 其他性別頭像![arch](./doc/avatar/other.svg) |
 | root   | 管理員頭像![arch](./doc/avatar/root.svg)    |
-
-
 
 ## Error Code
 
@@ -1284,8 +1236,6 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 | 10021003, 15021003 | 400       | json欄位型態錯誤，如string放int                              |
 | 10020000, 15020000 | 500       | 伺服器出問題                                                 |
 
-
-
 ## Permission
 
 角色說明
@@ -1309,7 +1259,6 @@ Boyd內容如下，Protocol Operation[參考](#operation)
    | 會員禁言   |      | Yes  | Yes  | Yes        |
    | 會員封鎖   |      |      |      |            |
 
-   
 
 2. 聊天(發送普通訊息)，yes代表可以
 
@@ -1333,7 +1282,6 @@ Boyd內容如下，Protocol Operation[參考](#operation)
    | 會員禁言   |      |      | Yes  | Yes        | Yes    | Yes  |
    | 會員封鎖   |      |      |      |            | Yes    | Yes  |
 
-   
 
 4. 搶紅包，yes代表可以
 
@@ -1358,8 +1306,6 @@ Boyd內容如下，Protocol Operation[參考](#operation)
    | 會員封鎖   |      |      |      |            | Yes    | Yes  |
    | 跟投關閉   |      |      |      |            |        |      |
 
-   
-
 6. 跟投，yes代表可以
 
    | 狀態       | 遊客 | 試玩 | 會員 | 帶玩(營運) |
@@ -1377,5 +1323,4 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 
    目前聊天室心跳是依照logic.yml做設定，默認是5分鐘，所以正常來說5分鐘沒心跳連線才會斷，但如果前端以大於等於1分鐘的頻率做心跳，發現每次要發心跳時都會失敗，可能原因是連線已斷，但正常來說5分鐘後才會斷，這種情況可能的原因是連線是使用nginx or aws alb這種代理，默認`read` and `send`都是60s，所以必須調整這些代理的timeout大於5分鐘一點即可正常．
 
-   nginx : `proxy_read_timeout` `proxy_send_timeout` 
-
+   nginx : `proxy_read_timeout` `proxy_send_timeout`
