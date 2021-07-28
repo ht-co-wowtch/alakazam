@@ -4,7 +4,7 @@
 - [快速開始介接聊天室](#quick-reference)
 - [快速建置聊天室服務](#quick-start)
 - [依賴工具](#dependencies)
-- [架構圖](#architecture)
+- [架構](#architecture)
 - [功能](#features)
 - [聊天室Web Socket協定](#protocol-body)
 - [Web Socket](#web-socket)
@@ -20,7 +20,39 @@ make run
 
 ## Architecture
 
+### 系統架構
+
 ![arch](./doc/architecture.png)
+
+### 負責功能
+
+1. comet: 用戶連結
+
+   web socket Server
+   
+   grpc server
+
+2. logic: 業務邏輯
+   
+   http server
+
+   grpc server
+
+3. job: 訊息推送
+
+   grpc server
+
+4. message: 訊息持久化處理
+
+5. seq: 
+
+> `comet`．`logic`．`job` 為核心系統。
+
+> 消息系統中的kafka也可視為外部服務。
+
+### 系統流程
+
+![arch](./doc/flow.png)
 
 ## Features
 
@@ -33,7 +65,7 @@ make run
 - [x] 單一用戶進入多房間(可重覆一樣的房間)
 - [x] 限制用戶打碼與充值量聊天
 - [x] 用戶封鎖
-- [x] 用戶拉取歷史訊息(mysql )
+- [x] 用戶拉取歷史訊息(mysql)
 - [x] 房間禁言
 - [x] 踢人
 - [x] 用戶搶紅包
