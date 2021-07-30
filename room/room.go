@@ -70,6 +70,7 @@ type Limit struct {
 	Dml int `json:"dml"`
 }
 
+// 新增房間
 func (r *room) Create(status Status) (int, error) {
 	model := r.newRoomModel(status)
 	model.Status = true
@@ -80,6 +81,7 @@ func (r *room) Create(status Status) (int, error) {
 	return model.Id, r.c.set(model)
 }
 
+// 更新房間
 func (r *room) Update(id int, status Status) error {
 	model := r.newRoomModel(status)
 	model.Id = id
@@ -94,6 +96,7 @@ func (r *room) Update(id int, status Status) error {
 	return nil
 }
 
+// 建立房間room Model
 func (r *room) newRoomModel(status Status) models.Room {
 	if status.AudienceRatio < 1 {
 		status.AudienceRatio = 1
@@ -109,6 +112,7 @@ func (r *room) newRoomModel(status Status) models.Room {
 	}
 }
 
+// 刪除房間
 func (r *room) Delete(id int) error {
 	room, err := r.Get(id)
 	if err != nil {
@@ -132,6 +136,7 @@ func (r *room) Delete(id int) error {
 	return nil
 }
 
+// 取得房間資料
 func (r *room) Get(id int) (models.Room, error) {
 
 	room, err := r.db.GetRoom(id)
@@ -145,8 +150,9 @@ func (r *room) Get(id int) (models.Room, error) {
 	return room, nil
 }
 
+// 取得置頂/公告訊息 By msg_id & type id
 func (r *room) GetTopMessage(msgId int64, t int) ([]int32, models.Message, error) {
-	roomTopMsg, err := r.db.FindRoomTopMessage(msgId)
+	roomTopMsg, err := r.db.FindRoomTopMessage(msgId) // 從db中取得訊息 by msg_id
 	if err != nil {
 		return nil, models.Message{}, err
 	}
@@ -170,6 +176,7 @@ func (r *room) GetTopMessage(msgId int64, t int) ([]int32, models.Message, error
 	}, nil
 }
 
+// 新增置頂/公告訊息
 func (r *room) AddTopMessage(rids []int32, seq int64, msg string, ts []int) error {
 	var roomTopMessage scheme.Message
 	model := models.RoomTopMessage{
@@ -190,9 +197,9 @@ func (r *room) AddTopMessage(rids []int32, seq int64, msg string, ts []int) erro
 		}
 
 		if t == models.TOP_MESSAGE {
-			roomTopMessage = message.RoomTopMessageToMessage(model)
+			roomTopMessage = message.RoomTopMessageToMessage(model) // 置頂訊息
 		} else {
-			roomTopMessage = message.RoomBulletinMessageToMessage(model)
+			roomTopMessage = message.RoomBulletinMessageToMessage(model) // 公告訊息
 		}
 
 		b, err := json.Marshal(roomTopMessage)
@@ -201,9 +208,9 @@ func (r *room) AddTopMessage(rids []int32, seq int64, msg string, ts []int) erro
 		}
 
 		if t == models.TOP_MESSAGE {
-			err = r.c.setChatTopMessage(rids, b)
+			err = r.c.setChatTopMessage(rids, b) // 置頂訊息寫入到Cache
 		} else {
-			err = r.c.setChatBulletinMessage(rids, b)
+			err = r.c.setChatBulletinMessage(rids, b) //公告訊息寫入到Cache
 		}
 
 		if err != nil {
@@ -214,6 +221,7 @@ func (r *room) AddTopMessage(rids []int32, seq int64, msg string, ts []int) erro
 	return nil
 }
 
+// 刪除置頂/公告訊息
 func (r *room) DeleteTopMessage(rids []int32, msgId int64, t int) error {
 	err := r.db.DeleteRoomTopMessage(rids, msgId, t)
 	if err != nil {
@@ -224,10 +232,10 @@ func (r *room) DeleteTopMessage(rids []int32, msgId int64, t int) error {
 	}
 
 	if t == models.TOP_MESSAGE {
-		return r.c.deleteChatTopMessage(rids)
+		return r.c.deleteChatTopMessage(rids) //從cache中刪除置頂訊息
 	}
 
-	return r.c.deleteChatBulletinMessage(rids)
+	return r.c.deleteChatBulletinMessage(rids) //從cache中刪除公告訊息
 }
 
 // 所有房間在線人數

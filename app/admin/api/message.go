@@ -53,7 +53,7 @@ type pushRoomReq struct {
 	IsBulletin bool `json:"is_bulletin"`
 }
 
-// 訊息
+// 訊息(一般/置頂/公告)
 func (s *httpServer) push(c *gin.Context) error {
 	p := new(pushRoomReq)
 	if err := c.ShouldBindJSON(p); err != nil {
@@ -63,22 +63,26 @@ func (s *httpServer) push(c *gin.Context) error {
 	var id int64
 	var err error
 
-	if !p.IsTop && !p.IsBulletin {
+	if !p.IsTop && !p.IsBulletin { // 一般訊息
+		// 發送一般訊息
 		if id, err = s.message.SendAdmin(p.RoomId, p.Message); err != nil {
 			return err
 		}
 	}
-	if p.IsTop {
+	if p.IsTop { // 置頂訊息
+		// 發送置頂
 		if id, err = s.message.SendTop(p.RoomId, p.Message); err != nil {
 			return err
 		}
 	}
-	if p.IsBulletin {
+	if p.IsBulletin { // 公告訊息
+		// 發送公告
 		if id, err = s.message.SendSystem(p.RoomId, p.Message); err != nil {
 			return err
 		}
 	}
 
+	// 置頂&公告的訊息才會存到DB中
 	var ts []int
 	if p.IsTop {
 		ts = append(ts, models.TOP_MESSAGE)
@@ -101,6 +105,7 @@ func (s *httpServer) push(c *gin.Context) error {
 	return nil
 }
 
+// 跟投訊息結構
 type betsReq struct {
 	RoomId       []int32           `json:"room_id" binding:"required"`
 	Uid          string            `json:"uid" binding:"required"`
@@ -154,6 +159,7 @@ func (s *httpServer) bets(c *gin.Context) error {
 	return nil
 }
 
+// 跟投中獎訊息結構
 type betsPayReq struct {
 	RoomId     int32         `json:"room_id" binding:"required"`
 	Uid        string        `json:"uid" binding:"required"`
@@ -161,6 +167,7 @@ type betsPayReq struct {
 	OpenReward OpenRewardReq `json:"open_chat_reward"`
 }
 
+// 開獎訊息結構
 type OpenRewardReq struct {
 	Amount     float64 `json:"amount" binding:"required"`
 	ButtonName string  `json:"button_name" binding:"required"`
@@ -431,6 +438,7 @@ type followReq struct {
 	Total  int    `json:"total" binding:"required"`
 }
 
+// 發送追隨主播訊息
 func (s *httpServer) follow(c *gin.Context) error {
 	var req followReq
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -511,6 +519,7 @@ var delMessageType = map[string]int{
 	"bulletin": models.BULLETIN_MESSAGE,
 }
 
+// 刪除訊息log
 func dbgMessageType(id int, mtype string) {
 	topic := "1.操作訊息型態"
 	var rst string
@@ -526,6 +535,7 @@ func dbgMessageType(id int, mtype string) {
 	log.Info(topic, zap.Int("msgId", id), zap.String("type", mtype), zap.String("FYI", rst))
 }
 
+// 刪除訊息
 func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -539,13 +549,13 @@ func (s *httpServer) deleteTopMessage(c *gin.Context) error {
 
 	t, ok := delMessageType[c.Query("type")]
 
-	dbgMessageType(id, c.Query("type"))
+	dbgMessageType(id, c.Query("type")) // 刪除訊息log
 
 	if ok {
 		var topMsg models.Message
 
 		//FYI: alakazam/room/room.go
-		rid, topMsg, err = s.room.GetTopMessage(msgId, t)
+		rid, topMsg, err = s.room.GetTopMessage(msgId, t) // 取得置頂/公告訊息 By msg_id & type id
 
 		if err != nil {
 			log.Errorf("2.取消置頂訊息 GetTopMessage Err, FYI:%s", fmt.Sprintf("可能訊息之前已被刪除了root cause (%s)", err))

@@ -22,12 +22,14 @@ func (r *RoomTopMessage) TableName() string {
 	return "room_top_messages"
 }
 
+// 搜尋訊息 By msg_id
 func (s *Store) FindRoomTopMessage(msgId int64) ([]RoomTopMessage, error) {
 	msg := make([]RoomTopMessage, 0)
 	err := s.d.Where("`msg_id` = ?", msgId).Find(&msg)
 	return msg, err
 }
 
+// 新增置頂/公告訊息
 func (s *Store) AddRoomTopMessage(rids []int32, message RoomTopMessage) error {
 	_, err := s.d.Transaction(func(session *xorm.Session) (i interface{}, e error) {
 		for _, rid := range rids {
@@ -40,6 +42,7 @@ func (s *Store) AddRoomTopMessage(rids []int32, message RoomTopMessage) error {
 	return err
 }
 
+// 刪除置頂/公告訊息
 func (s *Store) DeleteRoomTopMessage(rid []int32, msgId int64, t int) error {
 	aff, err := s.d.In("room_id", rid).
 		Where("`type` = ? AND `msg_id` = ? ", t, msgId).

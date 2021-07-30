@@ -141,6 +141,7 @@ func (c *chat) reloadChat(id int) (models.Room, error) {
 	return room, nil
 }
 
+// 進入房間
 func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 	var params struct {
 		// 帳務中心+版的認證token
@@ -174,6 +175,7 @@ func (c *chat) Connect(server string, token []byte) (*pb.ConnectReply, error) {
 	return c.newConnectReply(user, room, key)
 }
 
+// 換房間
 func (c *chat) ChangeRoom(uid string, rid int, key string) (*pb.ConnectReply, error) {
 	room, err := c.getChat(rid)
 	if err != nil {

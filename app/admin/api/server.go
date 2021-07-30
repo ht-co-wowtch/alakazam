@@ -79,21 +79,25 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.PUT("/room/:id", api.ErrHandler(s.UpdateRoom))
 	e.GET("/room/:id", api.ErrHandler(s.GetRoom))
 	e.DELETE("/room/:id", api.ErrHandler(s.DeleteRoom))
+
+	// 房管
 	e.POST("/room/manage", api.ErrHandler(s.AddManage))
 	e.DELETE("/room/:id/manage/:uid", api.ErrHandler(s.DeleteManage))
+
 	e.POST("/room/notice", api.ErrHandler(s.notice)) // todo
 	e.GET("/online", api.ErrHandler(s.online)) // 所有房間在線人數
 
 	// 訊息
-	e.POST("/custom", api.ErrHandler(s.custom)) // todo
+	e.POST("/custom", api.ErrHandler(s.custom)) // todo 客制訊息內容
+	// 一般/置頂/公告
 	e.POST("/push", api.ErrHandler(s.push))
 	e.DELETE("/push/:id", api.ErrHandler(s.deleteTopMessage))
 	e.POST("/red-envelope", api.ErrHandler(s.giveRedEnvelope)) // 紅包
-	e.POST("/bets", api.ErrHandler(s.bets))
-	e.POST("/betsWin", api.ErrHandler(s.betsWin))
-	e.POST("/gift", api.ErrHandler(s.gift))
-	e.POST("/reward", api.ErrHandler(s.reward))
-	e.POST("/follow", api.ErrHandler(s.follow))
+	e.POST("/bets", api.ErrHandler(s.bets)) // 下注
+	e.POST("/betsWin", api.ErrHandler(s.betsWin)) // 中獎
+	e.POST("/gift", api.ErrHandler(s.gift)) // 送禮
+	e.POST("/reward", api.ErrHandler(s.reward)) // 打賞
+	e.POST("/follow", api.ErrHandler(s.follow)) // 追隨主播
 
 	// 敏感詞
 	e.POST("/shield", api.ErrHandler(s.CreateShield))

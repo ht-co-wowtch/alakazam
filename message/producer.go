@@ -242,12 +242,14 @@ func (p *Producer) SendPrivateReply(keys []string, user *models.Member) (int64, 
 	})
 }
 
+// 發送系統公告訊息
 func (p *Producer) SendSystem(rid []int32, msg string) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		return scheme.NewRoot().ToSystem(id, msg).ToRoomProto(rid)
 	})
 }
 
+// 發送後台管理者訊息
 func (p *Producer) SendAdmin(rid []int32, msg string) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		u := scheme.NewRoot()
@@ -267,12 +269,14 @@ func (p *Producer) SendAdmin(rid []int32, msg string) (int64, error) {
 	})
 }
 
+// 發送置頂訊息
 func (p *Producer) SendTop(rid []int32, msg string) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		return scheme.NewRoot().ToTop(id, msg).ToRoomProto(rid)
 	})
 }
 
+// 發送送禮訊息
 func (p *Producer) SendGift(rid int32, user scheme.User, gift scheme.Gift) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		if gift.Combo.Count == 0 {
@@ -282,12 +286,14 @@ func (p *Producer) SendGift(rid int32, user scheme.User, gift scheme.Gift) (int6
 	})
 }
 
+// 發送打賞訊息
 func (p *Producer) SendReward(rid int32, user scheme.User, amount, totalAmount float64) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		return scheme.NewRewardProto(id, rid, user, amount, totalAmount)
 	})
 }
 
+// 發送紅包訊息
 func (p *Producer) SendRedEnvelope(rid []int32, message string, user scheme.User, redEnvelope scheme.RedEnvelope) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		message, err := p.filterMessage(message)
@@ -299,24 +305,28 @@ func (p *Producer) SendRedEnvelope(rid []int32, message string, user scheme.User
 	})
 }
 
+// 發送下注訊息
 func (p *Producer) SendBets(rid []int32, user scheme.User, bet scheme.Bet) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		return bet.ToProto(id, rid, user)
 	})
 }
 
+// 發送中獎訊息
 func (p *Producer) SendBetsWin(rid []int32, user scheme.User, gameName string) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		return scheme.NewBetsWinProto(id, rid, user, gameName)
 	})
 }
 
+// 發送中獎後打賞訊息
 func (p *Producer) SendBetsWinReward(keys []string, user scheme.User, amount float64, buttonName string) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		return scheme.NewBetsWinRewardProto(id, keys, user, amount, buttonName)
 	})
 }
 
+// 發送進入房間訊息
 func (p *Producer) SendConnect(rid int32, user *logicpb.User, isManage bool) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		level := "会员"
@@ -328,6 +338,7 @@ func (p *Producer) SendConnect(rid int32, user *logicpb.User, isManage bool) (in
 	})
 }
 
+// 發送成為/移除房管訊息
 func (p *Producer) SendPermission(keys []string, user *models.Member, connect logicpb.Connect) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		if connect.Permission.IsManage {
@@ -371,12 +382,14 @@ func (p *Producer) SendPermission(keys []string, user *models.Member, connect lo
 	})
 }
 
+// 發送追隨主播訊息
 func (p *Producer) SendFollow(rid int32, user scheme.User, total int) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		return scheme.NewFollowProto(id, rid, user, total)
 	})
 }
 
+// 發送一般訊息
 func (p *Producer) SendMessage(rid []int32, msg scheme.Message, isRaw bool) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		now := time.Now()
@@ -422,6 +435,7 @@ func (p *Producer) Kick(msg string, keys []string) error {
 	return nil
 }
 
+// 發送移除置頂訊息
 func (p *Producer) CloseTop(msgId int64, rid []int32) error {
 	pushMsg := &logicpb.PushMsg{
 		Type:  logicpb.PushMsg_ROOM,

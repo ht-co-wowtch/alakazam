@@ -12,6 +12,10 @@ import (
 	// _ "runtime/pprof"
 )
 
+//
+// 快取操作
+//
+
 type Cache interface {
 	set(room models.Room) error
 	get(id int) (models.Room, error)
@@ -62,6 +66,7 @@ var (
 	roomExpired = time.Hour * 12
 )
 
+// 取得房間快取
 func (c *cache) get(id int) (models.Room, error) {
 
 	b, err := c.c.HGet(keyRoom(id), roomDataHKey).Bytes()
@@ -77,6 +82,7 @@ func (c *cache) get(id int) (models.Room, error) {
 	return r, nil
 }
 
+// 設置房間的快取
 func (c *cache) set(room models.Room) error {
 
 	key := keyRoom(room.Id)
@@ -107,6 +113,7 @@ func (c *cache) set(room models.Room) error {
 	return err
 }
 
+// 從快取中取得聊天室資訊
 func (c *cache) getChat(id int) (models.Room, error) {
 
 	room, err := c.c.HMGet(keyRoom(id), roomDataHKey, roomTopMsgHKey, roomBulletinMsgHKey).Result()
@@ -133,6 +140,7 @@ func (c *cache) getChat(id int) (models.Room, error) {
 	return r, err
 }
 
+// 設置置頂訊息快取
 func (c *cache) setChatTopMessage(rids []int32, message []byte) error {
 	keys := make([]string, 0, len(rids))
 	for _, rid := range rids {
@@ -147,6 +155,7 @@ func (c *cache) setChatTopMessage(rids []int32, message []byte) error {
 	return err
 }
 
+// 設置公告訊息快取
 func (c *cache) setChatBulletinMessage(rids []int32, message []byte) error {
 	keys := make([]string, 0, len(rids))
 	for _, rid := range rids {
@@ -161,6 +170,7 @@ func (c *cache) setChatBulletinMessage(rids []int32, message []byte) error {
 	return err
 }
 
+// 從快取中取得置頂訊息
 func (c *cache) getChatTopMessage(rid int) ([]byte, error) {
 	b, err := c.c.HGet(keyRoom(rid), roomTopMsgHKey).Bytes()
 	if err != nil {
@@ -172,6 +182,7 @@ func (c *cache) getChatTopMessage(rid int) ([]byte, error) {
 	return b, nil
 }
 
+// 刪除置頂訊息快取
 func (c *cache) deleteChatTopMessage(rids []int32) error {
 	keys := make([]string, 0, len(rids))
 	for _, rid := range rids {
@@ -187,6 +198,7 @@ func (c *cache) deleteChatTopMessage(rids []int32) error {
 	return err
 }
 
+// 刪除公告訊息快取
 func (c *cache) deleteChatBulletinMessage(rids []int32) error {
 	keys := make([]string, 0, len(rids))
 	for _, rid := range rids {
