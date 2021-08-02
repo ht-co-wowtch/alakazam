@@ -226,6 +226,7 @@ func (s *httpServer) betsWin(c *gin.Context) error {
 	return nil
 }
 
+// 禮物訊息結構
 type giftReq struct {
 	RoomId      int32   `json:"room_id" binding:"required"`
 	Uid         string  `json:"uid" binding:"required"`
