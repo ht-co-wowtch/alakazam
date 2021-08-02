@@ -161,6 +161,7 @@ func (p *Producer) SendKey(keys []string, msg string, user *models.Member) (int6
 	})
 }
 
+// 發送訊息
 func (p *Producer) SendUser(rid []int32, msg string, user *models.Member) (int64, error) {
 	if err := p.rate.perSec(user.Id); err != nil {
 		return 0, err
@@ -203,6 +204,7 @@ func (p *Producer) SendUser(rid []int32, msg string, user *models.Member) (int64
 	})
 }
 
+// 發送私訊息
 func (p *Producer) SendPrivate(keys []string, msg string, user *models.Member) (int64, error) {
 	if err := p.rate.perSec(user.Id); err != nil {
 		return 0, err
@@ -329,6 +331,7 @@ func (p *Producer) SendBetsWinReward(keys []string, user scheme.User, amount flo
 // 發送進入房間訊息
 func (p *Producer) SendConnect(rid int32, user *logicpb.User, isManage bool) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		// TODO VIP 等級
 		level := "会员"
 
 		if isManage {

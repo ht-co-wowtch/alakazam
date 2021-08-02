@@ -212,6 +212,7 @@ func (u User) ToUser(seq int64, message string) Message {
 	return b
 }
 
+// 私訊
 func (u User) ToPrivate(seq int64, message string) Message {
 	b := u.toBase(seq, message)
 	b.Type = PRIVATE_TYPE
@@ -219,6 +220,7 @@ func (u User) ToPrivate(seq int64, message string) Message {
 	return b
 }
 
+// 私訊回覆
 func (u User) ToPrivateReply(seq int64) Message {
 	display := displayByPrivateReply(u)
 	m := display.Message.(displayMessage)
@@ -235,6 +237,7 @@ func (u User) ToStreamer(seq int64, message string) Message {
 	return b
 }
 
+// 產生一般訊息
 func (u User) ToManage(seq int64, message string) Message {
 	b := u.toBase(seq, message)
 	b.Type = MESSAGE_TYPE
@@ -249,12 +252,14 @@ func (u User) ToAdmin(seq int64, message string) Message {
 	return b
 }
 
+// 產生置頂訊息
 func (u User) ToTop(seq int64, message string) Message {
 	msg := u.ToSystem(seq, message)
 	msg.Type = TOP_TYPE
 	return msg
 }
 
+// 產生公告訊息
 func (u User) ToSystem(seq int64, message string) Message {
 	b := u.toBase(seq, message)
 	b.Type = MESSAGE_TYPE
