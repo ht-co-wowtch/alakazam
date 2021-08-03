@@ -17,6 +17,7 @@ import (
 	//_ "net/http/pprof"
 )
 
+// 新增房間
 func (s *httpServer) CreateRoom(c *gin.Context) error {
 	var params room.Status
 	if err := c.ShouldBindJSON(&params); err != nil {
@@ -32,6 +33,7 @@ func (s *httpServer) CreateRoom(c *gin.Context) error {
 	return nil
 }
 
+// 更新房間設定
 func (s *httpServer) UpdateRoom(c *gin.Context) error {
 	var params room.Status
 	var r models.Room
@@ -42,9 +44,11 @@ func (s *httpServer) UpdateRoom(c *gin.Context) error {
 	if err := c.ShouldBindJSON(&params); err != nil {
 		return err
 	}
+	// 從DB取得房間資料
 	if r, err = s.room.Get(rid); err != nil {
 		return err
 	}
+	// 更新房間設定
 	if err := s.room.Update(rid, params); err != nil {
 		return err
 	}
@@ -79,15 +83,17 @@ type Rid struct {
 	Id int `form:"id" binding:"required"`
 }
 
+// 取得房間
 func (s *httpServer) GetRoom(c *gin.Context) error {
 	rid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return err
 	}
+	// 請求資料欄位驗證
 	if err := binding.Validator.ValidateStruct(&Rid{Id: rid}); err != nil {
 		return err
 	}
-	r, err := s.room.Get(rid)
+	r, err := s.room.Get(rid) // 從DB取得房間資料
 	if err != nil {
 		return err
 	}
@@ -108,14 +114,17 @@ func (s *httpServer) GetRoom(c *gin.Context) error {
 	return nil
 }
 
+// 刪除房間
 func (s *httpServer) DeleteRoom(c *gin.Context) error {
 	rid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return err
 	}
+	// 請求資料欄位驗證
 	if err := binding.Validator.ValidateStruct(&Rid{Id: rid}); err != nil {
 		return err
 	}
+	// 刪除房間
 	if err := s.room.Delete(rid); err != nil {
 		return err
 	}
@@ -123,6 +132,7 @@ func (s *httpServer) DeleteRoom(c *gin.Context) error {
 	return nil
 }
 
+// 新增房間管理員
 func (s *httpServer) AddManage(c *gin.Context) error {
 	var params struct {
 		RoomId int    `json:"room_id" binding:"required"`
@@ -133,17 +143,18 @@ func (s *httpServer) AddManage(c *gin.Context) error {
 		return err
 	}
 
+	// DB中寫入會員於房間內權限
 	if err := s.member.SetManage(params.Uid, params.RoomId, true); err != nil {
 		return err
 	}
 
-	keys, err := s.member.GetRoomKeys(params.Uid, params.RoomId)
+	keys, err := s.member.GetRoomKeys(params.Uid, params.RoomId) // 從快去中取得會員與房間ws連線key值
 	if err != nil {
 		return err
 	}
 
-	m, _ := s.member.GetByRoom(params.Uid, params.RoomId)
-	r, _ := s.room.Get(params.RoomId)
+	m, _ := s.member.GetByRoom(params.Uid, params.RoomId) // 從快取中取得會員在該房間權限
+	r, _ := s.room.Get(params.RoomId) // 從DB取得房間資料
 	connect := room.NewPbConnect(m, r, "", 0)
 
 	if len(keys) > 0 {
@@ -155,6 +166,7 @@ func (s *httpServer) AddManage(c *gin.Context) error {
 	return nil
 }
 
+// 刪除房間管理員
 func (s *httpServer) DeleteManage(c *gin.Context) error {
 	rid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -168,6 +180,7 @@ func (s *httpServer) DeleteManage(c *gin.Context) error {
 		RoomId: rid,
 		Uid:    c.Param("uid"),
 	}
+	// 請求資料欄位驗證
 	if err := binding.Validator.ValidateStruct(&params); err != nil {
 		return err
 	}
@@ -175,12 +188,12 @@ func (s *httpServer) DeleteManage(c *gin.Context) error {
 	if err := s.member.SetManage(params.Uid, params.RoomId, false); err != nil {
 		return err
 	}
-	keys, err := s.member.GetKeys(params.Uid)
+	keys, err := s.member.GetKeys(params.Uid) // 從快取中取得會員資料
 	if err != nil {
 		return err
 	}
-	m, _ := s.member.GetByRoom(params.Uid, params.RoomId)
-	r, _ := s.room.Get(int(params.RoomId))
+	m, _ := s.member.GetByRoom(params.Uid, params.RoomId) // 從快取中取得會員在該房間權限
+	r, _ := s.room.Get(int(params.RoomId)) // 從DB取得房間資料
 	connect := room.NewPbConnect(m, r, "", 0)
 
 	_, _ = s.message.SendPermission(keys, m, *connect)
@@ -192,7 +205,7 @@ func (s *httpServer) DeleteManage(c *gin.Context) error {
 
 // 所有房間在線人數
 func (s *httpServer) online(c *gin.Context) error {
-	o, err := s.room.Online()
+	o, err := s.room.Online() // 從快取中取得所有房間在線人數
 	if err == nil {
 		c.JSON(http.StatusOK, o)
 	}
