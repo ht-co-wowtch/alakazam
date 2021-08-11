@@ -25,6 +25,7 @@ const (
 	maxInt = 1<<31 - 1
 )
 
+// 建立一個websocket
 // 開始監聽Websocket, ZDbg(dbConf)
 func InitWebsocket(server *Server, host string, accept int) (err error) {
 	var (
@@ -65,12 +66,14 @@ func acceptWebsocket(server *Server, lis *net.TCPListener) {
 			log.Error("conn setKeepAlive", zap.Error(err))
 			return
 		}
-		// tcp讀取資料的緩衝區大小，該緩衝區為0時會阻塞，此值通常設定完後，系統會自行在多一倍，設定1024會變2304
+		// 設定tcp讀取資料的緩衝區大小
+		// 該緩衝區為0時會阻塞，此值通常設定完後，系統會自行在多一倍，設定1024會變2304
 		if err = conn.SetReadBuffer(server.c.TCP.Rcvbuf); err != nil {
 			log.Error("conn setReadBuffer", zap.Error(err))
 			return
 		}
-		// tcp寫資料的緩衝區大小，該緩衝區滿到無法發送時會阻塞，此值通常設定完後系統會自行在多一倍，設定1024會變2304
+		// 設定tcp寫資料的緩衝區大小
+		// 該緩衝區滿到無法發送時會阻塞，此值通常設定完後系統會自行在多一倍，設定1024會變2304
 		if err = conn.SetWriteBuffer(server.c.TCP.Sndbuf); err != nil {
 			log.Error("conn setWriteBuffer", zap.Error(err))
 			return
@@ -82,6 +85,7 @@ func acceptWebsocket(server *Server, lis *net.TCPListener) {
 	}
 }
 
+// websocket請求連線至某房間
 func authReply(ws websocket.Conn, p *pb.Proto, b []byte) (err error) {
 	p.Op = pb.OpAuthReply
 	p.Body = b
@@ -276,6 +280,8 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 			step = 7
 			break
 		}
+
+		// 確定websocket送來訊息類型
 		if p.Op == pb.OpHeartbeat {
 			// comet有心跳機制維護連線狀態，對於logic來說也需要有人利用心跳機制去告知哪個user還在線
 			// 目前在不在線這個狀態都是由comet控管，但不需要每次webSocket -> 心跳 -> comet就 -> 心跳 -> logic
@@ -288,7 +294,10 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 			tr.Set(trd, hb)
 			p.Op = pb.OpHeartbeatReply
 			p.Body = nil
+
+			// 檢查心跳是否過期
 			if now := time.Now(); now.Sub(lastHB) > serverHeartbeat {
+				// 心跳
 				if err = s.Heartbeat(ctx, ch); err != nil {
 					step = 8
 					break

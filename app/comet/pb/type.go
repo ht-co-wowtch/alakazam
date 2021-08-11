@@ -1,5 +1,6 @@
 package pb
 
+// websocket message Operation type
 const (
 	// client要求連線到某一個房間
 	OpAuth = int32(1)

@@ -22,6 +22,7 @@ const (
 	maxServerHeartbeat = time.Minute * 20
 )
 
+// GRCP Client of Logic
 func newLogicClient(c *grpc.Conf) pb.LogicClient {
 	conn, err := grpc.NewClient(c)
 	if err != nil {

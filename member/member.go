@@ -102,10 +102,13 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 	return u, key, nil
 }
 
+// 登出聊天室
 func (m *Member) Logout(uid, key string) (bool, error) {
+	// 從快取中刪除聊天室連線紀錄
 	return m.c.logout(uid, key)
 }
 
+// 切換聊天室房間
 func (m *Member) ChangeRoom(uid, key string, rid int) error {
 	return m.c.setWs(uid, key, rid)
 }

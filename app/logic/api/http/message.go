@@ -22,6 +22,7 @@ type msg struct {
 	member  *member.Member
 }
 
+// 發訊息給房間所有人
 func (m *msg) user(req messageReq) (int64, error) {
 	user, chat, err := m.room.GetMessageSession(req.Uid, req.RoomId)
 	if err != nil {
@@ -63,6 +64,7 @@ func (m *msg) user(req messageReq) (int64, error) {
 	return id, err
 }
 
+// 發送訊息給房間內特定人
 func (m *msg) private(req messageReq) (int64, error) {
 	user, err := m.member.GetSession(req.Uid)
 	if err != nil {

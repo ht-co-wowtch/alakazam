@@ -119,6 +119,7 @@ func authenticationHandler(c *gin.Context) {
 	c.Next()
 }
 
+// token驗證會員UID
 func (h *httpServer) authUid(c *gin.Context) {
 	claims, err := h.jwt.Parse(c.GetString("token"))
 	if err != nil {

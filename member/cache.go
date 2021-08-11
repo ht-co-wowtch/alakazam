@@ -244,6 +244,7 @@ func (c *cache) getWs(uid string) (map[string]string, error) {
 	return c.c.HGetAll(keyUidWs(uid)).Result()
 }
 
+// 刪除快取連線紀錄
 func (c *cache) logout(uid, key string) (bool, error) {
 	aff, err := c.c.HDel(keyUidWs(uid), key).Result()
 	return aff == 1, err

@@ -26,6 +26,7 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 		return err
 	}
 
+
 	p.Token = c.GetString("token")
 	p.Uid = c.GetString("uid")
 
@@ -37,6 +38,7 @@ func (s *httpServer) pushRoom(c *gin.Context) error {
 	} else {
 		id, err = s.msg.user(p)
 	}
+
 
 	if err == nil {
 		c.JSON(http.StatusOK, gin.H{"id": id})

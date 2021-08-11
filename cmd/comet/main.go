@@ -26,6 +26,7 @@ var (
 func main() {
 	cmd.LoadTimeZone()
 
+	// 取得comet相關設定
 	flag.StringVar(&confPath, "c", "comet.yml", "default config path.")
 	flag.Parse()
 	if err := conf.Read(confPath); err != nil {

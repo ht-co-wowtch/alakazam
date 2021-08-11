@@ -56,6 +56,7 @@ func New(c *conf.Config) *Server {
 
 	cli := client.New(c.Nidoran)
 
+	// grpc client
 	seqRPClient, err := rpccli.NewClient(c.Seq)
 
 	if err != nil {
