@@ -108,27 +108,27 @@ deploy_develop:
     - cd ~/k8s && git checkout master
 
     - cd ~/k8s/live/${CI_PROJECT_NAME}/admin/overlays/dev
-    - kustomize edit set image $CI_REGISTRY_IMAGE:${CI_COMMIT_TAG#v}
+    - kustomize edit set image $CI_REGISTRY_IMAGE/admin:${CI_COMMIT_TAG#v}
     - cat kustomization.yaml
 
     - cd ~/k8s/live/${CI_PROJECT_NAME}/comet/overlays/dev
-    - kustomize edit set image $CI_REGISTRY_IMAGE:${CI_COMMIT_TAG#v}
+    - kustomize edit set image $CI_REGISTRY_IMAGE/comet:${CI_COMMIT_TAG#v}
     - cat kustomization.yaml
 
     - cd ~/k8s/live/${CI_PROJECT_NAME}/job/overlays/dev
-    - kustomize edit set image $CI_REGISTRY_IMAGE:${CI_COMMIT_TAG#v}
+    - kustomize edit set image $CI_REGISTRY_IMAGE/job:${CI_COMMIT_TAG#v}
     - cat kustomization.yaml
 
     - cd ~/k8s/live/${CI_PROJECT_NAME}/logic/overlays/dev
-    - kustomize edit set image $CI_REGISTRY_IMAGE:${CI_COMMIT_TAG#v}
+    - kustomize edit set image $CI_REGISTRY_IMAGE/logic:${CI_COMMIT_TAG#v}
     - cat kustomization.yaml
 
     - cd ~/k8s/live/${CI_PROJECT_NAME}/message/overlays/dev
-    - kustomize edit set image $CI_REGISTRY_IMAGE:${CI_COMMIT_TAG#v}
+    - kustomize edit set image $CI_REGISTRY_IMAGE/message:${CI_COMMIT_TAG#v}
     - cat kustomization.yaml
 
     - cd ~/k8s/live/${CI_PROJECT_NAME}/seq/overlays/dev
-    - kustomize edit set image $CI_REGISTRY_IMAGE:${CI_COMMIT_TAG#v}
+    - kustomize edit set image $CI_REGISTRY_IMAGE/seq:${CI_COMMIT_TAG#v}
     - cat kustomization.yaml
 
     - git add -A
