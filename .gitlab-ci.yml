@@ -101,7 +101,7 @@ deploy_develop:
   image: jetfueltw/kustomize:2.0.3
   before_script:
     - eval "$(ssh-agent -s)"
-    - echo "${DEV_K8S_CD_PRIVATE_KEY}" | ssh-add - > /dev/null
+    - echo "${GIT_DEPLOY_PRIVATE_KEY}" | ssh-add - > /dev/null
     - git config --global user.email "devops@jetfuel.com.tw" && git config --global user.name "devops"
   script:
     - cd ~/ && git clone git@gitlab.com:jetfueltw/devops/k8s.git
@@ -132,7 +132,7 @@ deploy_develop:
     - cat kustomization.yaml
 
     - git add -A
-    - git diff-index --quiet HEAD || git commit -m 'GitLab CI/CD - DEV image update'
+    - git diff-index --quiet HEAD || git commit -m 'GitLab CI/CD - image update'
     - git pull --rebase origin master
     - git push origin master
   only:
