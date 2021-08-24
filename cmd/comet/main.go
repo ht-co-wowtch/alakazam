@@ -40,6 +40,7 @@ func main() {
 	srv := comet.NewServer(conf.Conf)
 	//log.Infof("websocket prot [%s]", conf.Conf.Websocket.Addr)
 
+	// 建立websocket service
 	if err := comet.InitWebsocket(srv, conf.Conf.Websocket.Addr, runtime.NumCPU()); err != nil {
 		panic(err)
 	}
