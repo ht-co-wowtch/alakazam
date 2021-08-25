@@ -81,79 +81,11 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 	switch p.Op {
 	// 更換房間
 	case cometpb.OpChangeRoom:
-		p.Op = cometpb.OpChangeRoomReply
-		var r changeRoom
-
-		if err := json.Unmarshal(p.Body, &r); err != nil {
-			re := newConnect()
-			re.Message = "切换房间失败"
-			p.Body, _ = json.Marshal(re)
-			return nil
-		}
-
-		reply, err := s.logic.ChangeRoom(ctx, &logicpb.ChangeRoomReq{
-			Uid:    ch.Uid,
-			Key:    ch.Key,
-			RoomID: r.RoomId,
-		})
-
+		err := s.changeRoom(ctx, p, ch, b)
 		if err != nil {
-			re := newConnect()
-			s, _ := status.FromError(err)
-			if s.Code() != codes.FailedPrecondition {
-				log.Error("change room for logic", zap.Error(err), zap.String("data", string(p.Body)))
-				re.Message = "切换房间失败"
-			} else {
-				re.Message = s.Message()
-			}
-			p.Body, _ = json.Marshal(re)
-			return nil
+			return err
 		}
-
-		if err := b.ChangeRoom(r.RoomId, ch); err != nil {
-			log.Error("change room", zap.Error(err), zap.String("data", string(p.Body)))
-			re := newConnect()
-			re.Message = "切换房间失败"
-			p.Body, _ = json.Marshal(re)
-			return nil
-		}
-
-		reply.Connect.Key = ch.Key
-		p.Body, _ = json.Marshal(reply.Connect)
-
-		if reply.TopMessage != nil {
-			ch.protoRing.SetAdv()
-			ch.Signal()
-
-			p1, err := ch.protoRing.Set()
-			if err != nil {
-				log.Error("proto ping set top message for change room")
-				return nil
-			}
-
-			p1.Op = cometpb.OpRaw
-			p1.Body = reply.TopMessage
-		}
-		if reply.BulletinMessage != nil {
-			ch.protoRing.SetAdv()
-			ch.Signal()
-
-			p1, err := ch.protoRing.Set()
-			if err != nil {
-				log.Error("proto ping set bulletin message for change room")
-				return nil
-			}
-
-			p1.Op = cometpb.OpRaw
-			p1.Body = reply.BulletinMessage
-		}
-
-		if reply.IsConnectSuccessReply {
-			if _, e := s.ConnectSuccessReply(ctx, ch.Room.ID, reply.User, reply.Connect); e != nil {
-				log.Error("connect success reply", zap.Error(e), zap.Int32("rid", ch.Room.ID), zap.Any("user", reply.User))
-			}
-		}
-
+	
 	default:
 		// TODO error
 		p.Body = nil
@@ -161,6 +93,84 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 	return nil
 }
 
+// 切換房間
+func (s *Server) changeRoom(ctx context.Context, p *cometpb.Proto, ch *Channel, b *Bucket) error {
+	p.Op = cometpb.OpChangeRoomReply
+	var r changeRoom
+
+	if err := json.Unmarshal(p.Body, &r); err != nil {
+		re := newConnect()
+		re.Message = "切换房间失败"
+		p.Body, _ = json.Marshal(re)
+		return err
+	}
+
+	reply, err := s.logic.ChangeRoom(ctx, &logicpb.ChangeRoomReq{
+		Uid:    ch.Uid,
+		Key:    ch.Key,
+		RoomID: r.RoomId,
+	})
+
+	if err != nil {
+		re := newConnect()
+		s, _ := status.FromError(err)
+		if s.Code() != codes.FailedPrecondition {
+			log.Error("change room for logic", zap.Error(err), zap.String("data", string(p.Body)))
+			re.Message = "切换房间失败"
+		} else {
+			re.Message = s.Message()
+		}
+		p.Body, _ = json.Marshal(re)
+		return err
+	}
+
+	if err := b.ChangeRoom(r.RoomId, ch); err != nil {
+		log.Error("change room", zap.Error(err), zap.String("data", string(p.Body)))
+		re := newConnect()
+		re.Message = "切换房间失败"
+		p.Body, _ = json.Marshal(re)
+		return err
+	}
+
+	reply.Connect.Key = ch.Key
+	p.Body, _ = json.Marshal(reply.Connect)
+
+	if reply.TopMessage != nil {
+		ch.protoRing.SetAdv()
+		ch.Signal()
+
+		p1, err := ch.protoRing.Set()
+		if err != nil {
+			log.Error("proto ping set top message for change room")
+			return err
+		}
+
+		p1.Op = cometpb.OpRaw
+		p1.Body = reply.TopMessage
+	}
+	if reply.BulletinMessage != nil {
+		ch.protoRing.SetAdv()
+		ch.Signal()
+
+		p1, err := ch.protoRing.Set()
+		if err != nil {
+			log.Error("proto ping set bulletin message for change room")
+			return err
+		}
+
+		p1.Op = cometpb.OpRaw
+		p1.Body = reply.BulletinMessage
+	}
+
+	if reply.IsConnectSuccessReply {
+		if _, e := s.ConnectSuccessReply(ctx, ch.Room.ID, reply.User, reply.Connect); e != nil {
+			log.Error("connect success reply", zap.Error(e), zap.Int32("rid", ch.Room.ID), zap.Any("user", reply.User))
+		}
+	}
+	return nil
+}
+
+// 建立與logic連線物件
 func newConnect() *logicpb.Connect {
 	return &logicpb.Connect{
 		Permission:        new(logicpb.Permission),
