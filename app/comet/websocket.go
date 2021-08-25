@@ -25,7 +25,7 @@ const (
 	maxInt = 1<<31 - 1
 )
 
-// 建立一個websocket
+// 建立websocket service
 // 開始監聽Websocket, ZDbg(dbConf)
 func InitWebsocket(server *Server, host string, accept int) (err error) {
 	var (
@@ -282,7 +282,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 		}
 
 		// 確定websocket送來訊息類型
-		if p.Op == pb.OpHeartbeat {
+		if p.Op == pb.OpHeartbeat { // 心跳
 			// comet有心跳機制維護連線狀態，對於logic來說也需要有人利用心跳機制去告知哪個user還在線
 			// 目前在不在線這個狀態都是由comet控管，但不需要每次webSocket -> 心跳 -> comet就 -> 心跳 -> logic
 			// 所以webSocket -> comet 心跳週期會比 comet -> logic還要短
