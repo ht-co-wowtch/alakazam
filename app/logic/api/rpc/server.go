@@ -2,8 +2,10 @@ package rpc
 
 import (
 	"context"
+	"time"
 
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
@@ -20,18 +22,23 @@ import (
 )
 
 // New logic grpc server
-func New(c *rpc.Conf, room room.Chat, message *message.Producer) *grpc.Server {
+func New(c *rpc.Conf, room room.Chat, message *message.Producer, cli *client.Client, pCli *client.Client) *grpc.Server {
 	srv := rpc.New(c)
 	pb.RegisterLogicServer(srv, &server{
 		room:    room,
 		message: message,
+		cli:     cli,
+		pCli:    pCli,
 	})
+
 	return srv
 }
 
 type server struct {
 	room    room.Chat
 	message *message.Producer
+	cli     *client.Client
+	pCli    *client.Client
 }
 
 var _ pb.LogicServer = &server{}
@@ -126,5 +133,24 @@ func (s *server) RenewOnline(ctx context.Context, req *pb.OnlineReq) (*pb.Online
 	}
 	return &pb.OnlineReply{
 		AllRoomCount: allRoomCount,
+	}, nil
+}
+
+// TODO
+// 付費房月卡效期
+func (s *server) PaidRoomExpiry(ctx context.Context, req *pb.MemberProfileReq) (*pb.MemberProfileReply, error) {
+	// TODO 取得會員月卡效期
+	// refactor
+	resp, _ := s.pCli.LiveExpire(req.Uid) // 透過paras 取得月卡效期
+
+	// 時間檢查
+	isAllow := false
+	if time.Now().Before(resp.Expire) {
+		isAllow = true
+	}
+
+	return &pb.MemberProfileReply{
+		Expire:  resp.Expire.String(),
+		IsAllow: isAllow,
 	}, nil
 }

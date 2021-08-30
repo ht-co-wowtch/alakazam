@@ -3,7 +3,6 @@ package comet
 import (
 	"context"
 	"encoding/json"
-
 	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/micro/log"
@@ -46,11 +45,11 @@ func (s *Server) Heartbeat(ctx context.Context, ch *Channel) error {
 }
 
 // 告知logic service現在房間的在線人數
-func (s *Server) RenewOnline(ctx context.Context, serverID string, rommCount map[int32]int32) (allRoom map[int32]int32, err error) {
+func (s *Server) RenewOnline(ctx context.Context, serverID string, roomCount map[int32]int32) (allRoom map[int32]int32, err error) {
 
 	reply, err := s.logic.RenewOnline(ctx, &logicpb.OnlineReq{
 		Server:    s.name,
-		RoomCount: rommCount,
+		RoomCount: roomCount,
 	}, grpc.UseCompressor(gzip.Name))
 
 	if err != nil {
@@ -85,7 +84,11 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 		if err != nil {
 			return err
 		}
-	
+	case cometpb.OpPaidRoomExpiry:
+		err := s.paidRoomExpiry(ctx, p, ch, b)
+		if err != nil {
+			return err
+		}
 	default:
 		// TODO error
 		p.Body = nil
@@ -167,6 +170,32 @@ func (s *Server) changeRoom(ctx context.Context, p *cometpb.Proto, ch *Channel, 
 			log.Error("connect success reply", zap.Error(e), zap.Int32("rid", ch.Room.ID), zap.Any("user", reply.User))
 		}
 	}
+	return nil
+}
+
+// 付費房 - 月卡效期驗證
+func (s *Server) paidRoomExpiry(ctx context.Context, p *cometpb.Proto, ch *Channel, b *Bucket) error {
+	p.Op = cometpb.OpPaidRoomExpiryReply
+	log.Infof("uid: %s", ch.Uid)
+
+	reply, err := s.logic.PaidRoomExpiry(ctx, &logicpb.MemberProfileReq{
+		Uid: ch.Uid,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	re := struct {
+		Expire  string `json:"expire"`
+		IsAllow bool   `json:"is_allow""`
+	}{
+		Expire:  reply.Expire,
+		IsAllow: reply.IsAllow,
+	}
+
+	p.Body, _ = json.Marshal(re)
+
 	return nil
 }
 

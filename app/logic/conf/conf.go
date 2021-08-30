@@ -36,6 +36,7 @@ type Config struct {
 	Kafka      *Kafka
 	Redis      *redis.Conf
 	Nidoran    *client.Conf
+	Paras *client.Conf // TODO
 	Seq        *grpc.Conf
 	JwtSecret  []byte
 	// comet連線用戶心跳，server會清除在線紀錄
@@ -77,6 +78,10 @@ func Read(path string) error {
 	if err != nil {
 		return err
 	}
+	Conf.Paras, err = client.ReadViper(v.Sub("paras")) // TODO
+	if err != nil {
+		return err
+	} // TODO
 	Conf.Redis, err = redis.ReadViper(v.Sub("redis"))
 	if err != nil {
 		return err

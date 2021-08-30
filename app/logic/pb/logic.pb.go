@@ -9,8 +9,11 @@ import (
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/golang/protobuf/proto"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	io "io"
 	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -22,7 +25,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type PushMsg_Type int32
 
@@ -80,7 +83,7 @@ func (m *PushMsg) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_PushMsg.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -196,7 +199,7 @@ func (m *PingReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_PingReply.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -235,7 +238,7 @@ func (m *PingReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_PingReq.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -281,7 +284,7 @@ func (m *Connect) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_Connect.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -374,7 +377,7 @@ func (m *User) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_User.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -452,7 +455,7 @@ func (m *Permission) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_Permission.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -523,7 +526,7 @@ func (m *PermissionMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, e
 		return xxx_messageInfo_PermissionMessage.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -591,7 +594,7 @@ func (m *ConnectReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_ConnectReq.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -628,8 +631,8 @@ type ConnectReply struct {
 	Heartbeat             int64    `protobuf:"varint,1,opt,name=heartbeat,proto3" json:"heartbeat,omitempty"`
 	TopMessage            []byte   `protobuf:"bytes,2,opt,name=topMessage,proto3" json:"topMessage,omitempty"`
 	BulletinMessage       []byte   `protobuf:"bytes,3,opt,name=bulletinMessage,proto3" json:"bulletinMessage,omitempty"`
-	Connect               *Connect `protobuf:"bytes,4,opt,name=Connect,json=connect,proto3" json:"Connect,omitempty"`
-	User                  *User    `protobuf:"bytes,5,opt,name=User,json=user,proto3" json:"User,omitempty"`
+	Connect               *Connect `protobuf:"bytes,4,opt,name=Connect,proto3" json:"Connect,omitempty"`
+	User                  *User    `protobuf:"bytes,5,opt,name=User,proto3" json:"User,omitempty"`
 	IsConnectSuccessReply bool     `protobuf:"varint,6,opt,name=isConnectSuccessReply,proto3" json:"isConnectSuccessReply,omitempty"`
 	XXX_NoUnkeyedLiteral  struct{} `json:"-"`
 	XXX_unrecognized      []byte   `json:"-"`
@@ -650,7 +653,7 @@ func (m *ConnectReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
 		return xxx_messageInfo_ConnectReply.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -713,7 +716,7 @@ func (m *ConnectReply) GetIsConnectSuccessReply() bool {
 
 type ConnectSuccessReq struct {
 	RoomId               int32    `protobuf:"varint,1,opt,name=roomId,proto3" json:"roomId,omitempty"`
-	User                 *User    `protobuf:"bytes,2,opt,name=User,json=user,proto3" json:"User,omitempty"`
+	User                 *User    `protobuf:"bytes,2,opt,name=User,proto3" json:"User,omitempty"`
 	IsManage             bool     `protobuf:"varint,3,opt,name=isManage,proto3" json:"isManage,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -734,7 +737,7 @@ func (m *ConnectSuccessReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, e
 		return xxx_messageInfo_ConnectSuccessReq.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -797,7 +800,7 @@ func (m *DisconnectReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error
 		return xxx_messageInfo_DisconnectReq.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -860,7 +863,7 @@ func (m *ChangeRoomReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error
 		return xxx_messageInfo_ChangeRoomReq.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -902,7 +905,7 @@ func (m *ChangeRoomReq) GetRoomID() int32 {
 
 type ChangeRoomReply struct {
 	HeaderMessage        []byte   `protobuf:"bytes,1,opt,name=headerMessage,proto3" json:"headerMessage,omitempty"`
-	Connect              *Connect `protobuf:"bytes,2,opt,name=Connect,json=connect,proto3" json:"Connect,omitempty"`
+	Connect              *Connect `protobuf:"bytes,2,opt,name=Connect,proto3" json:"Connect,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -922,7 +925,7 @@ func (m *ChangeRoomReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, err
 		return xxx_messageInfo_ChangeRoomReply.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -976,7 +979,7 @@ func (m *DisconnectReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, err
 		return xxx_messageInfo_DisconnectReply.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -1027,7 +1030,7 @@ func (m *HeartbeatReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
 		return xxx_messageInfo_HeartbeatReq.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -1101,7 +1104,7 @@ func (m *HeartbeatReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, erro
 		return xxx_messageInfo_HeartbeatReply.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -1141,7 +1144,7 @@ func (m *OnlineReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_OnlineReq.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -1194,7 +1197,7 @@ func (m *OnlineReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) 
 		return xxx_messageInfo_OnlineReply.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -1220,6 +1223,108 @@ func (m *OnlineReply) GetAllRoomCount() map[int32]int32 {
 	return nil
 }
 
+type MemberProfileReq struct {
+	Uid                  string   `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MemberProfileReq) Reset()         { *m = MemberProfileReq{} }
+func (m *MemberProfileReq) String() string { return proto.CompactTextString(m) }
+func (*MemberProfileReq) ProtoMessage()    {}
+func (*MemberProfileReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_60207fea82c31ca8, []int{18}
+}
+func (m *MemberProfileReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MemberProfileReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MemberProfileReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MemberProfileReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MemberProfileReq.Merge(m, src)
+}
+func (m *MemberProfileReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *MemberProfileReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_MemberProfileReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MemberProfileReq proto.InternalMessageInfo
+
+func (m *MemberProfileReq) GetUid() string {
+	if m != nil {
+		return m.Uid
+	}
+	return ""
+}
+
+type MemberProfileReply struct {
+	Expire               string   `protobuf:"bytes,1,opt,name=expire,proto3" json:"expire,omitempty"`
+	IsAllow              bool     `protobuf:"varint,2,opt,name=is_allow,json=isAllow,proto3" json:"is_allow,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MemberProfileReply) Reset()         { *m = MemberProfileReply{} }
+func (m *MemberProfileReply) String() string { return proto.CompactTextString(m) }
+func (*MemberProfileReply) ProtoMessage()    {}
+func (*MemberProfileReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_60207fea82c31ca8, []int{19}
+}
+func (m *MemberProfileReply) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MemberProfileReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MemberProfileReply.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MemberProfileReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MemberProfileReply.Merge(m, src)
+}
+func (m *MemberProfileReply) XXX_Size() int {
+	return m.Size()
+}
+func (m *MemberProfileReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_MemberProfileReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MemberProfileReply proto.InternalMessageInfo
+
+func (m *MemberProfileReply) GetExpire() string {
+	if m != nil {
+		return m.Expire
+	}
+	return ""
+}
+
+func (m *MemberProfileReply) GetIsAllow() bool {
+	if m != nil {
+		return m.IsAllow
+	}
+	return false
+}
+
 func init() {
 	proto.RegisterEnum("pb.PushMsg_Type", PushMsg_Type_name, PushMsg_Type_value)
 	proto.RegisterType((*PushMsg)(nil), "pb.PushMsg")
@@ -1242,84 +1347,91 @@ func init() {
 	proto.RegisterMapType((map[int32]int32)(nil), "pb.OnlineReq.RoomCountEntry")
 	proto.RegisterType((*OnlineReply)(nil), "pb.OnlineReply")
 	proto.RegisterMapType((map[int32]int32)(nil), "pb.OnlineReply.AllRoomCountEntry")
+	proto.RegisterType((*MemberProfileReq)(nil), "pb.MemberProfileReq")
+	proto.RegisterType((*MemberProfileReply)(nil), "pb.MemberProfileReply")
 }
 
 func init() { proto.RegisterFile("logic.proto", fileDescriptor_60207fea82c31ca8) }
 
 var fileDescriptor_60207fea82c31ca8 = []byte{
-	// 1146 bytes of a gzipped FileDescriptorProto
+	// 1218 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x56, 0xcd, 0x6e, 0xdb, 0xc6,
-	0x13, 0x0f, 0x29, 0xca, 0x12, 0x47, 0x1f, 0x96, 0xd7, 0x71, 0xc0, 0xbf, 0x60, 0x58, 0xfa, 0x33,
-	0x29, 0xa0, 0xa2, 0x8d, 0x82, 0xa8, 0x39, 0xb4, 0x6e, 0xd1, 0x36, 0xb2, 0x0d, 0xa4, 0x68, 0x0d,
-	0x1b, 0x9b, 0xe6, 0x54, 0xa0, 0x06, 0x25, 0x6d, 0x25, 0xc2, 0x14, 0x49, 0x73, 0x29, 0x07, 0x7a,
-	0x93, 0x00, 0xb9, 0x14, 0xe8, 0xb3, 0x14, 0xe8, 0x21, 0x87, 0x3e, 0x81, 0x10, 0xb8, 0x37, 0xdd,
-	0xfa, 0x06, 0xc5, 0xce, 0x2e, 0x45, 0x52, 0xb6, 0x8b, 0xb8, 0x17, 0x7b, 0xbe, 0x76, 0x76, 0xe6,
-	0xf7, 0x9b, 0x59, 0x11, 0x2a, 0x5e, 0x30, 0x76, 0x87, 0xdd, 0x30, 0x0a, 0xe2, 0x80, 0xe8, 0xe1,
-	0xa0, 0xf9, 0x78, 0xec, 0xc6, 0x93, 0xd9, 0xa0, 0x3b, 0x0c, 0xa6, 0x4f, 0xc6, 0xc1, 0x38, 0x78,
-	0x82, 0xae, 0xc1, 0xec, 0x17, 0xd4, 0x50, 0x41, 0x49, 0x1e, 0xb1, 0xdf, 0xea, 0x50, 0x3a, 0x9d,
-	0xf1, 0xc9, 0x31, 0x1f, 0x93, 0x47, 0x60, 0xc4, 0xf3, 0x90, 0x59, 0x5a, 0x5b, 0xeb, 0xd4, 0x7b,
-	0x8d, 0x6e, 0x38, 0xe8, 0x2a, 0x57, 0xf7, 0xc7, 0x79, 0xc8, 0x28, 0x7a, 0x09, 0x01, 0x23, 0x0a,
-	0x82, 0xa9, 0xa5, 0xb7, 0x0b, 0x9d, 0x22, 0x45, 0x59, 0xd8, 0xce, 0xd9, 0x9c, 0x5b, 0x85, 0x76,
-	0xa1, 0x63, 0x52, 0x94, 0x49, 0x03, 0x0a, 0x53, 0x3e, 0xb6, 0x8c, 0xb6, 0xd6, 0xa9, 0x52, 0x21,
-	0x12, 0x0b, 0x4a, 0x53, 0xc6, 0xb9, 0x33, 0x66, 0x56, 0xb1, 0xad, 0x75, 0x4c, 0x9a, 0xa8, 0xe8,
-	0xe1, 0x63, 0x71, 0x89, 0xb5, 0xd1, 0xd6, 0x3a, 0x45, 0x9a, 0xa8, 0x98, 0xc5, 0x1d, 0x59, 0xa5,
-	0xb6, 0xd6, 0x29, 0x50, 0x21, 0x0a, 0x0b, 0x67, 0x17, 0x56, 0x59, 0x5a, 0x38, 0xbb, 0x20, 0x75,
-	0xd0, 0x83, 0xd0, 0x32, 0xf1, 0xa0, 0x1e, 0x84, 0xe4, 0x01, 0x6c, 0x70, 0xe6, 0x8f, 0x9e, 0xc7,
-	0x16, 0x60, 0x90, 0xd2, 0xc8, 0x7d, 0x28, 0xba, 0x9c, 0x3a, 0xaf, 0xad, 0x4a, 0x5b, 0xeb, 0x94,
-	0xa9, 0x54, 0xec, 0x26, 0x18, 0x78, 0x53, 0x19, 0x8c, 0xd3, 0x57, 0x2f, 0x5f, 0x34, 0xee, 0x09,
-	0x89, 0x9e, 0x9c, 0x1c, 0x37, 0x34, 0xbb, 0x02, 0xe6, 0xa9, 0xeb, 0x8f, 0x29, 0x0b, 0xbd, 0xb9,
-	0x6d, 0x42, 0x49, 0x2a, 0x17, 0xf6, 0x3b, 0x1d, 0x4a, 0x07, 0x81, 0xef, 0xb3, 0x61, 0x4c, 0xfe,
-	0x07, 0x85, 0x99, 0x3b, 0x42, 0xd0, 0xcc, 0x7e, 0x69, 0xb9, 0x68, 0x09, 0x95, 0x8a, 0x3f, 0xc2,
-	0x75, 0xce, 0xe6, 0x96, 0x9e, 0xba, 0xce, 0xd9, 0x9c, 0x8a, 0x3f, 0xc4, 0x86, 0x0d, 0x1e, 0x3b,
-	0xf1, 0x4c, 0x60, 0xa6, 0x75, 0xca, 0x7d, 0x58, 0x2e, 0x5a, 0xca, 0x42, 0xd5, 0x7f, 0xf2, 0x10,
-	0x36, 0x04, 0xba, 0xdf, 0x1d, 0x22, 0x88, 0xc5, 0x7e, 0x65, 0xb9, 0x68, 0x95, 0x84, 0xe5, 0xcc,
-	0x1d, 0x51, 0xe5, 0x22, 0x1f, 0xad, 0x81, 0x2a, 0xa3, 0x94, 0x29, 0x45, 0xf8, 0x6b, 0x80, 0x90,
-	0x45, 0x53, 0x97, 0x73, 0x37, 0xf0, 0x11, 0xe4, 0x4a, 0xaf, 0x8e, 0x0c, 0xaf, 0xac, 0xfd, 0xfa,
-	0x72, 0xd1, 0xca, 0x44, 0xd1, 0x8c, 0x4c, 0x7e, 0x82, 0xad, 0x54, 0x3b, 0x56, 0x17, 0x96, 0x30,
-	0xcd, 0x4e, 0x3e, 0x8d, 0x72, 0xf6, 0x1f, 0x2c, 0x17, 0x2d, 0x92, 0x9e, 0x39, 0x4b, 0x4a, 0xba,
-	0x9e, 0xc7, 0x9e, 0x80, 0xf1, 0x8a, 0xb3, 0x48, 0x10, 0xa9, 0x90, 0x2c, 0x50, 0x5d, 0x52, 0x2d,
-	0xa0, 0x45, 0xfc, 0x24, 0xa2, 0x04, 0x0c, 0xdf, 0x99, 0x32, 0x04, 0xcd, 0xa4, 0x28, 0x0b, 0xba,
-	0xc7, 0xcc, 0x1f, 0xb1, 0x48, 0xc2, 0x44, 0x95, 0x26, 0x62, 0x71, 0x9c, 0x8b, 0x68, 0x45, 0xd9,
-	0xfe, 0x5d, 0x03, 0x48, 0x4b, 0x25, 0x9f, 0x82, 0xe9, 0xf2, 0xa4, 0x1b, 0x0d, 0x89, 0x40, 0x10,
-	0x5c, 0xbe, 0x2a, 0x37, 0x0d, 0x20, 0x5f, 0x40, 0xcd, 0xe5, 0x94, 0x8d, 0x8e, 0xfc, 0x4b, 0xe6,
-	0x05, 0x21, 0xc3, 0xc2, 0xca, 0xfd, 0xed, 0xe5, 0xa2, 0xb5, 0xe9, 0xf2, 0xb3, 0x88, 0x8d, 0xce,
-	0x98, 0x72, 0xd1, 0x7c, 0xa4, 0xa0, 0xd2, 0xe5, 0x7d, 0x16, 0x27, 0x74, 0x23, 0x49, 0x2e, 0x3f,
-	0x1b, 0xb0, 0x98, 0x53, 0xe5, 0x22, 0x1f, 0x43, 0xd9, 0xe5, 0xc7, 0x8e, 0x2f, 0x8a, 0x31, 0x30,
-	0xac, 0xb6, 0x5c, 0xb4, 0x4c, 0x51, 0x0c, 0x1a, 0xe9, 0xca, 0x6d, 0xbf, 0xd3, 0x60, 0xeb, 0x1a,
-	0xe4, 0xd7, 0xdb, 0x31, 0xef, 0xdc, 0x8e, 0xf9, 0x1f, 0xda, 0x31, 0x3f, 0xac, 0x1d, 0xf3, 0xf6,
-	0x76, 0xbe, 0x05, 0x50, 0xeb, 0x44, 0xd9, 0x85, 0xdc, 0xdf, 0xe8, 0x92, 0x45, 0xb2, 0x07, 0xaa,
-	0x34, 0xb1, 0xbf, 0x71, 0x70, 0xce, 0x7c, 0x2c, 0xb4, 0x4a, 0xa5, 0xb2, 0x6f, 0xbc, 0xf9, 0xb5,
-	0x75, 0xcf, 0xfe, 0x5b, 0x83, 0xea, 0x2a, 0x45, 0xe8, 0xcd, 0xc9, 0x2e, 0x98, 0x13, 0xe6, 0x44,
-	0xf1, 0x80, 0x39, 0xb1, 0x1a, 0xa9, 0xd4, 0x40, 0xf6, 0x00, 0xe2, 0x20, 0x4c, 0xa0, 0x92, 0xf9,
-	0x32, 0x16, 0xd2, 0x81, 0xcd, 0xc1, 0xcc, 0xf3, 0x58, 0xec, 0xae, 0x86, 0xbd, 0x80, 0x41, 0xeb,
-	0x66, 0xb1, 0x7f, 0xea, 0x5e, 0x6c, 0xb2, 0xd2, 0xab, 0x88, 0x75, 0x48, 0x4a, 0x29, 0x0d, 0xd5,
-	0x2b, 0xb1, 0x2b, 0x47, 0x1c, 0x87, 0xb1, 0xd2, 0x2b, 0x8b, 0x18, 0xa1, 0x53, 0x63, 0x26, 0x06,
-	0xff, 0x19, 0xec, 0xb8, 0x5c, 0x9d, 0x79, 0x39, 0x1b, 0x0e, 0x19, 0xe7, 0xd8, 0x05, 0x2e, 0x6a,
-	0x99, 0xde, 0xec, 0xb4, 0x19, 0x6c, 0xad, 0x9b, 0x11, 0x3c, 0x7c, 0x19, 0xe4, 0x1e, 0x15, 0xd5,
-	0x3b, 0x31, 0x5a, 0x15, 0xa0, 0xdf, 0x58, 0x40, 0x33, 0xc3, 0x15, 0x4e, 0x68, 0x86, 0x9c, 0xef,
-	0xa1, 0x76, 0xe8, 0xf2, 0x61, 0xca, 0x4f, 0x23, 0xf3, 0xe2, 0xc9, 0xb5, 0x6c, 0x64, 0x1e, 0x3a,
-	0xf9, 0xbe, 0xa5, 0x1c, 0x16, 0xb2, 0x1c, 0x8a, 0x64, 0x07, 0x13, 0xc7, 0x1f, 0x33, 0x1a, 0x04,
-	0xd3, 0x3b, 0x24, 0x53, 0x0f, 0x61, 0x21, 0xd3, 0xd3, 0xa1, 0xfd, 0x33, 0x6c, 0x66, 0x93, 0x09,
-	0xda, 0x1f, 0x41, 0x6d, 0xc2, 0x9c, 0x11, 0x8b, 0xb2, 0x6b, 0x50, 0xa5, 0x79, 0x63, 0x96, 0x34,
-	0xfd, 0x76, 0xd2, 0xec, 0x87, 0xb0, 0x99, 0xed, 0x5c, 0xe4, 0x6f, 0x40, 0x61, 0xe2, 0x70, 0xf9,
-	0x56, 0x50, 0x21, 0xda, 0x97, 0x50, 0x7d, 0x91, 0xcc, 0xd5, 0x87, 0x36, 0x74, 0xcb, 0x33, 0xa6,
-	0x88, 0x33, 0x72, 0xc4, 0xa5, 0x48, 0x16, 0x73, 0x48, 0x36, 0xa0, 0x9e, 0xb9, 0x57, 0xcc, 0xc3,
-	0x6f, 0x1a, 0x98, 0x27, 0xbe, 0xe7, 0xfa, 0xec, 0xdf, 0xb6, 0x68, 0x1f, 0x4c, 0x91, 0xf9, 0x20,
-	0x98, 0xf9, 0x31, 0xfe, 0x88, 0x57, 0x7a, 0xbb, 0xa2, 0xfb, 0xd5, 0xc9, 0x2e, 0x4d, 0xdc, 0x47,
-	0x7e, 0x1c, 0xcd, 0x69, 0x1a, 0xde, 0xfc, 0x0a, 0xea, 0x79, 0x67, 0xd2, 0x9b, 0x9c, 0x35, 0xec,
-	0xed, 0x3e, 0x14, 0x2f, 0x1d, 0x6f, 0x26, 0xb7, 0xaa, 0x48, 0xa5, 0xb2, 0xaf, 0x7f, 0xae, 0xa9,
-	0x4d, 0x7d, 0xab, 0x41, 0x25, 0xb9, 0x4b, 0x20, 0x7a, 0x04, 0x55, 0xc7, 0xf3, 0x56, 0x69, 0x2d,
-	0x0d, 0x4b, 0xfa, 0x7f, 0xb6, 0xa4, 0xd0, 0x9b, 0x77, 0x9f, 0x67, 0x62, 0x64, 0x5d, 0xb9, 0x63,
-	0xcd, 0x6f, 0x60, 0xeb, 0x5a, 0xc8, 0xdd, 0xab, 0xeb, 0xbd, 0xd7, 0xa1, 0xf8, 0x83, 0xf8, 0xa4,
-	0x22, 0x36, 0x18, 0xe2, 0xe7, 0x9e, 0xe0, 0x68, 0xa8, 0x1f, 0xfe, 0x66, 0x2d, 0x55, 0x44, 0xed,
-	0x9f, 0xa4, 0x9f, 0x01, 0xf5, 0xec, 0x04, 0xb1, 0x8b, 0x66, 0x23, 0xa7, 0x8b, 0xe0, 0x2f, 0x61,
-	0xfb, 0x86, 0x2d, 0x26, 0x3b, 0x99, 0xc0, 0x74, 0x8f, 0xd7, 0x6f, 0x7a, 0x06, 0x90, 0x8e, 0x22,
-	0xd9, 0x12, 0xce, 0xdc, 0x52, 0x36, 0xb7, 0xd7, 0x4d, 0xe2, 0xd4, 0x53, 0x80, 0x74, 0x41, 0xe4,
-	0xa9, 0xdc, 0xf6, 0xdd, 0x50, 0xe5, 0x53, 0x30, 0x57, 0x63, 0x45, 0xd0, 0x9d, 0x9d, 0xee, 0x26,
-	0x59, 0xb3, 0x88, 0x23, 0x8f, 0xa1, 0x42, 0x99, 0xcf, 0x5e, 0x4b, 0xba, 0x48, 0x2d, 0x37, 0x4d,
-	0xcd, 0xcd, 0x35, 0x26, 0xfb, 0x8d, 0x3f, 0xae, 0xf6, 0xb4, 0x3f, 0xaf, 0xf6, 0xb4, 0xf7, 0x57,
-	0x7b, 0xda, 0x9b, 0xbf, 0xf6, 0xee, 0x0d, 0x36, 0xf0, 0x5b, 0xf4, 0xb3, 0x7f, 0x02, 0x00, 0x00,
-	0xff, 0xff, 0x30, 0x6e, 0x78, 0x6a, 0xcd, 0x0a, 0x00, 0x00,
+	0x13, 0x0f, 0x45, 0x7d, 0x71, 0xf4, 0x61, 0x79, 0x93, 0x18, 0x8c, 0x10, 0x58, 0xfa, 0x33, 0xf9,
+	0x03, 0x2a, 0xda, 0x28, 0x88, 0x9a, 0x43, 0xeb, 0x16, 0x69, 0x2d, 0xdb, 0x68, 0x8a, 0xd6, 0xb0,
+	0xb1, 0x69, 0x4e, 0x05, 0x2a, 0x50, 0xd2, 0x46, 0x5a, 0x98, 0x22, 0x69, 0x2e, 0x65, 0x57, 0x6f,
+	0x12, 0x20, 0x97, 0x00, 0x7d, 0x96, 0x02, 0x3d, 0xe4, 0xd0, 0x27, 0x10, 0x0a, 0xf7, 0xa6, 0x5b,
+	0xdf, 0xa0, 0x98, 0x5d, 0x52, 0xa4, 0x64, 0xb9, 0x48, 0x72, 0xb1, 0x77, 0x3e, 0x76, 0x76, 0xe6,
+	0xf7, 0x9b, 0x19, 0x11, 0x4a, 0x8e, 0x37, 0xe2, 0x83, 0xb6, 0x1f, 0x78, 0xa1, 0x47, 0x32, 0x7e,
+	0xbf, 0xfe, 0x68, 0xc4, 0xc3, 0xf1, 0xb4, 0xdf, 0x1e, 0x78, 0x93, 0xc7, 0x23, 0x6f, 0xe4, 0x3d,
+	0x96, 0xa6, 0xfe, 0xf4, 0x95, 0x94, 0xa4, 0x20, 0x4f, 0xea, 0x8a, 0xf5, 0x26, 0x03, 0x85, 0xd3,
+	0xa9, 0x18, 0x1f, 0x8b, 0x11, 0x79, 0x08, 0xd9, 0x70, 0xe6, 0x33, 0x53, 0x6b, 0x6a, 0xad, 0x6a,
+	0xa7, 0xd6, 0xf6, 0xfb, 0xed, 0xc8, 0xd4, 0xfe, 0x69, 0xe6, 0x33, 0x2a, 0xad, 0x84, 0x40, 0x36,
+	0xf0, 0xbc, 0x89, 0x99, 0x69, 0xea, 0xad, 0x1c, 0x95, 0x67, 0xd4, 0x9d, 0xb1, 0x99, 0x30, 0xf5,
+	0xa6, 0xde, 0x32, 0xa8, 0x3c, 0x93, 0x1a, 0xe8, 0x13, 0x31, 0x32, 0xb3, 0x4d, 0xad, 0x55, 0xa6,
+	0x78, 0x24, 0x26, 0x14, 0x26, 0x4c, 0x08, 0x7b, 0xc4, 0xcc, 0x5c, 0x53, 0x6b, 0x19, 0x34, 0x16,
+	0xa5, 0x45, 0x8c, 0xf0, 0x11, 0x33, 0xdf, 0xd4, 0x5a, 0x39, 0x1a, 0x8b, 0x32, 0x0a, 0x1f, 0x9a,
+	0x85, 0xa6, 0xd6, 0xd2, 0x29, 0x1e, 0x51, 0x23, 0xd8, 0xb9, 0x59, 0x54, 0x1a, 0xc1, 0xce, 0x49,
+	0x15, 0x32, 0x9e, 0x6f, 0x1a, 0xf2, 0x62, 0xc6, 0xf3, 0xc9, 0x0e, 0xe4, 0x05, 0x73, 0x87, 0xfb,
+	0xa1, 0x09, 0xd2, 0x29, 0x92, 0xc8, 0x1d, 0xc8, 0x71, 0x41, 0xed, 0x4b, 0xb3, 0xd4, 0xd4, 0x5a,
+	0x45, 0xaa, 0x04, 0xab, 0x0e, 0x59, 0xf9, 0x52, 0x11, 0xb2, 0xa7, 0x2f, 0x5f, 0x3c, 0xaf, 0xdd,
+	0xc2, 0x13, 0x3d, 0x39, 0x39, 0xae, 0x69, 0x56, 0x09, 0x8c, 0x53, 0xee, 0x8e, 0x28, 0xf3, 0x9d,
+	0x99, 0x65, 0x40, 0x41, 0x09, 0xe7, 0xd6, 0xbb, 0x0c, 0x14, 0x0e, 0x3c, 0xd7, 0x65, 0x83, 0x90,
+	0xdc, 0x03, 0x7d, 0xca, 0x87, 0x12, 0x34, 0xa3, 0x5b, 0x58, 0xcc, 0x1b, 0x28, 0x52, 0xfc, 0x83,
+	0xa6, 0x33, 0x36, 0x33, 0x33, 0x89, 0xe9, 0x8c, 0xcd, 0x28, 0xfe, 0x21, 0x16, 0xe4, 0x45, 0x68,
+	0x87, 0x53, 0xc4, 0x4c, 0x6b, 0x15, 0xbb, 0xb0, 0x98, 0x37, 0x22, 0x0d, 0x8d, 0xfe, 0x93, 0x07,
+	0x90, 0x47, 0x74, 0xbf, 0x3f, 0x94, 0x20, 0xe6, 0xba, 0xa5, 0xc5, 0xbc, 0x51, 0x40, 0x4d, 0x8f,
+	0x0f, 0x69, 0x64, 0x22, 0xff, 0x5f, 0x03, 0x55, 0x79, 0x45, 0xaa, 0x04, 0xe1, 0x67, 0x00, 0x3e,
+	0x0b, 0x26, 0x5c, 0x08, 0xee, 0xb9, 0x12, 0xe4, 0x52, 0xa7, 0x2a, 0x19, 0x5e, 0x6a, 0xbb, 0xd5,
+	0xc5, 0xbc, 0x91, 0xf2, 0xa2, 0xa9, 0x33, 0xf9, 0x19, 0xb6, 0x13, 0xe9, 0x38, 0x7a, 0xb0, 0x20,
+	0xc3, 0xdc, 0x5d, 0x0d, 0x13, 0x19, 0xbb, 0x3b, 0x8b, 0x79, 0x83, 0x24, 0x77, 0x7a, 0x71, 0x4a,
+	0xd7, 0xe3, 0x58, 0x63, 0xc8, 0xbe, 0x14, 0x2c, 0x40, 0x22, 0x23, 0x24, 0x75, 0x9a, 0x51, 0x54,
+	0x23, 0xb4, 0x12, 0x3f, 0x85, 0x28, 0x81, 0xac, 0x6b, 0x4f, 0x98, 0x04, 0xcd, 0xa0, 0xf2, 0x8c,
+	0x74, 0x8f, 0x98, 0x3b, 0x64, 0x81, 0x82, 0x89, 0x46, 0x12, 0xfa, 0xca, 0x76, 0xce, 0x49, 0xad,
+	0x3c, 0x5b, 0xbf, 0x6b, 0x00, 0x49, 0xaa, 0xe4, 0x33, 0x30, 0xb8, 0x88, 0xab, 0xd1, 0x24, 0x11,
+	0x12, 0x04, 0x2e, 0x96, 0xe9, 0x26, 0x0e, 0xe4, 0x4b, 0xa8, 0x70, 0x41, 0xd9, 0xf0, 0xc8, 0xbd,
+	0x60, 0x8e, 0xe7, 0x33, 0x99, 0x58, 0xb1, 0x7b, 0x7b, 0x31, 0x6f, 0x6c, 0x71, 0xd1, 0x0b, 0xd8,
+	0xb0, 0xc7, 0x22, 0x13, 0x5d, 0xf5, 0x44, 0x2a, 0xb9, 0xe8, 0xb2, 0x30, 0xa6, 0x5b, 0x92, 0xc4,
+	0x45, 0xaf, 0xcf, 0x42, 0x41, 0x23, 0x13, 0xf9, 0x04, 0x8a, 0x5c, 0x1c, 0xdb, 0x2e, 0x26, 0x93,
+	0x95, 0x6e, 0x95, 0xc5, 0xbc, 0x61, 0x60, 0x32, 0x52, 0x49, 0x97, 0x66, 0xeb, 0x9d, 0x06, 0xdb,
+	0xd7, 0x20, 0xbf, 0x5e, 0x8e, 0xf1, 0xc1, 0xe5, 0x18, 0x1f, 0x51, 0x8e, 0xf1, 0x7e, 0xe5, 0x18,
+	0x37, 0x97, 0xf3, 0x2d, 0x40, 0x34, 0x4e, 0x94, 0x9d, 0xab, 0xf9, 0x0d, 0x2e, 0x58, 0xa0, 0x6a,
+	0xa0, 0x91, 0x84, 0xf3, 0x1b, 0x7a, 0x67, 0xcc, 0x95, 0x89, 0x96, 0xa9, 0x12, 0xf6, 0xb2, 0xaf,
+	0xdf, 0x36, 0x6e, 0x59, 0xff, 0x68, 0x50, 0x5e, 0x86, 0xf0, 0x9d, 0x19, 0xb9, 0x0f, 0xc6, 0x98,
+	0xd9, 0x41, 0xd8, 0x67, 0x76, 0x18, 0xb5, 0x54, 0xa2, 0x20, 0xbb, 0x00, 0xa1, 0xe7, 0xc7, 0x50,
+	0xa9, 0x78, 0x29, 0x0d, 0x69, 0xc1, 0x56, 0x7f, 0xea, 0x38, 0x2c, 0xe4, 0xcb, 0x66, 0xd7, 0xa5,
+	0xd3, 0xba, 0x1a, 0xe7, 0x2f, 0x7a, 0x57, 0x16, 0x59, 0xea, 0x94, 0x70, 0x1c, 0xe2, 0x54, 0x96,
+	0x5b, 0xe2, 0xbe, 0x6a, 0x71, 0xd9, 0x8c, 0xa5, 0x4e, 0x11, 0x7d, 0x50, 0xa6, 0xaa, 0xf1, 0x9f,
+	0xc2, 0x5d, 0x2e, 0x22, 0xd7, 0x17, 0xd3, 0xc1, 0x80, 0x09, 0x21, 0xab, 0x90, 0x83, 0x5a, 0xa4,
+	0x9b, 0x8d, 0x16, 0x83, 0xed, 0x75, 0xb5, 0x04, 0x4f, 0x6e, 0x06, 0x35, 0x47, 0xb9, 0x68, 0x4f,
+	0x0c, 0x97, 0x09, 0x64, 0x36, 0x26, 0x50, 0x4f, 0x71, 0x25, 0x3b, 0x34, 0x45, 0xce, 0x0f, 0x50,
+	0x39, 0xe4, 0x62, 0x90, 0xf0, 0x53, 0x4b, 0x6d, 0x3c, 0x35, 0x96, 0xb5, 0xd4, 0xa2, 0x53, 0xfb,
+	0x2d, 0xe1, 0x50, 0x4f, 0x73, 0x88, 0xc1, 0x0e, 0xc6, 0xb6, 0x3b, 0x62, 0xd4, 0xf3, 0x26, 0x1f,
+	0x10, 0x2c, 0x5a, 0x84, 0x7a, 0xaa, 0xa6, 0x43, 0xeb, 0x17, 0xd8, 0x4a, 0x07, 0x43, 0xda, 0x1f,
+	0x42, 0x65, 0xcc, 0xec, 0x21, 0x0b, 0xd2, 0x63, 0x50, 0xa6, 0xab, 0xca, 0x34, 0x69, 0x99, 0x9b,
+	0x49, 0xb3, 0x1e, 0xc0, 0x56, 0xba, 0x72, 0x8c, 0x5f, 0x03, 0x7d, 0x6c, 0x0b, 0xb5, 0x2b, 0x28,
+	0x1e, 0xad, 0x0b, 0x28, 0x3f, 0x8f, 0xfb, 0xea, 0x7d, 0x0b, 0xba, 0x61, 0x8d, 0x45, 0xc4, 0x65,
+	0x57, 0x88, 0x4b, 0x90, 0xcc, 0xad, 0x20, 0x59, 0x83, 0x6a, 0xea, 0x5d, 0xec, 0x87, 0xdf, 0x34,
+	0x30, 0x4e, 0x5c, 0x87, 0xbb, 0xec, 0xbf, 0xa6, 0x68, 0x0f, 0x0c, 0x8c, 0x7c, 0xe0, 0x4d, 0xdd,
+	0x50, 0xfe, 0x88, 0x97, 0x3a, 0xf7, 0xb1, 0xfa, 0xe5, 0xcd, 0x36, 0x8d, 0xcd, 0x47, 0x6e, 0x18,
+	0xcc, 0x68, 0xe2, 0x5e, 0xff, 0x1a, 0xaa, 0xab, 0xc6, 0xb8, 0x36, 0xd5, 0x6b, 0xb2, 0xb6, 0x3b,
+	0x90, 0xbb, 0xb0, 0x9d, 0xa9, 0x9a, 0xaa, 0x1c, 0x55, 0xc2, 0x5e, 0xe6, 0x0b, 0x2d, 0x9a, 0xd4,
+	0x37, 0x1a, 0x94, 0xe2, 0xb7, 0x10, 0xd1, 0x23, 0x28, 0xdb, 0x8e, 0xb3, 0x0c, 0x6b, 0x6a, 0x32,
+	0xa5, 0xff, 0xa5, 0x53, 0xf2, 0x9d, 0x59, 0x7b, 0x3f, 0xe5, 0xa3, 0xf2, 0x5a, 0xb9, 0x56, 0xff,
+	0x06, 0xb6, 0xaf, 0xb9, 0x7c, 0x44, 0x76, 0x0f, 0xa1, 0x76, 0xcc, 0x26, 0x7d, 0x16, 0x9c, 0x06,
+	0xde, 0x2b, 0xee, 0xb0, 0x8d, 0x8c, 0x5a, 0xdf, 0x01, 0x59, 0xf3, 0xc2, 0x4a, 0x76, 0x20, 0xcf,
+	0x7e, 0xf5, 0x79, 0xc0, 0x62, 0xc4, 0x95, 0x44, 0xee, 0xe1, 0x70, 0xf5, 0x6c, 0xc7, 0xf1, 0x2e,
+	0xd5, 0x4f, 0x06, 0x2d, 0x70, 0xb1, 0x8f, 0x62, 0xe7, 0xad, 0x0e, 0xb9, 0x1f, 0xf1, 0x0b, 0x8e,
+	0x58, 0x90, 0xc5, 0xaf, 0x0b, 0x22, 0x3b, 0x31, 0xfa, 0xce, 0xa8, 0x57, 0x12, 0x01, 0x1f, 0xf8,
+	0x34, 0xf9, 0xea, 0xa8, 0xa6, 0x1b, 0x96, 0x9d, 0xd7, 0x6b, 0x2b, 0x32, 0x3a, 0x7f, 0x05, 0xb7,
+	0x37, 0x2c, 0x0d, 0x72, 0x37, 0xe5, 0x98, 0xac, 0x8d, 0xf5, 0x97, 0x9e, 0x02, 0x24, 0x9d, 0x4f,
+	0xb6, 0xd1, 0xb8, 0xb2, 0x03, 0xea, 0xb7, 0xd7, 0x55, 0x78, 0xeb, 0x09, 0x40, 0x32, 0x8f, 0xea,
+	0xd6, 0xca, 0xb0, 0x6f, 0xc8, 0xf2, 0x09, 0x18, 0xcb, 0x2e, 0x26, 0xd2, 0x9c, 0x1e, 0xa6, 0x3a,
+	0x59, 0xd3, 0xe0, 0x95, 0x47, 0x50, 0xa2, 0xcc, 0x65, 0x97, 0xaa, 0x3b, 0x48, 0x65, 0xa5, 0x79,
+	0xeb, 0x5b, 0x6b, 0x8d, 0x43, 0x9e, 0x41, 0xf5, 0xd4, 0xe6, 0x43, 0x4c, 0xe1, 0x08, 0xf9, 0x98,
+	0x91, 0x3b, 0xe8, 0xb2, 0xce, 0x72, 0x7d, 0x67, 0x83, 0xd6, 0x77, 0x66, 0xdd, 0xda, 0x1f, 0x57,
+	0xbb, 0xda, 0x9f, 0x57, 0xbb, 0xda, 0x5f, 0x57, 0xbb, 0xda, 0xeb, 0xbf, 0x77, 0x6f, 0xf5, 0xf3,
+	0xf2, 0xd3, 0xf9, 0xf3, 0x7f, 0x03, 0x00, 0x00, 0xff, 0xff, 0x49, 0x7b, 0x97, 0x3b, 0x7c, 0x0b,
+	0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -1348,6 +1460,8 @@ type LogicClient interface {
 	Heartbeat(ctx context.Context, in *HeartbeatReq, opts ...grpc.CallOption) (*HeartbeatReply, error)
 	// RenewOnline
 	RenewOnline(ctx context.Context, in *OnlineReq, opts ...grpc.CallOption) (*OnlineReply, error)
+	//PaidRoomExpiry
+	PaidRoomExpiry(ctx context.Context, in *MemberProfileReq, opts ...grpc.CallOption) (*MemberProfileReply, error)
 }
 
 type logicClient struct {
@@ -1421,6 +1535,15 @@ func (c *logicClient) RenewOnline(ctx context.Context, in *OnlineReq, opts ...gr
 	return out, nil
 }
 
+func (c *logicClient) PaidRoomExpiry(ctx context.Context, in *MemberProfileReq, opts ...grpc.CallOption) (*MemberProfileReply, error) {
+	out := new(MemberProfileReply)
+	err := c.cc.Invoke(ctx, "/pb.Logic/PaidRoomExpiry", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LogicServer is the server API for Logic service.
 type LogicServer interface {
 	// Ping Service
@@ -1437,6 +1560,37 @@ type LogicServer interface {
 	Heartbeat(context.Context, *HeartbeatReq) (*HeartbeatReply, error)
 	// RenewOnline
 	RenewOnline(context.Context, *OnlineReq) (*OnlineReply, error)
+	//PaidRoomExpiry
+	PaidRoomExpiry(context.Context, *MemberProfileReq) (*MemberProfileReply, error)
+}
+
+// UnimplementedLogicServer can be embedded to have forward compatible implementations.
+type UnimplementedLogicServer struct {
+}
+
+func (*UnimplementedLogicServer) Ping(ctx context.Context, req *PingReq) (*PingReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
+func (*UnimplementedLogicServer) Connect(ctx context.Context, req *ConnectReq) (*ConnectReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Connect not implemented")
+}
+func (*UnimplementedLogicServer) ConnectSuccessReply(ctx context.Context, req *ConnectSuccessReq) (*PingReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConnectSuccessReply not implemented")
+}
+func (*UnimplementedLogicServer) Disconnect(ctx context.Context, req *DisconnectReq) (*DisconnectReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Disconnect not implemented")
+}
+func (*UnimplementedLogicServer) ChangeRoom(ctx context.Context, req *ChangeRoomReq) (*ConnectReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangeRoom not implemented")
+}
+func (*UnimplementedLogicServer) Heartbeat(ctx context.Context, req *HeartbeatReq) (*HeartbeatReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Heartbeat not implemented")
+}
+func (*UnimplementedLogicServer) RenewOnline(ctx context.Context, req *OnlineReq) (*OnlineReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RenewOnline not implemented")
+}
+func (*UnimplementedLogicServer) PaidRoomExpiry(ctx context.Context, req *MemberProfileReq) (*MemberProfileReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PaidRoomExpiry not implemented")
 }
 
 func RegisterLogicServer(s *grpc.Server, srv LogicServer) {
@@ -1569,6 +1723,24 @@ func _Logic_RenewOnline_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Logic_PaidRoomExpiry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MemberProfileReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LogicServer).PaidRoomExpiry(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Logic/PaidRoomExpiry",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LogicServer).PaidRoomExpiry(ctx, req.(*MemberProfileReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Logic_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.Logic",
 	HandlerType: (*LogicServer)(nil),
@@ -1601,6 +1773,10 @@ var _Logic_serviceDesc = grpc.ServiceDesc{
 			MethodName: "RenewOnline",
 			Handler:    _Logic_RenewOnline_Handler,
 		},
+		{
+			MethodName: "PaidRoomExpiry",
+			Handler:    _Logic_PaidRoomExpiry_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "logic.proto",
@@ -1609,7 +1785,7 @@ var _Logic_serviceDesc = grpc.ServiceDesc{
 func (m *PushMsg) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1617,14 +1793,76 @@ func (m *PushMsg) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *PushMsg) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *PushMsg) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.Type != 0 {
-		dAtA[i] = 0x8
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.Type))
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.IsRaw {
+		i--
+		if m.IsRaw {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x58
+	}
+	if m.SendAt != 0 {
+		i = encodeVarintLogic(dAtA, i, uint64(m.SendAt))
+		i--
+		dAtA[i] = 0x50
+	}
+	if m.Op != 0 {
+		i = encodeVarintLogic(dAtA, i, uint64(m.Op))
+		i--
+		dAtA[i] = 0x48
+	}
+	if m.Seq != 0 {
+		i = encodeVarintLogic(dAtA, i, uint64(m.Seq))
+		i--
+		dAtA[i] = 0x40
+	}
+	if m.Mid != 0 {
+		i = encodeVarintLogic(dAtA, i, uint64(m.Mid))
+		i--
+		dAtA[i] = 0x38
+	}
+	if m.MsgType != 0 {
+		i = encodeVarintLogic(dAtA, i, uint64(m.MsgType))
+		i--
+		dAtA[i] = 0x30
+	}
+	if len(m.Message) > 0 {
+		i -= len(m.Message)
+		copy(dAtA[i:], m.Message)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Message)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if len(m.Msg) > 0 {
+		i -= len(m.Msg)
+		copy(dAtA[i:], m.Msg)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Msg)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.Keys) > 0 {
+		for iNdEx := len(m.Keys) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Keys[iNdEx])
+			copy(dAtA[i:], m.Keys[iNdEx])
+			i = encodeVarintLogic(dAtA, i, uint64(len(m.Keys[iNdEx])))
+			i--
+			dAtA[i] = 0x1a
+		}
 	}
 	if len(m.Room) > 0 {
 		dAtA2 := make([]byte, len(m.Room)*10)
@@ -1639,83 +1877,24 @@ func (m *PushMsg) MarshalTo(dAtA []byte) (int, error) {
 			dAtA2[j1] = uint8(num)
 			j1++
 		}
-		dAtA[i] = 0x12
-		i++
+		i -= j1
+		copy(dAtA[i:], dAtA2[:j1])
 		i = encodeVarintLogic(dAtA, i, uint64(j1))
-		i += copy(dAtA[i:], dAtA2[:j1])
+		i--
+		dAtA[i] = 0x12
 	}
-	if len(m.Keys) > 0 {
-		for _, s := range m.Keys {
-			dAtA[i] = 0x1a
-			i++
-			l = len(s)
-			for l >= 1<<7 {
-				dAtA[i] = uint8(uint64(l)&0x7f | 0x80)
-				l >>= 7
-				i++
-			}
-			dAtA[i] = uint8(l)
-			i++
-			i += copy(dAtA[i:], s)
-		}
+	if m.Type != 0 {
+		i = encodeVarintLogic(dAtA, i, uint64(m.Type))
+		i--
+		dAtA[i] = 0x8
 	}
-	if len(m.Msg) > 0 {
-		dAtA[i] = 0x22
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Msg)))
-		i += copy(dAtA[i:], m.Msg)
-	}
-	if len(m.Message) > 0 {
-		dAtA[i] = 0x2a
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Message)))
-		i += copy(dAtA[i:], m.Message)
-	}
-	if m.MsgType != 0 {
-		dAtA[i] = 0x30
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.MsgType))
-	}
-	if m.Mid != 0 {
-		dAtA[i] = 0x38
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.Mid))
-	}
-	if m.Seq != 0 {
-		dAtA[i] = 0x40
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.Seq))
-	}
-	if m.Op != 0 {
-		dAtA[i] = 0x48
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.Op))
-	}
-	if m.SendAt != 0 {
-		dAtA[i] = 0x50
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.SendAt))
-	}
-	if m.IsRaw {
-		dAtA[i] = 0x58
-		i++
-		if m.IsRaw {
-			dAtA[i] = 1
-		} else {
-			dAtA[i] = 0
-		}
-		i++
-	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *PingReply) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1723,20 +1902,26 @@ func (m *PingReply) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *PingReply) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *PingReply) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
 	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *PingReq) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1744,20 +1929,26 @@ func (m *PingReq) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *PingReq) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *PingReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
 	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *Connect) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1765,73 +1956,86 @@ func (m *Connect) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Connect) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Connect) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Uid) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Uid)))
-		i += copy(dAtA[i:], m.Uid)
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	if len(m.Key) > 0 {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Key)))
-		i += copy(dAtA[i:], m.Key)
+	if m.PermissionMessage != nil {
+		{
+			size, err := m.PermissionMessage.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintLogic(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x3a
+	}
+	if m.Permission != nil {
+		{
+			size, err := m.Permission.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintLogic(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x32
+	}
+	if len(m.Message) > 0 {
+		i -= len(m.Message)
+		copy(dAtA[i:], m.Message)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Message)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if m.RoomID != 0 {
+		i = encodeVarintLogic(dAtA, i, uint64(m.RoomID))
+		i--
+		dAtA[i] = 0x20
 	}
 	if m.Status {
-		dAtA[i] = 0x18
-		i++
+		i--
 		if m.Status {
 			dAtA[i] = 1
 		} else {
 			dAtA[i] = 0
 		}
-		i++
+		i--
+		dAtA[i] = 0x18
 	}
-	if m.RoomID != 0 {
-		dAtA[i] = 0x20
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.RoomID))
+	if len(m.Key) > 0 {
+		i -= len(m.Key)
+		copy(dAtA[i:], m.Key)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Key)))
+		i--
+		dAtA[i] = 0x12
 	}
-	if len(m.Message) > 0 {
-		dAtA[i] = 0x2a
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Message)))
-		i += copy(dAtA[i:], m.Message)
+	if len(m.Uid) > 0 {
+		i -= len(m.Uid)
+		copy(dAtA[i:], m.Uid)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Uid)))
+		i--
+		dAtA[i] = 0xa
 	}
-	if m.Permission != nil {
-		dAtA[i] = 0x32
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.Permission.Size()))
-		n3, err := m.Permission.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n3
-	}
-	if m.PermissionMessage != nil {
-		dAtA[i] = 0x3a
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.PermissionMessage.Size()))
-		n4, err := m.PermissionMessage.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n4
-	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *User) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1839,47 +2043,55 @@ func (m *User) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *User) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *User) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.Id != 0 {
-		dAtA[i] = 0x8
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.Id))
-	}
-	if len(m.Uid) > 0 {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Uid)))
-		i += copy(dAtA[i:], m.Uid)
-	}
-	if len(m.Name) > 0 {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Name)))
-		i += copy(dAtA[i:], m.Name)
-	}
-	if m.Gender != 0 {
-		dAtA[i] = 0x20
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.Gender))
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.Type != 0 {
-		dAtA[i] = 0x28
-		i++
 		i = encodeVarintLogic(dAtA, i, uint64(m.Type))
+		i--
+		dAtA[i] = 0x28
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.Gender != 0 {
+		i = encodeVarintLogic(dAtA, i, uint64(m.Gender))
+		i--
+		dAtA[i] = 0x20
 	}
-	return i, nil
+	if len(m.Name) > 0 {
+		i -= len(m.Name)
+		copy(dAtA[i:], m.Name)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Name)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Uid) > 0 {
+		i -= len(m.Uid)
+		copy(dAtA[i:], m.Uid)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Uid)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.Id != 0 {
+		i = encodeVarintLogic(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *Permission) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1887,60 +2099,66 @@ func (m *Permission) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Permission) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Permission) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.IsMessage {
-		dAtA[i] = 0x8
-		i++
-		if m.IsMessage {
-			dAtA[i] = 1
-		} else {
-			dAtA[i] = 0
-		}
-		i++
-	}
-	if m.IsRedEnvelope {
-		dAtA[i] = 0x10
-		i++
-		if m.IsRedEnvelope {
-			dAtA[i] = 1
-		} else {
-			dAtA[i] = 0
-		}
-		i++
-	}
-	if m.IsBets {
-		dAtA[i] = 0x18
-		i++
-		if m.IsBets {
-			dAtA[i] = 1
-		} else {
-			dAtA[i] = 0
-		}
-		i++
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.IsManage {
-		dAtA[i] = 0x20
-		i++
+		i--
 		if m.IsManage {
 			dAtA[i] = 1
 		} else {
 			dAtA[i] = 0
 		}
-		i++
+		i--
+		dAtA[i] = 0x20
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.IsBets {
+		i--
+		if m.IsBets {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x18
 	}
-	return i, nil
+	if m.IsRedEnvelope {
+		i--
+		if m.IsRedEnvelope {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.IsMessage {
+		i--
+		if m.IsMessage {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *PermissionMessage) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1948,44 +2166,54 @@ func (m *PermissionMessage) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *PermissionMessage) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *PermissionMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.IsMessage) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.IsMessage)))
-		i += copy(dAtA[i:], m.IsMessage)
-	}
-	if len(m.IsRedEnvelope) > 0 {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.IsRedEnvelope)))
-		i += copy(dAtA[i:], m.IsRedEnvelope)
-	}
-	if len(m.IsBets) > 0 {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.IsBets)))
-		i += copy(dAtA[i:], m.IsBets)
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if len(m.IsManage) > 0 {
-		dAtA[i] = 0x22
-		i++
+		i -= len(m.IsManage)
+		copy(dAtA[i:], m.IsManage)
 		i = encodeVarintLogic(dAtA, i, uint64(len(m.IsManage)))
-		i += copy(dAtA[i:], m.IsManage)
+		i--
+		dAtA[i] = 0x22
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if len(m.IsBets) > 0 {
+		i -= len(m.IsBets)
+		copy(dAtA[i:], m.IsBets)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.IsBets)))
+		i--
+		dAtA[i] = 0x1a
 	}
-	return i, nil
+	if len(m.IsRedEnvelope) > 0 {
+		i -= len(m.IsRedEnvelope)
+		copy(dAtA[i:], m.IsRedEnvelope)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.IsRedEnvelope)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.IsMessage) > 0 {
+		i -= len(m.IsMessage)
+		copy(dAtA[i:], m.IsMessage)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.IsMessage)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *ConnectReq) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1993,32 +2221,40 @@ func (m *ConnectReq) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ConnectReq) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ConnectReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Server) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Server)))
-		i += copy(dAtA[i:], m.Server)
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if len(m.Token) > 0 {
-		dAtA[i] = 0x12
-		i++
+		i -= len(m.Token)
+		copy(dAtA[i:], m.Token)
 		i = encodeVarintLogic(dAtA, i, uint64(len(m.Token)))
-		i += copy(dAtA[i:], m.Token)
+		i--
+		dAtA[i] = 0x12
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if len(m.Server) > 0 {
+		i -= len(m.Server)
+		copy(dAtA[i:], m.Server)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Server)))
+		i--
+		dAtA[i] = 0xa
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *ConnectReply) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -2026,67 +2262,79 @@ func (m *ConnectReply) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ConnectReply) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ConnectReply) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.Heartbeat != 0 {
-		dAtA[i] = 0x8
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.Heartbeat))
-	}
-	if len(m.TopMessage) > 0 {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.TopMessage)))
-		i += copy(dAtA[i:], m.TopMessage)
-	}
-	if len(m.BulletinMessage) > 0 {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.BulletinMessage)))
-		i += copy(dAtA[i:], m.BulletinMessage)
-	}
-	if m.Connect != nil {
-		dAtA[i] = 0x22
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.Connect.Size()))
-		n5, err := m.Connect.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n5
-	}
-	if m.User != nil {
-		dAtA[i] = 0x2a
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.User.Size()))
-		n6, err := m.User.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n6
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.IsConnectSuccessReply {
-		dAtA[i] = 0x30
-		i++
+		i--
 		if m.IsConnectSuccessReply {
 			dAtA[i] = 1
 		} else {
 			dAtA[i] = 0
 		}
-		i++
+		i--
+		dAtA[i] = 0x30
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.User != nil {
+		{
+			size, err := m.User.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintLogic(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x2a
 	}
-	return i, nil
+	if m.Connect != nil {
+		{
+			size, err := m.Connect.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintLogic(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.BulletinMessage) > 0 {
+		i -= len(m.BulletinMessage)
+		copy(dAtA[i:], m.BulletinMessage)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.BulletinMessage)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.TopMessage) > 0 {
+		i -= len(m.TopMessage)
+		copy(dAtA[i:], m.TopMessage)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.TopMessage)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.Heartbeat != 0 {
+		i = encodeVarintLogic(dAtA, i, uint64(m.Heartbeat))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *ConnectSuccessReq) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -2094,45 +2342,53 @@ func (m *ConnectSuccessReq) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ConnectSuccessReq) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ConnectSuccessReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.RoomId != 0 {
-		dAtA[i] = 0x8
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.RoomId))
-	}
-	if m.User != nil {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.User.Size()))
-		n7, err := m.User.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n7
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.IsManage {
-		dAtA[i] = 0x18
-		i++
+		i--
 		if m.IsManage {
 			dAtA[i] = 1
 		} else {
 			dAtA[i] = 0
 		}
-		i++
+		i--
+		dAtA[i] = 0x18
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.User != nil {
+		{
+			size, err := m.User.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintLogic(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
 	}
-	return i, nil
+	if m.RoomId != 0 {
+		i = encodeVarintLogic(dAtA, i, uint64(m.RoomId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *DisconnectReq) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -2140,38 +2396,47 @@ func (m *DisconnectReq) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *DisconnectReq) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *DisconnectReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Uid) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Uid)))
-		i += copy(dAtA[i:], m.Uid)
-	}
-	if len(m.Key) > 0 {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Key)))
-		i += copy(dAtA[i:], m.Key)
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if len(m.Server) > 0 {
-		dAtA[i] = 0x1a
-		i++
+		i -= len(m.Server)
+		copy(dAtA[i:], m.Server)
 		i = encodeVarintLogic(dAtA, i, uint64(len(m.Server)))
-		i += copy(dAtA[i:], m.Server)
+		i--
+		dAtA[i] = 0x1a
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if len(m.Key) > 0 {
+		i -= len(m.Key)
+		copy(dAtA[i:], m.Key)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Key)))
+		i--
+		dAtA[i] = 0x12
 	}
-	return i, nil
+	if len(m.Uid) > 0 {
+		i -= len(m.Uid)
+		copy(dAtA[i:], m.Uid)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Uid)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *ChangeRoomReq) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -2179,37 +2444,45 @@ func (m *ChangeRoomReq) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ChangeRoomReq) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ChangeRoomReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Uid) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Uid)))
-		i += copy(dAtA[i:], m.Uid)
-	}
-	if len(m.Key) > 0 {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Key)))
-		i += copy(dAtA[i:], m.Key)
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.RoomID != 0 {
-		dAtA[i] = 0x18
-		i++
 		i = encodeVarintLogic(dAtA, i, uint64(m.RoomID))
+		i--
+		dAtA[i] = 0x18
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if len(m.Key) > 0 {
+		i -= len(m.Key)
+		copy(dAtA[i:], m.Key)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Key)))
+		i--
+		dAtA[i] = 0x12
 	}
-	return i, nil
+	if len(m.Uid) > 0 {
+		i -= len(m.Uid)
+		copy(dAtA[i:], m.Uid)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Uid)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *ChangeRoomReply) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -2217,36 +2490,45 @@ func (m *ChangeRoomReply) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ChangeRoomReply) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ChangeRoomReply) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.HeaderMessage) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.HeaderMessage)))
-		i += copy(dAtA[i:], m.HeaderMessage)
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.Connect != nil {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.Connect.Size()))
-		n8, err := m.Connect.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
+		{
+			size, err := m.Connect.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintLogic(dAtA, i, uint64(size))
 		}
-		i += n8
+		i--
+		dAtA[i] = 0x12
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if len(m.HeaderMessage) > 0 {
+		i -= len(m.HeaderMessage)
+		copy(dAtA[i:], m.HeaderMessage)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.HeaderMessage)))
+		i--
+		dAtA[i] = 0xa
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *DisconnectReply) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -2254,30 +2536,36 @@ func (m *DisconnectReply) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *DisconnectReply) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *DisconnectReply) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
 	if m.Has {
-		dAtA[i] = 0x8
-		i++
+		i--
 		if m.Has {
 			dAtA[i] = 1
 		} else {
 			dAtA[i] = 0
 		}
-		i++
+		i--
+		dAtA[i] = 0x8
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *HeartbeatReq) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -2285,49 +2573,59 @@ func (m *HeartbeatReq) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *HeartbeatReq) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *HeartbeatReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Uid) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Uid)))
-		i += copy(dAtA[i:], m.Uid)
-	}
-	if len(m.Key) > 0 {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Key)))
-		i += copy(dAtA[i:], m.Key)
-	}
-	if len(m.Name) > 0 {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Name)))
-		i += copy(dAtA[i:], m.Name)
-	}
-	if m.RoomId != 0 {
-		dAtA[i] = 0x20
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(m.RoomId))
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if len(m.Server) > 0 {
-		dAtA[i] = 0x2a
-		i++
+		i -= len(m.Server)
+		copy(dAtA[i:], m.Server)
 		i = encodeVarintLogic(dAtA, i, uint64(len(m.Server)))
-		i += copy(dAtA[i:], m.Server)
+		i--
+		dAtA[i] = 0x2a
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.RoomId != 0 {
+		i = encodeVarintLogic(dAtA, i, uint64(m.RoomId))
+		i--
+		dAtA[i] = 0x20
 	}
-	return i, nil
+	if len(m.Name) > 0 {
+		i -= len(m.Name)
+		copy(dAtA[i:], m.Name)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Name)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Key) > 0 {
+		i -= len(m.Key)
+		copy(dAtA[i:], m.Key)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Key)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Uid) > 0 {
+		i -= len(m.Uid)
+		copy(dAtA[i:], m.Uid)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Uid)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *HeartbeatReply) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -2335,20 +2633,26 @@ func (m *HeartbeatReply) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *HeartbeatReply) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *HeartbeatReply) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
 	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *OnlineReq) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -2356,41 +2660,48 @@ func (m *OnlineReq) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *OnlineReq) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *OnlineReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Server) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintLogic(dAtA, i, uint64(len(m.Server)))
-		i += copy(dAtA[i:], m.Server)
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if len(m.RoomCount) > 0 {
-		for k, _ := range m.RoomCount {
-			dAtA[i] = 0x12
-			i++
+		for k := range m.RoomCount {
 			v := m.RoomCount[k]
-			mapSize := 1 + sovLogic(uint64(k)) + 1 + sovLogic(uint64(v))
-			i = encodeVarintLogic(dAtA, i, uint64(mapSize))
-			dAtA[i] = 0x8
-			i++
-			i = encodeVarintLogic(dAtA, i, uint64(k))
-			dAtA[i] = 0x10
-			i++
+			baseI := i
 			i = encodeVarintLogic(dAtA, i, uint64(v))
+			i--
+			dAtA[i] = 0x10
+			i = encodeVarintLogic(dAtA, i, uint64(k))
+			i--
+			dAtA[i] = 0x8
+			i = encodeVarintLogic(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0x12
 		}
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if len(m.Server) > 0 {
+		i -= len(m.Server)
+		copy(dAtA[i:], m.Server)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Server)))
+		i--
+		dAtA[i] = 0xa
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *OnlineReply) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -2398,39 +2709,125 @@ func (m *OnlineReply) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *OnlineReply) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *OnlineReply) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
 	if len(m.AllRoomCount) > 0 {
-		for k, _ := range m.AllRoomCount {
-			dAtA[i] = 0xa
-			i++
+		for k := range m.AllRoomCount {
 			v := m.AllRoomCount[k]
-			mapSize := 1 + sovLogic(uint64(k)) + 1 + sovLogic(uint64(v))
-			i = encodeVarintLogic(dAtA, i, uint64(mapSize))
-			dAtA[i] = 0x8
-			i++
-			i = encodeVarintLogic(dAtA, i, uint64(k))
-			dAtA[i] = 0x10
-			i++
+			baseI := i
 			i = encodeVarintLogic(dAtA, i, uint64(v))
+			i--
+			dAtA[i] = 0x10
+			i = encodeVarintLogic(dAtA, i, uint64(k))
+			i--
+			dAtA[i] = 0x8
+			i = encodeVarintLogic(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0xa
 		}
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	return len(dAtA) - i, nil
+}
+
+func (m *MemberProfileReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
 	}
-	return i, nil
+	return dAtA[:n], nil
+}
+
+func (m *MemberProfileReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MemberProfileReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if len(m.Uid) > 0 {
+		i -= len(m.Uid)
+		copy(dAtA[i:], m.Uid)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Uid)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MemberProfileReply) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MemberProfileReply) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MemberProfileReply) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.IsAllow {
+		i--
+		if m.IsAllow {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Expire) > 0 {
+		i -= len(m.Expire)
+		copy(dAtA[i:], m.Expire)
+		i = encodeVarintLogic(dAtA, i, uint64(len(m.Expire)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func encodeVarintLogic(dAtA []byte, offset int, v uint64) int {
+	offset -= sovLogic(v)
+	base := offset
 	for v >= 1<<7 {
 		dAtA[offset] = uint8(v&0x7f | 0x80)
 		v >>= 7
 		offset++
 	}
 	dAtA[offset] = uint8(v)
-	return offset + 1
+	return base
 }
 func (m *PushMsg) Size() (n int) {
 	if m == nil {
@@ -2874,15 +3271,43 @@ func (m *OnlineReply) Size() (n int) {
 	return n
 }
 
-func sovLogic(x uint64) (n int) {
-	for {
-		n++
-		x >>= 7
-		if x == 0 {
-			break
-		}
+func (m *MemberProfileReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Uid)
+	if l > 0 {
+		n += 1 + l + sovLogic(uint64(l))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
 	}
 	return n
+}
+
+func (m *MemberProfileReply) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Expire)
+	if l > 0 {
+		n += 1 + l + sovLogic(uint64(l))
+	}
+	if m.IsAllow {
+		n += 2
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func sovLogic(x uint64) (n int) {
+	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozLogic(x uint64) (n int) {
 	return sovLogic(uint64((x << 1) ^ uint64((int64(x) >> 63))))
@@ -3230,10 +3655,7 @@ func (m *PushMsg) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -3284,10 +3706,7 @@ func (m *PingReply) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -3338,10 +3757,7 @@ func (m *PingReq) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -3599,10 +4015,7 @@ func (m *Connect) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -3774,10 +4187,7 @@ func (m *User) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -3908,10 +4318,7 @@ func (m *Permission) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -4090,10 +4497,7 @@ func (m *PermissionMessage) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -4210,10 +4614,7 @@ func (m *ConnectReq) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -4443,10 +4844,7 @@ func (m *ConnectReply) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -4572,10 +4970,7 @@ func (m *ConnectSuccessReq) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -4722,10 +5117,7 @@ func (m *DisconnectReq) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -4859,10 +5251,7 @@ func (m *ChangeRoomReq) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -4983,10 +5372,7 @@ func (m *ChangeRoomReply) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -5057,10 +5443,7 @@ func (m *DisconnectReply) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -5258,10 +5641,7 @@ func (m *HeartbeatReq) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -5312,10 +5692,7 @@ func (m *HeartbeatReply) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -5480,7 +5857,7 @@ func (m *OnlineReq) Unmarshal(dAtA []byte) error {
 					if err != nil {
 						return err
 					}
-					if skippy < 0 {
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
 						return ErrInvalidLengthLogic
 					}
 					if (iNdEx + skippy) > postIndex {
@@ -5497,10 +5874,7 @@ func (m *OnlineReq) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthLogic
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -5633,7 +6007,7 @@ func (m *OnlineReply) Unmarshal(dAtA []byte) error {
 					if err != nil {
 						return err
 					}
-					if skippy < 0 {
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
 						return ErrInvalidLengthLogic
 					}
 					if (iNdEx + skippy) > postIndex {
@@ -5650,10 +6024,193 @@ func (m *OnlineReply) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
-			if (iNdEx + skippy) < 0 {
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MemberProfileReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowLogic
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MemberProfileReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MemberProfileReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Uid", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowLogic
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthLogic
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthLogic
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Uid = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipLogic(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthLogic
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MemberProfileReply) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowLogic
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MemberProfileReply: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MemberProfileReply: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Expire", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowLogic
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthLogic
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthLogic
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Expire = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IsAllow", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowLogic
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.IsAllow = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipLogic(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthLogic
 			}
 			if (iNdEx + skippy) > l {
@@ -5672,6 +6229,7 @@ func (m *OnlineReply) Unmarshal(dAtA []byte) error {
 func skipLogic(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0
+	depth := 0
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
@@ -5703,10 +6261,8 @@ func skipLogic(dAtA []byte) (n int, err error) {
 					break
 				}
 			}
-			return iNdEx, nil
 		case 1:
 			iNdEx += 8
-			return iNdEx, nil
 		case 2:
 			var length int
 			for shift := uint(0); ; shift += 7 {
@@ -5727,55 +6283,30 @@ func skipLogic(dAtA []byte) (n int, err error) {
 				return 0, ErrInvalidLengthLogic
 			}
 			iNdEx += length
-			if iNdEx < 0 {
-				return 0, ErrInvalidLengthLogic
-			}
-			return iNdEx, nil
 		case 3:
-			for {
-				var innerWire uint64
-				var start int = iNdEx
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return 0, ErrIntOverflowLogic
-					}
-					if iNdEx >= l {
-						return 0, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					innerWire |= (uint64(b) & 0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				innerWireType := int(innerWire & 0x7)
-				if innerWireType == 4 {
-					break
-				}
-				next, err := skipLogic(dAtA[start:])
-				if err != nil {
-					return 0, err
-				}
-				iNdEx = start + next
-				if iNdEx < 0 {
-					return 0, ErrInvalidLengthLogic
-				}
-			}
-			return iNdEx, nil
+			depth++
 		case 4:
-			return iNdEx, nil
+			if depth == 0 {
+				return 0, ErrUnexpectedEndOfGroupLogic
+			}
+			depth--
 		case 5:
 			iNdEx += 4
-			return iNdEx, nil
 		default:
 			return 0, fmt.Errorf("proto: illegal wireType %d", wireType)
 		}
+		if iNdEx < 0 {
+			return 0, ErrInvalidLengthLogic
+		}
+		if depth == 0 {
+			return iNdEx, nil
+		}
 	}
-	panic("unreachable")
+	return 0, io.ErrUnexpectedEOF
 }
 
 var (
-	ErrInvalidLengthLogic = fmt.Errorf("proto: negative length found during unmarshaling")
-	ErrIntOverflowLogic   = fmt.Errorf("proto: integer overflow")
+	ErrInvalidLengthLogic        = fmt.Errorf("proto: negative length found during unmarshaling")
+	ErrIntOverflowLogic          = fmt.Errorf("proto: integer overflow")
+	ErrUnexpectedEndOfGroupLogic = fmt.Errorf("proto: unexpected end of group")
 )

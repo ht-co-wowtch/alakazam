@@ -141,8 +141,18 @@
                     <input id="red_message" type="text" class="form-control input-sm"
                            placeholder="紅包訊息"/>
                     <span class="input-group-btn">
-                            <button class="btn btn-warning btn-sm" id="btn-chat" onclick="sendRed()">
+                            <button class="btn btn-warning btn-sm" id="btn-chat" onclick="paidRoomExpiry()">
                                 發紅包</button>
+                        </span>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="input-group">
+<!--                    <input type="radio" name="red_type" value="random">鑽石<br>-->
+                    <input type="radio" name="red_type" value="equally" checked>月卡<br>
+                    <span class="input-group-btn">
+                            <button class="btn btn-warning btn-sm" id="btn-chat" onclick="paidRoomExpiry()">
+                                購買/驗證</button>
                         </span>
                 </div>
             </div>
@@ -435,6 +445,15 @@
         headerView.setInt16(headerOffset, rawHeaderLen);
         headerView.setInt32(opOffset, 7);
         ws.send(mergeArrayBuffer(headerBuf, bodyBuf));
+    }
+
+    function paidRoomExpiry() {
+        var headerBuf = new ArrayBuffer(rawHeaderLen);
+        var headerView = new DataView(headerBuf, 0);
+        headerView.setInt32(packetOffset, rawHeaderLen);
+        headerView.setInt16(headerOffset, rawHeaderLen);
+        headerView.setInt32(opOffset, 10);
+        ws.send(headerBuf);
     }
 
     function mergeArrayBuffer(ab1, ab2) {
