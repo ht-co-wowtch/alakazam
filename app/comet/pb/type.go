@@ -29,6 +29,18 @@ const (
 	// 取消置頂訊息
 	OpCloseTopMessage = int32(9)
 
+	// 付費房驗證(月卡)
+	OpPaidRoomExpiry = int32(10)
+
+	// 回覆付費房驗證(月卡)結果
+	OpPaidRoomExpiryReply = int32(11)
+
+	// 付費房驗證(鑽石)
+	// OpPaidRoomDiamond = int32(12)
+
+	// 回覆付費房驗證(鑽石)
+	// OpPaidRoomDiamondReply = int32(13)
+
 	// close連線
 	OpProtoFinish = int32(20)
 

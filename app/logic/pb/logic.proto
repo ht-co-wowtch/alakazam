@@ -48,14 +48,14 @@ message User {
 
 message Permission {
     bool isMessage = 1 [(gogoproto.jsontag) = "is_message"];
-	bool isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
-	bool isBets = 3 [(gogoproto.jsontag) = "is_bets"];
-	bool isManage = 4 [(gogoproto.jsontag) = "is_manage"];
+    bool isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
+    bool isBets = 3 [(gogoproto.jsontag) = "is_bets"];
+    bool isManage = 4 [(gogoproto.jsontag) = "is_manage"];
 }
 
 message PermissionMessage {
     string isMessage = 1 [(gogoproto.jsontag) = "is_message"];
-   	string isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
+    string isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
     string isBets = 3 [(gogoproto.jsontag) = "is_bets"];
     string isManage = 4 [(gogoproto.jsontag) = "is_manage"];
 }
@@ -88,9 +88,9 @@ message DisconnectReq {
 }
 
 message ChangeRoomReq {
-     string uid = 1;
-     string key = 2;
-     int32 roomID = 3;
+    string uid = 1;
+    string key = 2;
+    int32 roomID = 3;
 }
 
 message ChangeRoomReply {
@@ -124,20 +124,30 @@ message OnlineReply {
     map<int32, int32> allRoomCount = 1;
 }
 
+message MemberProfileReq {
+    string uid = 1;
+}
+
+message MemberProfileReply {
+    time expire = 1;
+    bool is_allow = 2;
+}
+
 service Logic {
     // Ping Service 
-    rpc Ping(PingReq) returns(PingReply);
+    rpc Ping (PingReq) returns (PingReply);
     // Connect
-    rpc Connect(ConnectReq) returns (ConnectReply);
+    rpc Connect (ConnectReq) returns (ConnectReply);
     // Connect Success Reply
-    rpc ConnectSuccessReply(ConnectSuccessReq) returns (PingReply);
+    rpc ConnectSuccessReply (ConnectSuccessReq) returns (PingReply);
     // Disconnect
-    rpc Disconnect(DisconnectReq) returns (DisconnectReply);
+    rpc Disconnect (DisconnectReq) returns (DisconnectReply);
     // ChangeRoom
-    rpc ChangeRoom(ChangeRoomReq) returns (ConnectReply);
+    rpc ChangeRoom (ChangeRoomReq) returns (ConnectReply);
     // Heartbeat
-    rpc Heartbeat(HeartbeatReq) returns (HeartbeatReply);
+    rpc Heartbeat (HeartbeatReq) returns (HeartbeatReply);
     // RenewOnline
-    rpc RenewOnline(OnlineReq) returns (OnlineReply);
-
+    rpc RenewOnline (OnlineReq) returns (OnlineReply);
+    //PaidRoomExpiry
+    rpc PaidRoomExpiry (MemberProfileReq) returns (MemberProfileReply);
 }

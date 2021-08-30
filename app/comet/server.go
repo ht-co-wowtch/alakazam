@@ -182,7 +182,7 @@ func (s *Server) onlineproc() {
 		for _, bucket := range s.buckets {
 			bucket.UpRoomsCount(s.online)
 		}
-		// 每30秒統計一次發給logic
+		// 每30秒統計一次發給logic(發送後暫停30秒)
 		time.Sleep(checkOnlinePeriod)
 	}
 }

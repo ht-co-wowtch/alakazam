@@ -55,6 +55,8 @@ func New(c *conf.Config) *Server {
 	db := models.NewStore(c.DB)
 
 	cli := client.New(c.Nidoran)
+	// TODO
+	parasCli := client.New(c.Paras)
 
 	// grpc client
 	seqRPClient, err := rpccli.NewClient(c.Seq)
@@ -82,7 +84,8 @@ func New(c *conf.Config) *Server {
 		cli,
 		message.NewHistory(db, cache, memberCli))
 
-	rpcServer := rpc.New(c.RPCServer, chat, messageProducer)
+	// TODO
+	rpcServer := rpc.New(c.RPCServer, chat, messageProducer, cli, parasCli)
 
 	log.Infof("http server port [%s]", c.HTTPServer.Addr)
 
