@@ -33,6 +33,15 @@ nidoran:
   # 單一連線最多閒置多久
   idleConnTimeout: 5m
 
+# Paras config
+host: http://localhost:8000
+  # 最大連接數量
+  maxConns: 8
+  # 最大空閒連接數
+  maxIdleConns: 4
+  # 單一連線最多閒置多久
+  idleConnTimeout: 5m
+
 # redis server
 redis:
   # redis host
