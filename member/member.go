@@ -203,6 +203,7 @@ func (m *Member) Get(uid string) (*models.Member, error) {
 	return member, nil
 }
 
+// 取得會員在房間中資訊
 func (m *Member) GetByRoom(uid string, rid int) (*models.Member, error) {
 	u, err := m.c.getByRoom(uid, rid)
 
@@ -229,6 +230,7 @@ func (m *Member) GetByRoom(uid string, rid int) (*models.Member, error) {
 	return u, err
 }
 
+// 取得會員狀態
 func (m *Member) GetStatus(uid string, rid int) (*models.Member, error) {
 	u, err := m.GetByRoom(uid, rid)
 	if err != nil {
@@ -244,6 +246,7 @@ func (m *Member) GetStatus(uid string, rid int) (*models.Member, error) {
 	return u, nil
 }
 
+// 取得會員名稱
 func (m *Member) GetUserName(uid string) (string, error) {
 	members, err := m.GetUserNames([]string{uid})
 	if err != nil {
@@ -252,6 +255,7 @@ func (m *Member) GetUserName(uid string) (string, error) {
 	return members[uid], nil
 }
 
+// 取得會員帳號名稱(UserName)
 func (m *Member) GetUserNames(uid []string) (map[string]string, error) {
 	name, err := m.c.getName(uid)
 	if err != nil && err != redis.Nil {
