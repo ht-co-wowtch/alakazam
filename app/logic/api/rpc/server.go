@@ -22,13 +22,12 @@ import (
 )
 
 // New logic grpc server
-func New(c *rpc.Conf, room room.Chat, message *message.Producer, cli *client.Client, pCli *client.Client) *grpc.Server {
+func New(c *rpc.Conf, room room.Chat, message *message.Producer, cli *client.Client) *grpc.Server {
 	srv := rpc.New(c)
 	pb.RegisterLogicServer(srv, &server{
 		room:    room,
 		message: message,
 		cli:     cli,
-		pCli:    pCli,
 	})
 
 	return srv
@@ -38,7 +37,6 @@ type server struct {
 	room    room.Chat
 	message *message.Producer
 	cli     *client.Client
-	pCli    *client.Client
 }
 
 var _ pb.LogicServer = &server{}
@@ -136,21 +134,19 @@ func (s *server) RenewOnline(ctx context.Context, req *pb.OnlineReq) (*pb.Online
 	}, nil
 }
 
-// TODO
 // 付費房月卡效期
+// PaidRoomExpiry
 func (s *server) PaidRoomExpiry(ctx context.Context, req *pb.MemberProfileReq) (*pb.MemberProfileReply, error) {
-	// TODO 取得會員月卡效期
-	// refactor
-	resp, _ := s.pCli.LiveExpire(req.Uid) // 透過paras 取得月卡效期
+	resp, _ :=s.cli.LiveExpire(req.Uid)
 
 	// 時間檢查
 	isAllow := false
-	if time.Now().Before(resp.Expire) {
+	if time.Now().Before(resp.LiveExpireAt) {
 		isAllow = true
 	}
 
 	return &pb.MemberProfileReply{
-		Expire:  resp.Expire.String(),
+		Expire:  resp.LiveExpireAt.String(),
 		IsAllow: isAllow,
 	}, nil
 }

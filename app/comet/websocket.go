@@ -281,6 +281,7 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 			break
 		}
 
+		log.Infof("op: %i", p.Op)
 		// 確定websocket送來訊息類型
 		if p.Op == pb.OpHeartbeat { // 心跳
 			// comet有心跳機制維護連線狀態，對於logic來說也需要有人利用心跳機制去告知哪個user還在線
