@@ -153,18 +153,20 @@ TODO
 
 不同的Operation說明本次Protocol資料是什麼，如心跳回覆,訊息等等
 
-| value | 說明                                         | body   |
-| ----- | -------------------------------------------- | ------ |
-| 1     | [要求連線到某一個房間](#room)                | json   |
-| 2     | [連線到某一個房間結果回覆](#room-reply)      | json   |
-| 3     | [發送心跳](#heartbeat)                       | 無Body |
-| 4     | [回覆心跳結果](#heartbeat-reply)             | int32  |
-| 5     | [聊天室批次訊息](#message)                   | json   |
-| 6     | [聊天室訊息](#message-reply)                 | json   |
-| 7     | [更換房間](#change-room)                     | json   |
-| 8     | [回覆更換房間結果](#change-room-reply)       | json   |
-| 9     | [取消置頂訊息](#cancle-header-message-reply) | json   |
-| 20    | [聊天室踢人](#close-reply)                   | json   |
+| value | 說明                                           | body   |
+| ----- | ---------------------------------------------- | ------ |
+| 1     | [要求連線到某一個房間](#room)                      | json   |
+| 2     | [連線到某一個房間結果回覆](#room-reply)             | json   |
+| 3     | [發送心跳](#heartbeat)                           | 無Body |
+| 4     | [回覆心跳結果](#heartbeat-reply)                  | int32  |
+| 5     | [聊天室批次訊息](#message)                         | json   |
+| 6     | [聊天室訊息](#message-reply)                       | json   |
+| 7     | [更換房間](#change-room)                           | json   |
+| 8     | [回覆更換房間結果](#change-room-reply)              | json   |
+| 9     | [取消置頂訊息](#cancle-header-message-reply)       | json   |
+| 10    | [發送付費房驗證 - 月卡](#paid-room-expiry)             | 無Body   |
+| 11    | [回覆付費房驗證 - 月卡](#paid-room-expiry-reply) | json   |
+| 20    | [聊天室踢人](#close-reply)                         | json   |
 
 ### Body
 
@@ -1232,6 +1234,36 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 | ---- | ------------------------------ | ---- |
 | 成功 | [Response](#change-room-reply) |      |
 | 失敗 | 失敗就會close連線              |      |
+
+### Paid Room Expiry
+
+根據需求中要求週期定期發送月卡效期驗證，確保會員月卡尚載效期內。請利用送一個body為空的[Protocol](#protocol-body)，以下是一個簡單的js範例。
+
+```go
+var headerBuf = new ArrayBuffer(rawHeaderLen);
+var headerView = new DataView(headerBuf, 0);
+headerView.setInt32(packetOffset, rawHeaderLen);
+headerView.setInt16(headerOffset, rawHeaderLen);
+headerView.setInt32(opOffset, 10);
+```
+
+### Paid Room Expiry Reply
+
+Operation = 11=> 付費房月卡效期驗證 
+
+Boyd內容如下
+
+```json
+{
+   expire: "2021-09-26 08:47:01 +0800 CST"
+   is_allow: true
+}
+```
+
+| name     | 說明        | 格式               |
+| -------- | ---------- | ------------------ |
+| expire   | 月卡效期    | date time (RFC3339) |
+| is_allow | 驗證是否通過 | bool               |
 
 ## Avatar
 
