@@ -342,6 +342,18 @@
                     var json = textDecoder.decode(data.slice(headerLen, packetLen));
                     var msgBody = JSON.parse(json)
                     console.log(msgBody)
+                    break
+                case 11: // 回覆付費房驗證(月卡)結果
+                    var json = textDecoder.decode(data.slice(headerLen, packetLen));
+                    var msgBody = JSON.parse(json)
+
+                    console.log(msgBody)
+                    if (msgBody.is_allow) {
+                        alert("月卡將於" + msgBody.expire + "到期")
+                    } else {
+                        alert("驗證失敗，月卡已經於" + msgBody.expire + "到期")
+                    }
+
                     break;
                 case 20:
                     var json = textDecoder.decode(data.slice(headerLen, packetLen));
