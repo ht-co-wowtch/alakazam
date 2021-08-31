@@ -1237,19 +1237,21 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 
 ### Paid Room Expiry
 
-根據需求中要求週期定期發送月卡效期驗證，確保會員月卡尚載效期內。請利用送一個body為空的[Protocol](#protocol-body)，以下是一個簡單的js範例。
+Operation = `10`=> 付費房月卡效期驗證。
+
+根據需求中要求週期定期發送月卡效期驗證，確保會員月卡尚載效期內。請利用送一個herder Operation值為`10`，body為空的[Protocol](#protocol-body)，以下是一個簡單的js範例。
 
 ```go
 var headerBuf = new ArrayBuffer(rawHeaderLen);
 var headerView = new DataView(headerBuf, 0);
 headerView.setInt32(packetOffset, rawHeaderLen);
 headerView.setInt16(headerOffset, rawHeaderLen);
-headerView.setInt32(opOffset, 10);
+headerView.setInt32(opOffset, `10`);
 ```
 
 ### Paid Room Expiry Reply
 
-Operation = 11=> 付費房月卡效期驗證 
+Operation = `11`=> 回覆付費房月卡效期驗證結果。
 
 Boyd內容如下
 
