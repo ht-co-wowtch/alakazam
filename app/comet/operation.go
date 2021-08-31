@@ -176,7 +176,6 @@ func (s *Server) changeRoom(ctx context.Context, p *cometpb.Proto, ch *Channel, 
 // 付費房 - 月卡效期驗證
 func (s *Server) paidRoomExpiry(ctx context.Context, p *cometpb.Proto, ch *Channel, b *Bucket) error {
 	p.Op = cometpb.OpPaidRoomExpiryReply
-	log.Infof("uid: %s", ch.Uid)
 
 	reply, err := s.logic.PaidRoomExpiry(ctx, &logicpb.MemberProfileReq{
 		Uid: ch.Uid,

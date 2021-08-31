@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/prometheus/common/log"
+	"gitlab.com/jetfueltw/cpw/micro/log"
 	"time"
 
 	// "runtime/pprof"
@@ -19,7 +19,7 @@ type User struct {
 }
 
 type UserLiveExpire struct {
-	Expire time.Time `json:"live_expire"`
+	LiveExpireAt time.Time
 }
 
 var (
@@ -46,12 +46,12 @@ func (c *Client) Auth(token string) (User, error) {
 	return u, nil
 }
 
-// TODO
 // 取得會員月卡效期
+// LiveExpire
 func (c *Client) LiveExpire(uid string) (UserLiveExpire, error) {
 	path := fmt.Sprintf("/live/expire/%s", uid)
 
-	// 加上快取
+	// TODO 加上快取
 	resp, _ := c.c.Get(path, nil, nil)
 
 	defer resp.Body.Close()
@@ -59,7 +59,7 @@ func (c *Client) LiveExpire(uid string) (UserLiveExpire, error) {
 	var ule UserLiveExpire
 
 	if err := json.NewDecoder(resp.Body).Decode(&ule); err != nil {
-		log.Error("get member expire log:, %o", err)
+		log.Errorf("get member expire log:, %o", err)
 		return UserLiveExpire{}, err
 	}
 
