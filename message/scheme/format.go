@@ -230,7 +230,7 @@ func displayByReward(user User, amount float64) Display {
 			BackgroundColor: SYSTEM_BACKGROUND_COLOR,
 		},
 		Message: displayMessage{
-			Text:            user.Name + "打赏主播" + strconv.FormatFloat(amount, 'f', -1, 64) + "元",
+			Text:            user.Name + "打赏主播" + strconv.FormatFloat(amount, 'f', -1, 64) + "钻",
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []textEntity{
