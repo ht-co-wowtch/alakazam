@@ -76,7 +76,7 @@ func Read(path string) error {
 	Conf.Nidoran, err = client.ReadViper(v.Sub("nidoran"))
 	if err != nil {
 		return err
-	} // TODO
+	}
 	Conf.Redis, err = redis.ReadViper(v.Sub("redis"))
 	if err != nil {
 		return err
