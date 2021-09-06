@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"gitlab.com/jetfueltw/cpw/micro/id"
 	"time"
 
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
@@ -137,7 +138,7 @@ func (s *server) RenewOnline(ctx context.Context, req *pb.OnlineReq) (*pb.Online
 // 付費房月卡效期
 // PaidRoomExpiry
 func (s *server) PaidRoomExpiry(ctx context.Context, req *pb.MemberProfileReq) (*pb.MemberProfileReply, error) {
-	resp, _ :=s.cli.LiveExpire(req.Uid)
+	resp, _ := s.cli.LiveExpire(req.Uid)
 
 	// 時間檢查
 	isAllow := false
@@ -148,5 +149,50 @@ func (s *server) PaidRoomExpiry(ctx context.Context, req *pb.MemberProfileReq) (
 	return &pb.MemberProfileReply{
 		Expire:  resp.LiveExpireAt.String(),
 		IsAllow: isAllow,
+	}, nil
+}
+
+// 付費房鑽石付費
+// PaidRoomDiamond
+func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq) (*pb.PaidRoomDiamondReply, error) {
+
+	// 取得收費房收費標準 by api
+	lr, err := s.cli.GetLiveChatInfo(req.RoomID)
+	if err != nil {
+		log.Infof("GetLiveChatInfo error, %o", err)
+		return nil, err
+	}
+	uid := id.UUid32()
+
+	// 跨帳鑽石異動
+	tr, err := s.cli.PaidDiamond(client.PaidDiamondTXTOrder{ // TODO
+		From: client.PaidDiamondUser{Uid: req.Uid, Type: "diamond-sub"},
+		To:   client.PaidDiamondUser{Uid: lr.MemberUid, Type: "diamond-add"},
+		Orders: []client.PaidDiamondOrder{
+			{
+				Id:     uid,
+				Amount: -lr.Charge,
+			},
+		},
+	})
+
+	if err != nil {
+		log.Infof("PaidDiamond error, %o", err)
+		return &pb.PaidRoomDiamondReply{}, err // todo
+	}
+
+	paidTime := time.Now()
+
+	// 建立鑽石付費訂單
+	_, err = s.cli.CreateLiveChatPaidOrder(lr.SiteId, req.Uid, lr.Id, uid, lr.Charge)
+
+	if err != nil {
+		log.Infof("CreateLiveChatPaidOrder error, %o", err)
+		return &pb.PaidRoomDiamondReply{}, err
+	}
+
+	return &pb.PaidRoomDiamondReply{
+		Diamond:  tr.From.Diamond,
+		PaidTime: paidTime.String(),
 	}, nil
 }

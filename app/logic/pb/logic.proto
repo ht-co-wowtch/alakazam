@@ -129,8 +129,19 @@ message MemberProfileReq {
 }
 
 message MemberProfileReply {
-    time expire = 1;
+    string expire = 1;
     bool is_allow = 2;
+}
+
+message PaidRoomDiamondReq {
+    int32 roomID = 1;
+    string uid = 2;
+}
+
+message PaidRoomDiamondReply {
+//    bool status = 1;
+    float diamond = 1;
+    string paidTime = 2;
 }
 
 service Logic {
@@ -148,6 +159,8 @@ service Logic {
     rpc Heartbeat (HeartbeatReq) returns (HeartbeatReply);
     // RenewOnline
     rpc RenewOnline (OnlineReq) returns (OnlineReply);
-    //PaidRoomExpiry
+    // PaidRoomExpiry
     rpc PaidRoomExpiry (MemberProfileReq) returns (MemberProfileReply);
+    // PaidRoomDiamond
+    rpc PaidRoomDiamond (PaidRoomDiamondReq) returns (PaidRoomDiamondReply);
 }

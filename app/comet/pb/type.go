@@ -36,10 +36,10 @@ const (
 	OpPaidRoomExpiryReply = int32(11)
 
 	// 付費房驗證(鑽石)
-	// OpPaidRoomDiamond = int32(12)
+	OpPaidRoomDiamond = int32(12)
 
 	// 回覆付費房驗證(鑽石)
-	// OpPaidRoomDiamondReply = int32(13)
+	OpPaidRoomDiamondReply = int32(13)
 
 	// close連線
 	OpProtoFinish = int32(20)

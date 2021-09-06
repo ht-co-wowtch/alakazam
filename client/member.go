@@ -50,7 +50,6 @@ func (c *Client) Auth(token string) (User, error) {
 // LiveExpire
 func (c *Client) LiveExpire(uid string) (UserLiveExpire, error) {
 	path := fmt.Sprintf("/live/expire/%s", uid)
-
 	// TODO 加上快取
 	resp, _ := c.c.Get(path, nil, nil)
 

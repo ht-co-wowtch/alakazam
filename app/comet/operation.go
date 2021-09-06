@@ -89,6 +89,9 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 		if err != nil {
 			return err
 		}
+	case cometpb.OpPaidRoomDiamond:
+		s.paidRoomDiamond(ctx, p, ch)
+
 	default:
 		// TODO error
 		p.Body = nil
@@ -194,6 +197,30 @@ func (s *Server) paidRoomExpiry(ctx context.Context, p *cometpb.Proto, ch *Chann
 	}
 
 	p.Body, _ = json.Marshal(re)
+
+	return nil
+}
+
+// 付費房 - 鑽石
+func (s *Server) paidRoomDiamond(ctx context.Context, p *cometpb.Proto, ch *Channel) error {
+	p.Op = cometpb.OpPaidRoomDiamondReply
+
+	reply, err := s.logic.PaidRoomDiamond(ctx, &logicpb.PaidRoomDiamondReq{
+		RoomID: ch.Room.ID,
+		Uid:    ch.Uid,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	p.Body, _ = json.Marshal(struct {
+		Diamond  float32 `json:"diamond"`
+		PaidTime string  `json:"paid_time"`
+	}{
+		Diamond:  reply.Diamond,
+		PaidTime: reply.PaidTime,
+	})
 
 	return nil
 }
