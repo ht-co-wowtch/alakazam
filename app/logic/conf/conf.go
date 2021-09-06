@@ -36,7 +36,6 @@ type Config struct {
 	Kafka      *Kafka
 	Redis      *redis.Conf
 	Nidoran    *client.Conf
-	Paras *client.Conf // TODO
 	Seq        *grpc.Conf
 	JwtSecret  []byte
 	// comet連線用戶心跳，server會清除在線紀錄
