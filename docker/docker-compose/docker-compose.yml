@@ -46,7 +46,7 @@ services:
 
   #### Ponyta 錢包 ####
   ponyta:
-    image: registry.gitlab.com/jetfueltw/cpw/ponyta:${PONYTA_VERSION}
+    image: registry.gitlab.com/jetfueltw/live/ponyta:${PONYTA_VERSION}
     environment:
       - HTTP_SERVE_ADDR=:80
       - LOG_LEVEL=info
@@ -72,7 +72,7 @@ services:
 
   #### Nidoran 版給聊天室的接口 ####
   nidoran:
-    image: registry.gitlab.com/jetfueltw/cpw/nidoran:${NIDORAN_VERSION}
+    image: registry.gitlab.com/jetfueltw/live/nidoran:${NIDORAN_VERSION}
     environment:
       - NIDORAN_DATABASE_DATABASE=${NIDORAN_DATABASE_DATABASE}
       - NIDORAN_DATABASE_HOST=${NIDORAN_DATABASE_HOST}

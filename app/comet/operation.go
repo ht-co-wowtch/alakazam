@@ -205,19 +205,28 @@ func (s *Server) paidRoomExpiry(ctx context.Context, p *cometpb.Proto, ch *Chann
 func (s *Server) paidRoomDiamond(ctx context.Context, p *cometpb.Proto, ch *Channel) error {
 	p.Op = cometpb.OpPaidRoomDiamondReply
 
-	reply, err := s.logic.PaidRoomDiamond(ctx, &logicpb.PaidRoomDiamondReq{
+	reply, _ := s.logic.PaidRoomDiamond(ctx, &logicpb.PaidRoomDiamondReq{
 		RoomID: ch.Room.ID,
 		Uid:    ch.Uid,
 	})
 
-	if err != nil {
-		return err
+	if !reply.Status {
+		p.Body, _ = json.Marshal(struct {
+			IsAllow bool   `json:"is_allow"`
+			Error   string `json:"error"`
+		}{
+			IsAllow: false,
+			Error:  reply.Error,
+		})
+		return nil
 	}
 
 	p.Body, _ = json.Marshal(struct {
+		IsAllow  bool    `json:"is_allow"`
 		Diamond  float32 `json:"diamond"`
 		PaidTime string  `json:"paid_time"`
 	}{
+		IsAllow:   true,
 		Diamond:  reply.Diamond,
 		PaidTime: reply.PaidTime,
 	})

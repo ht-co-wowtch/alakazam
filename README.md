@@ -164,10 +164,13 @@ TODO
 | 7     | [更換房間](#change-room)                           | json   |
 | 8     | [回覆更換房間結果](#change-room-reply)              | json   |
 | 9     | [取消置頂訊息](#cancle-header-message-reply)       | json   |
-| 10    | [發送付費房驗證 - 月卡](#paid-room-expiry)             | 無Body   |
-| 11    | [回覆付費房驗證 - 月卡](#paid-room-expiry-reply) | json   |
+| 10    | [發送付費房驗證 - 月卡](#paid-room-expiry)          | 無Body   |
+| 11    | [回覆付費房驗證 - 月卡](#paid-room-expiry-reply)    | json   |
+| 12    | [發送付費房鑽石付費結果](#paid-room-diamond)          | 無Body   |
+| 13    | [回覆付費房鑽石付費結果](#paid-room-diamond-reply)    | json   |
 | 20    | [聊天室踢人](#close-reply)                         | json   |
 
+Diamond
 ### Body
 
 聊天室的訊息內容
@@ -1257,7 +1260,7 @@ Boyd內容如下
 
 ```json
 {
-   expire: "2021-09-26 08:47:01 +0800 CST"
+   expire: "2021-09-26 08:47:01 +0800 CST",
    is_allow: true
 }
 ```
@@ -1266,6 +1269,52 @@ Boyd內容如下
 | -------- | ---------- | ------------------ |
 | expire   | 月卡效期    | date time (RFC3339) |
 | is_allow | 驗證是否通過 | bool               |
+
+### Paid Room Diamond
+
+Operation = `12`=> 付費房 - 鑽石付費。
+
+根據需求中要求週期定期發送付費房鑽石付費請求。請利用送一個herder Operation值為`12`，body為空的[Protocol](#protocol-body)，以下是一個簡單的js範例。
+
+```go
+var headerBuf = new ArrayBuffer(rawHeaderLen);
+var headerView = new DataView(headerBuf, 0);
+headerView.setInt32(packetOffset, rawHeaderLen);
+headerView.setInt16(headerOffset, rawHeaderLen);
+headerView.setInt32(opOffset, `12`);
+```
+
+### Paid Room Diamond Reply
+
+Operation = `13`=> 回覆付費房鑽石付費結果。
+
+Boyd內容如下
+
+付費成功
+
+```json
+{
+   is_allow: true,
+   diamond: 990.11,
+   paid_time:  "2021-09-07 15:39:36.798909 +0800 CST"
+}
+```
+
+付費失敗
+
+```json
+{
+   is_allow: false,
+   error: "余额不足"
+}
+```
+
+| name      | 說明           | 格式             |
+| --------- | -------------- | ---------------- |
+| is_allow  | 付費成功        | bool             |
+| diamond   | 用附目前鑽石數量 | float            |
+| paid_time | 付費時間        | string (RFC3339) |
+| error     | 錯誤訊息        | string  |
 
 ## Avatar
 

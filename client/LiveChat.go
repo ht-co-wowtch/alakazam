@@ -29,8 +29,6 @@ func (c *Client) GetLiveChatInfo(roomID int32) (LiveChatInfo, error) {
 		return LiveChatInfo{}, err
 	}
 
-	log.Infof("response: %o", lci.Charge)
-
 	return lci, nil
 }
 
@@ -94,17 +92,18 @@ type TxtResp struct {
 // 轉帳異動鑽石餘額
 // PaidDiamond
 func (c *Client) PaidDiamond(orders PaidDiamondTXTOrder) (TxtResp, error) {
-	log.Infof("resp %o", orders.From)
-	log.Infof("resp %o", orders.To)
-	log.Infof("resp %o", orders.Orders[0])
-	resp, err := c.c.PostJson(
-		"/txt/diamond",
-		nil,
-		orders,
-		nil)
-
+	resp, err := c.c.PostJson("/txt/diamond", nil, orders, nil)
 	if err != nil {
 		return TxtResp{}, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		e := WalletError{}
+		if err := json.NewDecoder(resp.Body).Decode(&e); err != nil {
+			return TxtResp{}, err
+		}
+		
+		return TxtResp{}, e
 	}
 
 	var tr TxtResp
@@ -113,4 +112,13 @@ func (c *Client) PaidDiamond(orders PaidDiamondTXTOrder) (TxtResp, error) {
 	}
 
 	return tr, nil
+}
+
+type WalletError struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
+func (e WalletError) Error() string {
+	return e.Message
 }

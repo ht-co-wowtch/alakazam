@@ -139,9 +139,11 @@ message PaidRoomDiamondReq {
 }
 
 message PaidRoomDiamondReply {
-//    bool status = 1;
     float diamond = 1;
     string paidTime = 2;
+    string error = 3;
+    bool status = 4;
+
 }
 
 service Logic {

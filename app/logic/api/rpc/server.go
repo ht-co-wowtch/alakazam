@@ -155,13 +155,20 @@ func (s *server) PaidRoomExpiry(ctx context.Context, req *pb.MemberProfileReq) (
 // 付費房鑽石付費
 // PaidRoomDiamond
 func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq) (*pb.PaidRoomDiamondReply, error) {
-
-	// 取得收費房收費標準 by api
+	// 取得收費房收費標準
 	lr, err := s.cli.GetLiveChatInfo(req.RoomID)
 	if err != nil {
 		log.Infof("GetLiveChatInfo error, %o", err)
 		return nil, err
 	}
+	if !lr.IsLive {
+		log.Errorf("lr %o", lr)
+		return &pb.PaidRoomDiamondReply{
+			Status: false,
+			Error:  "关播中",
+		}, nil
+	}
+
 	uid := id.UUid32()
 
 	// 跨帳鑽石異動
@@ -177,8 +184,10 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 	})
 
 	if err != nil {
-		log.Infof("PaidDiamond error, %o", err)
-		return &pb.PaidRoomDiamondReply{}, err // todo
+		return &pb.PaidRoomDiamondReply{
+			Status: false,
+			Error:  err.Error(),
+		}, nil
 	}
 
 	paidTime := time.Now()
@@ -188,10 +197,11 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 
 	if err != nil {
 		log.Infof("CreateLiveChatPaidOrder error, %o", err)
-		return &pb.PaidRoomDiamondReply{}, err
+		return &pb.PaidRoomDiamondReply{}, nil // TODO
 	}
 
 	return &pb.PaidRoomDiamondReply{
+		Status:   true,
 		Diamond:  tr.From.Diamond,
 		PaidTime: paidTime.String(),
 	}, nil
