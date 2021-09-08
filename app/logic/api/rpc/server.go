@@ -147,7 +147,7 @@ func (s *server) PaidRoomExpiry(ctx context.Context, req *pb.MemberProfileReq) (
 	}
 
 	return &pb.MemberProfileReply{
-		Expire:  resp.LiveExpireAt.String(),
+		Expire:  resp.LiveExpireAt.Format(time.RFC3339),
 		IsAllow: isAllow,
 	}, nil
 }
@@ -190,7 +190,7 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 		}, nil
 	}
 
-	paidTime := time.Now()
+	t := time.Now()
 
 	// 建立鑽石付費訂單
 	_, err = s.cli.CreateLiveChatPaidOrder(lr.SiteId, req.Uid, lr.Id, uid, lr.Charge)
@@ -203,6 +203,6 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 	return &pb.PaidRoomDiamondReply{
 		Status:   true,
 		Diamond:  tr.From.Diamond,
-		PaidTime: paidTime.String(),
+		PaidTime: t.Format(time.RFC3339),
 	}, nil
 }
