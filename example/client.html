@@ -141,17 +141,17 @@
                     <input id="red_message" type="text" class="form-control input-sm"
                            placeholder="紅包訊息"/>
                     <span class="input-group-btn">
-                            <button class="btn btn-warning btn-sm" id="btn-chat" onclick="paidRoomExpiry()">
+                            <button class="btn btn-warning btn-sm" id="btn-chat" onclick="sendRed()">
                                 發紅包</button>
                         </span>
                 </div>
             </div>
             <div class="panel-footer">
                 <div class="input-group">
-<!--                    <input type="radio" name="red_type" value="random">鑽石<br>-->
-                    <input type="radio" name="red_type" value="equally" checked>月卡<br>
+                    <input type="radio" name="paid_room" value="expiry" checked>月卡<br>
+                    <input type="radio" name="paid_room" value="diamond" checked>鑽石<br>
                     <span class="input-group-btn">
-                            <button class="btn btn-warning btn-sm" id="btn-chat" onclick="paidRoomExpiry()">
+                            <button class="btn btn-warning btn-sm" id="btn-chat" onclick="paidRoom()">
                                 購買/驗證</button>
                         </span>
                 </div>
@@ -459,12 +459,18 @@
         ws.send(mergeArrayBuffer(headerBuf, bodyBuf));
     }
 
-    function paidRoomExpiry() {
+    function paidRoom() {
+        var type = $("input[name=paid_room]:checked").val()
+        var op = 10
+        if (type === "diamond") {
+            op = 12
+        }
+
         var headerBuf = new ArrayBuffer(rawHeaderLen);
         var headerView = new DataView(headerBuf, 0);
         headerView.setInt32(packetOffset, rawHeaderLen);
         headerView.setInt16(headerOffset, rawHeaderLen);
-        headerView.setInt32(opOffset, 10);
+        headerView.setInt32(opOffset, op); // TODO
         ws.send(headerBuf);
     }
 
