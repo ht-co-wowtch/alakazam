@@ -1276,6 +1276,8 @@ Operation = `12`=> 付費房 - 鑽石付費。
 
 根據需求中要求週期定期發送付費房鑽石付費請求。請利用送一個herder Operation值為`12`，body為空的[Protocol](#protocol-body)，以下是一個簡單的js範例。
 
+ `PS. 一分鐘內只會採用針對第一筆付費請求進行扣款。`
+
 ```go
 var headerBuf = new ArrayBuffer(rawHeaderLen);
 var headerView = new DataView(headerBuf, 0);
@@ -1299,6 +1301,8 @@ Boyd內容如下
    paid_time:"2021-09-08T10:06:09+08:00"
 }
 ```
+
+`PS. 因為一分鐘內只會採用針對第一筆付費請求進行扣款，而上次扣款成功一分鐘內的付款請求會返回上次付款成功時的付款時間與剩餘鑽石數量。`
 
 付費失敗
 

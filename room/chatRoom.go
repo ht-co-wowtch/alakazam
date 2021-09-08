@@ -36,6 +36,8 @@ type Chat interface {
 	GetOnline(server string) (*Online, error)
 	GetManages(rid int) ([]memberList, error)
 	GetBlockades(rid int) ([]memberList, error)
+	AddPreviousPayment(uid string, liveChatId int, paidTime time.Time, diamond float32) error
+	GetPreviousPayment(uid string, liveChatId int) (*Payment, error)
 }
 
 type chat struct {
@@ -313,6 +315,14 @@ func (c *chat) GetBlockades(rid int) ([]memberList, error) {
 	}
 
 	return d, nil
+}
+
+func (c *chat) AddPreviousPayment(uid string, liveChatId int, paidTime time.Time, diamond float32) error {
+	return c.cache.addPayment(uid, liveChatId, paidTime, diamond)
+}
+
+func (c *chat) GetPreviousPayment(uid string, liveChatId int) (*Payment, error) {
+	return c.cache.getPayment(uid, liveChatId)
 }
 
 func NewPbConnect(user *models.Member, room models.Room, key string, roomId int32) *pb.Connect {

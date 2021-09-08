@@ -54,7 +54,6 @@ func (c *Client) CreateLiveChatPaidOrder(siteId int, wmUID string, lcID int, ord
 		nil)
 
 	if resp.StatusCode != http.StatusOK {
-		log.Errorf("CreateLiveChatPaidOrder error, %o", err)
 		return false, err
 	}
 
@@ -102,7 +101,7 @@ func (c *Client) PaidDiamond(orders PaidDiamondTXTOrder) (TxtResp, error) {
 		if err := json.NewDecoder(resp.Body).Decode(&e); err != nil {
 			return TxtResp{}, err
 		}
-		
+
 		return TxtResp{}, e
 	}
 

@@ -2,8 +2,9 @@ package rpc
 
 import (
 	"context"
-	"gitlab.com/jetfueltw/cpw/micro/id"
 	"time"
+
+	"gitlab.com/jetfueltw/cpw/micro/id"
 
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
@@ -161,11 +162,21 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 		log.Infof("GetLiveChatInfo error, %o", err)
 		return nil, err
 	}
+
 	if !lr.IsLive {
 		log.Errorf("lr %o", lr)
 		return &pb.PaidRoomDiamondReply{
 			Status: false,
 			Error:  "关播中",
+		}, nil
+	}
+
+	p, err := s.room.GetPreviousPayment(req.Uid, lr.Id) // 從快取中取得上次付款時間
+	if err == nil {
+		return &pb.PaidRoomDiamondReply{
+			Status:   true,
+			Diamond:  p.Diamond,
+			PaidTime: p.PaidTime,
 		}, nil
 	}
 
@@ -191,12 +202,13 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 	}
 
 	t := time.Now()
+	// TODO
+	s.room.AddPreviousPayment(req.Uid, lr.Id, t, tr.From.Diamond)
 
 	// 建立鑽石付費訂單
 	_, err = s.cli.CreateLiveChatPaidOrder(lr.SiteId, req.Uid, lr.Id, uid, lr.Charge)
 
 	if err != nil {
-		log.Infof("CreateLiveChatPaidOrder error, %o", err)
 		return &pb.PaidRoomDiamondReply{}, nil // TODO
 	}
 

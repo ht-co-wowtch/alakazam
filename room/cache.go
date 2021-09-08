@@ -27,6 +27,8 @@ type Cache interface {
 	deleteChatBulletinMessage(rids []int32) error
 	addOnline(server string, online *Online) error
 	getOnline(server string) (*Online, error)
+	addPayment(uid string, liveChatId int, paidTime time.Time, addPayment float32) error
+	getPayment(uid string, liveChatId int) (*Payment, error)
 }
 
 type cache struct {
@@ -52,6 +54,10 @@ const (
 
 	// server name的前綴詞，用於存儲在redis當key
 	onlineKey = prefix + ":server_%s"
+
+	uidPayKey = prefix + ":pay_%s-%d"
+
+	livePaymentDataHKey = "livePayment"
 )
 
 func keyRoom(id int) string {
@@ -62,8 +68,13 @@ func keyServerOnline(key string) string {
 	return fmt.Sprintf(onlineKey, key)
 }
 
+func keyPaid(uid string, rid int) string {
+	return fmt.Sprintf(uidPayKey, uid, rid)
+}
+
 var (
 	roomExpired = time.Hour * 12
+	payExpired  = time.Minute * 1 // todo
 )
 
 // 取得房間快取
@@ -247,6 +258,11 @@ type Online struct {
 	Updated   int64           `json:"updated"`
 }
 
+type Payment struct {
+	PaidTime string  `json:"paid_time"`
+	Diamond  float32 `json:"diamond"`
+}
+
 // 以HSET方式儲存房間人數
 // HSET Key hashKey jsonBody
 // Key用server name
@@ -279,7 +295,6 @@ func (c *cache) addOnline(server string, online *Online) error {
 // Key用server name
 func (c *cache) addServerOnline(key string, hashKey string, online *Online) error {
 	b, err := json.Marshal(online)
-
 	if err != nil {
 		return err
 	}
@@ -338,4 +353,44 @@ func (c *cache) serverOnline(key string, hashKey string) (*Online, error) {
 // 根據server name 刪除線上各房間總人數
 func (c *cache) delOnline(server string) error {
 	return c.c.Del(keyServerOnline(server)).Err()
+}
+
+func (c *cache) addPayment(uid string, liveChatId int, paidTime time.Time, diamond float32) error {
+	key := keyPaid(uid, liveChatId)
+
+	data := map[string]interface{}{}
+
+	b1, err := json.Marshal(Payment{
+		PaidTime: paidTime.Format(time.RFC3339),
+		Diamond:  diamond,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	data[livePaymentDataHKey] = b1
+
+	tx := c.c.Pipeline()
+	tx.HMSet(key, data)
+	tx.Expire(key, payExpired)
+	_, err = tx.Exec()
+
+	return err
+}
+
+func (c *cache) getPayment(uid string, liveChatId int) (*Payment, error) {
+	key := keyPaid(uid, liveChatId)
+
+	b, err := c.c.HGet(key, livePaymentDataHKey).Bytes()
+	if err != nil && err != redis.Nil {
+		return nil, err
+	}
+
+	p := new(Payment)
+	if err = json.Unmarshal(b, p); err != nil {
+		return nil, err
+	}
+
+	return p, nil
 }
