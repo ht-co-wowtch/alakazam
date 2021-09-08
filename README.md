@@ -1260,8 +1260,8 @@ Boyd內容如下
 
 ```json
 {
-   expire: "2021-09-26T08:47:01+08:00",
-   is_allow: true
+   expire:"2021-09-26T08:47:01+08:00",
+   is_allow:true
 }
 ```
 
@@ -1294,9 +1294,9 @@ Boyd內容如下
 
 ```json
 {
-   is_allow: true,
-   diamond: 990.11,
-   paid_time:  "2021-09-08T10:06:09+08:00"
+   is_allow:true,
+   diamond:990.11,
+   paid_time:"2021-09-08T10:06:09+08:00"
 }
 ```
 
