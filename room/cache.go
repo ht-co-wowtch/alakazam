@@ -74,7 +74,7 @@ func keyPaid(uid string, rid int) string {
 
 var (
 	roomExpired = time.Hour * 12
-	payExpired  = time.Minute * 1 // todo
+	payExpired  = time.Second * 55 // 根據前端需求改修正為小於一分鐘(60秒)
 )
 
 // 取得房間快取
