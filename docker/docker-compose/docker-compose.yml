@@ -30,7 +30,7 @@ services:
 
   #### Rapidash 認證中心 ####
   rapidash:
-    image: registry.gitlab.com/jetfueltw/cpw/rapidash:${RAPIDASH_VERSION}
+    image: registry.gitlab.com/jetfueltw/live/rapidash:${RAPIDASH_VERSION}
     environment:
       - HTTP_SERVE_ADDR=:80
       - LOG_LEVEL=info
