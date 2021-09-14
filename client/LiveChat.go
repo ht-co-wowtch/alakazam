@@ -3,8 +3,9 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.com/jetfueltw/cpw/micro/log"
 	"net/http"
+
+	"gitlab.com/jetfueltw/cpw/micro/log"
 )
 
 type LiveChatInfo struct {
@@ -15,6 +16,7 @@ type LiveChatInfo struct {
 	MemberUid string  `json:"member_uid"`
 	IsLive    bool    `json:"is_live"`
 	Charge    float32 `json:"charge"`
+	RoomId    string  `json:"room_id"`
 }
 
 // 付費房收費標準
@@ -97,7 +99,9 @@ func (c *Client) PaidDiamond(orders PaidDiamondTXTOrder) (TxtResp, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		// TODO
 		e := WalletError{}
+		defer resp.Body.Close()
 		if err := json.NewDecoder(resp.Body).Decode(&e); err != nil {
 			return TxtResp{}, err
 		}
