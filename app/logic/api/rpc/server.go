@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/enum/cashflowLog"
 	"time"
 
 	"gitlab.com/jetfueltw/cpw/micro/id"
@@ -183,9 +184,9 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 	uid := id.UUid32()
 
 	// 跨帳鑽石異動
-	tr, err := s.cli.PaidDiamond(client.PaidDiamondTXTOrder{ // TODO
-		From: client.PaidDiamondUser{Uid: req.Uid, Type: "diamond-sub"},
-		To:   client.PaidDiamondUser{Uid: lr.MemberUid, Type: "diamond-add"},
+	tr, err := s.cli.PaidDiamond(client.PaidDiamondTXTOrder{
+		From: client.PaidDiamondUser{Uid: req.Uid, Type: cashflowLog.LiveGiveCharge.String()},
+		To:   client.PaidDiamondUser{Uid: lr.MemberUid, Type: cashflowLog.LiveTakeCharge.String()},
 		Orders: []client.PaidDiamondOrder{
 			{
 				Id:     uid,
