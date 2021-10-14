@@ -14,7 +14,7 @@ func (t Type) String() string {
 	case LiveGiveCharge:
 		return "live-give-charge"
 	case LiveTakeCharge:
-		return "live_take_charge"
+		return "live-take-charge"
 	case DiamondSub:
 		return "diamond-sub"
 	case DiamondAdd:
