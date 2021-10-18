@@ -201,6 +201,26 @@ func displayByBetsWin(user User, gameName string) Display {
 	}
 }
 
+// 等級提升Display
+func displayByLevelUp(user User, level int) Display {
+	return Display{
+		Title: displayText{
+			Text:            "升級",
+			Color:           MESSAGE_COLOR,
+			BackgroundColor: "#F85656",
+		},
+		Message: displayMessage{
+			Text:            "恭喜等級提升到" + strconv.Itoa(level),
+			Color:           MESSAGE_SYSTEM_COLOR,
+			BackgroundColor: NONE_COLOR,
+			Entity: []textEntity{
+				usernameTextEntity(user.Name, 4),
+			},
+		},
+		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
+	}
+}
+
 // 禮物 Display
 func displayByGift(user User, name string) Display {
 	return Display{

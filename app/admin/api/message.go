@@ -226,6 +226,44 @@ func (s *httpServer) betsWin(c *gin.Context) error {
 	return nil
 }
 
+// 等級提升訊息結構
+type levelUpReq struct {
+	RoomId int32  `json:"room_id" binding:"required"`
+	Uid    string `json:"uid" binding:"required"`
+	Level  int    `json:"level" binding:"required"`
+}
+
+// 升級
+func (s *httpServer) levelUp(c *gin.Context) error {
+	req := new(levelUpReq)
+	if err := c.ShouldBindJSON(req); err != nil {
+		return err
+	}
+
+	m, err := s.member.GetSession(req.Uid)
+	if err != nil {
+		return err
+	}
+
+	m.Uid = req.Uid
+	user := scheme.NewUser(*m)
+
+	//升級會員提示
+	aid, err := s.message.SendLevelUpAlert([]int32{req.RoomId}, user)
+	//升級會員公告
+	id, err := s.message.SendLevelUp([]int32{req.RoomId}, user, req.Level)
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":       id,
+		"alert_id": aid,
+	})
+
+	return nil
+}
+
 // 禮物訊息結構
 type giftReq struct {
 	RoomId      int32   `json:"room_id" binding:"required"`

@@ -328,6 +328,20 @@ func (p *Producer) SendBetsWinReward(keys []string, user scheme.User, amount flo
 	})
 }
 
+// 發送等級提升提示
+func (p *Producer) SendLevelUpAlert(rid []int32, user scheme.User) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		return scheme.NewLevelUpAlertProto(id, rid, user)
+	})
+}
+
+// 發送等級提升訊息
+func (p *Producer) SendLevelUp(rid []int32, user scheme.User, level int) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		return scheme.NewLevelUpProto(id, rid, user, level)
+	})
+}
+
 // 發送進入房間訊息
 func (p *Producer) SendConnect(rid int32, user *logicpb.User, isManage bool) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {

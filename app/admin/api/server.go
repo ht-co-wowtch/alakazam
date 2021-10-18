@@ -98,6 +98,7 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.POST("/gift", api.ErrHandler(s.gift)) // 送禮
 	e.POST("/reward", api.ErrHandler(s.reward)) // 打賞
 	e.POST("/follow", api.ErrHandler(s.follow)) // 追隨主播
+	e.POST("/levelUp", api.ErrHandler(s.levelUp)) // 升級
 
 	// 敏感詞
 	e.POST("/shield", api.ErrHandler(s.CreateShield))

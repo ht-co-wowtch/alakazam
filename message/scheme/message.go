@@ -2,11 +2,12 @@ package scheme
 
 import (
 	"encoding/json"
+	"time"
+
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"time"
 )
 
 const (
@@ -30,6 +31,9 @@ const (
 
 	// 關注
 	FOLLOW = "follow"
+
+	// 升級
+	LEVEL_TYPE = "level"
 )
 
 // 訊息格式
@@ -72,7 +76,6 @@ func (m Message) ToProto() (*logicpb.PushMsg, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return &logicpb.PushMsg{
 		Seq:    m.Id,
 		Op:     pb.OpRaw,
