@@ -104,37 +104,37 @@ deploy_develop:
     - echo "${GIT_DEPLOY_PRIVATE_KEY}" | ssh-add - > /dev/null
     - git config --global user.email "devops@jetfuel.com.tw" && git config --global user.name "devops"
   script:
-    - cd ~/ && git clone git@gitlab.com:jetfueltw/devops/k8s.git
-    - cd ~/k8s && git checkout master
+    - cd ~/ && git clone git@gitlab.com:jetfueltw/devops/xbb-live-k8s.git
+    - cd ~/xbb-live-k8s && git checkout main
 
-    - cd ~/k8s/live/${CI_PROJECT_NAME}/admin/overlays/dev
+    - cd ~/xbb-live-k8s/live/${CI_PROJECT_NAME}/admin/overlays/dev
     - kustomize edit set image $CI_REGISTRY_IMAGE/admin:${CI_COMMIT_TAG#v}
     - cat kustomization.yaml
 
-    - cd ~/k8s/live/${CI_PROJECT_NAME}/comet/overlays/dev
+    - cd ~/xbb-live-k8s/live/${CI_PROJECT_NAME}/comet/overlays/dev
     - kustomize edit set image $CI_REGISTRY_IMAGE/comet:${CI_COMMIT_TAG#v}
     - cat kustomization.yaml
 
-    - cd ~/k8s/live/${CI_PROJECT_NAME}/job/overlays/dev
+    - cd ~/xbb-live-k8s/live/${CI_PROJECT_NAME}/job/overlays/dev
     - kustomize edit set image $CI_REGISTRY_IMAGE/job:${CI_COMMIT_TAG#v}
     - cat kustomization.yaml
 
-    - cd ~/k8s/live/${CI_PROJECT_NAME}/logic/overlays/dev
+    - cd ~/xbb-live-k8s/live/${CI_PROJECT_NAME}/logic/overlays/dev
     - kustomize edit set image $CI_REGISTRY_IMAGE/logic:${CI_COMMIT_TAG#v}
     - cat kustomization.yaml
 
-    - cd ~/k8s/live/${CI_PROJECT_NAME}/message/overlays/dev
+    - cd ~/xbb-live-k8s/live/${CI_PROJECT_NAME}/message/overlays/dev
     - kustomize edit set image $CI_REGISTRY_IMAGE/message:${CI_COMMIT_TAG#v}
     - cat kustomization.yaml
 
-    - cd ~/k8s/live/${CI_PROJECT_NAME}/seq/overlays/dev
+    - cd ~/xbb-live-k8s/live/${CI_PROJECT_NAME}/seq/overlays/dev
     - kustomize edit set image $CI_REGISTRY_IMAGE/seq:${CI_COMMIT_TAG#v}
     - cat kustomization.yaml
 
     - git add -A
     - git diff-index --quiet HEAD || git commit -m 'GitLab CI/CD - image update'
-    - git pull --rebase origin master
-    - git push origin master
+    - git pull --rebase origin main
+    - git push origin main
   only:
     - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
   except:
