@@ -136,6 +136,7 @@ message MemberProfileReply {
 message PaidRoomDiamondReq {
     int32 roomID = 1;
     string uid = 2;
+    int32 type = 3;
 }
 
 message PaidRoomDiamondReply {

@@ -2,8 +2,13 @@ package rpc
 
 import (
 	"context"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/enum/cashflowLog"
+	"encoding/json"
 	"time"
+
+	kafka "github.com/Shopify/sarama"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/enum/cashflowLog"
+	"gitlab.com/jetfueltw/cpw/alakazam/pkg/enum/member"
 
 	"gitlab.com/jetfueltw/cpw/micro/id"
 
@@ -25,21 +30,23 @@ import (
 )
 
 // New logic grpc server
-func New(c *rpc.Conf, room room.Chat, message *message.Producer, cli *client.Client) *grpc.Server {
+func New(c *rpc.Conf, room room.Chat, message *message.Producer, cli *client.Client, producer kafka.SyncProducer) *grpc.Server {
 	srv := rpc.New(c)
 	pb.RegisterLogicServer(srv, &server{
-		room:    room,
-		message: message,
-		cli:     cli,
+		room:     room,
+		message:  message,
+		cli:      cli,
+		producer: producer,
 	})
 
 	return srv
 }
 
 type server struct {
-	room    room.Chat
-	message *message.Producer
-	cli     *client.Client
+	room     room.Chat
+	message  *message.Producer
+	cli      *client.Client
+	producer kafka.SyncProducer
 }
 
 var _ pb.LogicServer = &server{}
@@ -165,7 +172,7 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 	}
 
 	if !lr.IsLive {
-		log.Errorf("lr %o", lr)
+		log.Errorf("GetLiveChatInfo error: %o", err)
 		return &pb.PaidRoomDiamondReply{
 			Status: false,
 			Error:  "关播中",
@@ -181,6 +188,7 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 		}, nil
 	}
 
+	// order id
 	uid := id.UUid32()
 
 	// 跨帳鑽石異動
@@ -196,6 +204,7 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 	})
 
 	if err != nil {
+		log.Errorf("PaidDiamond error: %o", err)
 		return &pb.PaidRoomDiamondReply{
 			Status: false,
 			Error:  err.Error(),
@@ -203,6 +212,39 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 	}
 
 	t := time.Now()
+
+	// TODO
+	// 寫入訊息到 live-stream topic
+	msg := struct {
+		SiteId   int
+		UserId   string
+		UserType string
+		RoomId   int32
+		OrderId  string
+		Amount   float32
+		CreateAt time.Time
+	}{
+		SiteId:   lr.SiteId,
+		UserId:   req.Uid,
+		UserType: member.ToType(req.Type).String(),
+		RoomId:   req.RoomID,
+		OrderId:  uid,
+		Amount:   lr.Charge,
+		CreateAt: t,
+	}
+
+	b, err := json.Marshal(msg)
+	if err != nil {
+		return &pb.PaidRoomDiamondReply{}, err // TODO
+	}
+
+	s.producer.SendMessage(
+		&kafka.ProducerMessage{
+			Topic: conf.Conf.Kafka.Stream.Topic,
+			Value: kafka.ByteEncoder(string(b)),
+		},
+	)
+
 	// TODO
 	s.room.AddPreviousPayment(req.Uid, lr.Id, t, tr.From.Diamond)
 
