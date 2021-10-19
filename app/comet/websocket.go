@@ -267,8 +267,9 @@ func serveWebsocket(s *Server, conn net.Conn, r int) {
 			zap.Int32("roomid", ch.Room.ID),
 			zap.String("uid", connect.User.Uid),
 			zap.Any("name", connect.User.Name),
-			zap.Int32("type", connect.User.Gender),
-			zap.Int64("id", connect.User.Id))
+			zap.Int32("gender", connect.User.Gender),
+			zap.Int64("id", connect.User.Id),
+			zap.Int32("type", connect.User.Type))
 	}
 
 	for {
@@ -506,5 +507,7 @@ func (s *Server) authWebsocket(ctx context.Context, ws websocket.Conn, ch *Chann
 	ch.Key = c.Connect.Key
 	ch.Uid = c.User.Uid
 	ch.Name = c.User.Name
+	ch.Type = c.User.Type
+
 	return c, nil
 }

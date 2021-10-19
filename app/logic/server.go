@@ -56,6 +56,8 @@ func New(c *conf.Config) *Server {
 
 	cli := client.New(c.Nidoran)
 
+	producer:= message.NewKafkaProducer(c.Kafka.Brokers)
+
 	// grpc client
 	seqRPClient, err := rpccli.NewClient(c.Seq)
 
@@ -82,7 +84,7 @@ func New(c *conf.Config) *Server {
 		cli,
 		message.NewHistory(db, cache, memberCli))
 
-	rpcServer := rpc.New(c.RPCServer, chat, messageProducer, cli)
+	rpcServer := rpc.New(c.RPCServer, chat, messageProducer, cli, producer)
 
 	log.Infof("http server port [%s]", c.HTTPServer.Addr)
 

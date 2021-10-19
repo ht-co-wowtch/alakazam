@@ -57,6 +57,8 @@ kafka:
   topic: "push-topic"
   brokers:
     - 127.0.0.1:9092
+  stream:
+    topic: "live-stream"
 
 database:
   host: 127.0.0.1

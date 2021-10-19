@@ -50,6 +50,12 @@ type Kafka struct {
 
 	// 節點ip
 	Brokers []string
+	Stream  Topic
+}
+
+type Topic struct {
+	// Kafka 推送與接收Topic
+	Topic string
 }
 
 func init() {
@@ -93,6 +99,9 @@ func Read(path string) error {
 	Conf.Kafka = &Kafka{
 		Topic:   v.GetString("kafka.topic"),
 		Brokers: v.GetStringSlice("kafka.brokers"),
+		Stream: Topic{
+			Topic: v.GetString("kafka.stream.topic"),
+		},
 	}
 	Conf.Heartbeat = (time.Duration(viper.GetInt("heartbeat")) * time.Second).Nanoseconds()
 	l, err := log.ReadViper(v.Sub("log"))

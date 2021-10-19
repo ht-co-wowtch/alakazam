@@ -45,6 +45,9 @@ type Channel struct {
 	// 用戶名稱
 	Name string
 
+	// 用戶類型
+	Type int32
+
 	// user ip
 	IP string
 
@@ -59,6 +62,7 @@ func NewChannel(protoSize, revBuffer int) *Channel {
 
 	// grpc接收資料的緩充量
 	c.signal = make(chan *pb.Proto, revBuffer)
+
 	return c
 }
 

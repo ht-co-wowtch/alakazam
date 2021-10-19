@@ -90,7 +90,10 @@ func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *
 			return err
 		}
 	case cometpb.OpPaidRoomDiamond:
-		s.paidRoomDiamond(ctx, p, ch)
+		err := s.paidRoomDiamond(ctx, p, ch)
+		if err != nil {
+			return err
+		}
 
 	default:
 		// TODO error
@@ -208,6 +211,7 @@ func (s *Server) paidRoomDiamond(ctx context.Context, p *cometpb.Proto, ch *Chan
 	reply, _ := s.logic.PaidRoomDiamond(ctx, &logicpb.PaidRoomDiamondReq{
 		RoomID: ch.Room.ID,
 		Uid:    ch.Uid,
+		Type:   ch.Type,
 	})
 
 	if !reply.Status {
@@ -216,7 +220,7 @@ func (s *Server) paidRoomDiamond(ctx context.Context, p *cometpb.Proto, ch *Chan
 			Error   string `json:"error"`
 		}{
 			IsAllow: false,
-			Error:  reply.Error,
+			Error:   reply.Error,
 		})
 		return nil
 	}
@@ -226,7 +230,7 @@ func (s *Server) paidRoomDiamond(ctx context.Context, p *cometpb.Proto, ch *Chan
 		Diamond  float32 `json:"diamond"`
 		PaidTime string  `json:"paid_time"`
 	}{
-		IsAllow:   true,
+		IsAllow:  true,
 		Diamond:  reply.Diamond,
 		PaidTime: reply.PaidTime,
 	})
