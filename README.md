@@ -394,6 +394,7 @@ Operation = `6`=> 單筆訊息
 | open_live       | 開播         |
 | close_live      | 關播         |
 | permission      | 權限         |
+| level      | 升級         |
 
 ![arch](./doc/message/live_message.png)
 
@@ -1116,6 +1117,22 @@ permission
       "is_red_envelope":"",
       "is_bets":"请先登入会员",
       "is_manage":"你已被主播取消房管人员资格"
+   }
+}
+```
+
+```json
+{
+   "id":28003,
+   "type":"level",
+   "time":"14:43:45",
+   "timestamp":1634539425,
+   "display":null,
+   "user":{
+      "uid":"f33abfce41c745f795262dad34aa9f9b",
+      "name":"s***8",
+      "avatar":"other",
+      "type":"player"
    }
 }
 ```
