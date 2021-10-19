@@ -166,8 +166,7 @@ func (s *server) PaidRoomExpiry(ctx context.Context, req *pb.MemberProfileReq) (
 func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq) (*pb.PaidRoomDiamondReply, error) {
 	// 取得收費房收費標準
 	lr, err := s.cli.GetLiveChatInfo(req.RoomID)
-	log.Infof("GetLiveChatInfo, room id: %i", req.RoomID)
-	log.Infof("GetLiveChatInfo chat:%o", lr)
+	log.Infof("GetLiveChatInfo chat:%o", lr.SiteId)
 	if err != nil {
 		log.Infof("GetLiveChatInfo error, %o", err)
 		return nil, err
@@ -240,16 +239,17 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 		return &pb.PaidRoomDiamondReply{}, err // TODO
 	}
 
-	pid, oid, err := s.producer.SendMessage(
+	log.Infof("producer.SendMessage msg:%s", string(b))
+
+	_, _, err = s.producer.SendMessage(
 		&kafka.ProducerMessage{
 			Topic: conf.Conf.Kafka.Stream.Topic,
 			Value: kafka.ByteEncoder(string(b)),
 		},
 	)
+
 	if err != nil {
 		log.Errorf("producer.SendMessage error: %s", err.Error())
-	} else {
-		log.Infof("producer.SendMessage, partition:[$i], offset: [$i]", pid, oid)
 	}
 
 	// TODO
