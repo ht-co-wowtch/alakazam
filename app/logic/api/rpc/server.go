@@ -166,6 +166,8 @@ func (s *server) PaidRoomExpiry(ctx context.Context, req *pb.MemberProfileReq) (
 func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq) (*pb.PaidRoomDiamondReply, error) {
 	// 取得收費房收費標準
 	lr, err := s.cli.GetLiveChatInfo(req.RoomID)
+	log.Infof("GetLiveChatInfo, room id: %i", req.RoomID)
+	log.Infof("GetLiveChatInfo chat:%o", lr)
 	if err != nil {
 		log.Infof("GetLiveChatInfo error, %o", err)
 		return nil, err
