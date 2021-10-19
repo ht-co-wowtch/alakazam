@@ -238,12 +238,17 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 		return &pb.PaidRoomDiamondReply{}, err // TODO
 	}
 
-	s.producer.SendMessage(
+	pid, oid, err := s.producer.SendMessage(
 		&kafka.ProducerMessage{
 			Topic: conf.Conf.Kafka.Stream.Topic,
 			Value: kafka.ByteEncoder(string(b)),
 		},
 	)
+	if err != nil {
+		log.Errorf("producer.SendMessage error: %s", err.Error())
+	} else {
+		log.Infof("producer.SendMessage, partition:[$i], offset: [$i]", pid, oid)
+	}
 
 	// TODO
 	s.room.AddPreviousPayment(req.Uid, lr.Id, t, tr.From.Diamond)
