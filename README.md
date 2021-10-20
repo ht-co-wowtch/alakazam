@@ -84,21 +84,23 @@ make run
 - [x] 遮蔽敏感詞
 - [x] 訊息限速(1秒1則，10內不可重覆三次一樣訊息)
 - [x] 依據性別切換頭像
+- [x] 收費房
+- [x] 升級通知
+- [x] 各服務監控
+- [x] kafka監控
+- [x] golang pprof
+- [x] 歷史訊息redis
+- [x] Kafka and zk config 調整
+- [x] cache 優化
 
 TODO
 
 - [ ] json改用msgp
-- [x] 各服務監控
-- [x] kafka監控
 - [ ] zk監控
 - [ ] 註冊中心(etcd or zk)
 - [ ] 整合測試 bash shell
-- [x] golang pprof
-- [x] 歷史訊息redis
 - [ ] 歷史訊息 mongodb
-- [x] Kafka and zk config 調整
 - [ ] 訊息壓縮
-- [x] cache 優化
 - [ ] 訊息持久化速度慢(透過監控offset lag發現)
 - [ ] 架構圖
 - [ ] 壓測資料
