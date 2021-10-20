@@ -394,7 +394,7 @@ Operation = `6`=> 單筆訊息
 | open_live       | 開播         |
 | close_live      | 關播         |
 | permission      | 權限         |
-| level      | 升級         |
+| level      | 升級通知         |
 
 ![arch](./doc/message/live_message.png)
 
@@ -1121,13 +1121,14 @@ permission
 }
 ```
 
+升級通知訊息
+
 ```json
 {
    "id":28003,
    "type":"level",
    "time":"14:43:45",
    "timestamp":1634539425,
-   "display":null,
    "user":{
       "uid":"f33abfce41c745f795262dad34aa9f9b",
       "name":"s***8",
