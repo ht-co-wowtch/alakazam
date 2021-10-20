@@ -540,7 +540,7 @@ entity.type: 文字實體內容
 | username | user名稱 | string |
 | button   | 按鈕     | string |
 
-一般訊息(用戶)
+##### 一般訊息(用戶)
 
 ```json
 {
@@ -584,7 +584,7 @@ entity.type: 文字實體內容
 
 ![arch](./doc/message/user.png)
 
-私訊
+##### 私訊
 
 ```json
 {
@@ -622,7 +622,7 @@ entity.type: 文字實體內容
 }
 ```
 
-公告(管理員)
+##### 公告(管理員)
 
 ```json
 {
@@ -658,7 +658,7 @@ entity.type: 文字實體內容
 
 ![arch](./doc/message/root.png)
 
-置頂訊息
+##### 置頂訊息
 
 ```json
 {
@@ -693,7 +693,7 @@ entity.type: 文字實體內容
 
 ![arch](./doc/message/top.png)
 
-系統訊息
+##### 系統訊息
 
 ```json
 {
@@ -724,7 +724,7 @@ entity.type: 文字實體內容
 
 ![arch](./doc/message/system.png)
 
-投注中獎打賞訊息
+##### 投注中獎打賞訊息
 
 ```json
 {
@@ -757,7 +757,7 @@ entity.type: 文字實體內容
 
 ![arch](./doc/message/will.png)
 
-進入房間訊息
+##### 進入房間訊息
 
 ```json
 {
@@ -803,7 +803,7 @@ entity.type: 文字實體內容
 
 <img src="./doc/message/in_room.png" alt="arch" style="zoom:80%;" />
 
-送禮訊息
+##### 送禮訊息
 
 ```json
 {
@@ -862,7 +862,7 @@ entity.type: 文字實體內容
 
 ![arch](./doc/message/gift_hint.png)
 
-打賞訊息
+##### 打賞訊息
 
 ```json
 {
@@ -929,7 +929,7 @@ entity.type: 文字實體內容
 
 ![arch](./doc/message/reward_hint.png)
 
-紅包訊息
+##### 紅包訊息
 
 ```json
 {
@@ -968,7 +968,7 @@ entity.type: 文字實體內容
 }
 ```
 
-跟投訊息
+##### 跟投訊息
 
 ```json
 {
@@ -1043,7 +1043,7 @@ entity.type: 文字實體內容
 }
 ```
 
-關注訊息
+##### 關注訊息
 
 ```json
 {
@@ -1064,7 +1064,7 @@ entity.type: 文字實體內容
 }
 ```
 
-開播訊息
+##### 開播訊息
 
 ```json
 {
@@ -1080,7 +1080,7 @@ entity.type: 文字實體內容
 }
 ```
 
-關播訊息
+##### 關播訊息
 
 ```json
 {
@@ -1096,7 +1096,7 @@ entity.type: 文字實體內容
 }
 ```
 
-permission
+##### permission
 
 ```json
 {
@@ -1121,7 +1121,7 @@ permission
 }
 ```
 
-升級通知訊息
+##### 升級通知
 
 ```json
 {
