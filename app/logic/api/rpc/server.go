@@ -166,7 +166,6 @@ func (s *server) PaidRoomExpiry(ctx context.Context, req *pb.MemberProfileReq) (
 func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq) (*pb.PaidRoomDiamondReply, error) {
 	// 取得收費房收費標準
 	lr, err := s.cli.GetLiveChatInfo(req.RoomID)
-	log.Infof("GetLiveChatInfo chat:%o", lr.SiteId)
 	if err != nil {
 		log.Infof("GetLiveChatInfo error, %o", err)
 		return nil, err
@@ -191,7 +190,6 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 
 	// order id
 	uid := id.UUid32()
-
 	// 跨帳鑽石異動
 	tr, err := s.cli.PaidDiamond(client.PaidDiamondTXTOrder{
 		From: client.PaidDiamondUser{Uid: req.Uid, Type: cashflowLog.LiveGiveCharge.String()},
@@ -203,7 +201,6 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 			},
 		},
 	})
-
 	if err != nil {
 		log.Errorf("PaidDiamond error: %o", err)
 		return &pb.PaidRoomDiamondReply{
@@ -217,13 +214,13 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 	// TODO
 	// 寫入訊息到 live-stream topic
 	msg := struct {
-		SiteId   int
-		UserId   string
-		UserType string
-		RoomId   int32
-		OrderId  string
-		Amount   float32
-		CreateAt time.Time
+		SiteId   int `json:"site_id"`
+		UserId   string	`json:"user_id"`
+		UserType string	`json:"user_type"`
+		RoomId   int32 `json:"room_id"`
+		OrderId  string	`json:"order_id"`
+		Amount   float32 `json:"amount"`
+		CreateAt time.Time `json:"create_at"`
 	}{
 		SiteId:   lr.SiteId,
 		UserId:   req.Uid,
