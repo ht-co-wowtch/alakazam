@@ -215,6 +215,21 @@ func (u User) ToUser(seq int64, message string) Message {
 	return b
 }
 
+// 升級公告
+func (u User) ToLevel(seq int64, user *models.Member, level int) Message {
+	b := u.toBase(seq, "")
+	b.Type = MESSAGE_TYPE
+	b.Display = displayByLevelUp(user, level)
+	return b
+}
+
+// 升級通知
+func (u User) ToLevelAlert(seq int64) Message {
+	b := u.toBase(seq, "")
+	b.Type = LEVEL_TYPE
+	return b
+}
+
 // 私訊
 func (u User) ToPrivate(seq int64, message string) Message {
 	b := u.toBase(seq, message)

@@ -368,16 +368,38 @@ func (p *Producer) SendBetsWinReward(keys []string, user scheme.User, amount flo
 }
 
 // 發送等級提升提示
-func (p *Producer) SendLevelUpAlert(rid []int32, user scheme.User) (int64, error) {
+func (p *Producer) SendLevelUpAlert(keys []string, user *models.Member) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
-		return scheme.NewLevelUpAlertProto(id, rid, user)
+		pushMsg, err := scheme.NewUser(*user).ToLevelAlert(id).ToProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pushMsg.Keys = keys
+		pushMsg.Mid = user.Id
+		pushMsg.Type = logicpb.PushMsg_PUSH
+		pushMsg.MsgType = models.MESSAGE_TYPE
+		pushMsg.IsRaw = true
+
+		return pushMsg, nil
 	})
 }
 
 // 發送等級提升訊息
-func (p *Producer) SendLevelUp(rid []int32, user scheme.User, level int) (int64, error) {
+func (p *Producer) SendLevelUp(keys []string, user *models.Member, level int) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
-		return scheme.NewLevelUpProto(id, rid, user, level)
+		pushMsg, err := scheme.NewUser(*user).ToLevel(id, user, level).ToProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pushMsg.Keys = keys
+		pushMsg.Mid = user.Id
+		pushMsg.Type = logicpb.PushMsg_PUSH
+		pushMsg.MsgType = models.MESSAGE_TYPE
+		pushMsg.IsRaw = true
+
+		return pushMsg, nil
 	})
 }
 
@@ -445,8 +467,10 @@ func (p *Producer) SendFollow(rid int32, user scheme.User, total int) (int64, er
 	})
 }
 
+// TODO vip msg
 // 發送一般訊息
 func (p *Producer) SendMessage(rid []int32, msg scheme.Message, isRaw bool) (int64, error) {
+	log.Infof("ssssssss")
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		now := time.Now()
 		msg.Id = id
@@ -464,6 +488,7 @@ func (p *Producer) SendMessage(rid []int32, msg scheme.Message, isRaw bool) (int
 	})
 }
 
+// 發送禁言訊息
 func (p *Producer) SendDisplay(rid []int32, user scheme.User, display scheme.Display) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		return user.DisplayToMessage(id, display).ToRoomProto(rid)
@@ -519,6 +544,7 @@ func (p *Producer) send(pushMsg *logicpb.PushMsg) error {
 		Value: kafka.ByteEncoder(b),
 	}
 
+	// push msg to kafka
 	partition, offset, err := p.producer.SendMessage(m)
 	if err != nil {
 		log.Error(

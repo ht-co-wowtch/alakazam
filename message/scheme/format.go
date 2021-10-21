@@ -1,6 +1,7 @@
 package scheme
 
 import (
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"strconv"
 	"unicode/utf8"
 
@@ -202,7 +203,7 @@ func displayByBetsWin(user User, gameName string) Display {
 }
 
 // 等級提升Display
-func displayByLevelUp(user User, level int) Display {
+func displayByLevelUp(user *models.Member, level int) Display {
 	return Display{
 		Title: displayText{
 			Text:            "升級",

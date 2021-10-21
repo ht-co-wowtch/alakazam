@@ -246,12 +246,20 @@ func (s *httpServer) levelUp(c *gin.Context) error {
 	}
 
 	m.Uid = req.Uid
-	user := scheme.NewUser(*m)
+
+	keys, err := s.member.GetRoomKeys(req.Uid, int(req.RoomId))
+	if err != nil {
+		return err
+	}
 
 	//升級會員提示
-	aid, err := s.message.SendLevelUpAlert([]int32{req.RoomId}, user)
+	aid, err := s.message.SendLevelUpAlert(keys, m)
+	if err != nil {
+		return err
+	}
+
 	//升級會員公告
-	id, err := s.message.SendLevelUp([]int32{req.RoomId}, user, req.Level)
+	id, err := s.message.SendLevelUp(keys, m, req.Level)
 	if err != nil {
 		return err
 	}
