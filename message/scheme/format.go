@@ -390,7 +390,12 @@ func DisplayByUnBlock(username string, expired int, set bool) Display {
 func displayByConnect(level, username string) Display {
 	return Display{
 		Level: displayText{
-			Text:            level, // TODO 會員等級
+			Text:            "0", // TODO
+			Color:           MESSAGE_COLOR,
+			BackgroundColor: "#7FC355",
+		},
+		Title: displayText{
+			Text:            level, // TODO 會員Title&暱稱
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#7FC355",
 		},

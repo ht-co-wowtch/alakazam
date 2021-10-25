@@ -214,12 +214,12 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 	// TODO
 	// 寫入訊息到 live-stream topic
 	msg := struct {
-		SiteId   int `json:"site_id"`
-		UserId   string	`json:"user_id"`
-		UserType string	`json:"user_type"`
-		RoomId   int32 `json:"room_id"`
-		OrderId  string	`json:"order_id"`
-		Amount   float32 `json:"amount"`
+		SiteId   int       `json:"site_id"`
+		UserId   string    `json:"user_id"`
+		UserType string    `json:"user_type"`
+		RoomId   int32     `json:"room_id"`
+		OrderId  string    `json:"order_id"`
+		Amount   float32   `json:"amount"`
 		CreateAt time.Time `json:"create_at"`
 	}{
 		SiteId:   lr.SiteId,
@@ -237,7 +237,6 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 	}
 
 	log.Infof("producer.SendMessage msg:%s", string(b))
-
 	_, _, err = s.producer.SendMessage(
 		&kafka.ProducerMessage{
 			Topic: conf.Conf.Kafka.Stream.Topic,
