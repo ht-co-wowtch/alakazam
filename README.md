@@ -737,7 +737,7 @@ entity.type: 文字實體內容
    "display":null,
    "user":{
       "uid":"0d641b03d4d548dbb3a73a2197811261",
-      "name":"ni你ckname_1",
+      "name":"nickname_1",
       "avatar":"male"
    },
    "bets_win_reward":{

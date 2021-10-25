@@ -77,6 +77,7 @@ type changeRoom struct {
 
 // 處理Proto相關邏輯
 func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *Bucket) error {
+	log.Infof("Operate")
 	switch p.Op {
 	// 更換房間
 	case cometpb.OpChangeRoom:

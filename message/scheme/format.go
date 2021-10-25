@@ -1,9 +1,10 @@
 package scheme
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"strconv"
 	"unicode/utf8"
+
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 )
@@ -39,7 +40,7 @@ func displayByUser(user User, message string) Display {
 			Avatar: user.Avatar,
 		},
 		Level: displayText{
-			Text:            "会员",
+			Text:            member.GeneralMember,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#7FC355",
 		},
@@ -61,7 +62,7 @@ func displayByPrivate(user User, message string) Display {
 			Avatar: user.Avatar,
 		},
 		Title: displayText{
-			Text:            "私讯",
+			Text:            member.Private,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#F79EB6",
 		},
@@ -83,7 +84,7 @@ func displayByPrivateReply(user User) Display {
 			Avatar: user.Avatar,
 		},
 		Title: displayText{
-			Text:            "私讯",
+			Text:            member.Private,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#F79EB6",
 		},
@@ -108,7 +109,7 @@ func displayByManage(user User, message string) Display {
 			Avatar: user.Avatar,
 		},
 		Level: displayText{
-			Text:            "房管",
+			Text:            member.RoomAdmin,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#38A2DB",
 		},
@@ -130,7 +131,7 @@ func displayByStreamer(user User, message string) Display {
 			Avatar: user.Avatar,
 		},
 		Title: displayText{
-			Text:            "主播",
+			Text:            member.Anchor,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#B57AA8",
 		},
@@ -186,7 +187,7 @@ func displayByBets(user User, gameName string, amount int) Display {
 func displayByBetsWin(user User, gameName string) Display {
 	return Display{
 		Title: displayText{
-			Text:            "中奖",
+			Text:            member.Win,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#F85656",
 		},
@@ -206,7 +207,7 @@ func displayByBetsWin(user User, gameName string) Display {
 func displayByLevelUp(user *models.Member, level int) Display {
 	return Display{
 		Title: displayText{
-			Text:            "升級",
+			Text:            member.System,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#F85656",
 		},
@@ -389,7 +390,7 @@ func DisplayByUnBlock(username string, expired int, set bool) Display {
 func displayByConnect(level, username string) Display {
 	return Display{
 		Level: displayText{
-			Text:            level,
+			Text:            level, // TODO 會員等級
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#7FC355",
 		},

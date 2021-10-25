@@ -17,6 +17,13 @@ const (
 	RootUid  = "root"
 	RootName = "管理员"
 	System   = "系统"
+	LevelUp  = "升级"
+	GeneralMember = "会员"
+	Private = "私讯"
+	RoomAdmin = "房管"
+	Anchor = "主播"
+	Win = "中奖"
+
 )
 
 type Chat interface {
