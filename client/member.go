@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gitlab.com/jetfueltw/cpw/micro/log"
 	"time"
 
+	"gitlab.com/jetfueltw/cpw/micro/log"
 	// "runtime/pprof"
 )
 
@@ -19,7 +19,7 @@ type User struct {
 }
 
 type UserLiveExpire struct {
-	LiveExpireAt time.Time
+	LiveExpireAt time.Time `json:"live_expire_at"`
 }
 
 var (
