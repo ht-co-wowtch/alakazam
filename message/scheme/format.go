@@ -119,7 +119,7 @@ func displayByManage(user User, message string) Display {
 		Title: displayText{
 			Text:            member.GeneralMember,
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: "#38A2DB",
+			BackgroundColor: DisplayLevelBackgroundColor, //"#38A2DB",
 		},
 		IsManage: true,
 		Message: displayMessage{
