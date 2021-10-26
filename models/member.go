@@ -44,9 +44,10 @@ type Member struct {
 	Uid        string     `json:"uid"`
 	Name       string     `json:"name"`
 	Type       int        `json:"type"`
-	IsMessage  bool       `json:"is_message"` // 是否允許發言
+	Lv         int        `json:"lv"`
+	IsMessage  bool       `json:"is_message"`  // 是否允許發言
 	IsBlockade bool       `json:"is_blockade"` // 是否被封鎖
-	Permission Permission `json:"-" xorm:"-"` // 格別房間權限
+	Permission Permission `json:"-" xorm:"-"`  // 格別房間權限
 	Gender     int32      `json:"gender"`
 	CreateAt   time.Time  `json:"-"`
 }
@@ -94,7 +95,7 @@ func (s *Store) CreateUser(member *Member) (bool, error) {
 
 // 更新會員資料
 func (s *Store) UpdateUser(member *Member) (bool, error) {
-	aff, err := s.d.Cols("name", "gender").
+	aff, err := s.d.Cols("name", "gender", "lv").
 		Where("uid = ?", member.Uid).
 		Update(member)
 	return aff == 1, err

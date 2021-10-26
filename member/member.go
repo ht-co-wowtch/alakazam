@@ -13,17 +13,16 @@ import (
 )
 
 const (
-	RootMid  = 1
-	RootUid  = "root"
-	RootName = "管理员"
-	System   = "系统"
-	LevelUp  = "升级"
+	RootMid       = 1
+	RootUid       = "root"
+	RootName      = "管理员"
+	System        = "系统"
+	LevelUp       = "升级"
 	GeneralMember = "会员"
-	Private = "私讯"
-	RoomAdmin = "房管"
-	Anchor = "主播"
-	Win = "中奖"
-
+	Private       = "私讯"
+	RoomAdmin     = "房管"
+	Anchor        = "主播"
+	Win           = "中奖"
 )
 
 type Chat interface {
@@ -64,12 +63,19 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 	u, err := m.GetByRoom(user.Uid, room.Id)
 
 	if err == errors.ErrNoMember {
+		lv, err := m.cli.Level(user.Uid)
+		if err != nil {
+			lv = 0
+		}
+
 		u = &models.Member{
 			Uid:    user.Uid,
 			Name:   user.Name,
 			Gender: user.Gender,
 			Type:   user.Type,
+			Lv:     lv,
 		}
+
 		ok, err := m.db.CreateUser(u)
 		if err != nil {
 			return nil, "", err
@@ -81,13 +87,20 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 		return nil, "", err
 	}
 
+	// 會員等級
+	lv, err := m.cli.Level(user.Uid)
+	if err != nil {
+		lv = 0
+	}
+	u.Lv = lv
+
 	if u.Blockade() {
 		return u, "", nil
 	}
 
-	if u.Name != user.Name || u.Gender != user.Gender {
-		u.Name = user.Name
-		u.Gender = user.Gender
+	if u.Name != user.Name || u.Gender != user.Gender || u.Lv != user.Lv {
+			u.Name = user.Name
+			u.Gender = user.Gender
 		if ok, err := m.db.UpdateUser(u); err != nil || !ok {
 			log.Error("update user", zap.String("uid", user.Uid), zap.Bool("action", ok), zap.Error(err))
 		}
@@ -106,6 +119,7 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 			zap.String("server", server),
 		)
 	}
+
 	return u, key, nil
 }
 
@@ -215,6 +229,7 @@ func (m *Member) GetByRoom(uid string, rid int) (*models.Member, error) {
 	u, err := m.c.getByRoom(uid, rid)
 
 	if err == redis.Nil {
+
 		u, err = m.db.Find(uid)
 
 		if err == sql.ErrNoRows {

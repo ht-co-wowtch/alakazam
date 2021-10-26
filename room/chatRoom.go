@@ -77,6 +77,7 @@ func (c *chat) newConnectReply(user *models.Member, room models.Room, key string
 			Name:   user.Name,
 			Gender: user.Gender,
 			Type:   int32(user.Type),
+			Level:  int32(user.Lv),
 		},
 		IsConnectSuccessReply: true,
 	}, nil

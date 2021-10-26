@@ -29,6 +29,12 @@ const (
 
 	// 系統框 背景色
 	SYSTEM_BACKGROUND_COLOR = "#FC8813"
+
+	// Display Title 背景色
+	DisplayTitleBackgroundColor = "#F85656"
+
+	// Display 會員等級 背景色
+	DisplayLevelBackgroundColor = "#7FC355"
 )
 
 // 用戶Display
@@ -42,7 +48,7 @@ func displayByUser(user User, message string) Display {
 		Level: displayText{
 			Text:            member.GeneralMember,
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: "#7FC355",
+			BackgroundColor: DisplayLevelBackgroundColor,
 		},
 		Message: displayMessage{
 			Text:            message,
@@ -189,7 +195,7 @@ func displayByBetsWin(user User, gameName string) Display {
 		Title: displayText{
 			Text:            member.Win,
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: "#F85656",
+			BackgroundColor: DisplayTitleBackgroundColor,
 		},
 		Message: displayMessage{
 			Text:            "恭喜用户" + user.Name + "在" + gameName + "中奖了",
@@ -209,7 +215,7 @@ func displayByLevelUp(user *models.Member, level int) Display {
 		Title: displayText{
 			Text:            member.System,
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: "#F85656",
+			BackgroundColor: DisplayTitleBackgroundColor,
 		},
 		Message: displayMessage{
 			Text:            "恭喜等級提升到" + strconv.Itoa(level),
@@ -387,17 +393,17 @@ func DisplayByUnBlock(username string, expired int, set bool) Display {
 }
 
 // 進場Display
-func displayByConnect(level, username string) Display {
+func displayByConnect(level int32, title, username string) Display {
 	return Display{
 		Level: displayText{
-			Text:            "0", // TODO
+			Text:            strconv.Itoa(int(level)), // TODO 會員等級
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: "#7FC355",
+			BackgroundColor: DisplayLevelBackgroundColor,
 		},
 		Title: displayText{
-			Text:            level, // TODO 會員Title&暱稱
+			Text:            title, // TODO 會員Title&暱稱
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: "#7FC355",
+			BackgroundColor: DisplayTitleBackgroundColor,
 		},
 		Message: displayMessage{
 			Text:            username + "进入聊天室",
@@ -433,7 +439,7 @@ func buttonTextEntity(name string, offset int) textEntity {
 		Type:            "button",
 		Offset:          offset,
 		Length:          utf8.RuneCountInString(name),
-		Color:           "#FFFFAA",
-		BackgroundColor: "#F85656",
+		Color:           MESSAGE_SYSTEM_COLOR,
+		BackgroundColor: DisplayTitleBackgroundColor,
 	}
 }

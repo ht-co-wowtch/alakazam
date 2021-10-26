@@ -16,6 +16,7 @@ type User struct {
 	Avatar string `json:"avatar"`
 	Type   int    `json:"type"`
 	Gender int32  `json:"gender"`
+	Lv     int    `json:"lv"`
 }
 
 type UserLiveExpire struct {
@@ -44,6 +45,27 @@ func (c *Client) Auth(token string) (User, error) {
 		return u, errNoMember
 	}
 	return u, nil
+}
+
+// 取得等級
+func (c *Client) Level(uid string) (int, error) {
+	path := fmt.Sprintf("/level/%s", uid)
+	lvResp, err := c.c.Get(path, nil, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	type UserLevel struct {
+		Level int
+	}
+
+	var lv UserLevel
+
+	if err := json.NewDecoder(lvResp.Body).Decode(&lv); err != nil {
+		return 0, err
+	}
+
+	return lv.Level, nil
 }
 
 // 取得會員月卡效期

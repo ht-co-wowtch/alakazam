@@ -318,18 +318,20 @@ func NewRoot() User {
 	}
 }
 
+// 置頂訊息
 func ToMessage(msgByte []byte) (Message, error) {
 	var msg Message
 	err := json.Unmarshal(msgByte, &msg)
 	return msg, err
 }
 
-func NewConnect(seq int64, level, username string) Message {
+// 進入房間訊息
+func NewConnect(seq int64, level int32, title, username string) Message {
 	now := time.Now()
 	return Message{
 		Id:        seq,
 		Type:      "hint",
-		Display:   displayByConnect(level, username),
+		Display:   displayByConnect(level, title, username),
 		Time:      now.Format("15:04:05"),
 		Timestamp: now.Unix(),
 	}

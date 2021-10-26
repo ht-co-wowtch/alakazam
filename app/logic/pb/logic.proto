@@ -44,6 +44,7 @@ message User {
     string name = 3;
     int32 gender = 4;
     int32 type = 5;
+    int32 level = 6;
 }
 
 message Permission {
