@@ -115,16 +115,31 @@ TODO
 1. 如何進入聊天室 [答案](#room)
 2. 進入聊天室後的回覆 or 如何知道用戶在聊天室相關權限，如聊天，發紅包等等動作 [答案](#room-reply)
 3. 如何進入聊天室有失敗會怎樣 `答案:失敗會直接close連線`
-4. 如何在聊天室發訊息 [請看前台訊息推送API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80)
+4.
+
+如何在聊天室發訊息 [請看前台訊息推送API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80)
+
 5. 如何接收聊天室訊息 [答案](#message)
 6. 聊天室訊息結構 [答案](#message-reply)
 7. 封鎖狀態下進入聊天室會怎樣 [答案](#close-reply)
-8. 禁言狀態下聊天會怎樣 [請看前台訊息推送API範例-禁言中](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80)
-9. 如何在聊天室發紅包 [請看前台發紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af)
+8.
+
+禁言狀態下聊天會怎樣 [請看前台訊息推送API範例-禁言中](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#71c23912-6830-4c42-a675-ea6ae31f5d80)
+
+9.
+
+如何在聊天室發紅包 [請看前台發紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#f6c5fb74-cd42-40fb-bb66-1c2bde3419af)
+
 10. 聊天室發紅包訊息結構 [答案](#message-reply)
-11. 如何搶紅包 [請看前台搶紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#68e59552-6c95-45ab-9f9e-3eaad7c1989d)
+11.
+
+如何搶紅包 [請看前台搶紅包API](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#68e59552-6c95-45ab-9f9e-3eaad7c1989d)
+
 12. 如何切換聊天室房間[答案](#change-room)
-13. 如何拿到歷史紀錄 [請看前台歷史紀錄API範例](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#6da9dbce-f64a-4dc1-8b15-a015bfd83d1c)
+13.
+
+如何拿到歷史紀錄 [請看前台歷史紀錄API範例](https://jetfueltw.postman.co/collections/6851408-6a660dbe-4cc3-4c3e-94b5-897071b2802b?version=latest&workspace=56a5a88a-bfd1-46b5-8102-a2ca97183649#6da9dbce-f64a-4dc1-8b15-a015bfd83d1c)
+
 14. 如何跟聊天室做心跳 [答案](#heartbeat)
 15. 聊天室心跳週期是多少 `答案:server要求1分鐘一次`
 16. 如何產生一個跟websocket溝通的Protocol [答案](#buffer)
@@ -137,7 +152,7 @@ TODO
 | name      | length  | remork                        | 說明                   |
 | --------- | ------- | ----------------------------- | ---------------------- |
 | Package   | 4 bytes | header + body length          | 整個Protocol bytes長度 |
-| Header    | 2 bytes | protocol header length        | Package  - Boyd        |
+| Header    | 2 bytes | protocol header length        | Package - Boyd        |
 | Operation | 4 bytes | [Operation](#operation)       | Protocol的動作         |
 | Body      | 不固定  | 傳送的資料16bytes之後就是Body | json格式               |
 
@@ -173,6 +188,7 @@ TODO
 | 20    | [聊天室踢人](#close-reply)                         | json   |
 
 Diamond
+
 ### Body
 
 聊天室的訊息內容
@@ -228,31 +244,31 @@ ws.send(res.buffer)
 
 ```go
 ws.onmessage = function (evt) {
-   var data = evt.data
-   var dataView = new DataView(data, 0)
+var data = evt.data
+var dataView = new DataView(data, 0)
 
-   // Protocol Package欄位內容
-   var packetLen = dataView.getInt32(0)
+// Protocol Package欄位內容
+var packetLen = dataView.getInt32(0)
 
-   // Protocol Header欄位內容
-   var headerLen = dataView.getInt16(4)
+// Protocol Header欄位內容
+var headerLen = dataView.getInt16(4)
 
-   // Protocol Operation欄位內容
-   var op = dataView.getInt32(6)
-    
-   switch (op) {
-      // 回覆進入房間結果
-      case 2:
-         // 擷取出body內容
-         var json = textDecoder.decode(data.slice(headerLen, packetLen))
-         var msgBody = JSON.parse(json)
-         console.log(msgBody)
-         break
-      // 回覆心跳結果，心跳body為空所以不做事
-      case 4:
-         console.log("receive: heartbeat")
-         break
-   }
+// Protocol Operation欄位內容
+var op = dataView.getInt32(6)
+
+switch (op) {
+// 回覆進入房間結果
+case 2:
+// 擷取出body內容
+var json = textDecoder.decode(data.slice(headerLen, packetLen))
+var msgBody = JSON.parse(json)
+console.log(msgBody)
+break
+// 回覆心跳結果，心跳body為空所以不做事
+case 4:
+console.log("receive: heartbeat")
+break
+}
 }
 ```
 
@@ -303,21 +319,21 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 
 ```json
 {
-    "room_id": 1000,
-    "uid": "82ea16cd2d6a49d887440066ef739669",
-    "key": "defb108d-3d51-475a-b266-4a7f459e7a59",
-    "message": "目前房间已关闭",
-    "status": false,
-    "permission": {
-        "is_message": false,
-        "is_red_envelope": false,
-        "is_bets": false,
-    },
-    "permission_message": {
-        "is_message": "聊天室目前禁言状态，无法发言",
-        "is_red_envelope": "请先登入会员",
-        "is_bets": "请先登入会员"
-    }
+  "room_id": 1000,
+  "uid": "82ea16cd2d6a49d887440066ef739669",
+  "key": "defb108d-3d51-475a-b266-4a7f459e7a59",
+  "message": "目前房间已关闭",
+  "status": false,
+  "permission": {
+    "is_message": false,
+    "is_red_envelope": false,
+    "is_bets": false
+  },
+  "permission_message": {
+    "is_message": "聊天室目前禁言状态，无法发言",
+    "is_red_envelope": "请先登入会员",
+    "is_bets": "请先登入会员"
+  }
 }
 ```
 
@@ -340,15 +356,15 @@ Operation = `2`=> 連線到某一個房間結果回覆Body
 進入房間有幾種狀況，原因都會寫在`message`
 
 1. status => `true`
-   1. 房間無法發話
-   2. 用戶無法發話
-   3. 沒有任何異常，為空值
+    1. 房間無法發話
+    2. 用戶無法發話
+    3. 沒有任何異常，為空值
 
 2. status => false
-   1. 用戶被封鎖
-   2. 房間不存在
-   3. 房間已關閉
-   4. 其他例外狀況
+    1. 用戶被封鎖
+    2. 房間不存在
+    3. 房間已關閉
+    4. 其他例外狀況
 
 #### Close Reply
 
@@ -358,7 +374,7 @@ Operation = `20`=> 踢出房間
 
 ```json
 {
-    "message": "您在封鎖状态，无法进入聊天室"
+  "message": "您在封鎖状态，无法进入聊天室"
 }
 ```
 
@@ -378,7 +394,7 @@ Operation = `6`=> 單筆訊息
 
 ![arch](./doc/message_raw.png)
 
-Ｍessage type
+Message type
 
 每個message json 內都有一個type來判斷訊息種類
 
@@ -413,6 +429,18 @@ Operation = `6`=> 單筆訊息
 | gift         | 禮物         |               |
 | live_stream  | 直播         |               |
 | follow       | 關注         |               |
+
+display 顯示訊息資料格式
+
+| 欄位名稱 | 說明                     | 格式    |
+| -------- | ------------------------ | ------- |
+| user     | 用戶資料                     | user  |
+| level    | 發訊息人等級                 | level |
+| title   | 發訊息人身份 | title  |
+| message   | 訊息資料 | message  |
+| is_manage   | 頭像名稱 [類型](#avatar) | bool  |
+| background_color   | 訊息背景顏色 | string  |
+| background_image   | 訊息背景圖 | string  |
 
 display.user: 顯示用戶資料
 
@@ -451,8 +479,6 @@ display.message: 訊息資料
 | entity.length           | 字範圍長度     | int       |
 | entity.color            | 字體顏色       | #000000   |
 | entity.background_color | 標籤背景       | #A680B8   |
-
-
 
 display.background_image: 訊息框背景圖
 
@@ -528,7 +554,6 @@ permission: 權限
 | is_bets  | 是否發跟投 | boolean  |
 | is_manage  | 是否為房管 | boolean  |
 
-
 live_stream: 直播
 
 | 欄位名稱 | 說明      | 格式 |
@@ -546,41 +571,85 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":4001,
-   "type":"message",
-   "time":"12:37:00",
-   "timestamp":1567579890,
-   "display":{
-      "user":{
-         "text":"sam78",
-         "color":"#000000",
-         "avatar":"female"
-      },
-      "level":{
-         "text":"vip1",
-         "color":"#DF3030",
-         "background_color":"#C7B9C1"
-      },
-      "title":{
-         "text":"房管",
-         "color":"#E5C4C4",
-         "background_color":"#332121"
-      },
-      "message":{
-         "text":"測試",
-         "color":"#A680B8",
-         "background_color":"#0000003f",
-         "entity":null
-      },
-      "background_color":"#0000003f",
-      "background_image":null
-   },
-   "user":{
-      "uid":"3d641b03d4d548dbb3a73a2197811261",
-      "name":"sam78",
-      "avatar":"female",
-      "type": 2
-   }
+  "id": 4001,
+  "type": "message",
+  "time": "12:37:00",
+  "timestamp": 1567579890,
+  "display": {
+    "user": {
+      "text": "sam78",
+      "color": "#000000",
+      "avatar": "female"
+    },
+    "level": {
+      "text": "vip1",
+      "color": "#DF3030",
+      "background_color": "#C7B9C1"
+    },
+    "title": {
+      "text": "房管",
+      "color": "#E5C4C4",
+      "background_color": "#332121"
+    },
+    "message": {
+      "text": "測試",
+      "color": "#A680B8",
+      "background_color": "#0000003f",
+      "entity": null
+    },
+    "is_manage": false,
+    "background_color": "#0000003f",
+    "background_image": null
+  },
+  "user": {
+    "uid": "3d641b03d4d548dbb3a73a2197811261",
+    "name": "sam78",
+    "avatar": "female",
+    "type": 2
+  }
+}
+```
+
+##### 一般訊息(房管)
+
+```json
+{
+  "id": 4001,
+  "type": "message",
+  "time": "12:37:00",
+  "timestamp": 1567579890,
+  "display": {
+    "user": {
+      "text": "sam78",
+      "color": "#000000",
+      "avatar": "female"
+    },
+    "level": {
+      "text": "vip1",
+      "color": "#DF3030",
+      "background_color": "#C7B9C1"
+    },
+    "title": {
+      "text": "房管",
+      "color": "#E5C4C4",
+      "background_color": "#332121"
+    },
+    "message": {
+      "text": "測試",
+      "color": "#A680B8",
+      "background_color": "#0000003f",
+      "entity": null
+    },
+    "is_manage": true,
+    "background_color": "#0000003f",
+    "background_image": null
+  },
+  "user": {
+    "uid": "3d641b03d4d548dbb3a73a2197811261",
+    "name": "sam78",
+    "avatar": "female",
+    "type": 2
+  }
 }
 ```
 
@@ -590,37 +659,37 @@ entity.type: 文字實體內容
 
 ```json
 {
-    "id": 14003,
-    "type": "private_message",
-    "time": "10:55:17",
-    "timestamp": 1599015317,
-    "display": {
-        "user": {
-            "text": "Sam",
-            "color": "#FFFFAA",
-            "avatar": "male"
-        },
-        "level": null,
-        "title": {
-            "text": "私讯",
-            "color": "#FFFFFF",
-            "background_color": "#F79EB6"
-        },
-        "message": {
-            "text": "測試",
-            "color": "#FFFFFF",
-            "background_color": "#00000000",
-            "entity": null
-        },
-        "background_color": "#38A2DB7F",
-        "background_image": null
-    },
+  "id": 14003,
+  "type": "private_message",
+  "time": "10:55:17",
+  "timestamp": 1599015317,
+  "display": {
     "user": {
-        "uid": "79a5ded9a5f34b57bed0786ae4cbb21b",
-        "name": "Sam",
-        "avatar": "male",
-        "type": 2
-    }
+      "text": "Sam",
+      "color": "#FFFFAA",
+      "avatar": "male"
+    },
+    "level": null,
+    "title": {
+      "text": "私讯",
+      "color": "#FFFFFF",
+      "background_color": "#F79EB6"
+    },
+    "message": {
+      "text": "測試",
+      "color": "#FFFFFF",
+      "background_color": "#00000000",
+      "entity": null
+    },
+    "background_color": "#38A2DB7F",
+    "background_image": null
+  },
+  "user": {
+    "uid": "79a5ded9a5f34b57bed0786ae4cbb21b",
+    "name": "Sam",
+    "avatar": "male",
+    "type": 2
+  }
 }
 ```
 
@@ -628,33 +697,33 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":59402,
-   "type":"bulletin",
-   "time":"14:37:50",
-   "timestamp":1591857470,
-   "display":{
-      "user":null,
-      "level":null,
-      "title":{
-         "text":"系统",
-         "color":"#FFFFFF",
-         "background_color":"#FC8813"
-      },
-      "message":{
-         "text":"測試",
-         "color":"#FFFFAA",
-         "background_color":"#00000000",
-         "entity":null
-      },
-      "background_color":"#0000003f",
-      "background_image":null
-   },
-   "user":{
-      "uid":"root",
-      "name":"管理员",
-      "avatar":"root",
-      "type": 2
-   }
+  "id": 59402,
+  "type": "bulletin",
+  "time": "14:37:50",
+  "timestamp": 1591857470,
+  "display": {
+    "user": null,
+    "level": null,
+    "title": {
+      "text": "系统",
+      "color": "#FFFFFF",
+      "background_color": "#FC8813"
+    },
+    "message": {
+      "text": "測試",
+      "color": "#FFFFAA",
+      "background_color": "#00000000",
+      "entity": null
+    },
+    "background_color": "#0000003f",
+    "background_image": null
+  },
+  "user": {
+    "uid": "root",
+    "name": "管理员",
+    "avatar": "root",
+    "type": 2
+  }
 }
 ```
 
@@ -664,32 +733,32 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":4001,
-   "type":"top",
-   "time":"12:37:00",
-   "timestamp":1567579890,
-   "display":{
-      "user":{
-         "text":"管理員",
-         "color":"#FFFFFF",
-         "avatar":"female"
-      },
-      "level":null,
-      "title":null,
-      "message":{
-         "text":"你好嗎？",
-         "color":"#FFFFFF",
-         "entity":null
-      },
-      "background_color":"#0000003f",
-      "background_image":null
-   },
-   "user":{
-      "uid":"root",
-      "name":"管理員",
-      "avatar":"root",
-      "type": 2
-   }
+  "id": 4001,
+  "type": "top",
+  "time": "12:37:00",
+  "timestamp": 1567579890,
+  "display": {
+    "user": {
+      "text": "管理員",
+      "color": "#FFFFFF",
+      "avatar": "female"
+    },
+    "level": null,
+    "title": null,
+    "message": {
+      "text": "你好嗎？",
+      "color": "#FFFFFF",
+      "entity": null
+    },
+    "background_color": "#0000003f",
+    "background_image": null
+  },
+  "user": {
+    "uid": "root",
+    "name": "管理員",
+    "avatar": "root",
+    "type": 2
+  }
 }
 ```
 
@@ -699,28 +768,28 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":4001,
-   "type":"message",
-   "time":"12:37:00",
-   "timestamp":1567579890,
-   "display":{
-      "user":null,
-      "level":null,
-      "title":{
-         "text":"系統",
-         "color":"#FFFFFF",
-         "background_color":"#E5CB29"
-      },
-      "message":{
-         "text":"測試",
-         "color":"#A680B8",
-         "background_color":"#0000003f",
-         "entity":null
-      },
-      "background_color":"#0000003f",
-      "background_image":null
-   },
-   "user":null
+  "id": 4001,
+  "type": "message",
+  "time": "12:37:00",
+  "timestamp": 1567579890,
+  "display": {
+    "user": null,
+    "level": null,
+    "title": {
+      "text": "系統",
+      "color": "#FFFFFF",
+      "background_color": "#E5CB29"
+    },
+    "message": {
+      "text": "測試",
+      "color": "#A680B8",
+      "background_color": "#0000003f",
+      "entity": null
+    },
+    "background_color": "#0000003f",
+    "background_image": null
+  },
+  "user": null
 }
 ```
 
@@ -730,30 +799,30 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":53402,
-   "type":"bets_win_reward",
-   "time":"10:54:50",
-   "timestamp":1591757690,
-   "display":null,
-   "user":{
-      "uid":"0d641b03d4d548dbb3a73a2197811261",
-      "name":"nickname_1",
-      "avatar":"male"
-   },
-   "bets_win_reward":{
-      "text":"恭喜您中奖 金额＄1,010.01 打賞主播",
-      "color":"#FFFFAA",
-      "background_color":"#F8565699",
-      "entity":[
-         {
-            "type":"button",
-            "offset":18,
-            "length":4,
-            "color":"#FFFFAA",
-            "background_color":"#F85656"
-         }
-      ]
-   }
+  "id": 53402,
+  "type": "bets_win_reward",
+  "time": "10:54:50",
+  "timestamp": 1591757690,
+  "display": null,
+  "user": {
+    "uid": "0d641b03d4d548dbb3a73a2197811261",
+    "name": "nickname_1",
+    "avatar": "male"
+  },
+  "bets_win_reward": {
+    "text": "恭喜您中奖 金额＄1,010.01 打賞主播",
+    "color": "#FFFFAA",
+    "background_color": "#F8565699",
+    "entity": [
+      {
+        "type": "button",
+        "offset": 18,
+        "length": 4,
+        "color": "#FFFFAA",
+        "background_color": "#F85656"
+      }
+    ]
+  }
 }
 ```
 
@@ -763,43 +832,43 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":48801,
-   "type":"hint",
-   "time":"11:58:37",
-   "timestamp":1591243117,
-   "display":{
-      "user":null,
-      "title":null,
-      "level":{
-         "text":"会员",
-         "color":"#FFFFFF",
-         "background_color":"#7FC355"
-      },
-      "message":{
-         "text":"nickname_1进入聊天室",
-         "color":"#FFFFAA",
-         "background_color":"#00000000",
-         "entity":[
-            {
-               "type":"username",
-               "offset":0,
-               "length":10,
-               "color":"#7CE7EB",
-               "background_color":"#00000000"
-            }
-         ]
-      },
-      "background_color":null,
-      "background_image":{
-         "type":"linear-gradient",
-         "to":"right",
-         "color":{
-            "0":"#FC881380",
-            "99":"#FC881300"
-         }
+  "id": 48801,
+  "type": "hint",
+  "time": "11:58:37",
+  "timestamp": 1591243117,
+  "display": {
+    "user": null,
+    "title": null,
+    "level": {
+      "text": "会员",
+      "color": "#FFFFFF",
+      "background_color": "#7FC355"
+    },
+    "message": {
+      "text": "nickname_1进入聊天室",
+      "color": "#FFFFAA",
+      "background_color": "#00000000",
+      "entity": [
+        {
+          "type": "username",
+          "offset": 0,
+          "length": 10,
+          "color": "#7CE7EB",
+          "background_color": "#00000000"
+        }
+      ]
+    },
+    "background_color": null,
+    "background_image": {
+      "type": "linear-gradient",
+      "to": "right",
+      "color": {
+        "0": "#FC881380",
+        "99": "#FC881300"
       }
-   },
-   "user":null
+    }
+  },
+  "user": null
 }
 ```
 
@@ -809,54 +878,54 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":4001,
-   "type":"gift",
-   "time":"12:37:00",
-   "timestamp":1567579890,
-   "display":{
-      "user":null,
-      "level":null,
-      "title":{
-         "text":"會員",
-         "color":"#FFFFFF",
-         "background_color":"#FF0000"
-      },
-      "message":{
-         "text":"sam78 送出禮物x1",
-         "color":"#A680B8",
-         "background_color":"#0000003f",
-         "entity":[
-            {
-               "type":"username",
-               "offset":0,
-               "length":5,
-               "color":"#A680B8",
-               "background_color":"#0000003f"
-            }
-         ]
-      },
-      "background_color":"#0000003f",
-      "background_image":null
-   },
-   "user":{
-      "uid":"3d641b03d4d548dbb3a73a2197811261",
-      "name":"sam78",
-      "avatar":"female",
-      "type": 2
-   },
-   "gift":{
-      "gift_id":1,
-      "total_amount":10,
-      "amount":5,
-      "combo":{
-         "count":1,
-         "duration_ms":2000
-      },
-      "hint_box":null,
-      "show_animation":false,
-      "message":"送出跑車",
-      "entity":null
-   }
+  "id": 4001,
+  "type": "gift",
+  "time": "12:37:00",
+  "timestamp": 1567579890,
+  "display": {
+    "user": null,
+    "level": null,
+    "title": {
+      "text": "會員",
+      "color": "#FFFFFF",
+      "background_color": "#FF0000"
+    },
+    "message": {
+      "text": "sam78 送出禮物x1",
+      "color": "#A680B8",
+      "background_color": "#0000003f",
+      "entity": [
+        {
+          "type": "username",
+          "offset": 0,
+          "length": 5,
+          "color": "#A680B8",
+          "background_color": "#0000003f"
+        }
+      ]
+    },
+    "background_color": "#0000003f",
+    "background_image": null
+  },
+  "user": {
+    "uid": "3d641b03d4d548dbb3a73a2197811261",
+    "name": "sam78",
+    "avatar": "female",
+    "type": 2
+  },
+  "gift": {
+    "gift_id": 1,
+    "total_amount": 10,
+    "amount": 5,
+    "combo": {
+      "count": 1,
+      "duration_ms": 2000
+    },
+    "hint_box": null,
+    "show_animation": false,
+    "message": "送出跑車",
+    "entity": null
+  }
 }
 ```
 
@@ -868,62 +937,62 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":4001,
-   "type":"gift",
-   "time":"12:37:00",
-   "timestamp":1567579890,
-   "display":{
-      "user":null,
-      "level":null,
-      "title":{
-         "text":"會員",
-         "color":"#FFFFFF",
-         "background_color":"#FF0000"
-      },
-      "message":{
-         "text":"sam78 打賞10元",
-         "color":"#DF3030",
-         "background_color":"#0000003f",
-         "entity":[
-            {
-               "type":"username",
-               "offset":0,
-               "length":5,
-               "color":"#A680B8",
-               "background_color":"#0000003f"
-            }
-         ]
-      },
-      "background_color":"#0000003f",
-      "background_image":null
-   },
-   "user":{
-      "uid":"3d641b03d4d548dbb3a73a2197811261",
-      "name":"sam78",
-      "avatar":"female",
-      "type": 2
-   },
-   "gift":{
-      "gift_id":0,
-      "total_amount":0,
-      "amount":5,
-      "combo":null,
-      "show_animation":false,
-      "hint_box":{
-         "duration_ms":3000,
-         "background_color":"https://assets.292801.com/awcp/logo/hPH6edsqSY.png"
-      },
-      "message":"sam78 打賞10元",
-      "entity":[
-         {
-            "type":"username",
-            "offset":0,
-            "length":5,
-            "color":"#A680B8",
-            "background_color":"#0000003f"
-         }
+  "id": 4001,
+  "type": "gift",
+  "time": "12:37:00",
+  "timestamp": 1567579890,
+  "display": {
+    "user": null,
+    "level": null,
+    "title": {
+      "text": "會員",
+      "color": "#FFFFFF",
+      "background_color": "#FF0000"
+    },
+    "message": {
+      "text": "sam78 打賞10元",
+      "color": "#DF3030",
+      "background_color": "#0000003f",
+      "entity": [
+        {
+          "type": "username",
+          "offset": 0,
+          "length": 5,
+          "color": "#A680B8",
+          "background_color": "#0000003f"
+        }
       ]
-   }
+    },
+    "background_color": "#0000003f",
+    "background_image": null
+  },
+  "user": {
+    "uid": "3d641b03d4d548dbb3a73a2197811261",
+    "name": "sam78",
+    "avatar": "female",
+    "type": 2
+  },
+  "gift": {
+    "gift_id": 0,
+    "total_amount": 0,
+    "amount": 5,
+    "combo": null,
+    "show_animation": false,
+    "hint_box": {
+      "duration_ms": 3000,
+      "background_color": "https://assets.292801.com/awcp/logo/hPH6edsqSY.png"
+    },
+    "message": "sam78 打賞10元",
+    "entity": [
+      {
+        "type": "username",
+        "offset": 0,
+        "length": 5,
+        "color": "#A680B8",
+        "background_color": "#0000003f"
+      }
+    ]
+  }
 }
 ```
 
@@ -935,38 +1004,38 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":4001,
-   "type":"red_envelope",
-   "time":"12:37:00",
-   "timestamp":1567579890,
-   "display":{
-      "user":{
-         "text":"sam78",
-         "color":"#FFFFFF",
-         "avatar":"female"
-      },
-      "level":null,
-      "title":null,
-      "message":{
-         "text":"紅包",
-         "color":"#FFFFFF",
-         "background_color":"#0000003f",
-         "entity":null
-      },
-      "background_color":"#0000003f",
-      "background_image":null
-   },
-   "user":{
-      "uid":"3d641b03d4d548dbb3a73a2197811261",
-      "name":"sam78",
-      "avatar":"female",
-      "type": 2
-   },
-   "red_envelope":{
-      "id":"0d641b03d4d548dbb3a73a2197811261",
-      "token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjY4NzkzMTMsImlkIjoiMWI5MTZiNDc4YzBjNGZjMzhmMGE0MzE1NjMwNjExMTQiLCJ1aWQiOiIwZDY0MWIwM2Q0ZDU0OGRiYjNhNzNhMjE5NzgxMTI2MSJ9.pgyltHiT11XcZySJPiuetV35OXU-wgQ4XtU_UTzwghU",
-      "expired":"2019-08-27T12:15:13+08:00"
-   }
+  "id": 4001,
+  "type": "red_envelope",
+  "time": "12:37:00",
+  "timestamp": 1567579890,
+  "display": {
+    "user": {
+      "text": "sam78",
+      "color": "#FFFFFF",
+      "avatar": "female"
+    },
+    "level": null,
+    "title": null,
+    "message": {
+      "text": "紅包",
+      "color": "#FFFFFF",
+      "background_color": "#0000003f",
+      "entity": null
+    },
+    "background_color": "#0000003f",
+    "background_image": null
+  },
+  "user": {
+    "uid": "3d641b03d4d548dbb3a73a2197811261",
+    "name": "sam78",
+    "avatar": "female",
+    "type": 2
+  },
+  "red_envelope": {
+    "id": "0d641b03d4d548dbb3a73a2197811261",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NjY4NzkzMTMsImlkIjoiMWI5MTZiNDc4YzBjNGZjMzhmMGE0MzE1NjMwNjExMTQiLCJ1aWQiOiIwZDY0MWIwM2Q0ZDU0OGRiYjNhNzNhMjE5NzgxMTI2MSJ9.pgyltHiT11XcZySJPiuetV35OXU-wgQ4XtU_UTzwghU",
+    "expired": "2019-08-27T12:15:13+08:00"
+  }
 }
 ```
 
@@ -974,74 +1043,72 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":4001,
-   "type":"bets",
-   "time":"12:37:00",
-   "timestamp":1567579890,
-   "display":{
-      "user":{
-         "text":"sam78",
-         "color":"#FFFFFF",
-         "avatar":"female"
-      },
-      "level":null,
-      "title":null,
-      "message":{
-         "text":"跟投",
-         "color":"#DF3030",
-         "background_color":"#0000003f",
-         "entity":[
-            {
-               "type":"button",
-               "offset":6,
-               "length":2,
-               "color":"#E5C4C4",
-               "background_color":"#A680B8"
-            }
-         ]
-      },
-      "background_color":"#0000003f",
-      "background_image":null
-   },
-   "user":{
-      "uid":"3d641b03d4d548dbb3a73a2197811261",
-      "name":"sam78",
-      "avatar":"female",
-      "type": 2
-   },
-   "bet":{
-      "game_id":4567,
-      "game_name":"六合彩",
-      "period_number":1234,
-      "count":2,
-      "total_amount":25,
-      "bets":[
-         {
-            "name":"冠軍",
-            "odds_code":"1.pos.1",
-            "items":[
-               "9",
-               "tiger"
-            ],
-            "trans_items":[
-               "9",
-               "虎"
-            ],
-            "amount":15
-         },
-         {
-            "name":"亞軍",
-            "odds_code":"2.pos.1",
-            "items":[
-
-            ],
-            "trans_items":[
-
-            ],
-            "amount":10
-         }
+  "id": 4001,
+  "type": "bets",
+  "time": "12:37:00",
+  "timestamp": 1567579890,
+  "display": {
+    "user": {
+      "text": "sam78",
+      "color": "#FFFFFF",
+      "avatar": "female"
+    },
+    "level": null,
+    "title": null,
+    "message": {
+      "text": "跟投",
+      "color": "#DF3030",
+      "background_color": "#0000003f",
+      "entity": [
+        {
+          "type": "button",
+          "offset": 6,
+          "length": 2,
+          "color": "#E5C4C4",
+          "background_color": "#A680B8"
+        }
       ]
-   }
+    },
+    "background_color": "#0000003f",
+    "background_image": null
+  },
+  "user": {
+    "uid": "3d641b03d4d548dbb3a73a2197811261",
+    "name": "sam78",
+    "avatar": "female",
+    "type": 2
+  },
+  "bet": {
+    "game_id": 4567,
+    "game_name": "六合彩",
+    "period_number": 1234,
+    "count": 2,
+    "total_amount": 25,
+    "bets": [
+      {
+        "name": "冠軍",
+        "odds_code": "1.pos.1",
+        "items": [
+          "9",
+          "tiger"
+        ],
+        "trans_items": [
+          "9",
+          "虎"
+        ],
+        "amount": 15
+      },
+      {
+        "name": "亞軍",
+        "odds_code": "2.pos.1",
+        "items": [
+        ],
+        "trans_items": [
+        ],
+        "amount": 10
+      }
+    ]
+  }
 }
 ```
 
@@ -1049,20 +1116,20 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":3602,
-   "type":"follow",
-   "time":"14:13:29",
-   "timestamp":1597126409,
-   "display":null,
-   "user":{
-      "uid":"79a5ded9a5f34b57bed0786ae4cbb21b",
-      "name":"Sam",
-      "avatar":"",
-      "type": 2
-   },
-   "follow":{
-      "total":10
-   }
+  "id": 3602,
+  "type": "follow",
+  "time": "14:13:29",
+  "timestamp": 1597126409,
+  "display": null,
+  "user": {
+    "uid": "79a5ded9a5f34b57bed0786ae4cbb21b",
+    "name": "Sam",
+    "avatar": "",
+    "type": 2
+  },
+  "follow": {
+    "total": 10
+  }
 }
 ```
 
@@ -1070,15 +1137,15 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":4001,
-   "type":"open_live",
-   "time": "12:37:00",
-   "timestamp": 1567579890, 
-   "display":null,
-   "user":null,
-   "live_stream": {
-  	 "chat_id": 1 
-   }
+  "id": 4001,
+  "type": "open_live",
+  "time": "12:37:00",
+  "timestamp": 1567579890,
+  "display": null,
+  "user": null,
+  "live_stream": {
+    "chat_id": 1
+  }
 }
 ```
 
@@ -1086,15 +1153,15 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":4001,
-   "type":"close_live",
-   "time": "12:37:00",
-   "timestamp": 1567579890, 
-   "display":null,
-   "user":null,
-   "live_stream": {
-      "chat_id": 1 
-   }
+  "id": 4001,
+  "type": "close_live",
+  "time": "12:37:00",
+  "timestamp": 1567579890,
+  "display": null,
+  "user": null,
+  "live_stream": {
+    "chat_id": 1
+  }
 }
 ```
 
@@ -1102,24 +1169,24 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":15404,
-   "type":"permission",
-   "time": "12:37:00",
-   "timestamp": 1567579890, 
-   "display":null,
-   "user":null,
-   "permission":{
-      "is_message":true,
-      "is_red_envelope":true,
-      "is_bets":false,
-      "is_manage":false
-   },
-   "permission_message":{
-      "is_message":"",
-      "is_red_envelope":"",
-      "is_bets":"请先登入会员",
-      "is_manage":"你已被主播取消房管人员资格"
-   }
+  "id": 15404,
+  "type": "permission",
+  "time": "12:37:00",
+  "timestamp": 1567579890,
+  "display": null,
+  "user": null,
+  "permission": {
+    "is_message": true,
+    "is_red_envelope": true,
+    "is_bets": false,
+    "is_manage": false
+  },
+  "permission_message": {
+    "is_message": "",
+    "is_red_envelope": "",
+    "is_bets": "请先登入会员",
+    "is_manage": "你已被主播取消房管人员资格"
+  }
 }
 ```
 
@@ -1127,16 +1194,16 @@ entity.type: 文字實體內容
 
 ```json
 {
-   "id":28003,
-   "type":"level",
-   "time":"14:43:45",
-   "timestamp":1634539425,
-   "user":{
-      "uid":"f33abfce41c745f795262dad34aa9f9b",
-      "name":"s***8",
-      "avatar":"other",
-      "type":"player"
-   }
+  "id": 28003,
+  "type": "level",
+  "time": "14:43:45",
+  "timestamp": 1634539425,
+  "user": {
+    "uid": "f33abfce41c745f795262dad34aa9f9b",
+    "name": "s***8",
+    "avatar": "other",
+    "type": "player"
+  }
 }
 ```
 
@@ -1148,22 +1215,22 @@ Operation = `8`=> 回覆更換房間結果
 
 ```json
 {
-    "room_id": 1000,
-    "uid": "82ea16cd2d6a49d887440066ef739669",
-    "key": "defb108d-3d51-475a-b266-4a7f459e7a59",
-    "message": "目前房间已关闭",
-    "status": false,
-    "permission": {
-        "is_message": false,
-        "is_red_envelope": false,
-        "is_bets": false,
-        "is_mag": 
-    },
-    "permission_message": {
-        "is_message": "聊天室目前禁言状态，无法发言",
-        "is_red_envelope": "请先登入会员",
-        "is_bets": "请先登入会员"
-    }
+  "room_id": 1000,
+  "uid": "82ea16cd2d6a49d887440066ef739669",
+  "key": "defb108d-3d51-475a-b266-4a7f459e7a59",
+  "message": "目前房间已关闭",
+  "status": false,
+  "permission": {
+    "is_message": false,
+    "is_red_envelope": false,
+    "is_bets": false,
+    "is_mag":
+  },
+  "permission_message": {
+    "is_message": "聊天室目前禁言状态，无法发言",
+    "is_red_envelope": "请先登入会员",
+    "is_bets": "请先登入会员"
+  }
 }
 ```
 
@@ -1187,7 +1254,7 @@ Operation = `9`=> 取消置頂訊息
 
 ```json
 {
-    "id": 5001
+  "id": 5001
 }
 ```
 
@@ -1203,8 +1270,8 @@ Operation = `9`=> 取消置頂訊息
 
 ```json
   {
-    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTcyMTE2NTAsIm5iZiI6MTU1NzIxMTY1MCwiaXNzIjoibG9naW4iLCJzZXNzaW9uX3Rva2VuIjoiZjc2OTYyM2Y0YTNlNDE4MWE4NzAwYWNkYTE3NzE1MmIiLCJkYXRhIjp7InVpZCI6IjEyNTdlN2Q5ZTFjOTQ0ZWY5YTZmMTI5Y2I5NDk1ZDAyIiwidXNlcm5hbWUiOiJyb290In19.7VJxH3tQpnJqWTlPbId7f0Rt7eQoaVvaJmbWxtHTqRU",
-    "room_id": 1000
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTcyMTE2NTAsIm5iZiI6MTU1NzIxMTY1MCwiaXNzIjoibG9naW4iLCJzZXNzaW9uX3Rva2VuIjoiZjc2OTYyM2Y0YTNlNDE4MWE4NzAwYWNkYTE3NzE1MmIiLCJkYXRhIjp7InVpZCI6IjEyNTdlN2Q5ZTFjOTQ0ZWY5YTZmMTI5Y2I5NDk1ZDAyIiwidXNlcm5hbWUiOiJyb290In19.7VJxH3tQpnJqWTlPbId7f0Rt7eQoaVvaJmbWxtHTqRU",
+  "room_id": 1000
 }
 ```
 
@@ -1243,7 +1310,7 @@ Boyd內容如下，Protocol Operation[參考](#operation)
 
 ```json
 {
-    "room_id": 1000
+  "room_id": 1000
 }
 ```
 
@@ -1280,8 +1347,8 @@ Boyd內容如下
 
 ```json
 {
-   expire:"2021-09-26T08:47:01+08:00",
-   is_allow:true
+  expire: "2021-09-26T08:47:01+08:00",
+  is_allow: true
 }
 ```
 
@@ -1316,9 +1383,9 @@ Boyd內容如下
 
 ```json
 {
-   is_allow:true,
-   diamond:990.11,
-   paid_time:"2021-09-08T10:06:09+08:00"
+  is_allow: true,
+  diamond: 990.11,
+  paid_time: "2021-09-08T10:06:09+08:00"
 }
 ```
 
@@ -1328,8 +1395,8 @@ Boyd內容如下
 
 ```json
 {
-   is_allow: false,
-   error: "余额不足"
+  is_allow: false,
+  error: "余额不足"
 }
 ```
 
@@ -1391,7 +1458,7 @@ Boyd內容如下
 1. 進入房間，yes代表可以，管理員、系統本身不進入房間
 
    | 狀態       | 遊客 | 試玩 | 會員 | 帶玩(營運) |
-   | ---------- | ---- | ---- | ---- | ---------- |
+         | ---------- | ---- | ---- | ---- | ---------- |
    | 正常       |      | Yes  | Yes  | Yes        |
    | 房間已關閉 |      |      |      |            |
    | 房間禁言   |      | Yes  | Yes  | Yes        |
@@ -1402,19 +1469,18 @@ Boyd內容如下
 2. 聊天(發送普通訊息)，yes代表可以
 
    | 狀態       | 遊客 | 試玩 | 會員 | 帶玩(營運) | 管理員 | 系統 |
-   | ---------- | ---- | ---- | ---- | ---------- | ------ | ---- |
+         | ---------- | ---- | ---- | ---- | ---------- | ------ | ---- |
    | 正常       |      |      | Yes  | Yes        | Yes    | Yes  |
    | 房間已關閉 |      |      |      |            |        |      |
    | 房間禁言   |      |      |      |            | Yes    | Yes  |
    | 會員禁言   |      |      |      |            | Yes    | Yes  |
    | 會員封鎖   |      |      |      |            | Yes    | Yes  |
 
-   
 
 3. 發紅包，yes代表可以
 
    | 狀態       | 遊客 | 試玩 | 會員 | 帶玩(營運) | 管理員 | 系統 |
-   | ---------- | ---- | ---- | ---- | ---------- | ------ | ---- |
+         | ---------- | ---- | ---- | ---- | ---------- | ------ | ---- |
    | 正常       |      |      | Yes  | Yes        | Yes    | Yes  |
    | 房間已關閉 |      |      |      |            |        |      |
    | 房間禁言   |      |      | Yes  | Yes        | Yes    | Yes  |
@@ -1425,19 +1491,18 @@ Boyd內容如下
 4. 搶紅包，yes代表可以
 
    | 狀態       | 遊客 | 試玩 | 會員 | 帶玩(營運) |
-   | ---------- | ---- | ---- | ---- | ---------- |
+         | ---------- | ---- | ---- | ---- | ---------- |
    | 正常       |      |      | Yes  | Yes        |
    | 房間已關閉 |      |      |      |            |
    | 房間禁言   |      |      | Yes  | Yes        |
    | 會員禁言   |      |      | Yes  | Yes        |
    | 會員封鎖   |      |      |      |            |
 
-   
 
 5. 發跟投，yes代表可以，什麼單子要發出來讓人跟投由營運or系統自動決定，不對外開放
 
    | 狀態       | 遊客 | 試玩 | 會員 | 帶玩(營運) | 管理員 | 系統 |
-   | ---------- | ---- | ---- | ---- | ---------- | ------ | ---- |
+         | ---------- | ---- | ---- | ---- | ---------- | ------ | ---- |
    | 正常       |      |      |      |            | Yes    | Yes  |
    | 房間已關閉 |      |      |      |            |        |      |
    | 房間禁言   |      |      |      |            | Yes    | Yes  |
@@ -1448,7 +1513,7 @@ Boyd內容如下
 6. 跟投，yes代表可以
 
    | 狀態       | 遊客 | 試玩 | 會員 | 帶玩(營運) |
-   | ---------- | ---- | ---- | ---- | ---------- |
+         | ---------- | ---- | ---- | ---- | ---------- |
    | 正常       |      |      | Yes  | Yes        |
    | 房間已關閉 |      |      |      |            |
    | 房間禁言   |      |      | Yes  | Yes        |
@@ -1460,6 +1525,7 @@ Boyd內容如下
 
 1. 為什麼聊天室每次連線1分鐘後會立即斷線
 
-   目前聊天室心跳是依照logic.yml做設定，默認是5分鐘，所以正常來說5分鐘沒心跳連線才會斷，但如果前端以大於等於1分鐘的頻率做心跳，發現每次要發心跳時都會失敗，可能原因是連線已斷，但正常來說5分鐘後才會斷，這種情況可能的原因是連線是使用nginx or aws alb這種代理，默認`read` and `send`都是60s，所以必須調整這些代理的timeout大於5分鐘一點即可正常．
+   目前聊天室心跳是依照logic.yml做設定，默認是5分鐘，所以正常來說5分鐘沒心跳連線才會斷，但如果前端以大於等於1分鐘的頻率做心跳，發現每次要發心跳時都會失敗，可能原因是連線已斷，但正常來說5分鐘後才會斷，這種情況可能的原因是連線是使用nginx or aws alb這種代理，默認`read` and `send`
+   都是60s，所以必須調整這些代理的timeout大於5分鐘一點即可正常．
 
    nginx : `proxy_read_timeout` `proxy_send_timeout`
