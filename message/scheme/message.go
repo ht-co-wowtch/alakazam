@@ -108,6 +108,8 @@ type Display struct {
 	// 顯示訊息內容
 	Message interface{} `json:"message"`
 
+	IsManage bool `json:"is_manage"`
+
 	// 背景色
 	BackgroundColor interface{} `json:"background_color"`
 
@@ -326,12 +328,12 @@ func ToMessage(msgByte []byte) (Message, error) {
 }
 
 // 進入房間訊息
-func NewConnect(seq int64, level int32, title, username string) Message {
+func NewConnect(seq int64, level int32, isManage bool, username string) Message {
 	now := time.Now()
 	return Message{
 		Id:        seq,
 		Type:      "hint",
-		Display:   displayByConnect(level, title, username),
+		Display:   displayByConnect(level, isManage, username),
 		Time:      now.Format("15:04:05"),
 		Timestamp: now.Unix(),
 	}

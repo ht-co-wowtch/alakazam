@@ -45,7 +45,8 @@ func displayByUser(user User, message string) Display {
 			Color:  USER_COLOR,
 			Avatar: user.Avatar,
 		},
-		Level: displayText{
+		//TODO 會員等級
+		Title: displayText{
 			Text:            member.GeneralMember,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: DisplayLevelBackgroundColor,
@@ -114,11 +115,13 @@ func displayByManage(user User, message string) Display {
 			Color:  USER_COLOR,
 			Avatar: user.Avatar,
 		},
-		Level: displayText{
-			Text:            member.RoomAdmin,
+		//TODO 會員等級
+		Title: displayText{
+			Text:            member.GeneralMember,
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: "#38A2DB",
 		},
+		IsManage: true,
 		Message: displayMessage{
 			Text:            message,
 			Color:           MESSAGE_COLOR,
@@ -136,6 +139,7 @@ func displayByStreamer(user User, message string) Display {
 			Color:  MESSAGE_SYSTEM_COLOR,
 			Avatar: user.Avatar,
 		},
+		//TODO 會員等級
 		Title: displayText{
 			Text:            member.Anchor,
 			Color:           MESSAGE_COLOR,
@@ -393,18 +397,14 @@ func DisplayByUnBlock(username string, expired int, set bool) Display {
 }
 
 // 進場Display
-func displayByConnect(level int32, title, username string) Display {
+func displayByConnect(level int32, isManage bool, username string) Display {
 	return Display{
 		Level: displayText{
 			Text:            strconv.Itoa(int(level)), // TODO 會員等級
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: DisplayLevelBackgroundColor,
 		},
-		Title: displayText{
-			Text:            title, // TODO 會員Title&暱稱
-			Color:           MESSAGE_COLOR,
-			BackgroundColor: DisplayTitleBackgroundColor,
-		},
+		IsManage: isManage,
 		Message: displayMessage{
 			Text:            username + "进入聊天室",
 			Color:           MESSAGE_SYSTEM_COLOR,

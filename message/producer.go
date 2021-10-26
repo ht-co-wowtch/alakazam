@@ -75,7 +75,7 @@ func NewKafkaProducer(brokers []string) kafka.SyncProducer {
 		panic(err)
 	}
 
-	return  pub
+	return pub
 }
 
 func NewProducer(brokers []string, topic string, seq seqpb.SeqClient, cache *redis.Client, db *models.Store) *Producer {
@@ -406,13 +406,7 @@ func (p *Producer) SendLevelUp(keys []string, user *models.Member, level int) (i
 // 發送進入房間訊息
 func (p *Producer) SendConnect(rid int32, user *logicpb.User, isManage bool) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
-		// TODO VIP 等級
-		title := "会员"
-
-		if isManage {
-			title = "房管"
-		}
-		return scheme.NewConnect(id, user.Level, title, user.Name).ToRoomProto([]int32{rid})
+		return scheme.NewConnect(id, user.Level, isManage, user.Name).ToRoomProto([]int32{rid})
 	})
 }
 
