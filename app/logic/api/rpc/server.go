@@ -211,12 +211,13 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 
 	t := time.Now()
 
-	// TODO
 	// 寫入訊息到 live-stream topic
 	msg := struct {
 		SiteId   int       `json:"site_id"`
-		UserId   string    `json:"user_id"`
-		UserType string    `json:"user_type"`
+		UserId   string    `json:"user_id"`   // TODO 之後移除
+		UserType string    `json:"user_type"` // TODO 之後移除
+		FromId   string    `json:"from_id"`
+		ToId     string    `json:"to_id"`
 		RoomId   int32     `json:"room_id"`
 		OrderId  string    `json:"order_id"`
 		Amount   float32   `json:"amount"`
@@ -225,6 +226,8 @@ func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq
 		SiteId:   lr.SiteId,
 		UserId:   req.Uid,
 		UserType: member.ToType(req.Type).String(),
+		FromId:   req.Uid,
+		ToId:     lr.MemberUid,
 		RoomId:   req.RoomID,
 		OrderId:  uid,
 		Amount:   lr.Charge,
