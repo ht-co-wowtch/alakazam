@@ -253,7 +253,7 @@ func (s *httpServer) levelUp(c *gin.Context) error {
 	}
 
 	//升級會員提示
-	aid, err := s.message.SendLevelUpAlert(keys, m)
+	aid, err := s.message.SendLevelUpAlert(keys, m, req.Level)
 	if err != nil {
 		return err
 	}

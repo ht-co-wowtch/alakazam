@@ -368,9 +368,13 @@ func (p *Producer) SendBetsWinReward(keys []string, user scheme.User, amount flo
 }
 
 // 發送等級提升提示
-func (p *Producer) SendLevelUpAlert(keys []string, user *models.Member) (int64, error) {
+func (p *Producer) SendLevelUpAlert(keys []string, user *models.Member, level int) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
-		pushMsg, err := scheme.NewUser(*user).ToLevelAlert(id).ToProto()
+		pushMsg, err := scheme.LevelUpAlertMessage{
+			Message: scheme.NewUser(*user).ToLevelAlert(id),
+			Level: level,
+		}.ToProto()
+
 		if err != nil {
 			return nil, err
 		}

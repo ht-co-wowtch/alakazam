@@ -399,20 +399,20 @@ Message type
 每個message json 內都有一個type來判斷訊息種類
 
 | Value           | 說明         |
-| --------------- | ------------ |
+| --------------- | ----------- |
 | message         | 一般         |
 | private_message | 私訊         |
 | top             | 置頂         |
-| bulletin        | 進場公告     |
+| bulletin        | 進場公告      |
 | red_envelope    | 紅包         |
 | bets            | 跟投         |
-| gift            | 禮物/打賞    |
+| gift            | 禮物/打賞     |
 | hint            | 提示         |
-| bets_win_reward | 投注中獎打賞 |
+| bets_win_reward | 投注中獎打賞   |
 | open_live       | 開播         |
 | close_live      | 關播         |
 | permission      | 權限         |
-| level      | 升級通知         |
+| level           | 升級通知      |
 
 ![arch](./doc/message/live_message.png)
 
@@ -1203,7 +1203,8 @@ entity.type: 文字實體內容
     "name": "s***8",
     "avatar": "other",
     "type": "player"
-  }
+  },
+  "level": 100
 }
 ```
 
