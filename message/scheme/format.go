@@ -231,7 +231,7 @@ func displayByLevelUp(user *models.Member, level int) Display {
 			BackgroundColor: DisplayTitleBackgroundColor,
 		},
 		Message: displayMessage{
-			Text:            "恭喜等級提升到" + strconv.Itoa(level),
+			Text:            "恭喜等级提升到" + strconv.Itoa(level),
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []textEntity{
