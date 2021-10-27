@@ -46,11 +46,16 @@ func displayByUser(user User, message string) Display {
 			Avatar: user.Avatar,
 		},
 		//TODO 會員等級
-		Title: displayText{
-			Text:            member.GeneralMember,
+		Level: displayMessage{
+			Text:            strconv.Itoa(user.Lv),
 			Color:           MESSAGE_COLOR,
 			BackgroundColor: DisplayLevelBackgroundColor,
 		},
+		//Title: displayText{
+		//	Text:            member.GeneralMember,
+		//	Color:           MESSAGE_COLOR,
+		//	BackgroundColor: DisplayLevelBackgroundColor,
+		//},
 		Message: displayMessage{
 			Text:            message,
 			Color:           MESSAGE_COLOR,
@@ -116,11 +121,16 @@ func displayByManage(user User, message string) Display {
 			Avatar: user.Avatar,
 		},
 		//TODO 會員等級
-		Title: displayText{
-			Text:            member.GeneralMember,
+		Level: displayMessage{
+			Text:            strconv.Itoa(user.Lv),
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: DisplayLevelBackgroundColor, //"#38A2DB",
+			BackgroundColor: DisplayLevelBackgroundColor,
 		},
+		//Title: displayText{
+		//	Text:            member.GeneralMember,
+		//	Color:           MESSAGE_COLOR,
+		//	BackgroundColor: DisplayLevelBackgroundColor, //"#38A2DB",
+		//},
 		IsManage: true,
 		Message: displayMessage{
 			Text:            message,
@@ -139,7 +149,6 @@ func displayByStreamer(user User, message string) Display {
 			Color:  MESSAGE_SYSTEM_COLOR,
 			Avatar: user.Avatar,
 		},
-		//TODO 會員等級
 		Title: displayText{
 			Text:            member.Anchor,
 			Color:           MESSAGE_COLOR,

@@ -99,8 +99,8 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 	}
 
 	if u.Name != user.Name || u.Gender != user.Gender || u.Lv != user.Lv {
-			u.Name = user.Name
-			u.Gender = user.Gender
+		u.Name = user.Name
+		u.Gender = user.Gender
 		if ok, err := m.db.UpdateUser(u); err != nil || !ok {
 			log.Error("update user", zap.String("uid", user.Uid), zap.Bool("action", ok), zap.Error(err))
 		}
@@ -361,6 +361,35 @@ func (m *Member) Update(uid, name string, gender int32) error {
 		}
 	}
 	return nil
+}
+
+// 更新會員等級
+// SetLevel
+func (m *Member) SetLevel(uid string, rid int, level int) error {
+	// Update level form DB
+	u, err := m.db.Find(uid)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.ErrNoMember
+		}
+		return err
+	}
+	if u.Lv != level {
+		u.Lv = level
+		if _, err := m.db.UpdateUser(u); err != nil {
+			return err
+		}
+	}
+
+	// Update level form cache
+	member, err := m.GetByRoom(uid, rid)
+	if err != nil {
+		return err
+	}
+
+	member.Lv = level
+
+	return m.c.set(member)
 }
 
 type RedEnvelope struct {

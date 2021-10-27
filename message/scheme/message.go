@@ -198,6 +198,9 @@ type User struct {
 	Avatar string `json:"avatar"`
 
 	Type string `json:"type"`
+
+	// 等級
+	Lv int `json:"lv"`
 }
 
 func NewUser(member models.Member) User {
@@ -207,6 +210,7 @@ func NewUser(member models.Member) User {
 		Name:   member.Name,
 		Type:   ToType(member.Type),
 		Avatar: ToAvatarName(member.Gender),
+		Lv:     member.Lv,
 	}
 }
 

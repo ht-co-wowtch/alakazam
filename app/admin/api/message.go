@@ -252,6 +252,9 @@ func (s *httpServer) levelUp(c *gin.Context) error {
 		return err
 	}
 
+	// 	更新等級資訊
+	s.member.SetLevel(req.Uid, int(req.RoomId), req.Level)
+
 	//升級會員提示
 	aid, err := s.message.SendLevelUpAlert(keys, m, req.Level)
 	if err != nil {
