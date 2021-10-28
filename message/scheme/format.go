@@ -209,6 +209,8 @@ func displayByBetsWin(user User, gameName string) Display {
 
 // 等級提升Display
 func displayByLevelUp(user *models.Member, level int) Display {
+	msg := "恭喜等级提升到" + strconv.Itoa(level)
+
 	return Display{
 		Title: displayText{
 			Text:            member.System,
@@ -216,11 +218,11 @@ func displayByLevelUp(user *models.Member, level int) Display {
 			BackgroundColor: DisplayTitleBackgroundColor,
 		},
 		Message: displayMessage{
-			Text:            "恭喜等级提升到" + strconv.Itoa(level),
+			Text:            msg,
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []textEntity{
-				usernameTextEntity("", 7),
+				usernameTextEntity("", len(msg)),
 			},
 		},
 		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
