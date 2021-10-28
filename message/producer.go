@@ -372,7 +372,7 @@ func (p *Producer) SendLevelUpAlert(keys []string, user *models.Member, level in
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		pushMsg, err := scheme.LevelUpAlertMessage{
 			Message: scheme.NewUser(*user).ToLevelAlert(id),
-			Level: level,
+			Level:   level,
 		}.ToProto()
 
 		if err != nil {
@@ -382,6 +382,28 @@ func (p *Producer) SendLevelUpAlert(keys []string, user *models.Member, level in
 		pushMsg.Keys = keys
 		pushMsg.Mid = user.Id
 		pushMsg.Type = logicpb.PushMsg_PUSH
+		pushMsg.MsgType = models.MESSAGE_TYPE
+		pushMsg.IsRaw = true
+
+		return pushMsg, nil
+	})
+}
+
+// 發送主播等級提升提示
+func (p *Producer) SendAnchorLevelUpAlert(rid []int32, user *models.Member, level int) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		pushMsg, err := scheme.LevelUpAlertMessage{ // TODO
+			Message: scheme.NewUser(*user).ToAnchorLevelAlert(id),
+			Level:   level,
+		}.ToProto()
+
+		if err != nil {
+			return nil, err
+		}
+
+		pushMsg.Mid = user.Id
+		pushMsg.Room = rid
+		pushMsg.Type = logicpb.PushMsg_ROOM
 		pushMsg.MsgType = models.MESSAGE_TYPE
 		pushMsg.IsRaw = true
 

@@ -413,6 +413,7 @@ Message type
 | close_live      | 關播         |
 | permission      | 權限         |
 | level           | 升級通知      |
+| anchor_level    | 主播升級      |
 
 ![arch](./doc/message/live_message.png)
 
@@ -1203,6 +1204,24 @@ entity.type: 文字實體內容
     "name": "s***8",
     "avatar": "other",
     "type": "player"
+  },
+  "level": 100
+}
+```
+
+##### 主播升級通知
+
+```json
+{
+  "id": 28003,
+  "type": "anchor_level",
+  "time": "14:43:45",
+  "timestamp": 1634539425,
+  "user": {
+    "uid": "f33abfce41c745f795262dad34aa9f9b",
+    "name": "s***8",
+    "avatar": "other",
+    "type": "streamer"
   },
   "level": 100
 }

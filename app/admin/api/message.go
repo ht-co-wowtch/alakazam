@@ -255,17 +255,31 @@ func (s *httpServer) levelUp(c *gin.Context) error {
 	// 	更新等級資訊
 	s.member.SetLevel(req.Uid, int(req.RoomId), req.Level)
 
-	//升級會員提示
-	aid, err := s.message.SendLevelUpAlert(keys, m, req.Level)
-	if err != nil {
-		return err
-	}
 
 	//升級會員公告
 	id, err := s.message.SendLevelUp(keys, m, req.Level)
 	if err != nil {
 		return err
 	}
+
+	aid := int64(0)
+	// 升級通知
+	// 主播：對所在房間進行廣播通知
+	// 一般會員：對會員個人進行通知
+	if m.Type == 3 { // 主播
+		aid, err = s.message.SendAnchorLevelUpAlert([]int32{req.RoomId}, m, req.Level)
+		if err != nil {
+			return err
+		}
+	} else {
+		//升級會員提示
+		aid, err = s.message.SendLevelUpAlert(keys, m, req.Level)
+		if err != nil {
+			return err
+		}
+	}
+
+	// TODO 系統通知廣播 主播升級 全房間通知
 
 	c.JSON(http.StatusOK, gin.H{
 		"id":       id,

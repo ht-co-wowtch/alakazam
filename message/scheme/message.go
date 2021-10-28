@@ -33,7 +33,9 @@ const (
 	FOLLOW = "follow"
 
 	// 升級
-	LEVEL_TYPE = "level"
+	LevelType       = "level"
+	// 主播升級
+	AnchorLevelType = "anchor_level"
 )
 
 // 訊息格式
@@ -232,7 +234,14 @@ func (u User) ToLevel(seq int64, user *models.Member, level int) Message {
 // 升級通知
 func (u User) ToLevelAlert(seq int64) Message {
 	b := u.toBase(seq, "")
-	b.Type = LEVEL_TYPE
+	b.Type = LevelType
+	return b
+}
+
+// 主播升級通知
+func (u User) ToAnchorLevelAlert(seq int64) Message {
+	b := u.toBase(seq, "")
+	b.Type = AnchorLevelType
 	return b
 }
 
