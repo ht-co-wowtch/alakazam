@@ -32,9 +32,6 @@ const (
 
 	// Display Title 背景色
 	DisplayTitleBackgroundColor = "#F85656"
-
-	// Display 會員等級 背景色
-	DisplayLevelBackgroundColor = "#7FC355"
 )
 
 // 用戶Display
@@ -45,17 +42,11 @@ func displayByUser(user User, message string) Display {
 			Color:  USER_COLOR,
 			Avatar: user.Avatar,
 		},
-		//TODO 會員等級
 		Level: displayMessage{
 			Text:            strconv.Itoa(user.Lv),
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: DisplayLevelBackgroundColor,
+			BackgroundColor: levelBackgroundColor(user.Lv),
 		},
-		//Title: displayText{
-		//	Text:            member.GeneralMember,
-		//	Color:           MESSAGE_COLOR,
-		//	BackgroundColor: DisplayLevelBackgroundColor,
-		//},
 		Message: displayMessage{
 			Text:            message,
 			Color:           MESSAGE_COLOR,
@@ -120,17 +111,11 @@ func displayByManage(user User, message string) Display {
 			Color:  USER_COLOR,
 			Avatar: user.Avatar,
 		},
-		//TODO 會員等級
 		Level: displayMessage{
 			Text:            strconv.Itoa(user.Lv),
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: DisplayLevelBackgroundColor,
+			BackgroundColor: levelBackgroundColor(user.Lv),
 		},
-		//Title: displayText{
-		//	Text:            member.GeneralMember,
-		//	Color:           MESSAGE_COLOR,
-		//	BackgroundColor: DisplayLevelBackgroundColor, //"#38A2DB",
-		//},
 		IsManage: true,
 		Message: displayMessage{
 			Text:            message,
@@ -235,7 +220,7 @@ func displayByLevelUp(user *models.Member, level int) Display {
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []textEntity{
-				usernameTextEntity(user.Name, 4),
+				usernameTextEntity(user.Name, 8),
 			},
 		},
 		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
@@ -411,7 +396,7 @@ func displayByConnect(level int32, isManage bool, username string) Display {
 		Level: displayText{
 			Text:            strconv.Itoa(int(level)), // TODO 會員等級
 			Color:           MESSAGE_COLOR,
-			BackgroundColor: DisplayLevelBackgroundColor,
+			BackgroundColor: levelBackgroundColor(int(level)),
 		},
 		IsManage: isManage,
 		Message: displayMessage{
