@@ -220,7 +220,7 @@ func displayByLevelUp(user *models.Member, level int) Display {
 			Color:           MESSAGE_SYSTEM_COLOR,
 			BackgroundColor: NONE_COLOR,
 			Entity: []textEntity{
-				usernameTextEntity(user.Name, 7),
+				usernameTextEntity("", 7),
 			},
 		},
 		BackgroundColor: MESSAGE_BACKGROUND_COLOR,
