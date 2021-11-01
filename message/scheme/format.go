@@ -44,7 +44,7 @@ func displayByUser(user User, message string) Display {
 		},
 		Level: displayMessage{
 			Text:            strconv.Itoa(user.Lv),
-			Color:           MESSAGE_COLOR,
+			Color:           levelTextColor(user.Lv),
 			BackgroundColor: levelBackgroundColor(user.Lv),
 		},
 		Message: displayMessage{
@@ -113,7 +113,7 @@ func displayByManage(user User, message string) Display {
 		},
 		Level: displayMessage{
 			Text:            strconv.Itoa(user.Lv),
-			Color:           MESSAGE_COLOR,
+			Color:           levelTextColor(user.Lv),
 			BackgroundColor: levelBackgroundColor(user.Lv),
 		},
 		IsManage: true,
@@ -396,7 +396,7 @@ func displayByConnect(level int32, isManage bool, username string) Display {
 	return Display{
 		Level: displayText{
 			Text:            strconv.Itoa(int(level)), // TODO 會員等級
-			Color:           MESSAGE_COLOR,
+			Color:           levelTextColor(int(level)),
 			BackgroundColor: levelBackgroundColor(int(level)),
 		},
 		IsManage: isManage,

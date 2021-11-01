@@ -34,8 +34,12 @@ const (
 
 	// 升級
 	LevelType       = "level"
+
 	// 主播升級
 	AnchorLevelType = "anchor_level"
+
+	// 會員進場
+	HintType = "hint"
 )
 
 // 訊息格式
@@ -345,7 +349,7 @@ func NewConnect(seq int64, level int32, isManage bool, username string) Message 
 	now := time.Now()
 	return Message{
 		Id:        seq,
-		Type:      "hint",
+		Type:      HintType,
 		Display:   displayByConnect(level, isManage, username),
 		Time:      now.Format("15:04:05"),
 		Timestamp: now.Unix(),

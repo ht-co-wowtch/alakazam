@@ -9,25 +9,34 @@ import (
 const (
 	// Display 會員等級 背景色
 	// Lv 1~10
-	DisplayLevel1BackgroundColor = "#4BB679"
+	DisplayLevel1BackgroundColor = "#43636B"
 	// Lv 11~20
-	DisplayLevel2BackgroundColor = "#009A57"
+	DisplayLevel2BackgroundColor = "#255584"
 	// Lv 21~30
-	DisplayLevel3BackgroundColor = "#0099E4"
+	DisplayLevel3BackgroundColor = "#027EAF"
 	// Lv 31~40
-	DisplayLevel4BackgroundColor = "#006EB9"
+	DisplayLevel4BackgroundColor = "#197C62"
 	// Lv 41~50
-	DisplayLevel5BackgroundColor = "#A5A131"
+	DisplayLevel5BackgroundColor = "#56823F"
 	// Lv 51~60
-	DisplayLevel6BackgroundColor = "#E1A709"
+	DisplayLevel6BackgroundColor = "#87802E"
 	// Lv 61~70
-	DisplayLevel7BackgroundColor = "#F15D22"
+	DisplayLevel7BackgroundColor = "#CC8615"
 	// Lv 71~80
-	DisplayLevel8BackgroundColor = "#DB4B82"
+	DisplayLevel8BackgroundColor = "#F15D22"
 	// Lv 81~90
-	DisplayLevel9BackgroundColor = "#FF3569"
+	DisplayLevel9BackgroundColor = "#FF52B9"
 	// Lv 91~
-	DisplayLevel10BackgroundColor = "#A30015"
+	DisplayLevel10BackgroundColor = "#EF225D"
+
+	// Lv 100
+	DisplayLevel11BackgroundColor = "#9D1E0E"
+
+	// 等級文字顏色
+	DisplayLevelTextColor = "#FFFFFF"
+
+	// 等級100文字顏色
+	DisplayLevelTopTextColor = "#FFFF00"
 )
 
 type LevelUpAlertMessage struct {
@@ -48,6 +57,7 @@ func (m LevelUpAlertMessage) ToProto() (*logicpb.PushMsg, error) {
 	}, nil
 }
 
+// 等級區塊背景色
 func levelBackgroundColor(lv int) string {
 	color := DisplayLevel1BackgroundColor
 	switch level := lv; {
@@ -69,8 +79,21 @@ func levelBackgroundColor(lv int) string {
 		color = DisplayLevel8BackgroundColor
 	case level < 91:
 		color = DisplayLevel9BackgroundColor
-	case level >= 91:
+	case level < 100:
 		color = DisplayLevel10BackgroundColor
+	case level >= 100:
+		color = DisplayLevel11BackgroundColor
+	}
+
+	return color
+}
+
+// 等級文字顏色
+func levelTextColor(lv int) string {
+	color := DisplayLevelTextColor
+
+	if lv >= 100 {
+		color = DisplayLevelTopTextColor
 	}
 
 	return color
