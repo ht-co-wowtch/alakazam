@@ -242,7 +242,7 @@ ws.send(res.buffer)
 
 接收到回覆
 
-```go
+```js
 ws.onmessage = function (evt) {
 var data = evt.data
 var dataView = new DataView(data, 0)
@@ -1244,7 +1244,7 @@ Operation = `8`=> 回覆更換房間結果
     "is_message": false,
     "is_red_envelope": false,
     "is_bets": false,
-    "is_mag":
+    "is_mag": false
   },
   "permission_message": {
     "is_message": "聊天室目前禁言状态，无法发言",
@@ -1309,7 +1309,7 @@ Operation = `9`=> 取消置頂訊息
 
 進入房間成功後websocket需要每分鐘做一次心跳，讓server確保websocket健康狀況，請利用送一個body為空的[Protocol](#protocol-body)，以下是一個簡單的js範例，至於為什麼這樣寫[請看](#buffer)
 
-```go
+```js
 var headerBuf = new ArrayBuffer(rawHeaderLen);
 var headerView = new DataView(headerBuf, 0);
 headerView.setInt32(packetOffset, rawHeaderLen);
@@ -1351,12 +1351,12 @@ Operation = `10`=> 付費房月卡效期驗證。
 
 根據需求中要求週期定期發送月卡效期驗證，確保會員月卡尚載效期內。請利用送一個herder Operation值為`10`，body為空的[Protocol](#protocol-body)，以下是一個簡單的js範例。
 
-```go
+```js
 var headerBuf = new ArrayBuffer(rawHeaderLen);
 var headerView = new DataView(headerBuf, 0);
 headerView.setInt32(packetOffset, rawHeaderLen);
 headerView.setInt16(headerOffset, rawHeaderLen);
-headerView.setInt32(opOffset, `10`);
+headerView.setInt32(opOffset, 10);
 ```
 
 ### Paid Room Expiry Reply
@@ -1367,8 +1367,8 @@ Boyd內容如下
 
 ```json
 {
-  expire: "2021-09-26T08:47:01+08:00",
-  is_allow: true
+  "expire": "2021-09-26T08:47:01+08:00",
+  "is_allow": true
 }
 ```
 
@@ -1383,14 +1383,14 @@ Operation = `12`=> 付費房 - 鑽石付費。
 
 根據需求中要求週期定期發送付費房鑽石付費請求。請利用送一個herder Operation值為`12`，body為空的[Protocol](#protocol-body)，以下是一個簡單的js範例。
 
- `PS. 一分鐘內只會採用針對第一筆付費請求進行扣款。`
+`PS. 一分鐘內只會採用針對第一筆付費請求進行扣款。`
 
-```go
+```js
 var headerBuf = new ArrayBuffer(rawHeaderLen);
 var headerView = new DataView(headerBuf, 0);
 headerView.setInt32(packetOffset, rawHeaderLen);
 headerView.setInt16(headerOffset, rawHeaderLen);
-headerView.setInt32(opOffset, `12`);
+headerView.setInt32(opOffset, 12);
 ```
 
 ### Paid Room Diamond Reply
@@ -1403,9 +1403,9 @@ Boyd內容如下
 
 ```json
 {
-  is_allow: true,
-  diamond: 990.11,
-  paid_time: "2021-09-08T10:06:09+08:00"
+   "is_allow": true,
+   "diamond": 990.11,
+   "paid_time": "2021-09-08T10:06:09+08:00"
 }
 ```
 
@@ -1415,8 +1415,8 @@ Boyd內容如下
 
 ```json
 {
-  is_allow: false,
-  error: "余额不足"
+  "is_allow": false,
+  "error": "余额不足"
 }
 ```
 
