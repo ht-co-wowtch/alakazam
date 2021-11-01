@@ -841,9 +841,10 @@ entity.type: 文字實體內容
     "user": null,
     "title": null,
     "level": {
-      "text": "会员",
-      "color": "#FFFFFF",
-      "background_color": "#7FC355"
+       "level": 100,
+       "text": "会员", 
+       "color": "#FFFFFF", 
+       "background_color": "#7FC355"
     },
     "message": {
       "text": "nickname_1进入聊天室",

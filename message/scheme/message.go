@@ -135,6 +135,20 @@ type displayUser struct {
 	Avatar string `json:"avatar"`
 }
 
+type hintDisplayText struct {
+	// 等級
+	Level int `json:"level"`
+
+	// 文字
+	Text string `json:"text"`
+
+	// 字體顏色(預設)
+	Color string `json:"color"`
+
+	// 字體背景
+	BackgroundColor string `json:"background_color"`
+}
+
 // 文字資料
 type displayText struct {
 	// 文字

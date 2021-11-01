@@ -394,11 +394,17 @@ func DisplayByUnBlock(username string, expired int, set bool) Display {
 // 進場Display
 func displayByConnect(level int32, isManage bool, username string) Display {
 	return Display{
-		Level: displayText{
+		Level: hintDisplayText{
+			Level: int(level),
 			Text:            strconv.Itoa(int(level)), // TODO 會員等級
 			Color:           levelTextColor(int(level)),
 			BackgroundColor: levelBackgroundColor(int(level)),
 		},
+		//Level: displayText{
+		//	Text:            strconv.Itoa(int(level)), // TODO 會員等級
+		//	Color:           levelTextColor(int(level)),
+		//	BackgroundColor: levelBackgroundColor(int(level)),
+		//},
 		IsManage: isManage,
 		Message: displayMessage{
 			Text:            username + "进入聊天室",
