@@ -9,7 +9,6 @@ stages:
   - deploy
 
 variables:
-  APP_NAME: alakazam
   DOCKER_HOST: tcp://localhost:2375
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
@@ -20,6 +19,7 @@ variables:
   REGISTRY_ADMIN_IMAGE: $CI_REGISTRY_IMAGE/admin
   REGISTRY_MESSAGE_IMAGE: $CI_REGISTRY_IMAGE/message
   REGISTRY_SEQ_IMAGE: $CI_REGISTRY_IMAGE/seq
+  CI_COMMIT_TAG: 1.98.1
 
 before_script:
   - export IMAGE=$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
@@ -31,10 +31,10 @@ build:
   script:
     - docker build --build-arg "GOPROXY=$GOPROXY" --pull -t $REGISTRY_IMAGE .
     - docker push $REGISTRY_IMAGE
-  only:
-    - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
-  except:
-    - branches
+  # only:
+  #   - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
+  # except:
+  #   - branches
 
 logic:
   stage: build_service
@@ -42,10 +42,10 @@ logic:
     - cd docker/logic
     - docker build --build-arg image=$REGISTRY_IMAGE -t $REGISTRY_LOGIC_IMAGE:${CI_COMMIT_TAG#v} .
     - docker push $REGISTRY_LOGIC_IMAGE:${CI_COMMIT_TAG#v}
-  only:
-    - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
-  except:
-    - branches
+  # only:
+  #   - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
+  # except:
+  #   - branches
 
 comet:
   stage: build_service
@@ -53,10 +53,10 @@ comet:
     - cd docker/comet
     - docker build --build-arg image=$REGISTRY_IMAGE -t $REGISTRY_COMET_IMAGE:${CI_COMMIT_TAG#v} .
     - docker push $REGISTRY_COMET_IMAGE:${CI_COMMIT_TAG#v}
-  only:
-    - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
-  except:
-    - branches
+  # only:
+  #   - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
+  # except:
+  #   - branches
 
 job:
   stage: build_service
@@ -64,10 +64,10 @@ job:
     - cd docker/job
     - docker build --build-arg image=$REGISTRY_IMAGE -t $REGISTRY_JOB_IMAGE:${CI_COMMIT_TAG#v} .
     - docker push $REGISTRY_JOB_IMAGE:${CI_COMMIT_TAG#v}
-  only:
-    - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
-  except:
-    - branches
+  # only:
+  #   - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
+  # except:
+  #   - branches
 
 admin:
   stage: build_service
@@ -75,10 +75,10 @@ admin:
     - cd docker/admin
     - docker build --build-arg image=$REGISTRY_IMAGE -t $REGISTRY_ADMIN_IMAGE:${CI_COMMIT_TAG#v} .
     - docker push $REGISTRY_ADMIN_IMAGE:${CI_COMMIT_TAG#v}
-  only:
-    - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
-  except:
-    - branches
+  # only:
+  #   - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
+  # except:
+  #   - branches
 
 message:
   stage: build_service
@@ -86,10 +86,10 @@ message:
     - cd docker/message
     - docker build --build-arg image=$REGISTRY_IMAGE -t $REGISTRY_MESSAGE_IMAGE:${CI_COMMIT_TAG#v} .
     - docker push $REGISTRY_MESSAGE_IMAGE:${CI_COMMIT_TAG#v}
-  only:
-    - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
-  except:
-    - branches
+  # only:
+  #   - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
+  # except:
+  #   - branches
 
 seq:
   stage: build_service
@@ -97,10 +97,10 @@ seq:
     - cd docker/seq
     - docker build --build-arg image=$REGISTRY_IMAGE -t $REGISTRY_SEQ_IMAGE:${CI_COMMIT_TAG#v} .
     - docker push $REGISTRY_SEQ_IMAGE:${CI_COMMIT_TAG#v}
-  only:
-    - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
-  except:
-    - branches
+  # only:
+  #   - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
+  # except:
+  #   - branches
 
 deploy_develop:
   stage: deploy
@@ -141,7 +141,7 @@ deploy_develop:
     - git diff-index --quiet HEAD || git commit -m 'GitLab CI/CD - image update'
     - git pull --rebase origin main
     - git push origin main
-  only:
-    - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
-  except:
-    - branches
+  # only:
+  #   - /^v\d+\.\d+\.\d+(-[\w-]+)?$/
+  # except:
+  #   - branches
