@@ -30,7 +30,7 @@ services:
 
   #### Rapidash 認證中心 ####
   rapidash:
-    image: registry.gitlab.com/jetfueltw/live/rapidash:${RAPIDASH_VERSION}
+    image: registry.gitlab.com/ht-co/wowtch/live/rapidash:${RAPIDASH_VERSION}
     environment:
       - HTTP_SERVE_ADDR=:80
       - LOG_LEVEL=info
@@ -46,7 +46,7 @@ services:
 
   #### Ponyta 錢包 ####
   ponyta:
-    image: registry.gitlab.com/jetfueltw/live/ponyta:${PONYTA_VERSION}
+    image: registry.gitlab.com/ht-co/wowtch/live/ponyta:${PONYTA_VERSION}
     environment:
       - HTTP_SERVE_ADDR=:80
       - LOG_LEVEL=info
@@ -72,7 +72,7 @@ services:
 
   #### Nidoran 版給聊天室的接口 ####
   nidoran:
-    image: registry.gitlab.com/jetfueltw/live/nidoran:${NIDORAN_VERSION}
+    image: registry.gitlab.com/ht-co/wowtch/live/nidoran:${NIDORAN_VERSION}
     environment:
       - NIDORAN_DATABASE_DATABASE=${NIDORAN_DATABASE_DATABASE}
       - NIDORAN_DATABASE_HOST=${NIDORAN_DATABASE_HOST}
@@ -94,7 +94,7 @@ services:
   # 3102 port: web socket
   # 3031 port: metrics
   alakazam:
-    image: registry.gitlab.com/jetfueltw/cpw/alakazam/comet:${ALAKAZAM_VERSION}
+    image: registry.gitlab.com/ht-co/wowtch/live/alakazam/comet:${ALAKAZAM_VERSION}
     environment:
       - ALAKAZAM_GRPC_LOGIC_ADDR=alakazam_logic:3119
     ports:
@@ -111,7 +111,7 @@ services:
   # 3111 port: http
   # 3030 port: metrics
   alakazam_logic:
-    image: registry.gitlab.com/jetfueltw/cpw/alakazam/logic:${ALAKAZAM_VERSION}
+    image: registry.gitlab.com/ht-co/wowtch/live/alakazam/logic:${ALAKAZAM_VERSION}
     environment:
       - ALAKAZAM_DATABASE_HOST=${ALAKAZAM_DATABASE_HOST}
       - ALAKAZAM_DATABASE_PORT=${ALAKAZAM_DATABASE_PORT}
@@ -140,7 +140,7 @@ services:
   #### Alakazam 聊天室 Job (kafka 處理) ####
   # 3032 port: metrics
   alakazam_job:
-    image: registry.gitlab.com/jetfueltw/cpw/alakazam/job:${ALAKAZAM_VERSION}
+    image: registry.gitlab.com/ht-co/wowtch/live/alakazam/job:${ALAKAZAM_VERSION}
     environment:
       - ALAKAZAM_KAFKA_BROKERS=${ALAKAZAM_KAFKA_BROKERS}
       - ALAKAZAM_GRPC_COMET_ADDR=alakazam:3109
@@ -156,7 +156,7 @@ services:
   # 3112 port: http
   # 3035 port: metrics
   alakazam_admin:
-    image: registry.gitlab.com/jetfueltw/cpw/alakazam/admin:${ALAKAZAM_VERSION}
+    image: registry.gitlab.com/ht-co/wowtch/live/alakazam/admin:${ALAKAZAM_VERSION}
     environment:
       - ALAKAZAM_DATABASE_HOST=${ALAKAZAM_DATABASE_HOST}
       - ALAKAZAM_DATABASE_PORT=${ALAKAZAM_DATABASE_PORT}
@@ -181,7 +181,7 @@ services:
   #### Alakazam 聊天室 Seq (message id 產生器) ####
   # 3034 port: metrics
   alakazam_seq:
-    image: registry.gitlab.com/jetfueltw/cpw/alakazam/seq:${ALAKAZAM_VERSION}
+    image: registry.gitlab.com/ht-co/wowtch/live/alakazam/seq:${ALAKAZAM_VERSION}
     environment:
       - ALAKAZAM_DATABASE_HOST=${ALAKAZAM_DATABASE_HOST}
       - ALAKAZAM_DATABASE_PORT=${ALAKAZAM_DATABASE_PORT}
@@ -198,7 +198,7 @@ services:
   #### Alakazam 聊天室 Message (message 持久化處理) ####
   # 3033 port: metrics
   alakazam_message:
-    image: registry.gitlab.com/jetfueltw/cpw/alakazam/message:${ALAKAZAM_VERSION}
+    image: registry.gitlab.com/ht-co/wowtch/live/alakazam/message:${ALAKAZAM_VERSION}
     environment:
       - ALAKAZAM_DATABASE_HOST=${ALAKAZAM_DATABASE_HOST}
       - ALAKAZAM_DATABASE_PORT=${ALAKAZAM_DATABASE_PORT}
@@ -270,7 +270,7 @@ services:
 
   #### Migration platform ####
   mig-platform:
-    image: registry.gitlab.com/jetfueltw/cpw/mig-platform:${MIG_PLATFORM_VERSION}
+    image: registry.gitlab.com/ht-co/wowtch/live/mig-platform:${MIG_PLATFORM_VERSION}
     environment:
       - LOCAL_HOST=${MIG_PLATFORM_DB_HOST}
       - LOCAL_PORT=${MIG_PLATFORM_DB_PORT}
@@ -284,7 +284,7 @@ services:
 
   #### Migration Alakazam ####
   mig-alakazam:
-    image: registry.gitlab.com/jetfueltw/cpw/mig-alakazam:${MIG_ALAKAZAM_VERSION}
+    image: registry.gitlab.com/ht-co/wowtch/live/mig-alakazam:${MIG_ALAKAZAM_VERSION}
     environment:
       - LOCAL_HOST=${MIG_ALAKAZAM_DB_HOST}
       - LOCAL_PORT=${MIG_ALAKAZAM_DB_PORT}
@@ -316,7 +316,7 @@ services:
       - "3000:3000"
 
   burrow:
-    image: registry.gitlab.com/jetfueltw/cpw/kafka-lag/burrow
+    image: registry.gitlab.com/ht-co/wowtch/live/kafka-lag/burrow
     environment:
       - BURROW_ZOOKEEPER_SERVERS=zookeeper:2181
       - BURROW_CLUSTER_LOCAL_SERVERS=kafka:9092
@@ -327,7 +327,7 @@ services:
       - "3400:8080"
 
   burrow_prometheus:
-    image: registry.gitlab.com/jetfueltw/cpw/kafka-lag/prometheus:${BURROW_PROMETHEUS_VERSION}
+    image: registry.gitlab.com/ht-co/wowtch/live/kafka-lag/prometheus:${BURROW_PROMETHEUS_VERSION}
     environment:
       - BURROW_PROMETHEUS_ADDR=${PROMETHEUS_ADDR}
       - BURROW_PROMETHEUS_BURROW_ADDR=${BURROW_ADDR}
