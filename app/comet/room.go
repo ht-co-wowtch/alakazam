@@ -9,6 +9,7 @@ import (
 	// "runtime/pprof"
 )
 
+// Room
 // 房間結構，紀錄Channel採用雙向鏈結串列結構，房間內有A,B,C 三人結構如下，此三人都是Channel
 // 			 	C <-> B <-> A         <==== 雙向鏈結串列
 //  (next 指向)  ↑
@@ -33,6 +34,7 @@ type Room struct {
 	AllOnline int32
 }
 
+// NewRoom
 // new 房間結構
 func NewRoom(id int32) (r *Room) {
 	r = new(Room)
@@ -43,6 +45,7 @@ func NewRoom(id int32) (r *Room) {
 	return
 }
 
+// Put
 // 新增某個人進到該房間，假設房間現在沒有人
 // 依序有A,B,C三個人要加入
 // =======================================================================
@@ -88,6 +91,7 @@ func (r *Room) Put(ch *Channel) (err error) {
 	return
 }
 
+// Del
 // 某房間移除某個人，房間內有A,B,C
 // 			 	C <-> B <-> A
 //  (next 指向)  ↑
@@ -127,6 +131,7 @@ func (r *Room) Del(ch *Channel) bool {
 	return r.drop
 }
 
+// Push
 // 單一房間所有人的訊息推送
 func (r *Room) Push(p *pb.Proto) {
 	r.rLock.RLock()
@@ -137,6 +142,7 @@ func (r *Room) Push(p *pb.Proto) {
 	r.rLock.RUnlock()
 }
 
+// Close
 // 關閉房間內所有的Client連線
 func (r *Room) Close() {
 	r.rLock.RLock()
@@ -147,6 +153,7 @@ func (r *Room) Close() {
 	r.rLock.RUnlock()
 }
 
+// OnlineNum
 // 各房間總人數(不一定是真實人數)
 func (r *Room) OnlineNum() int32 {
 	if r.AllOnline > 0 {

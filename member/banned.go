@@ -9,7 +9,6 @@ import (
 )
 
 func (m *Member) SetBanned(uid string, rid, sec int, isSystem bool) error {
-
 	expire := time.Duration(sec) * time.Second
 	if sec > 0 {
 		if err := m.c.setBanned(uid, rid, expire); err != nil {

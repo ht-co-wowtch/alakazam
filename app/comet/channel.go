@@ -55,7 +55,7 @@ type Channel struct {
 	mutex sync.RWMutex
 }
 
-// new a channel.
+// NewChannel
 func NewChannel(protoSize, revBuffer int) *Channel {
 	c := new(Channel)
 	c.protoRing.Init(protoSize)

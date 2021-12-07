@@ -31,7 +31,8 @@ func newLogicClient(c *grpc.Conf) pb.LogicClient {
 	return pb.NewLogicClient(conn)
 }
 
-// comet server
+// Server
+// comet server struct
 type Server struct {
 	c *conf.Config
 
@@ -55,7 +56,6 @@ type Server struct {
 	online map[int32]int32
 }
 
-// new Server
 func NewServer(c *conf.Config) *Server {
 	s := &Server{
 		c:     c,

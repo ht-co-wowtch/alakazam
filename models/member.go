@@ -178,6 +178,7 @@ func (s *Store) RoomPermission(id int64, rid int) (Permission, error) {
 	return p, nil
 }
 
+// SetRoomPermission
 // 設定對房間權限
 func (s *Store) SetRoomPermission(member Member) error {
 	data := &member.Permission
@@ -203,6 +204,7 @@ func (s *Store) SetRoomPermission(member Member) error {
 	return err
 }
 
+// GetMembers
 // 批次取得會員資料 By id
 func (s *Store) GetMembers(ids []int64) ([]Member, error) {
 	m := make([]Member, 0)

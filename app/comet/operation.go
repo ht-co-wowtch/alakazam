@@ -14,6 +14,7 @@ import (
 	// _ "runtime/pprof"
 )
 
+// Connect
 // 告知logic service有人想要進入某個房間
 func (s *Server) Connect(c context.Context, p *cometpb.Proto) (*logicpb.ConnectReply, error) {
 	return s.logic.Connect(c, &logicpb.ConnectReq{
@@ -22,6 +23,7 @@ func (s *Server) Connect(c context.Context, p *cometpb.Proto) (*logicpb.ConnectR
 	})
 }
 
+// Disconnect
 // client連線中斷，告知logic service需清理此人的連線資料
 func (s *Server) Disconnect(c context.Context, uid, key string) error {
 	_, err := s.logic.Disconnect(context.Background(), &logicpb.DisconnectReq{
@@ -32,6 +34,7 @@ func (s *Server) Disconnect(c context.Context, uid, key string) error {
 	return err
 }
 
+// Heartbeat
 // 告知logic service要刷新某人的在線狀態(session 過期時間)
 func (s *Server) Heartbeat(ctx context.Context, ch *Channel) error {
 	_, err := s.logic.Heartbeat(ctx, &logicpb.HeartbeatReq{
@@ -44,9 +47,9 @@ func (s *Server) Heartbeat(ctx context.Context, ch *Channel) error {
 	return err
 }
 
+// RenewOnline
 // 告知logic service現在房間的在線人數
 func (s *Server) RenewOnline(ctx context.Context, serverID string, roomCount map[int32]int32) (allRoom map[int32]int32, err error) {
-
 	reply, err := s.logic.RenewOnline(ctx, &logicpb.OnlineReq{
 		Server:    s.name,
 		RoomCount: roomCount,
@@ -59,9 +62,9 @@ func (s *Server) RenewOnline(ctx context.Context, serverID string, roomCount map
 	return reply.AllRoomCount, nil
 }
 
+// ConnectSuccessReply
 // 進入某個房間成功回應
 func (s *Server) ConnectSuccessReply(c context.Context, rid int32, user *logicpb.User, connect *logicpb.Connect) (*logicpb.PingReply, error) {
-
 	return s.logic.ConnectSuccessReply(c, &logicpb.ConnectSuccessReq{
 		RoomId: rid,
 
@@ -75,6 +78,7 @@ type changeRoom struct {
 	RoomId int32 `json:"room_id"`
 }
 
+// Operate
 // 處理Proto相關邏輯
 func (s *Server) Operate(ctx context.Context, p *cometpb.Proto, ch *Channel, b *Bucket) error {
 	log.Infof("Operate")

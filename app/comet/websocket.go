@@ -25,6 +25,7 @@ const (
 	maxInt = 1<<31 - 1
 )
 
+// InitWebsocket
 // 建立websocket service
 // 開始監聽Websocket, ZDbg(dbConf)
 func InitWebsocket(server *Server, host string, accept int) (err error) {
