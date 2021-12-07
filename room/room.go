@@ -70,6 +70,7 @@ type Limit struct {
 	Dml int `json:"dml"`
 }
 
+// Create
 // 新增房間
 func (r *room) Create(status Status) (int, error) {
 	model := r.newRoomModel(status)
@@ -81,6 +82,7 @@ func (r *room) Create(status Status) (int, error) {
 	return model.Id, r.c.set(model)
 }
 
+// Update
 // 更新房間
 func (r *room) Update(id int, status Status) error {
 	model := r.newRoomModel(status)
@@ -112,6 +114,7 @@ func (r *room) newRoomModel(status Status) models.Room {
 	}
 }
 
+// Delete
 // 刪除房間
 func (r *room) Delete(id int) error {
 	room, err := r.Get(id)
@@ -136,6 +139,7 @@ func (r *room) Delete(id int) error {
 	return nil
 }
 
+// Get
 // 取得房間資料
 func (r *room) Get(id int) (models.Room, error) {
 
@@ -150,6 +154,7 @@ func (r *room) Get(id int) (models.Room, error) {
 	return room, nil
 }
 
+// GetTopMessage
 // 取得置頂/公告訊息 By msg_id & type id
 func (r *room) GetTopMessage(msgId int64, t int) ([]int32, models.Message, error) {
 	roomTopMsg, err := r.db.FindRoomTopMessage(msgId) // 從db中取得訊息 by msg_id
@@ -176,6 +181,7 @@ func (r *room) GetTopMessage(msgId int64, t int) ([]int32, models.Message, error
 	}, nil
 }
 
+// AddTopMessage
 // 新增置頂/公告訊息
 func (r *room) AddTopMessage(rids []int32, seq int64, msg string, ts []int) error {
 	var roomTopMessage scheme.Message
@@ -221,6 +227,7 @@ func (r *room) AddTopMessage(rids []int32, seq int64, msg string, ts []int) erro
 	return nil
 }
 
+// DeleteTopMessage
 // 刪除置頂/公告訊息
 func (r *room) DeleteTopMessage(rids []int32, msgId int64, t int) error {
 	err := r.db.DeleteRoomTopMessage(rids, msgId, t)
@@ -238,6 +245,7 @@ func (r *room) DeleteTopMessage(rids []int32, msgId int64, t int) error {
 	return r.c.deleteChatBulletinMessage(rids) //從cache中刪除公告訊息
 }
 
+// Online
 // 從快取中取得所有房間在線人數
 func (r *room) Online() (map[int32]int32, error) {
 	//底下的hostname會用於快取的key,與comet/server.go - NewServer - s.name = "hostname"

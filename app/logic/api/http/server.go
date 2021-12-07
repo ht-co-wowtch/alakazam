@@ -87,13 +87,12 @@ func healthz(c *gin.Context) {
 }
 
 func handler(e *gin.Engine, s httpServer) {
-	// 禁言
-	e.POST("/banned/:uid/room/:id", s.authUid, ErrHandler(s.setBanned))
-	e.DELETE("/banned/:uid/room/:id", s.authUid, ErrHandler(s.removeBanned))
+	e.POST("/banned/:uid/room/:id", s.authUid, ErrHandler(s.setBanned)) // 禁言
+	e.DELETE("/banned/:uid/room/:id", s.authUid, ErrHandler(s.removeBanned)) // 解除禁言
 
-	e.GET("/room/:id/manage", ErrHandler(s.manageList))
-	e.GET("/room/:id/blockade", ErrHandler(s.blockadeList))
-	e.GET("/room/:id/user/:uid", ErrHandler(s.user))
+	e.GET("/room/:id/manage", ErrHandler(s.manageList)) // 房管名單
+	e.GET("/room/:id/blockade", ErrHandler(s.blockadeList)) // 封鎖名單
+	e.GET("/room/:id/user/:uid", ErrHandler(s.user)) // 用戶資料
 
 	e.POST("/push/room", s.authUid, ErrHandler(s.pushRoom))
 	e.POST("/push/key", s.authUid, ErrHandler(s.pushKey))

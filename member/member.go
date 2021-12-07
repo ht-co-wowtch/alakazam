@@ -123,12 +123,14 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 	return u, key, nil
 }
 
+// Logout
 // 登出聊天室
 func (m *Member) Logout(uid, key string) (bool, error) {
 	// 從快取中刪除聊天室連線紀錄
 	return m.c.logout(uid, key)
 }
 
+// ChangeRoom
 // 切換聊天室房間
 func (m *Member) ChangeRoom(uid, key string, rid int) error {
 	return m.c.setWs(uid, key, rid)
@@ -150,6 +152,7 @@ func (m *Member) SetManage(uid string, rid int, set bool) error {
 	return m.c.set(member)
 }
 
+// Kick
 // 刪除會員所有房間快取
 func (m *Member) Kick(uid string) ([]string, error) {
 	keys, err := m.c.getKeys(uid)
@@ -224,6 +227,7 @@ func (m *Member) Get(uid string) (*models.Member, error) {
 	return member, nil
 }
 
+// GetByRoom
 // 取得會員在房間中資訊
 func (m *Member) GetByRoom(uid string, rid int) (*models.Member, error) {
 	u, err := m.c.getByRoom(uid, rid)
@@ -252,6 +256,7 @@ func (m *Member) GetByRoom(uid string, rid int) (*models.Member, error) {
 	return u, err
 }
 
+// GetStatus
 // 取得會員狀態
 func (m *Member) GetStatus(uid string, rid int) (*models.Member, error) {
 	u, err := m.GetByRoom(uid, rid)
@@ -268,6 +273,7 @@ func (m *Member) GetStatus(uid string, rid int) (*models.Member, error) {
 	return u, nil
 }
 
+// GetUserName
 // 取得會員名稱
 func (m *Member) GetUserName(uid string) (string, error) {
 	members, err := m.GetUserNames([]string{uid})

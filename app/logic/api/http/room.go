@@ -51,6 +51,7 @@ func (s *httpServer) setBanned(c *gin.Context) error {
 	return nil
 }*/
 
+// 禁言
 // 透過聊天室Admin去設定禁言
 func (s *httpServer) setBanned(c *gin.Context) error {
 	// 會收到前端傳入的參數有
@@ -153,6 +154,7 @@ func (s *httpServer) isManage(rid int, uid string) error {
 	return nil
 }
 
+// 取得用戶資料
 func (s *httpServer) user(c *gin.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -185,6 +187,7 @@ func (s *httpServer) user(c *gin.Context) error {
 	return nil
 }
 
+// 房管名單
 func (s *httpServer) manageList(c *gin.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -197,6 +200,7 @@ func (s *httpServer) manageList(c *gin.Context) error {
 	return nil
 }
 
+// 封鎖名單
 func (s *httpServer) blockadeList(c *gin.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 

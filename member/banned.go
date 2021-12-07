@@ -134,7 +134,8 @@ func (m *Member) RemoveBanned(uid string, rid int) error {
 	return m.c.set(u)
 }
 
-//  對全站解除禁言
+// RemoveBannedAll
+// 對全站解除禁言
 func (m *Member) RemoveBannedAll(uid string) error {
 	var (
 		err    error

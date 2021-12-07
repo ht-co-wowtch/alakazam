@@ -132,6 +132,7 @@ func (s *server) Heartbeat(ctx context.Context, req *pb.HeartbeatReq) (*pb.Heart
 	return &pb.HeartbeatReply{}, nil
 }
 
+// RenewOnline
 // 更新每個房間線上總人數資料
 func (s *server) RenewOnline(ctx context.Context, req *pb.OnlineReq) (*pb.OnlineReply, error) {
 	allRoomCount, err := s.room.RenewOnline(req.Server, req.RoomCount)
@@ -144,8 +145,8 @@ func (s *server) RenewOnline(ctx context.Context, req *pb.OnlineReq) (*pb.Online
 	}, nil
 }
 
-// 付費房月卡效期
 // PaidRoomExpiry
+// 付費房月卡效期
 func (s *server) PaidRoomExpiry(ctx context.Context, req *pb.MemberProfileReq) (*pb.MemberProfileReply, error) {
 	resp, _ := s.cli.LiveExpire(req.Uid)
 
@@ -161,8 +162,8 @@ func (s *server) PaidRoomExpiry(ctx context.Context, req *pb.MemberProfileReq) (
 	}, nil
 }
 
-// 付費房鑽石付費
 // PaidRoomDiamond
+// 付費房鑽石付費
 func (s *server) PaidRoomDiamond(ctx context.Context, req *pb.PaidRoomDiamondReq) (*pb.PaidRoomDiamondReply, error) {
 	// 取得收費房收費標準
 	lr, err := s.cli.GetLiveChatInfo(req.RoomID)
