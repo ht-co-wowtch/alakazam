@@ -6,7 +6,7 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/gogo/protobuf/proto"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
-	"gitlab.com/jetfueltw/cpw/micro/log"
+	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 	"time"
 )

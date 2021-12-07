@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
-	"gitlab.com/jetfueltw/cpw/micro/config"
-	"gitlab.com/jetfueltw/cpw/micro/database"
-	"gitlab.com/jetfueltw/cpw/micro/grpc"
-	"gitlab.com/jetfueltw/cpw/micro/log"
+	"gitlab.com/ht-co/cpw/micro/config"
+	"gitlab.com/ht-co/cpw/micro/database"
+	"gitlab.com/ht-co/cpw/micro/grpc"
+	"gitlab.com/ht-co/cpw/micro/log"
 )
 
 var (

@@ -10,8 +10,8 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
-	"gitlab.com/jetfueltw/cpw/micro/errdefs"
-	"gitlab.com/jetfueltw/cpw/micro/log"
+	"gitlab.com/ht-co/cpw/micro/errdefs"
+	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 )
 

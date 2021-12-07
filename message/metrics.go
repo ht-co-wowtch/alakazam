@@ -5,7 +5,7 @@ import (
 	kafka "github.com/Shopify/sarama"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rcrowley/go-metrics"
-	"gitlab.com/jetfueltw/cpw/micro/log"
+	"gitlab.com/ht-co/cpw/micro/log"
 	"strconv"
 	"strings"
 )

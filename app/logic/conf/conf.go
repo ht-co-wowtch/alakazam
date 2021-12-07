@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/jetfueltw/cpw/micro/client"
-	"gitlab.com/jetfueltw/cpw/micro/config"
-	"gitlab.com/jetfueltw/cpw/micro/database"
-	"gitlab.com/jetfueltw/cpw/micro/grpc"
-	"gitlab.com/jetfueltw/cpw/micro/http"
-	"gitlab.com/jetfueltw/cpw/micro/log"
-	"gitlab.com/jetfueltw/cpw/micro/redis"
+	"gitlab.com/ht-co/cpw/micro/client"
+	"gitlab.com/ht-co/cpw/micro/config"
+	"gitlab.com/ht-co/cpw/micro/database"
+	"gitlab.com/ht-co/cpw/micro/grpc"
+	"gitlab.com/ht-co/cpw/micro/http"
+	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/cpw/micro/redis"
 
 	"github.com/spf13/viper"
 )

@@ -3,8 +3,8 @@ package errors
 import (
 	"encoding/json"
 
-	"gitlab.com/jetfueltw/cpw/micro/errdefs"
-	"gitlab.com/jetfueltw/cpw/micro/validation"
+	"gitlab.com/ht-co/cpw/micro/errdefs"
+	"gitlab.com/ht-co/cpw/micro/validation"
 	"gopkg.in/go-playground/validator.v8"
 )
 

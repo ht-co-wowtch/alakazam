@@ -5,7 +5,7 @@ import (
 
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
-	"gitlab.com/jetfueltw/cpw/micro/log"
+	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 )
 

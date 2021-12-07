@@ -11,7 +11,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/admin/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
-	"gitlab.com/jetfueltw/cpw/micro/log"
+	"gitlab.com/ht-co/cpw/micro/log"
 	// "net/http/pprof"
 	// "runtime/pprof"
 )

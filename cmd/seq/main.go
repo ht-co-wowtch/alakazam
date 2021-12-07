@@ -9,7 +9,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/seq"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/seq/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
-	"gitlab.com/jetfueltw/cpw/micro/log"
+	"gitlab.com/ht-co/cpw/micro/log"
 )
 
 var (

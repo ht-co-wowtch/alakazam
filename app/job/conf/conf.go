@@ -1,9 +1,9 @@
 package conf
 
 import (
-	"gitlab.com/jetfueltw/cpw/micro/config"
-	"gitlab.com/jetfueltw/cpw/micro/grpc"
-	"gitlab.com/jetfueltw/cpw/micro/log"
+	"gitlab.com/ht-co/cpw/micro/config"
+	"gitlab.com/ht-co/cpw/micro/grpc"
+	"gitlab.com/ht-co/cpw/micro/log"
 	"time"
 )
 

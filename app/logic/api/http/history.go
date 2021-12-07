@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/micro/errdefs"
+	"gitlab.com/ht-co/cpw/micro/errdefs"
 )
 
 func (s *httpServer) getMessage(c *gin.Context) error {

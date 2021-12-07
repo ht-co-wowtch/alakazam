@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"gitlab.com/jetfueltw/cpw/micro/client"
-	"gitlab.com/jetfueltw/cpw/micro/errdefs"
+	"gitlab.com/ht-co/cpw/micro/client"
+	"gitlab.com/ht-co/cpw/micro/errdefs"
 )
 
 type Client struct {

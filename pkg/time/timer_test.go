@@ -1,7 +1,7 @@
 package time
 
 import (
-	"gitlab.com/jetfueltw/cpw/micro/log"
+	"gitlab.com/ht-co/cpw/micro/log"
 	"testing"
 	"time"
 )

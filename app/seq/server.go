@@ -4,7 +4,7 @@ import (
 	"context"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/seq/api"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/seq/conf"
-	"gitlab.com/jetfueltw/cpw/micro/log"
+	"gitlab.com/ht-co/cpw/micro/log"
 	"google.golang.org/grpc"
 	"net"
 )

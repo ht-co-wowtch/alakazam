@@ -13,9 +13,9 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
-	rpccli "gitlab.com/jetfueltw/cpw/micro/grpc"
-	"gitlab.com/jetfueltw/cpw/micro/log"
-	"gitlab.com/jetfueltw/cpw/micro/redis"
+	rpccli "gitlab.com/ht-co/cpw/micro/grpc"
+	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/cpw/micro/redis"
 	//_ "net/http/pprof"
 )
 

@@ -10,7 +10,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
-	web "gitlab.com/jetfueltw/cpw/micro/http"
+	web "gitlab.com/ht-co/cpw/micro/http"
 	//_ "net/http/pprof"
 )
 

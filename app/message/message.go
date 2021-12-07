@@ -7,7 +7,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/message/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"gitlab.com/jetfueltw/cpw/micro/redis"
+	"gitlab.com/ht-co/cpw/micro/redis"
 	// _ "net/http/httprof"
 	// _ "runtime/pprof"
 )

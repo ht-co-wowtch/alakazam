@@ -2,7 +2,7 @@ package message
 
 import (
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
-	"gitlab.com/jetfueltw/cpw/micro/log"
+	"gitlab.com/ht-co/cpw/micro/log"
 	"sync"
 	"time"
 )

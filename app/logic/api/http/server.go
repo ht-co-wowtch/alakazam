@@ -17,9 +17,9 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
-	"gitlab.com/jetfueltw/cpw/micro/errdefs"
-	web "gitlab.com/jetfueltw/cpw/micro/http"
-	"gitlab.com/jetfueltw/cpw/micro/log"
+	"gitlab.com/ht-co/cpw/micro/errdefs"
+	web "gitlab.com/ht-co/cpw/micro/http"
+	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 	// _ "net/http/pprof"
 )
