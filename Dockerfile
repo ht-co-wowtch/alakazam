@@ -10,7 +10,7 @@ WORKDIR $GOPATH/src/gitlab.com/jetfueltw/cpw/alakazam
 COPY go.mod go.sum ./
 
 RUN apk add --no-cache git && \
-    git config --global url."https://gitlab+deploy-token-665403:9JuSayApGTVeecuFehZ-@gitlab.com/ht-co/cpw/micro".insteadOf "https://gitlab.com/jetfueltw/cpw/micro" && \
+    git config --global url."https://gitlab+deploy-token-678908:s1jR1Pt-yvNHrC_9expc@gitlab.com/ht-co/cpw/micro".insteadOf "https://gitlab.com/jetfueltw/cpw/micro" && \
     go mod download
 
 FROM build_module AS build
