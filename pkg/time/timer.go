@@ -11,6 +11,7 @@ const (
 	infiniteDuration = itime.Duration(1<<63 - 1)
 )
 
+// TimerData
 // 一個單向鏈結串列表結構的TimerData，用於定時器任務
 type TimerData struct {
 	Key string

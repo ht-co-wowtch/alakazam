@@ -56,6 +56,7 @@ func (r *Member) TableName() string {
 	return "members"
 }
 
+// Banned
 // 是否被禁言
 func (r Member) Banned() bool {
 	if r.IsMessage {
@@ -64,7 +65,8 @@ func (r Member) Banned() bool {
 	return true
 }
 
-//  是否被封鎖
+// Blockade
+// 是否被封鎖
 func (r Member) Blockade() bool {
 	if !r.IsBlockade {
 		return r.Permission.IsBlockade
@@ -72,6 +74,7 @@ func (r Member) Blockade() bool {
 	return true
 }
 
+// Permission
 // 個別房間權限
 type Permission struct {
 	RoomId     int64
@@ -85,6 +88,7 @@ func (r *Permission) TableName() string {
 	return "room_user_permissions"
 }
 
+// CreateUser
 // 新增會員
 func (s *Store) CreateUser(member *Member) (bool, error) {
 	member.CreateAt = time.Now()
@@ -93,6 +97,7 @@ func (s *Store) CreateUser(member *Member) (bool, error) {
 	return aff == 1, err
 }
 
+// UpdateUser
 // 更新會員資料
 func (s *Store) UpdateUser(member *Member) (bool, error) {
 	aff, err := s.d.Cols("name", "gender", "lv").
@@ -101,11 +106,13 @@ func (s *Store) UpdateUser(member *Member) (bool, error) {
 	return aff == 1, err
 }
 
+// SetUserBlockade
 // 全站禁言封鎖
 func (s *Store) SetUserBlockade(uid string, is bool) (bool, error) {
 	return s.setUserPermission(uid, "is_blockade", is)
 }
 
+// SetUserBanned
 // 全站禁言設定
 func (s *Store) SetUserBanned(uid string, is bool) (bool, error) {
 	return s.setUserPermission(uid, "is_message", is)
@@ -152,6 +159,7 @@ func (s *Store) setUserPermission(uid, colName string, is bool) (bool, error) {
 	return aff == 1, err
 }
 
+// Find
 // 找會員 by uid
 func (s *Store) Find(uid string) (*Member, error) {
 	m := new(Member)
@@ -164,6 +172,7 @@ func (s *Store) Find(uid string) (*Member, error) {
 	return m, err
 }
 
+// RoomPermission
 // 取得對房間權限
 func (s *Store) RoomPermission(id int64, rid int) (Permission, error) {
 	p := Permission{}
@@ -212,6 +221,7 @@ func (s *Store) GetMembers(ids []int64) ([]Member, error) {
 	return m, err
 }
 
+// GetMembersByUid
 // 批次取得會員資料 By uid
 func (s *Store) GetMembersByUid(uid []string) ([]Member, error) {
 	m := make([]Member, 0)

@@ -3,12 +3,13 @@ package comet
 import (
 	"sync"
 
+	"gitlab.com/ht-co/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
-	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 )
 
+// Channel
 // 用於推送消息給user，可以把這個識別user在聊天室內的地址
 // 紀錄了當初連線至聊天室時所給的參數值
 // 1. 身處在哪一個聊天室
