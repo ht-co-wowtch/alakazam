@@ -57,6 +57,7 @@ type Channel struct {
 }
 
 // NewChannel
+// New a Channel
 func NewChannel(protoSize, revBuffer int) *Channel {
 	c := new(Channel)
 	c.protoRing.Init(protoSize)
@@ -67,6 +68,7 @@ func NewChannel(protoSize, revBuffer int) *Channel {
 	return c
 }
 
+// Push
 // 針對某人推送訊息
 func (c *Channel) Push(p *pb.Proto) (err error) {
 	// 當發送訊息速度大於消費速度則會阻塞
@@ -80,16 +82,19 @@ func (c *Channel) Push(p *pb.Proto) (err error) {
 	return
 }
 
+// Ready
 // 等待管道接收grpc資料
 func (c *Channel) Ready() *pb.Proto {
 	return <-c.signal
 }
 
+// Signal
 // 接收到tcp資料傳遞給處理的goroutine
 func (c *Channel) Signal() {
 	c.signal <- pb.ProtoReady
 }
 
+// Close
 // 關閉連線flag
 func (c *Channel) Close() {
 	log.Info("[channel.go]Conn close", zap.String("uid", c.Uid), zap.String("name", c.Name))

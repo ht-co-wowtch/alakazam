@@ -6,6 +6,7 @@ import (
 	"gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
 )
 
+// RoundOptions 
 // Round options
 type RoundOptions struct {
 	// 每次要分配多少個用於time.Timer的Pool
@@ -33,6 +34,7 @@ type RoundOptions struct {
 	WriteBufSize int
 }
 
+// Round
 // 管理(Reader and Writer bytes) and Timer Pool
 type Round struct {
 	// 管理Reader bytes Pool
@@ -48,6 +50,7 @@ type Round struct {
 	options RoundOptions
 }
 
+// NewRound
 // 1. 為了優化內存所以自行設計一個bytes pool來管理
 // 2. 當一個client連線成功後需要有一個心跳機制去維護連線可不可用
 //    所以每一個client需要搭配一個倒數計時器，如果有100w+連線就要100w+ time.NewTicker
@@ -90,16 +93,19 @@ func NewRound(c *conf.Config) (r *Round) {
 	return
 }
 
+// Timer
 // 取Timer Pool，給定某數字以取餘數方式給其中一個，用於分散鎖競爭增加併發量
 func (r *Round) Timer(rn int) *time.Timer {
 	return &(r.timers[rn%r.options.Timer])
 }
 
+// Reader
 // 取Reader Pool，給定某數字以取餘數方式給其中一個，用於分散鎖競爭增加併發量
 func (r *Round) Reader(rn int) *bytes.Pool {
 	return &(r.readers[rn%r.options.Reader])
 }
 
+// Writer
 // 取Writer Pool，給定某數字以取餘數方式給其中一個，用於分散鎖競爭增加併發量
 func (r *Round) Writer(rn int) *bytes.Pool {
 	return &(r.writers[rn%r.options.Writer])
