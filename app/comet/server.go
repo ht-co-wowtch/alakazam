@@ -6,11 +6,12 @@ import (
 	"time"
 
 	"github.com/zhenjl/cityhash"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/ht-co/cpw/micro/grpc"
 	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
+	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"go.uber.org/zap"
 )
 
@@ -139,6 +140,7 @@ func (s *Server) KickClosedRoomUserPeriod(store *models.Store) {
 	}
 }
 
+// Bucket
 // 根據user key 採用CityHash32算法除於bucket總數的出來的餘數，來取出某個bucket
 // 用意在同時間針對不同房間做推播時可以避免使用到同一把鎖，降低鎖的競爭
 // 所以可以調高bucket來增加併發量，但同時會多佔用內存
@@ -146,10 +148,11 @@ func (s *Server) Bucket(subKey string) *Bucket {
 	return s.buckets[(cityhash.CityHash32([]byte(subKey), uint32(len(subKey))) % s.bucketIdx)]
 }
 
+// RandServerHearbeat
 // 通知logic Refresh client連線狀態的時間(心跳包的週期)
 // 這邊使用隨機產生時間是為了不讓用戶都在同一時間做心跳，以達到分散尖峰
 func (s *Server) RandServerHearbeat() time.Duration {
-	return (minServerHeartbeat + time.Duration(rand.Int63n(int64(maxServerHeartbeat-minServerHeartbeat))))
+	return minServerHeartbeat + time.Duration(rand.Int63n(int64(maxServerHeartbeat-minServerHeartbeat)))
 }
 
 func (s *Server) Close() (err error) {
@@ -166,16 +169,29 @@ func (s *Server) onlineproc() {
 	for {
 		var err error
 		roomCount := make(map[int32]int32)
+		roomViewers := make(map[int32]*logicpb.RoomViewers)
 
 		// 因為房間會分散在不同的bucket所以需要統計
 		for _, bucket := range s.buckets {
-			for roomID, count := range bucket.RoomsCount() {
+			for roomID, roomInfo := range bucket.RoomsCount() {
+				// todo
+				roomCount[roomID] += roomInfo.count
 
-				roomCount[roomID] += count
+				if roomViewers[roomID] == nil {
+					roomViewers[roomID] = &logicpb.RoomViewers{
+						Viewers: []string{},
+						Count:   0,
+					}
+				}
+
+				roomViewers[roomID].Count += roomInfo.count
+				roomViewers[roomID].Viewers = append(roomViewers[roomID].Viewers, roomInfo.viewer)
 			}
 		}
 
-		if s.online, err = s.RenewOnline(context.Background(), s.name, roomCount); err != nil {
+		log.Infof("viewers: %+v", roomViewers)
+
+		if s.online, err = s.RenewOnline(context.Background(), s.name, roomCount, roomViewers); err != nil {
 			time.Sleep(time.Second)
 			continue
 		}
@@ -187,6 +203,7 @@ func (s *Server) onlineproc() {
 	}
 }
 
+// Buckets
 // 所有buckets
 func (s *Server) Buckets() []*Bucket {
 	return s.buckets

@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	web "gitlab.com/ht-co/cpw/micro/http"
 	api "gitlab.com/jetfueltw/cpw/alakazam/app/logic/api/http"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
-	web "gitlab.com/ht-co/cpw/micro/http"
 	//_ "net/http/pprof"
 )
 
@@ -84,8 +84,9 @@ func handler(e *gin.Engine, s *httpServer) {
 	e.POST("/room/manage", api.ErrHandler(s.AddManage))
 	e.DELETE("/room/:id/manage/:uid", api.ErrHandler(s.DeleteManage))
 
-	e.POST("/room/notice", api.ErrHandler(s.notice)) // todo
-	e.GET("/online", api.ErrHandler(s.online))       // 所有房間在線人數
+	e.POST("/room/notice", api.ErrHandler(s.notice))  // todo
+	e.GET("/online", api.ErrHandler(s.online))        // 所有房間在線人數
+	e.GET("/viewers", api.ErrHandler(s.onlineViewer)) // 所有房間在線列表
 
 	// 訊息
 	e.POST("/custom", api.ErrHandler(s.custom)) // todo 客制訊息內容

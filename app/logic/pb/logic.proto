@@ -5,21 +5,21 @@ package pb;
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 message PushMsg {
-    enum Type {
-        PUSH = 0;
-        ROOM = 1;
-    }
-    Type type = 1;
-    repeated int32 room = 2;
-    repeated string keys = 3;
-    bytes msg = 4;
-    string message = 5;
-    int32 msgType = 6;
-    int64 mid = 7;
-    int64 seq = 8; //for msg search
-    int32 op = 9;
-    int64 sendAt = 10;
-    bool isRaw = 11;
+  enum Type {
+    PUSH = 0;
+    ROOM = 1;
+  }
+  Type type = 1;
+  repeated int32 room = 2;
+  repeated string keys = 3;
+  bytes msg = 4;
+  string message = 5;
+  int32 msgType = 6;
+  int64 mid = 7;
+  int64 seq = 8; //for msg search
+  int32 op = 9;
+  int64 sendAt = 10;
+  bool isRaw = 11;
 }
 
 message PingReply {
@@ -29,142 +29,150 @@ message PingReq {
 }
 
 message Connect {
-    string uid = 1 [(gogoproto.jsontag) = "uid"];
-    string key = 2 [(gogoproto.jsontag) = "key"];
-    bool status = 3 [(gogoproto.jsontag) = "status"];
-    int32 roomID = 4 [(gogoproto.jsontag) = "room_id"];
-    string message = 5 [(gogoproto.jsontag) = "message"];
-    Permission permission = 6 [(gogoproto.jsontag) = "permission"];
-    PermissionMessage permissionMessage = 7 [(gogoproto.jsontag) = "permission_message"];
+  string uid = 1 [(gogoproto.jsontag) = "uid"];
+  string key = 2 [(gogoproto.jsontag) = "key"];
+  bool status = 3 [(gogoproto.jsontag) = "status"];
+  int32 roomID = 4 [(gogoproto.jsontag) = "room_id"];
+  string message = 5 [(gogoproto.jsontag) = "message"];
+  Permission permission = 6 [(gogoproto.jsontag) = "permission"];
+  PermissionMessage permissionMessage = 7 [(gogoproto.jsontag) = "permission_message"];
 }
 
 message User {
-    int64 id = 1;
-    string uid = 2;
-    string name = 3;
-    int32 gender = 4;
-    int32 type = 5;
-    int32 level = 6;
+  int64 id = 1;
+  string uid = 2;
+  string name = 3;
+  int32 gender = 4;
+  int32 type = 5;
+  int32 level = 6;
 }
 
 message Permission {
-    bool isMessage = 1 [(gogoproto.jsontag) = "is_message"];
-    bool isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
-    bool isBets = 3 [(gogoproto.jsontag) = "is_bets"];
-    bool isManage = 4 [(gogoproto.jsontag) = "is_manage"];
+  bool isMessage = 1 [(gogoproto.jsontag) = "is_message"];
+  bool isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
+  bool isBets = 3 [(gogoproto.jsontag) = "is_bets"];
+  bool isManage = 4 [(gogoproto.jsontag) = "is_manage"];
 }
 
 message PermissionMessage {
-    string isMessage = 1 [(gogoproto.jsontag) = "is_message"];
-    string isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
-    string isBets = 3 [(gogoproto.jsontag) = "is_bets"];
-    string isManage = 4 [(gogoproto.jsontag) = "is_manage"];
+  string isMessage = 1 [(gogoproto.jsontag) = "is_message"];
+  string isRedEnvelope = 2 [(gogoproto.jsontag) = "is_red_envelope"];
+  string isBets = 3 [(gogoproto.jsontag) = "is_bets"];
+  string isManage = 4 [(gogoproto.jsontag) = "is_manage"];
 }
 
 message ConnectReq {
-    option (gogoproto.goproto_stringer) = false;
-    string server = 1;
-    bytes token = 2;
+  option (gogoproto.goproto_stringer) = false;
+  string server = 1;
+  bytes token = 2;
 }
 
 message ConnectReply {
-    int64 heartbeat = 1;
-    bytes topMessage = 2;
-    bytes bulletinMessage = 3;
-    Connect Connect = 4;
-    User User = 5;
-    bool isConnectSuccessReply = 6;
+  int64 heartbeat = 1;
+  bytes topMessage = 2;
+  bytes bulletinMessage = 3;
+  Connect Connect = 4;
+  User User = 5;
+  bool isConnectSuccessReply = 6;
 }
 
 message ConnectSuccessReq {
-    int32 roomId = 1;
-    User User = 2;
-    bool isManage = 3;
+  int32 roomId = 1;
+  User User = 2;
+  bool isManage = 3;
 }
 
 message DisconnectReq {
-    string uid = 1;
-    string key = 2;
-    string server = 3;
+  string uid = 1;
+  string key = 2;
+  string server = 3;
 }
 
 message ChangeRoomReq {
-    string uid = 1;
-    string key = 2;
-    int32 roomID = 3;
+  string uid = 1;
+  string key = 2;
+  int32 roomID = 3;
 }
 
 message ChangeRoomReply {
-    bytes headerMessage = 1;
-    Connect Connect = 2;
+  bytes headerMessage = 1;
+  Connect Connect = 2;
 }
 
 message DisconnectReply {
-    bool has = 1;
+  bool has = 1;
 }
 
 message HeartbeatReq {
-    string uid = 1;
-    string key = 2;
-    string name = 3;
-    int32 roomId = 4;
-    string server = 5;
+  string uid = 1;
+  string key = 2;
+  string name = 3;
+  int32 roomId = 4;
+  string server = 5;
 }
 
 message HeartbeatReply {
 }
 
+message RoomViewers {
+  int32 count = 1;
+  repeated string viewers = 2;
+}
+
+
+
 message OnlineReq {
-    option (gogoproto.goproto_stringer) = false;
-    string server = 1;
-    map<int32, int32> roomCount = 2;
+  option (gogoproto.goproto_stringer) = false;
+  string server = 1;
+  map<int32, int32> roomCount = 2;
+  map<int32, RoomViewers> roomViewers = 3;
 }
 
 message OnlineReply {
-    option (gogoproto.goproto_stringer) = false;
-    map<int32, int32> allRoomCount = 1;
+  option (gogoproto.goproto_stringer) = false;
+  map<int32, int32> allRoomCount = 1;
 }
 
 message MemberProfileReq {
-    string uid = 1;
+  string uid = 1;
 }
 
 message MemberProfileReply {
-    string expire = 1;
-    bool is_allow = 2;
+  string expire = 1;
+  bool is_allow = 2;
 }
 
 message PaidRoomDiamondReq {
-    int32 roomID = 1;
-    string uid = 2;
-    int32 type = 3;
+  int32 roomID = 1;
+  string uid = 2;
+  int32 type = 3;
 }
 
 message PaidRoomDiamondReply {
-    float diamond = 1;
-    string paidTime = 2;
-    string error = 3;
-    bool status = 4;
+  float diamond = 1;
+  string paidTime = 2;
+  string error = 3;
+  bool status = 4;
 
 }
 
 service Logic {
-    // Ping Service 
-    rpc Ping (PingReq) returns (PingReply);
-    // Connect
-    rpc Connect (ConnectReq) returns (ConnectReply);
-    // Connect Success Reply
-    rpc ConnectSuccessReply (ConnectSuccessReq) returns (PingReply);
-    // Disconnect
-    rpc Disconnect (DisconnectReq) returns (DisconnectReply);
-    // ChangeRoom
-    rpc ChangeRoom (ChangeRoomReq) returns (ConnectReply);
-    // Heartbeat
-    rpc Heartbeat (HeartbeatReq) returns (HeartbeatReply);
-    // RenewOnline
-    rpc RenewOnline (OnlineReq) returns (OnlineReply);
-    // PaidRoomExpiry
-    rpc PaidRoomExpiry (MemberProfileReq) returns (MemberProfileReply);
-    // PaidRoomDiamond
-    rpc PaidRoomDiamond (PaidRoomDiamondReq) returns (PaidRoomDiamondReply);
+  // Ping Service
+  rpc Ping (PingReq) returns (PingReply);
+  // Connect
+  rpc Connect (ConnectReq) returns (ConnectReply);
+  // Connect Success Reply
+  rpc ConnectSuccessReply (ConnectSuccessReq) returns (PingReply);
+  // Disconnect
+  rpc Disconnect (DisconnectReq) returns (DisconnectReply);
+  // ChangeRoom
+  rpc ChangeRoom (ChangeRoomReq) returns (ConnectReply);
+  // Heartbeat
+  rpc Heartbeat (HeartbeatReq) returns (HeartbeatReply);
+  // RenewOnline
+  rpc RenewOnline (OnlineReq) returns (OnlineReply);
+  // PaidRoomExpiry
+  rpc PaidRoomExpiry (MemberProfileReq) returns (MemberProfileReply);
+  // PaidRoomDiamond
+  rpc PaidRoomDiamond (PaidRoomDiamondReq) returns (PaidRoomDiamondReply);
 }

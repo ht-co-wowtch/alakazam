@@ -59,7 +59,7 @@ func (h *History) Get(roomId int32, at time.Time) ([]interface{}, error) {
 		mids = append(mids, v.MemberId)
 	}
 
-	ms, err := h.member.GetMembers(mids)
+	ms, err := h.member.BatchGetMembers(mids)
 	if err != nil {
 		return []interface{}{}, err
 	}

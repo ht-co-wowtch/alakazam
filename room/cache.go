@@ -27,6 +27,8 @@ type Cache interface {
 	deleteChatBulletinMessage(rids []int32) error
 	addOnline(server string, online *Online) error
 	getOnline(server string) (*Online, error)
+	addOnlineViewer(server string, viewers *OnlineViewer) error
+	getOnlineViewer(server string) (*OnlineViewer, error)
 	addPayment(uid string, liveChatId int, paidTime time.Time, addPayment float32) error
 	getPayment(uid string, liveChatId int) (*Payment, error)
 }
@@ -55,6 +57,8 @@ const (
 	// server name的前綴詞，用於存儲在redis當key
 	onlineKey = prefix + ":server_%s"
 
+	onlineViewerKey = prefix + ":server_%s_viewer"
+
 	uidPayKey = prefix + ":pay_%s-%d"
 
 	livePaymentDataHKey = "livePayment"
@@ -66,6 +70,10 @@ func keyRoom(id int) string {
 
 func keyServerOnline(key string) string {
 	return fmt.Sprintf(onlineKey, key)
+}
+
+func keyServerOnlineViewer(key string) string {
+	return fmt.Sprintf(onlineViewerKey, key)
 }
 
 func keyPaid(uid string, rid int) string {
@@ -258,6 +266,12 @@ type Online struct {
 	Updated   int64           `json:"updated"`
 }
 
+type OnlineViewer struct {
+	Server      string             `json:"server"`
+	RoomViewers map[int32][]string `json:"room_viewers"`
+	Updated     int64              `json:"updated"`
+}
+
 type Payment struct {
 	PaidTime string  `json:"paid_time"`
 	Diamond  float32 `json:"diamond"`
@@ -290,11 +304,57 @@ func (c *cache) addOnline(server string, online *Online) error {
 	return nil
 }
 
+// 以HSET方式儲存房間觀眾
+func (c *cache) addOnlineViewer(server string, onlineViewer *OnlineViewer) error {
+	roomsMap := map[uint32]map[int32][]string{}
+	for room, viewers := range onlineViewer.RoomViewers {
+		r := strconv.Itoa(int(room))
+		rMap := roomsMap[cityhash.CityHash32([]byte(r), uint32(len(r)))%8]
+		if rMap == nil {
+			rMap = make(map[int32][]string)
+			roomsMap[cityhash.CityHash32([]byte(r), uint32(len(r)))%8] = rMap
+		}
+		rMap[room] = viewers
+	}
+
+	key := keyServerOnlineViewer(server)
+	for hashKey, value := range roomsMap {
+		err := c.addServerOnlineViewers(
+			key,
+			strconv.FormatInt(int64(hashKey), 10),
+			&OnlineViewer{
+				RoomViewers: value,
+				Server:      onlineViewer.Server,
+				Updated:     onlineViewer.Updated,
+			},
+		)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // 以HSET方式儲存房間人數
 // HSET Key hashKey jsonBody
 // Key用server name
 func (c *cache) addServerOnline(key string, hashKey string, online *Online) error {
 	b, err := json.Marshal(online)
+	if err != nil {
+		return err
+	}
+	tx := c.c.Pipeline()
+	tx.HSet(key, hashKey, b)
+	tx.Expire(key, roomExpired)
+	_, err = tx.Exec()
+	return err
+}
+
+// 以HSET方式儲存房間人數UID
+// HSET Key hashKey jsonBody
+// Key用server name
+func (c *cache) addServerOnlineViewers(key string, hashKey string, viewers *OnlineViewer) error {
+	b, err := json.Marshal(viewers)
 	if err != nil {
 		return err
 	}
@@ -326,13 +386,37 @@ func (c *cache) getOnline(server string) (*Online, error) {
 	return online, nil
 }
 
+// 根據server name取線上各房間所有人UID
+// TODO
+func (c *cache) getOnlineViewer(server string) (*OnlineViewer, error) {
+	viewerOnline := &OnlineViewer{RoomViewers: map[int32][]string{}}
+	// server name
+	key := keyServerOnlineViewer(server)
+	for i := 0; i < 8; i++ {
+		olw, err := c.serverOnlineViewer(key, strconv.FormatInt(int64(i), 10))
+		if err == nil && olw != nil {
+			viewerOnline.Server = olw.Server
+			if olw.Updated > viewerOnline.Updated {
+				viewerOnline.Updated = olw.Updated
+			}
+			for room, viewers := range olw.RoomViewers {
+				viewerOnline.RoomViewers[room] = viewers
+			}
+
+			viewerOnline.Updated = olw.Updated
+		}
+	}
+
+	return viewerOnline, nil
+}
+
 // 根據server name與hashKey取該server name內線上各房間總人數
 func (c *cache) serverOnline(key string, hashKey string) (*Online, error) {
 	b, err := c.c.HGet(key, hashKey).Bytes()
 	if err != nil && err != redis.Nil {
 		return nil, err
 	}
-
+	//log.Infof("serverOnline data:%+v", string(b))
 	// b是一個json
 	// {
 	// 		"server":"ne0002de-MacBook-Pro.local",
@@ -348,6 +432,22 @@ func (c *cache) serverOnline(key string, hashKey string) (*Online, error) {
 		return nil, err
 	}
 	return online, nil
+}
+
+// 根據server name與hashKey取該server name內線上各房間所有人UID
+func (c *cache) serverOnlineViewer(key string, hashKey string) (*OnlineViewer, error) {
+	b, err := c.c.HGet(key, hashKey).Bytes()
+	if err != nil && err != redis.Nil {
+		return nil, err
+	}
+
+	//onlineViewer := new(OnlineViewer)
+	viewer := new(OnlineViewer)
+	if err = json.Unmarshal(b, viewer); err != nil {
+		return nil, err
+	}
+
+	return viewer, nil
 }
 
 // 根據server name 刪除線上各房間總人數

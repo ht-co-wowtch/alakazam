@@ -12,14 +12,14 @@ import (
 
 	"gitlab.com/ht-co/cpw/micro/id"
 
+	"gitlab.com/ht-co/cpw/micro/errdefs"
+	rpc "gitlab.com/ht-co/cpw/micro/grpc"
+	"gitlab.com/ht-co/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
-	"gitlab.com/ht-co/cpw/micro/errdefs"
-	rpc "gitlab.com/ht-co/cpw/micro/grpc"
-	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -101,6 +101,7 @@ func (s *server) Disconnect(ctx context.Context, req *pb.DisconnectReq) (*pb.Dis
 	return &pb.DisconnectReply{Has: has}, nil
 }
 
+// ChangeRoom
 // user當前連線要切換房間
 func (s *server) ChangeRoom(ctx context.Context, req *pb.ChangeRoomReq) (*pb.ConnectReply, error) {
 	p, err := s.room.ChangeRoom(req.Uid, int(req.RoomID), req.Key)
@@ -135,7 +136,16 @@ func (s *server) Heartbeat(ctx context.Context, req *pb.HeartbeatReq) (*pb.Heart
 // RenewOnline
 // 更新每個房間線上總人數資料
 func (s *server) RenewOnline(ctx context.Context, req *pb.OnlineReq) (*pb.OnlineReply, error) {
-	allRoomCount, err := s.room.RenewOnline(req.Server, req.RoomCount)
+	roomViewers := make(map[int32][]string)
+	roomCount := make(map[int32]int32)
+
+	for rid, viewers := range req.RoomViewers {
+		roomCount[rid] = viewers.Count
+		for _, viewer := range viewers.Viewers {
+			roomViewers[rid] = append(roomViewers[rid], viewer)
+		}
+	}
+	allRoomCount, err := s.room.RenewOnline(req.Server, req.RoomCount, roomViewers)
 	if err != nil {
 		log.Error("[rpc/server.go]RenewOnline", zap.Error(err), zap.String("server", req.Server))
 		return &pb.OnlineReply{}, err

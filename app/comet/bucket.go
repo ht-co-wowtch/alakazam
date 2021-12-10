@@ -4,9 +4,9 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"gitlab.com/ht-co/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
-	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 )
 
@@ -31,6 +31,7 @@ type Bucket struct {
 	routinesNum uint64
 }
 
+// NewBucket
 // 初始化Bucket結構
 func NewBucket(c *conf.Bucket) (b *Bucket) {
 	b = new(Bucket)
@@ -48,33 +49,46 @@ func NewBucket(c *conf.Bucket) (b *Bucket) {
 	return
 }
 
+// ChannelCount
 // 管理的人數
 func (b *Bucket) ChannelCount() int {
 	return len(b.chs)
 }
 
+// RoomCount
 // 管理的房間數量
 func (b *Bucket) RoomCount() int {
 	return len(b.rooms)
 }
 
+type Viewer struct {
+	count  int32
+	viewer string
+}
+
+// RoomsCount
 // 統計房間人數
-func (b *Bucket) RoomsCount() (res map[int32]int32) {
+// TODO
+func (b *Bucket) RoomsCount() (res map[int32]Viewer) {
 	var (
 		roomID int32
 		room   *Room
 	)
 	b.cLock.RLock()
-	res = make(map[int32]int32)
+	res = make(map[int32]Viewer)
 	for roomID, room = range b.rooms {
 		if room.Online > 0 {
-			res[roomID] = room.Online
+			res[roomID] = Viewer{
+				count:  room.Online,
+				viewer: room.next.Uid,
+			}
 		}
 	}
 	b.cLock.RUnlock()
 	return
 }
 
+// ChangeRoom
 // user更換房間
 func (b *Bucket) ChangeRoom(nrid int32, ch *Channel) (err error) {
 	var (
@@ -106,6 +120,7 @@ func (b *Bucket) ChangeRoom(nrid int32, ch *Channel) (err error) {
 	return
 }
 
+// Put
 // 將user Channel 分配到某房間，總共會有三種結構互相關聯Bucket,Room,Channel
 // 假設Room id = A , Channel key = B
 // 1. Bucket put Channel(B)
@@ -146,6 +161,7 @@ func (b *Bucket) Put(rid int32, ch *Channel) (err error) {
 	return
 }
 
+// Del
 // 刪除某個user Channel
 // 1. Bucket刪除[]Channel對應的Channel
 // 2. Bucket刪除[]Room內對應的Channel
@@ -169,6 +185,7 @@ func (b *Bucket) Del(dch *Channel) {
 	}
 }
 
+// Channel
 // 根據user key取對應Channel
 func (b *Bucket) Channel(key string) (ch *Channel) {
 	b.cLock.RLock()
@@ -177,6 +194,7 @@ func (b *Bucket) Channel(key string) (ch *Channel) {
 	return
 }
 
+// Broadcast
 // 對Bucket內所有Channel
 func (b *Bucket) Broadcast(p *pb.Proto) {
 	var ch *Channel
@@ -187,6 +205,7 @@ func (b *Bucket) Broadcast(p *pb.Proto) {
 	b.cLock.RUnlock()
 }
 
+// Room
 // 取得房間
 func (b *Bucket) Room(rid int32) (room *Room) {
 	b.cLock.RLock()
@@ -195,6 +214,7 @@ func (b *Bucket) Room(rid int32) (room *Room) {
 	return
 }
 
+// DelRoom
 // 刪除房間並將此房間內所有連線close
 func (b *Bucket) DelRoom(room *Room) {
 	b.cLock.Lock()
@@ -215,6 +235,7 @@ func (b *Bucket) DelClosedRoom(roomid int) {
 	}
 }
 
+// BroadcastRoom
 // logic service透過grpc推送給某個房間訊息
 // Bucket自己會預先開好多個goroutine，每個goroutine內都有一把
 // 用於訊息推送chan，用原子鎖遞增%goroutine總數量來輪替

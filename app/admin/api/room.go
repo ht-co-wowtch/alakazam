@@ -9,10 +9,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"gitlab.com/ht-co/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
-	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 	//_ "net/http/pprof"
 )
@@ -154,7 +154,7 @@ func (s *httpServer) AddManage(c *gin.Context) error {
 	}
 
 	m, _ := s.member.GetByRoom(params.Uid, params.RoomId) // 從快取中取得會員在該房間權限
-	r, _ := s.room.Get(params.RoomId) // 從DB取得房間資料
+	r, _ := s.room.Get(params.RoomId)                     // 從DB取得房間資料
 	connect := room.NewPbConnect(m, r, "", 0)
 
 	if len(keys) > 0 {
@@ -193,7 +193,7 @@ func (s *httpServer) DeleteManage(c *gin.Context) error {
 		return err
 	}
 	m, _ := s.member.GetByRoom(params.Uid, params.RoomId) // 從快取中取得會員在該房間權限
-	r, _ := s.room.Get(int(params.RoomId)) // 從DB取得房間資料
+	r, _ := s.room.Get(int(params.RoomId))                // 從DB取得房間資料
 	connect := room.NewPbConnect(m, r, "", 0)
 
 	_, _ = s.message.SendPermission(keys, m, *connect)
@@ -206,9 +206,23 @@ func (s *httpServer) DeleteManage(c *gin.Context) error {
 // 所有房間在線人數
 func (s *httpServer) online(c *gin.Context) error {
 	o, err := s.room.Online() // 從快取中取得所有房間在線人數
+	s.room.OnlineViewer()
+
 	if err == nil {
 		c.JSON(http.StatusOK, o)
 	}
+
+	return err
+}
+
+// 所有房間在線名單
+func (s *httpServer) onlineViewer(c *gin.Context) error {
+	viewers, err := s.room.OnlineViewer()
+
+	if err == nil {
+		c.JSON(http.StatusOK, viewers)
+	}
+
 	return err
 }
 

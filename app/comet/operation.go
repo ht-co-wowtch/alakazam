@@ -3,9 +3,9 @@ package comet
 import (
 	"context"
 	"encoding/json"
+	"gitlab.com/ht-co/cpw/micro/log"
 	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
 	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
-	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -49,10 +49,16 @@ func (s *Server) Heartbeat(ctx context.Context, ch *Channel) error {
 
 // RenewOnline
 // 告知logic service現在房間的在線人數
-func (s *Server) RenewOnline(ctx context.Context, serverID string, roomCount map[int32]int32) (allRoom map[int32]int32, err error) {
+func (s *Server) RenewOnline(
+	ctx context.Context,
+	serverID string,
+	roomCount map[int32]int32,
+	roomViewers map[int32]*logicpb.RoomViewers,
+) (allRoom map[int32]int32, err error) {
 	reply, err := s.logic.RenewOnline(ctx, &logicpb.OnlineReq{
 		Server:    s.name,
 		RoomCount: roomCount,
+		RoomViewers: roomViewers,
 	}, grpc.UseCompressor(gzip.Name))
 
 	if err != nil {

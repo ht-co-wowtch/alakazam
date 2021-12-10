@@ -5,10 +5,10 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/google/uuid"
+	"gitlab.com/ht-co/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 )
 
@@ -276,15 +276,16 @@ func (m *Member) GetStatus(uid string, rid int) (*models.Member, error) {
 // GetUserName
 // 取得會員名稱
 func (m *Member) GetUserName(uid string) (string, error) {
-	members, err := m.GetUserNames([]string{uid})
+	members, err := m.BatchGetUserNames([]string{uid})
 	if err != nil {
 		return "", err
 	}
 	return members[uid], nil
 }
 
-// 取得會員帳號名稱(UserName)
-func (m *Member) GetUserNames(uid []string) (map[string]string, error) {
+// BatchGetUserNames
+// 批次取得會員帳號名稱(UserName)
+func (m *Member) BatchGetUserNames(uid []string) (map[string]string, error) {
 	name, err := m.c.getName(uid)
 	if err != nil && err != redis.Nil {
 		return nil, err
@@ -320,8 +321,16 @@ func (m *Member) GetUserNames(uid []string) (map[string]string, error) {
 	return name, nil
 }
 
-func (m *Member) GetMembers(id []int64) ([]models.Member, error) {
+// BatchGetMembers
+// 批次取得會員資料 by id
+func (m *Member) BatchGetMembers(id []int64) ([]models.Member, error) {
 	return m.db.GetMembers(id)
+}
+
+// BatchGetMembersByUid
+// 批次取得會員資料 by UID
+func (m *Member) BatchGetMembersByUid(uid []string) ([]models.Member, error) {
+	return m.db.GetMembersByUid(uid)
 }
 
 func (m *Member) Fetch(uid string) (*models.Member, error) {
@@ -369,8 +378,8 @@ func (m *Member) Update(uid, name string, gender int32) error {
 	return nil
 }
 
-// 更新會員等級
 // SetLevel
+// 更新會員等級
 func (m *Member) SetLevel(uid string, rid int, level int) error {
 	// Update level form DB
 	u, err := m.db.Find(uid)
@@ -518,7 +527,7 @@ func (m *Member) GetRedEnvelopeDetail(orderId, authToken string) (RedEnvelopeDet
 
 	if len(uids) > 0 {
 		members = make([]MemberDetail, 0, len(reply.Members)+1)
-		if names, err = m.GetUserNames(uids); err != nil {
+		if names, err = m.BatchGetUserNames(uids); err != nil {
 			return RedEnvelopeDetail{}, err
 		}
 		for _, v := range reply.Members {

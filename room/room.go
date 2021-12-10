@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"gitlab.com/ht-co/cpw/micro/log"
+
 	"github.com/go-redis/redis"
 	"github.com/go-sql-driver/mysql"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
@@ -24,6 +26,7 @@ type Room interface {
 	AddTopMessage(rids []int32, seq int64, message string, ts []int) error
 	DeleteTopMessage(rids []int32, msgId int64, t int) error
 	Online() (map[int32]int32, error)
+	OnlineViewer() (map[int32][]string, error)
 }
 
 type room struct {
@@ -254,4 +257,16 @@ func (r *room) Online() (map[int32]int32, error) {
 		return nil, err
 	}
 	return online.RoomCount, nil
+}
+
+// OnlineViewer
+// 從快取中取得所有房間在線人UID
+func (r *room) OnlineViewer() (map[int32][]string, error) {
+	viewer, err := r.c.getOnlineViewer("hostname")
+	if err != nil {
+		return nil, err
+	}
+
+	log.Infof("OnlineViewer, %+v", viewer)
+	return viewer.RoomViewers, nil
 }

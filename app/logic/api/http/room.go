@@ -8,9 +8,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"gitlab.com/ht-co/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
-	"gitlab.com/ht-co/cpw/micro/log"
 
 	"go.uber.org/zap"
 )
@@ -210,5 +210,55 @@ func (s *httpServer) blockadeList(c *gin.Context) error {
 	}
 
 	c.JSON(http.StatusOK, ms)
+	return nil
+}
+
+// 聊天觀看者結構
+type viewer struct {
+	Uid     string `json:"uid"`
+	Name    string `json:"name"`
+	Avatar  string `json:"avatar"`
+	Banned  bool   `json:"is_banned"`
+	Type    string `json:"type"`
+	Manager bool   `json:"is_manage"`
+}
+
+// 觀看名單
+func (s *httpServer) onlineViewers(c *gin.Context) error {
+	roomId, _ := strconv.Atoi(c.Param("id"))
+	viewerList, err := s.msg.room.GetOnlineViewer()
+
+	if err != nil {
+		log.Errorf("取得聊天室在線名單錯誤, %+v", err.Error())
+		return err
+	}
+
+	d := []viewer{}
+	if viewers, ok := viewerList[int32(roomId)]; ok {
+		var viewerUids []string
+		for _, uid := range viewers {
+			log.Infof("viewe uid:%+v", uid)
+			viewerUids = append(viewerUids, uid)
+		}
+		members, err := s.member.BatchGetMembersByUid(viewerUids)
+		if err != nil {
+			return err
+		}
+
+		for _, m := range members {
+			d = append(d, viewer{
+				Uid:     m.Uid,
+				Name:    m.Name,
+				Type:    scheme.ToType(m.Type),
+				Avatar:  scheme.ToAvatarName(m.Gender),
+				Banned:  m.Banned(),
+				Manager: m.Permission.IsManage,
+			})
+		}
+	}
+
+	log.Infof("room %d 's viewers: ", roomId, d)
+	c.JSON(http.StatusOK, d)
+
 	return nil
 }

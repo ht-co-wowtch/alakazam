@@ -11,15 +11,15 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"gitlab.com/ht-co/cpw/micro/errdefs"
+	web "gitlab.com/ht-co/cpw/micro/http"
+	"gitlab.com/ht-co/cpw/micro/log"
 	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/conf"
 	"gitlab.com/jetfueltw/cpw/alakazam/client"
 	"gitlab.com/jetfueltw/cpw/alakazam/errors"
 	"gitlab.com/jetfueltw/cpw/alakazam/member"
 	"gitlab.com/jetfueltw/cpw/alakazam/message"
 	"gitlab.com/jetfueltw/cpw/alakazam/room"
-	"gitlab.com/ht-co/cpw/micro/errdefs"
-	web "gitlab.com/ht-co/cpw/micro/http"
-	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 	// _ "net/http/pprof"
 )
@@ -93,6 +93,7 @@ func handler(e *gin.Engine, s httpServer) {
 	e.GET("/room/:id/manage", ErrHandler(s.manageList)) // 房管名單
 	e.GET("/room/:id/blockade", ErrHandler(s.blockadeList)) // 封鎖名單
 	e.GET("/room/:id/user/:uid", ErrHandler(s.user)) // 用戶資料
+	e.GET("/room/:id/viewers", ErrHandler(s.onlineViewers)) //聊天室觀眾名單
 
 	e.POST("/push/room", s.authUid, ErrHandler(s.pushRoom))
 	e.POST("/push/key", s.authUid, ErrHandler(s.pushKey))

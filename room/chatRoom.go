@@ -28,12 +28,13 @@ type Chat interface {
 	Connect(server string, token []byte) (*pb.ConnectReply, error)
 	Disconnect(uid, key string) (bool, error)
 	Heartbeat(uid, key, name, server string) error
-	RenewOnline(server string, roomCount map[int32]int32) (map[int32]int32, error)
+	RenewOnline(server string, roomCount map[int32]int32, roomViewers map[int32][]string) (map[int32]int32, error)
 	GetRoom(rid int) (models.Room, error)
 	GetMessageSession(uid string, rid int) (*models.Member, models.Room, error)
 	ChangeRoom(uid string, rid int, key string) (*pb.ConnectReply, error)
 	GetTopMessage(rid int) (scheme.Message, error)
 	GetOnline(server string) (*Online, error)
+	GetOnlineViewer() (map[int32][]string, error)
 	GetManages(rid int) ([]memberList, error)
 	GetBlockades(rid int) ([]memberList, error)
 	AddPreviousPayment(uid string, liveChatId int, paidTime time.Time, diamond float32) error
@@ -223,7 +224,8 @@ func (c *chat) Heartbeat(uid, key, name, server string) error {
 	return c.member.Heartbeat(uid)
 }
 
-func (c *chat) RenewOnline(server string, roomCount map[int32]int32) (map[int32]int32, error) {
+func (c *chat) RenewOnline(server string, roomCount map[int32]int32, roomViewers map[int32][]string) (map[int32]int32, error) {
+	// TODO roomCount、roomViewers 可以一起處理
 	for room, count := range roomCount {
 		r, err := c.cache.get(int(room))
 		if err == nil {
@@ -239,12 +241,25 @@ func (c *chat) RenewOnline(server string, roomCount map[int32]int32) (map[int32]
 		Updated:   time.Now().Unix(),
 	}
 
+	onlineViewer := &OnlineViewer{
+		Server:      server,
+		RoomViewers: roomViewers,
+		Updated:     time.Now().Unix(),
+	}
+
+	// 房間入數Cache
 	err := c.cache.addOnline(server, online)
 	if err != nil {
 		return nil, err
 	}
 
-	return roomCount, err
+	// 房間觀眾Cache
+	err = c.cache.addOnlineViewer(server, onlineViewer)
+	if err != nil {
+		return nil, err
+	}
+
+	return roomCount, nil
 }
 
 func (c *chat) GetRoom(rid int) (models.Room, error) {
@@ -274,6 +289,18 @@ func (c *chat) GetTopMessage(rid int) (scheme.Message, error) {
 
 func (c *chat) GetOnline(server string) (*Online, error) {
 	return c.cache.getOnline(server)
+}
+
+// GetOnlineViewer
+// 所有房間在線人UID
+func (c *chat) GetOnlineViewer() (map[int32][]string, error) {
+	viewer, err := c.cache.getOnlineViewer("hostname")
+
+	if err != nil {
+		return nil, err
+	}
+
+	return viewer.RoomViewers, nil
 }
 
 type memberList struct {
