@@ -221,6 +221,7 @@ type viewer struct {
 	Banned  bool   `json:"is_banned"`
 	Type    string `json:"type"`
 	Manager bool   `json:"is_manage"`
+	Lv      int    `json:"lv"`
 }
 
 // 觀看名單
@@ -253,6 +254,7 @@ func (s *httpServer) onlineViewers(c *gin.Context) error {
 				Avatar:  scheme.ToAvatarName(m.Gender),
 				Banned:  m.Banned(),
 				Manager: m.Permission.IsManage,
+				Lv:      m.Lv,
 			})
 		}
 	}
