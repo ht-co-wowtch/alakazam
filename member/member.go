@@ -98,6 +98,8 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 	log.Infof("lv", zap.Int("lv", lv))
 	
 	u.Lv = lv
+	log.Infof("u lv", zap.Int("lv", u.Lv))
+
 
 	if u.Blockade() {
 		return u, "", nil
