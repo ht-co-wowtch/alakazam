@@ -92,6 +92,11 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 	if err != nil {
 		lv = 0
 	}
+
+	log.Infof("user lv", zap.Int("lv", user.Lv))
+	log.Infof("u lv", zap.Int("lv", u.Lv))
+	log.Infof("lv", zap.Int("lv", lv))
+	
 	u.Lv = lv
 
 	if u.Blockade() {
@@ -101,7 +106,6 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 	if u.Name != user.Name || u.Gender != user.Gender || u.Lv != user.Lv {
 		u.Name = user.Name
 		u.Gender = user.Gender
-		u.Lv = user.Lv
 		if ok, err := m.db.UpdateUser(u); err != nil || !ok {
 			log.Error("update user", zap.String("uid", user.Uid), zap.Bool("action", ok), zap.Error(err))
 		}
