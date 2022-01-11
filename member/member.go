@@ -101,6 +101,7 @@ func (m *Member) Login(room models.Room, token, server string) (*models.Member, 
 	if u.Name != user.Name || u.Gender != user.Gender || u.Lv != user.Lv {
 		u.Name = user.Name
 		u.Gender = user.Gender
+		u.Lv = user.Lv
 		if ok, err := m.db.UpdateUser(u); err != nil || !ok {
 			log.Error("update user", zap.String("uid", user.Uid), zap.Bool("action", ok), zap.Error(err))
 		}
