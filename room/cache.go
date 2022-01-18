@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/zhenjl/cityhash"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/ht-co/wowtch/live/alakazam/models"
 	// _ "runtime/pprof"
 )
 

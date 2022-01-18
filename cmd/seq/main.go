@@ -6,9 +6,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/app/seq"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/seq/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/seq"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/seq/conf"
+	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/metrics"
 	"gitlab.com/ht-co/cpw/micro/log"
 )
 

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/logic/pb"
+	"gitlab.com/ht-co/wowtch/live/alakazam/errors"
 )
 
 const (

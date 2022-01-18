@@ -9,8 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"gitlab.com/ht-co/cpw/micro/log"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
+	"gitlab.com/ht-co/wowtch/live/alakazam/errors"
+	"gitlab.com/ht-co/wowtch/live/alakazam/message/scheme"
 
 	"go.uber.org/zap"
 )

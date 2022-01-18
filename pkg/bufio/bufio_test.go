@@ -15,7 +15,7 @@ import (
 	"testing/iotest"
 	"time"
 
-	. "gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
+	. "gitlab.com/ht-co/wowtch/live/alakazam/pkg/bufio"
 )
 
 // Reads from a reader and rot13s the result.

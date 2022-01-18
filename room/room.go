@@ -9,12 +9,12 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/go-sql-driver/mysql"
-	"gitlab.com/jetfueltw/cpw/alakazam/client"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/member"
-	"gitlab.com/jetfueltw/cpw/alakazam/message"
-	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/ht-co/wowtch/live/alakazam/client"
+	"gitlab.com/ht-co/wowtch/live/alakazam/errors"
+	"gitlab.com/ht-co/wowtch/live/alakazam/member"
+	"gitlab.com/ht-co/wowtch/live/alakazam/message"
+	"gitlab.com/ht-co/wowtch/live/alakazam/message/scheme"
+	"gitlab.com/ht-co/wowtch/live/alakazam/models"
 )
 
 type Room interface {

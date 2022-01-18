@@ -4,9 +4,9 @@ import (
 	"strconv"
 	"unicode/utf8"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/ht-co/wowtch/live/alakazam/models"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/member"
+	"gitlab.com/ht-co/wowtch/live/alakazam/member"
 )
 
 const (

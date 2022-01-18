@@ -2,9 +2,9 @@ package pb
 
 import (
 	"errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/encoding/binary"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/websocket"
+	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/bytes"
+	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/encoding/binary"
+	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/websocket"
 )
 
 const (

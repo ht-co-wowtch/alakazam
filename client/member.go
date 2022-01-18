@@ -47,7 +47,7 @@ func (c *Client) Auth(token string) (User, error) {
 	return u, nil
 }
 
-// 取得等級
+// Level 取得等級
 func (c *Client) Level(uid string) (int, error) {
 	path := fmt.Sprintf("/level/%s", uid)
 	lvResp, err := c.c.Get(path, nil, nil)
@@ -68,8 +68,7 @@ func (c *Client) Level(uid string) (int, error) {
 	return lv.Level, nil
 }
 
-// 取得會員月卡效期
-// LiveExpire
+// LiveExpire 取得會員月卡效期
 func (c *Client) LiveExpire(uid string) (UserLiveExpire, error) {
 	path := fmt.Sprintf("/live/expire/%s", uid)
 	// TODO 加上快取

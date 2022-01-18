@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"sync"
 
-	cometpb "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
-	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
+	cometpb "gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/job/conf"
+	logicpb "gitlab.com/ht-co/wowtch/live/alakazam/app/logic/pb"
 	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 	// _ "net/http/httpprof"

@@ -3,9 +3,9 @@ package message
 import (
 	"database/sql"
 	"github.com/go-redis/redis"
-	"gitlab.com/jetfueltw/cpw/alakazam/member"
-	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/ht-co/wowtch/live/alakazam/member"
+	"gitlab.com/ht-co/wowtch/live/alakazam/message/scheme"
+	"gitlab.com/ht-co/wowtch/live/alakazam/models"
 	"time"
 )
 

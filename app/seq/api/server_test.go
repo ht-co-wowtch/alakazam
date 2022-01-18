@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/seq/api/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/seq/api/pb"
+	"gitlab.com/ht-co/wowtch/live/alakazam/models"
 	"testing"
 )
 

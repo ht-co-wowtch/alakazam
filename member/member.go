@@ -6,9 +6,9 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/google/uuid"
 	"gitlab.com/ht-co/cpw/micro/log"
-	"gitlab.com/jetfueltw/cpw/alakazam/client"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/ht-co/wowtch/live/alakazam/client"
+	"gitlab.com/ht-co/wowtch/live/alakazam/errors"
+	"gitlab.com/ht-co/wowtch/live/alakazam/models"
 	"go.uber.org/zap"
 )
 

@@ -1,9 +1,9 @@
 package comet
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/time"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/conf"
+	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/bytes"
+	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/time"
 )
 
 // RoundOptions 

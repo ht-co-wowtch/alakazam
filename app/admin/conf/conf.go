@@ -1,7 +1,7 @@
 package conf
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/app/logic/conf"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/logic/conf"
 	"gitlab.com/ht-co/cpw/micro/client"
 	"gitlab.com/ht-co/cpw/micro/config"
 	"gitlab.com/ht-co/cpw/micro/database"

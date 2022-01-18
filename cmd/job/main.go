@@ -7,10 +7,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/app/job"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/job"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/job/conf"
+	"gitlab.com/ht-co/wowtch/live/alakazam/cmd"
+	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/metrics"
 	"gitlab.com/ht-co/cpw/micro/log"
 )
 

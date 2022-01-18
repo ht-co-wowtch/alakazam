@@ -10,11 +10,11 @@ import (
 	"syscall"
 	"time"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/api"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/cmd"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/metrics"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/api"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/conf"
+	"gitlab.com/ht-co/wowtch/live/alakazam/cmd"
+	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/metrics"
 	"gitlab.com/ht-co/cpw/micro/log"
 )
 

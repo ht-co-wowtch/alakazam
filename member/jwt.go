@@ -3,7 +3,7 @@ package member
 import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/ht-co/wowtch/live/alakazam/errors"
 )
 
 type Jwt struct {

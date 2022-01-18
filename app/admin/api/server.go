@@ -6,11 +6,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	web "gitlab.com/ht-co/cpw/micro/http"
-	api "gitlab.com/jetfueltw/cpw/alakazam/app/logic/api/http"
-	"gitlab.com/jetfueltw/cpw/alakazam/client"
-	"gitlab.com/jetfueltw/cpw/alakazam/member"
-	"gitlab.com/jetfueltw/cpw/alakazam/message"
-	"gitlab.com/jetfueltw/cpw/alakazam/room"
+	api "gitlab.com/ht-co/wowtch/live/alakazam/app/logic/api/http"
+	"gitlab.com/ht-co/wowtch/live/alakazam/client"
+	"gitlab.com/ht-co/wowtch/live/alakazam/member"
+	"gitlab.com/ht-co/wowtch/live/alakazam/message"
+	"gitlab.com/ht-co/wowtch/live/alakazam/room"
 	//_ "net/http/pprof"
 )
 

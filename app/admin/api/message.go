@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gitlab.com/jetfueltw/cpw/alakazam/client"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/ht-co/wowtch/live/alakazam/client"
+	"gitlab.com/ht-co/wowtch/live/alakazam/errors"
+	"gitlab.com/ht-co/wowtch/live/alakazam/message/scheme"
+	"gitlab.com/ht-co/wowtch/live/alakazam/models"
 	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 )

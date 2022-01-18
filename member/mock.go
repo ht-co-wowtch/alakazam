@@ -2,7 +2,7 @@ package member
 
 import (
 	"github.com/stretchr/testify/mock"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/ht-co/wowtch/live/alakazam/models"
 	"time"
 )
 

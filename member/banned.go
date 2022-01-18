@@ -3,7 +3,7 @@ package member
 import (
 	"time"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/ht-co/wowtch/live/alakazam/errors"
 	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 )

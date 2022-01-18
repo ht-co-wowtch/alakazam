@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis"
 	"gitlab.com/ht-co/cpw/micro/log"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
+	"gitlab.com/ht-co/wowtch/live/alakazam/errors"
 	"go.uber.org/zap"
 	"time"
 )

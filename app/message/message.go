@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/Shopify/sarama"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/message/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/message"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/message/conf"
+	"gitlab.com/ht-co/wowtch/live/alakazam/message"
+	"gitlab.com/ht-co/wowtch/live/alakazam/models"
 	"gitlab.com/ht-co/cpw/micro/redis"
 	// _ "net/http/httprof"
 	// _ "runtime/pprof"

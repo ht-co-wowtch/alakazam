@@ -5,8 +5,8 @@ import (
 	"sync/atomic"
 
 	"gitlab.com/ht-co/cpw/micro/log"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/conf"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
 	"go.uber.org/zap"
 )
 

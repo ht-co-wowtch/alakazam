@@ -4,8 +4,8 @@ import (
 	"sync"
 
 	"gitlab.com/ht-co/cpw/micro/log"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
+	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/bufio"
 	"go.uber.org/zap"
 )
 

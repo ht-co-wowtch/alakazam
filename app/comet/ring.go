@@ -1,8 +1,8 @@
 package comet
 
 import (
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/errors"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
 )
 
 //TODO: refactor 使用官方環形api

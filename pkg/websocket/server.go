@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bufio"
+	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/bufio"
 )
 
 var (

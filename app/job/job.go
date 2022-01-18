@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/Shopify/sarama"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/message"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/job/conf"
+	"gitlab.com/ht-co/wowtch/live/alakazam/message"
 )
 
 // Job is push job.

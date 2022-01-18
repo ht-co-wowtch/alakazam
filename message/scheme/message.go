@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"time"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
-	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/member"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
+	logicpb "gitlab.com/ht-co/wowtch/live/alakazam/app/logic/pb"
+	"gitlab.com/ht-co/wowtch/live/alakazam/member"
+	"gitlab.com/ht-co/wowtch/live/alakazam/models"
 )
 
 const (

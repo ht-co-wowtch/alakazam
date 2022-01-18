@@ -1,6 +1,6 @@
 package member
 
-import "gitlab.com/jetfueltw/cpw/alakazam/errors"
+import "gitlab.com/ht-co/wowtch/live/alakazam/errors"
 
 func (m *Member) SetBlockade(uid string, rid int, set bool) error {
 	member, err := m.GetByRoom(uid, rid)

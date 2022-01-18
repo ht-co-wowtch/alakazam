@@ -2,8 +2,8 @@ package seq
 
 import (
 	"context"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/seq/api"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/seq/conf"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/seq/api"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/seq/conf"
 	"gitlab.com/ht-co/cpw/micro/log"
 	"google.golang.org/grpc"
 	"net"

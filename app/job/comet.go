@@ -6,8 +6,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/job/conf"
 	"gitlab.com/ht-co/cpw/micro/grpc"
 	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"

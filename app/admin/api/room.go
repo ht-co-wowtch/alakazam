@@ -10,9 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"gitlab.com/ht-co/cpw/micro/log"
-	"gitlab.com/jetfueltw/cpw/alakazam/message/scheme"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	"gitlab.com/jetfueltw/cpw/alakazam/room"
+	"gitlab.com/ht-co/wowtch/live/alakazam/message/scheme"
+	"gitlab.com/ht-co/wowtch/live/alakazam/models"
+	"gitlab.com/ht-co/wowtch/live/alakazam/room"
 	"go.uber.org/zap"
 	//_ "net/http/pprof"
 )

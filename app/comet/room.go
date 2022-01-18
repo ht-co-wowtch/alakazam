@@ -3,8 +3,8 @@ package comet
 import (
 	"sync"
 
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/errors"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
 	// for lock pprof testig
 	// "runtime/pprof"
 )

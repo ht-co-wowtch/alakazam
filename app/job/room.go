@@ -4,9 +4,9 @@ import (
 	"errors"
 	"time"
 
-	comet "gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/job/conf"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/bytes"
+	comet "gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/job/conf"
+	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/bytes"
 	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 )

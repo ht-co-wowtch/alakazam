@@ -2,9 +2,9 @@ package scheme
 
 import (
 	"encoding/json"
-	"gitlab.com/jetfueltw/cpw/alakazam/app/comet/pb"
-	logicpb "gitlab.com/jetfueltw/cpw/alakazam/app/logic/pb"
-	"gitlab.com/jetfueltw/cpw/alakazam/pkg/money"
+	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
+	logicpb "gitlab.com/ht-co/wowtch/live/alakazam/app/logic/pb"
+	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/money"
 	"time"
 	"unicode/utf8"
 )

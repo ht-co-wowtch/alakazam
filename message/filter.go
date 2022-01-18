@@ -2,9 +2,9 @@ package message
 
 import (
 	"database/sql"
-	"gitlab.com/jetfueltw/cpw/alakazam/errors"
-	"gitlab.com/jetfueltw/cpw/alakazam/models"
-	shield "gitlab.com/jetfueltw/cpw/alakazam/pkg/filter"
+	"gitlab.com/ht-co/wowtch/live/alakazam/errors"
+	"gitlab.com/ht-co/wowtch/live/alakazam/models"
+	shield "gitlab.com/ht-co/wowtch/live/alakazam/pkg/filter"
 )
 
 type Filter interface {
