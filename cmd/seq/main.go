@@ -9,7 +9,7 @@ import (
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/seq"
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/seq/conf"
 	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/metrics"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 )
 
 var (

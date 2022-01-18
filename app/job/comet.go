@@ -8,8 +8,8 @@ import (
 
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/job/conf"
-	"gitlab.com/ht-co/cpw/micro/grpc"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/grpc"
+	"gitlab.com/ht-co/micro/log"
 	"go.uber.org/zap"
 	// _ "runtime/pprof"
 )

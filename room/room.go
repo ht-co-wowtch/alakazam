@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 
 	"github.com/go-redis/redis"
 	"github.com/go-sql-driver/mysql"

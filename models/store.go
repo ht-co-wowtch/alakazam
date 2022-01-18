@@ -4,7 +4,7 @@ import (
 	"errors"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
-	"gitlab.com/ht-co/cpw/micro/database"
+	"gitlab.com/ht-co/micro/database"
 	"time"
 )
 

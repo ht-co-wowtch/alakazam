@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gitlab.com/ht-co/micro/log"
 	"gitlab.com/ht-co/wowtch/live/alakazam/message/scheme"
-	"gitlab.com/ht-co/cpw/micro/log"
 	"go.uber.org/zap"
 )
 

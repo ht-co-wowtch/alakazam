@@ -1,10 +1,10 @@
 package conf
 
 import (
-	"gitlab.com/ht-co/cpw/micro/config"
-	"gitlab.com/ht-co/cpw/micro/database"
-	"gitlab.com/ht-co/cpw/micro/log"
-	"gitlab.com/ht-co/cpw/micro/redis"
+	"gitlab.com/ht-co/micro/config"
+	"gitlab.com/ht-co/micro/database"
+	"gitlab.com/ht-co/micro/log"
+	"gitlab.com/ht-co/micro/redis"
 )
 
 var (

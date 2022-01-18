@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 	"go.uber.org/zap"
 	// _ "net/http/pprof"
 )

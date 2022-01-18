@@ -14,7 +14,7 @@ import (
 	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/bytes"
 	xtime "gitlab.com/ht-co/wowtch/live/alakazam/pkg/time"
 	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/websocket"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

@@ -13,9 +13,9 @@ import (
 	"gitlab.com/ht-co/wowtch/live/alakazam/message"
 	"gitlab.com/ht-co/wowtch/live/alakazam/models"
 	"gitlab.com/ht-co/wowtch/live/alakazam/room"
-	rpccli "gitlab.com/ht-co/cpw/micro/grpc"
-	"gitlab.com/ht-co/cpw/micro/log"
-	"gitlab.com/ht-co/cpw/micro/redis"
+	rpccli "gitlab.com/ht-co/micro/grpc"
+	"gitlab.com/ht-co/micro/log"
+	"gitlab.com/ht-co/micro/redis"
 	//_ "net/http/pprof"
 )
 

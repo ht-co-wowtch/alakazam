@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/google/uuid"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 	"gitlab.com/ht-co/wowtch/live/alakazam/client"
 	"gitlab.com/ht-co/wowtch/live/alakazam/errors"
 	"gitlab.com/ht-co/wowtch/live/alakazam/models"

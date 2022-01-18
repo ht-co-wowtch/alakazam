@@ -8,7 +8,7 @@ import (
 	cometpb "gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/job/conf"
 	logicpb "gitlab.com/ht-co/wowtch/live/alakazam/app/logic/pb"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 	"go.uber.org/zap"
 	// _ "net/http/httpprof"
 	// _ "runtime/pprof"

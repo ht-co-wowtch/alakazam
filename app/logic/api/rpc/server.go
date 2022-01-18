@@ -10,11 +10,11 @@ import (
 	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/enum/cashflowLog"
 	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/enum/member"
 
-	"gitlab.com/ht-co/cpw/micro/id"
+	"gitlab.com/ht-co/micro/id"
 
-	"gitlab.com/ht-co/cpw/micro/errdefs"
-	rpc "gitlab.com/ht-co/cpw/micro/grpc"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/errdefs"
+	rpc "gitlab.com/ht-co/micro/grpc"
+	"gitlab.com/ht-co/micro/log"
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/logic/pb"
 	"gitlab.com/ht-co/wowtch/live/alakazam/client"
 	"gitlab.com/ht-co/wowtch/live/alakazam/errors"

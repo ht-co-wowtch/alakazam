@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	web "gitlab.com/ht-co/cpw/micro/http"
+	web "gitlab.com/ht-co/micro/http"
 	api "gitlab.com/ht-co/wowtch/live/alakazam/app/logic/api/http"
 	"gitlab.com/ht-co/wowtch/live/alakazam/client"
 	"gitlab.com/ht-co/wowtch/live/alakazam/member"

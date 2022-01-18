@@ -7,7 +7,7 @@ import (
 	comet "gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/job/conf"
 	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/bytes"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 	"go.uber.org/zap"
 )
 

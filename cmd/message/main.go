@@ -11,7 +11,7 @@ import (
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/message/conf"
 	"gitlab.com/ht-co/wowtch/live/alakazam/cmd"
 	"gitlab.com/ht-co/wowtch/live/alakazam/pkg/metrics"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 )
 
 var (

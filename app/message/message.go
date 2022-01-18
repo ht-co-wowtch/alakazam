@@ -7,7 +7,7 @@ import (
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/message/conf"
 	"gitlab.com/ht-co/wowtch/live/alakazam/message"
 	"gitlab.com/ht-co/wowtch/live/alakazam/models"
-	"gitlab.com/ht-co/cpw/micro/redis"
+	"gitlab.com/ht-co/micro/redis"
 	// _ "net/http/httprof"
 	// _ "runtime/pprof"
 )

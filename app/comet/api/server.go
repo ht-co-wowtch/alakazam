@@ -9,7 +9,7 @@ import (
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet"
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/errors"
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
-	rpc "gitlab.com/ht-co/cpw/micro/grpc"
+	rpc "gitlab.com/ht-co/micro/grpc"
 	"google.golang.org/grpc"
 	// _ "runtime/pprof"
 )

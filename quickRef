@@ -1,6 +1,6 @@
 1) 使用 log 要import 底下兩個 lib
 
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 	"go.uber.org/zap"
 
 	log.Info("[channel.go]Conn close", zap.String("uid", c.Uid), zap.String("name", c.Name))
@@ -40,7 +40,7 @@
   在所需的component上生成 db access object
  5) 例如在 app/comet/websocket.go 的 InitWebsocket method中
     import "gitlab.com/jetfueltw/cpw/alakazam/models"
-		"gitlab.com/ht-co/cpw/micro/database"
+		"gitlab.com/ht-co/micro/database"
 
     db = models.NewStore(conf.Conf.DB)
 	db.GetClosedRoomIds()

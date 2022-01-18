@@ -284,6 +284,7 @@ github.com/ziutek/mymysql v1.5.4 h1:GB0qdRGsTwQSBVYuVShFBKaXSnSnYYC2d9knnE1LHFs=
 github.com/ziutek/mymysql v1.5.4/go.mod h1:LMSpPZ6DbqWFxNCHW77HeMg9I646SAhApZ/wKdgO/C0=
 gitlab.com/ht-co/micro v0.23.4 h1:Kh2yMh7IXci94Mx8OB9NFTLMoZKQ3RAKezPMY9ZmxBk=
 gitlab.com/ht-co/micro v0.23.4/go.mod h1:d5Fnbg/A7m6sW4YubeKn8bMGRWfFBHR4qhlHXXcSohw=
+gitlab.com/ht-co/micro.git v0.23.4 h1:Ms5XPoBIxYiYpI8CtdDy/mMfFMUHPPLKiWs3CBmmf9E=
 gitlab.com/ht-co/micro.git v0.23.4/go.mod h1:d5Fnbg/A7m6sW4YubeKn8bMGRWfFBHR4qhlHXXcSohw=
 gitlab.com/nyarla/go-crypt v0.0.0-20160106005555-d9a5dc2b789b/go.mod h1:T3BPAOm2cqquPa0MKWeNkmOM5RQsRhkrwMWonFMN7fE=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=

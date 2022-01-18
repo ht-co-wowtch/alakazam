@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"github.com/go-redis/redis"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 	"gitlab.com/ht-co/wowtch/live/alakazam/errors"
 	"go.uber.org/zap"
 	"time"

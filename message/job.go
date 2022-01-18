@@ -2,7 +2,7 @@ package message
 
 import (
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/logic/pb"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 	"sync"
 	"time"
 )

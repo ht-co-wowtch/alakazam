@@ -11,9 +11,9 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"gitlab.com/ht-co/cpw/micro/errdefs"
-	web "gitlab.com/ht-co/cpw/micro/http"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/errdefs"
+	web "gitlab.com/ht-co/micro/http"
+	"gitlab.com/ht-co/micro/log"
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/logic/conf"
 	"gitlab.com/ht-co/wowtch/live/alakazam/client"
 	"gitlab.com/ht-co/wowtch/live/alakazam/errors"

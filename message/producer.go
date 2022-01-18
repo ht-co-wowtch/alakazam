@@ -11,7 +11,7 @@ import (
 	kafka "github.com/Shopify/sarama"
 	"github.com/go-redis/redis"
 	"github.com/gogo/protobuf/proto"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
 	logicpb "gitlab.com/ht-co/wowtch/live/alakazam/app/logic/pb"
 	seqpb "gitlab.com/ht-co/wowtch/live/alakazam/app/seq/api/pb"

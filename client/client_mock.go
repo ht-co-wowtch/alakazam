@@ -1,7 +1,7 @@
 package client
 
 import (
-	"gitlab.com/ht-co/cpw/micro/client"
+	"gitlab.com/ht-co/micro/client"
 	"net/http"
 )
 

@@ -1,7 +1,7 @@
 package time
 
 import (
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 	"sync"
 	itime "time"
 )

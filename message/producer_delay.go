@@ -2,7 +2,7 @@ package message
 
 import (
 	"encoding/json"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 	"gitlab.com/ht-co/wowtch/live/alakazam/client"
 	"gitlab.com/ht-co/wowtch/live/alakazam/message/scheme"
 	"gitlab.com/ht-co/wowtch/live/alakazam/models"

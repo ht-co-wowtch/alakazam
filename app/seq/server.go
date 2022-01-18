@@ -4,7 +4,7 @@ import (
 	"context"
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/seq/api"
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/seq/conf"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 	"google.golang.org/grpc"
 	"net"
 )

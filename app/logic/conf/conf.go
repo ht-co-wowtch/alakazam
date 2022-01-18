@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/ht-co/cpw/micro/client"
-	"gitlab.com/ht-co/cpw/micro/config"
-	"gitlab.com/ht-co/cpw/micro/database"
-	"gitlab.com/ht-co/cpw/micro/grpc"
-	"gitlab.com/ht-co/cpw/micro/http"
-	"gitlab.com/ht-co/cpw/micro/log"
-	"gitlab.com/ht-co/cpw/micro/redis"
+	"gitlab.com/ht-co/micro/client"
+	"gitlab.com/ht-co/micro/config"
+	"gitlab.com/ht-co/micro/database"
+	"gitlab.com/ht-co/micro/grpc"
+	"gitlab.com/ht-co/micro/http"
+	"gitlab.com/ht-co/micro/log"
+	"gitlab.com/ht-co/micro/redis"
 
 	"github.com/spf13/viper"
 )

@@ -10,8 +10,8 @@ import (
 	"gitlab.com/ht-co/wowtch/live/alakazam/message"
 	"gitlab.com/ht-co/wowtch/live/alakazam/message/scheme"
 	"gitlab.com/ht-co/wowtch/live/alakazam/room"
-	"gitlab.com/ht-co/cpw/micro/errdefs"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/errdefs"
+	"gitlab.com/ht-co/micro/log"
 	"go.uber.org/zap"
 )
 

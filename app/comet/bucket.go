@@ -4,7 +4,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/conf"
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
 	"go.uber.org/zap"

@@ -10,7 +10,7 @@ import (
 	"gitlab.com/ht-co/wowtch/live/alakazam/app/logic/pb"
 	"gitlab.com/ht-co/wowtch/live/alakazam/message/scheme"
 	"gitlab.com/ht-co/wowtch/live/alakazam/models"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 	"go.uber.org/zap"
 	"runtime"
 	"strconv"

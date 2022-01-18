@@ -3,7 +3,7 @@ package comet
 import (
 	"context"
 	"encoding/json"
-	"gitlab.com/ht-co/cpw/micro/log"
+	"gitlab.com/ht-co/micro/log"
 	cometpb "gitlab.com/ht-co/wowtch/live/alakazam/app/comet/pb"
 	logicpb "gitlab.com/ht-co/wowtch/live/alakazam/app/logic/pb"
 	"go.uber.org/zap"
