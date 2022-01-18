@@ -3,14 +3,14 @@ FROM golang:1.13-alpine AS build_module
 ENV GO111MODULE=on
 ARG GOPROXY
 ENV GOPROXY=${GOPROXY}
-ENV GOPRIVATE=gitlab.com/jetfueltw/cpw
+ENV GOPRIVATE=gitlab.com/ht-co
 
-WORKDIR $GOPATH/src/gitlab.com/jetfueltw/cpw/alakazam
+WORKDIR $GOPATH/src/gitlab.com/ht-co/wowtch/live/alakazam
 
 COPY go.mod go.sum ./
 
 RUN apk add --no-cache git && \
-    git config --global url."https://gitlab+deploy-token-678908:s1jR1Pt-yvNHrC_9expc@gitlab.com/ht-co/cpw/micro".insteadOf "https://gitlab.com/ht-co/cpw/micro" && \
+    git config --global url."https://gitlab+deploy-token-750700:CvHdzgztkoSMjN5E11s_@gitlab.com/ht-co/micro".insteadOf "https://gitlab.com/ht-co/micro" && \
     go mod download
 
 FROM build_module AS build
