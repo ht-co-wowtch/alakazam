@@ -21,7 +21,6 @@ require (
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.3.0
 	github.com/zhenjl/cityhash v0.0.0-20131128155616-cdd6a94144ab
-	gitlab.com/ht-co/cpw/micro v0.23.2
 	gitlab.com/ht-co/micro v0.23.4 // indirect
 	go.uber.org/zap v1.10.0
 	golang.org/x/net v0.0.0-20190613194153-d28f0bde5980
