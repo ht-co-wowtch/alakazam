@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gitlab.com/ht-co/micro/log"
 	"gitlab.com/ht-co/wowtch/live/alakazam/client"
 	"gitlab.com/ht-co/wowtch/live/alakazam/errors"
 	"gitlab.com/ht-co/wowtch/live/alakazam/message/scheme"
 	"gitlab.com/ht-co/wowtch/live/alakazam/models"
-	"gitlab.com/ht-co/micro/log"
 	"go.uber.org/zap"
 )
 
@@ -167,7 +167,7 @@ type betsPayReq struct {
 	OpenReward OpenRewardReq `json:"open_chat_reward"`
 }
 
-// 開獎訊息結構
+// OpenRewardReq 開獎訊息結構
 type OpenRewardReq struct {
 	Amount     float64 `json:"amount" binding:"required"`
 	ButtonName string  `json:"button_name" binding:"required"`
@@ -254,7 +254,6 @@ func (s *httpServer) levelUp(c *gin.Context) error {
 
 	// 	更新等級資訊
 	s.member.SetLevel(req.Uid, int(req.RoomId), req.Level)
-
 
 	//升級會員公告
 	id, err := s.message.SendLevelUp(keys, m, req.Level)
@@ -410,6 +409,61 @@ func (s *httpServer) reward(c *gin.Context) error {
 	c.JSON(http.StatusOK, gin.H{
 		"id": id,
 	})
+	return nil
+}
+
+// 競猜跟投訊息結構
+type quizBetsReq struct {
+	RoomId   int32  `json:"room_id" binding:"required"`
+	Uid      string `json:"uid" binding:"required"`
+	QuizId   int    `json:"quiz_id" binding:"required"`
+	QuizName string `json:"quiz_name"`
+	Bet      string `json:"bet" binding:"required"`
+	BetName  string `json:"bet_name"`
+	Amount   int    `json:"amount" binding:"required"`
+}
+
+// 競猜跟投
+func (s *httpServer) quizBet(c *gin.Context) error {
+	req := new(quizBetsReq)
+	if err := c.ShouldBindJSON(req); err != nil {
+		log.Errorf(err.Error())
+		return err
+	}
+
+	m, err := s.member.GetSession(req.Uid)
+	if err != nil {
+		return err
+	}
+
+	m.Uid = req.Uid
+	user := scheme.NewUser(*m)
+
+	bet := scheme.QuizBet{
+		QuizId:   req.QuizId,
+		QuizName: req.QuizName,
+		BetName:  req.QuizName,
+		Bet:      req.Bet,
+		Amount:   req.Amount,
+	}
+
+	log.Debug("競猜跟投",
+		zap.Int("QuizId", req.QuizId),
+		zap.String("QuizName", req.QuizName),
+		zap.String("Bet", req.Bet),
+		zap.String("BetName", req.BetName),
+		zap.Int("Amount", req.Amount),
+		zap.Int32("RoomId", req.RoomId))
+
+	id, err := s.message.SendQuizBets([]int32{req.RoomId}, user, bet)
+	if err != nil {
+		return err
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id": id,
+	})
+
 	return nil
 }
 

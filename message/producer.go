@@ -346,28 +346,35 @@ func (p *Producer) SendRedEnvelope(rid []int32, message string, user scheme.User
 	})
 }
 
-// 發送下注訊息
+// SendBets 發送下注訊息
 func (p *Producer) SendBets(rid []int32, user scheme.User, bet scheme.Bet) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		return bet.ToProto(id, rid, user)
 	})
 }
 
-// 發送中獎訊息
+// SendBetsWin 發送中獎訊息
 func (p *Producer) SendBetsWin(rid []int32, user scheme.User, gameName string) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		return scheme.NewBetsWinProto(id, rid, user, gameName)
 	})
 }
 
-// 發送中獎後打賞訊息
+// SendBetsWinReward 發送中獎後打賞訊息
 func (p *Producer) SendBetsWinReward(keys []string, user scheme.User, amount float64, buttonName string) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		return scheme.NewBetsWinRewardProto(id, keys, user, amount, buttonName)
 	})
 }
 
-// 發送等級提升提示
+// SendQuizBets 發送競猜下注訊息
+func (p *Producer) SendQuizBets(rid []int32, user scheme.User, bet scheme.QuizBet) (int64, error) {
+	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
+		return bet.ToProto(id, rid, user)
+	})
+}
+
+// SendLevelUpAlert 發送等級提升提示
 func (p *Producer) SendLevelUpAlert(keys []string, user *models.Member, level int) (int64, error) {
 	return p.Send(func(id int64) (*logicpb.PushMsg, error) {
 		pushMsg, err := scheme.LevelUpAlertMessage{

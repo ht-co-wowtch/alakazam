@@ -11,38 +11,44 @@ import (
 )
 
 const (
-	// 普通訊息
+	// MESSAGE_TYPE 普通訊息
 	MESSAGE_TYPE = "message"
 
-	// 私密
+	// PRIVATE_TYPE 私密
 	PRIVATE_TYPE = "private_message"
 
-	// 紅包訊息
+	// RED_ENVELOPE_TYPE 紅包訊息
 	RED_ENVELOPE_TYPE = "red_envelope"
 
-	// 公告訊息
+	// TOP_TYPE 公告訊息
 	TOP_TYPE = "top"
 
-	// 禮物/打賞
+	// GIFT_TYPE 禮物/打賞
 	GIFT_TYPE = "gift"
 
-	// 投注中獎打賞
+	// BETS 下注跟投
+	BETS = "bets"
+
+	// BETS_WIN_REWARD 投注中獎打賞
 	BETS_WIN_REWARD = "bets_win_reward"
 
-	// 關注
+	// QUIZ_BETS 競猜下注跟投
+	QUIZ_BETS = "quiz_bets"
+
+	// FOLLOW 關注
 	FOLLOW = "follow"
 
-	// 升級
-	LevelType       = "level"
+	// LevelType 升級
+	LevelType = "level"
 
-	// 主播升級
+	// AnchorLevelType 主播升級
 	AnchorLevelType = "anchor_level"
 
-	// 會員進場
+	// HintType 會員進場
 	HintType = "hint"
 )
 
-// 訊息格式
+// Message 訊息格式
 type Message struct {
 	// 訊息id
 	Id int64 `json:"id"`

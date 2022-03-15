@@ -234,31 +234,31 @@ ws.send(res.buffer)
 
 ```js
 ws.onmessage = function (evt) {
-var data = evt.data
-var dataView = new DataView(data, 0)
+    var data = evt.data
+    var dataView = new DataView(data, 0)
 
 // Protocol Package欄位內容
-var packetLen = dataView.getInt32(0)
+    var packetLen = dataView.getInt32(0)
 
 // Protocol Header欄位內容
-var headerLen = dataView.getInt16(4)
+    var headerLen = dataView.getInt16(4)
 
 // Protocol Operation欄位內容
-var op = dataView.getInt32(6)
+    var op = dataView.getInt32(6)
 
-switch (op) {
+    switch (op) {
 // 回覆進入房間結果
-case 2:
+        case 2:
 // 擷取出body內容
-var json = textDecoder.decode(data.slice(headerLen, packetLen))
-var msgBody = JSON.parse(json)
-console.log(msgBody)
-break
+            var json = textDecoder.decode(data.slice(headerLen, packetLen))
+            var msgBody = JSON.parse(json)
+            console.log(msgBody)
+            break
 // 回覆心跳結果，心跳body為空所以不做事
-case 4:
-console.log("receive: heartbeat")
-break
-}
+        case 4:
+            console.log("receive: heartbeat")
+            break
+    }
 }
 ```
 
@@ -399,6 +399,7 @@ Message type
 | gift            | 禮物/打賞     |
 | hint            | 提示         |
 | bets_win_reward | 投注中獎打賞   |
+| quiz_bets       | 競猜跟跟投    |
 | open_live       | 開播         |
 | close_live      | 關播         |
 | permission      | 權限         |
@@ -831,10 +832,10 @@ entity.type: 文字實體內容
     "user": null,
     "title": null,
     "level": {
-       "level": 100,
-       "text": "会员", 
-       "color": "#FFFFFF", 
-       "background_color": "#7FC355"
+      "level": 100,
+      "text": "会员",
+      "color": "#FFFFFF",
+      "background_color": "#7FC355"
     },
     "message": {
       "text": "nickname_1进入聊天室",
@@ -1100,6 +1101,59 @@ entity.type: 文字實體內容
         "amount": 10
       }
     ]
+  }
+}
+```
+
+##### 競猜跟投訊息
+
+```json
+{
+  "id": 4001,
+  "type": "quiz_bets",
+  "time": "12:37:00",
+  "timestamp": 1567579890,
+  "display": {
+    "user": null,
+    "level": null,
+    "title": null,
+    "message": {
+      "text": "用户sam78在quiz test下注2元 ＋跟注",
+      "color": "#DF3030",
+      "background_color": "#0000003f",
+      "entity": [
+        {
+          "type": "username",
+          "offset": 2,
+          "length": 5,
+          "color": "#7CE7EB",
+          "background_color": "#00000000"
+        },
+        {
+          "type": "button",
+          "offset": 21,
+          "length": 4,
+          "color": "#E5C4C4",
+          "background_color": "#A680B8"
+        }
+      ]
+    },
+    "background_color": "#0000003f",
+    "background_image": null
+  },
+  "user": {
+    "uid": "3d641b03d4d548dbb3a73a2197811261",
+    "name": "sam78",
+    "avatar": "female",
+     "type": "player",
+     "lv": 13
+  },
+  "quiz_bet": {
+    "quiz_id": 1,
+    "quiz_name": "quiz test",
+    "bet_name": "quiz test",
+    "bet": "ass234",
+    "amount": 2
   }
 }
 ```
@@ -1394,9 +1448,9 @@ Boyd內容如下
 
 ```json
 {
-   "is_allow": true,
-   "diamond": 990.11,
-   "paid_time": "2021-09-08T10:06:09+08:00"
+  "is_allow": true,
+  "diamond": 990.11,
+  "paid_time": "2021-09-08T10:06:09+08:00"
 }
 ```
 
@@ -1469,7 +1523,7 @@ Boyd內容如下
 1. 進入房間，yes代表可以，管理員、系統本身不進入房間
 
    | 狀態       | 遊客 | 試玩 | 會員 | 帶玩(營運) |
-         | ---------- | ---- | ---- | ---- | ---------- |
+               | ---------- | ---- | ---- | ---- | ---------- |
    | 正常       |      | Yes  | Yes  | Yes        |
    | 房間已關閉 |      |      |      |            |
    | 房間禁言   |      | Yes  | Yes  | Yes        |
@@ -1480,7 +1534,7 @@ Boyd內容如下
 2. 聊天(發送普通訊息)，yes代表可以
 
    | 狀態       | 遊客 | 試玩 | 會員 | 帶玩(營運) | 管理員 | 系統 |
-         | ---------- | ---- | ---- | ---- | ---------- | ------ | ---- |
+               | ---------- | ---- | ---- | ---- | ---------- | ------ | ---- |
    | 正常       |      |      | Yes  | Yes        | Yes    | Yes  |
    | 房間已關閉 |      |      |      |            |        |      |
    | 房間禁言   |      |      |      |            | Yes    | Yes  |
@@ -1491,7 +1545,7 @@ Boyd內容如下
 3. 發紅包，yes代表可以
 
    | 狀態       | 遊客 | 試玩 | 會員 | 帶玩(營運) | 管理員 | 系統 |
-         | ---------- | ---- | ---- | ---- | ---------- | ------ | ---- |
+               | ---------- | ---- | ---- | ---- | ---------- | ------ | ---- |
    | 正常       |      |      | Yes  | Yes        | Yes    | Yes  |
    | 房間已關閉 |      |      |      |            |        |      |
    | 房間禁言   |      |      | Yes  | Yes        | Yes    | Yes  |
@@ -1502,7 +1556,7 @@ Boyd內容如下
 4. 搶紅包，yes代表可以
 
    | 狀態       | 遊客 | 試玩 | 會員 | 帶玩(營運) |
-         | ---------- | ---- | ---- | ---- | ---------- |
+               | ---------- | ---- | ---- | ---- | ---------- |
    | 正常       |      |      | Yes  | Yes        |
    | 房間已關閉 |      |      |      |            |
    | 房間禁言   |      |      | Yes  | Yes        |
@@ -1513,7 +1567,7 @@ Boyd內容如下
 5. 發跟投，yes代表可以，什麼單子要發出來讓人跟投由營運or系統自動決定，不對外開放
 
    | 狀態       | 遊客 | 試玩 | 會員 | 帶玩(營運) | 管理員 | 系統 |
-         | ---------- | ---- | ---- | ---- | ---------- | ------ | ---- |
+               | ---------- | ---- | ---- | ---- | ---------- | ------ | ---- |
    | 正常       |      |      |      |            | Yes    | Yes  |
    | 房間已關閉 |      |      |      |            |        |      |
    | 房間禁言   |      |      |      |            | Yes    | Yes  |
@@ -1524,7 +1578,7 @@ Boyd內容如下
 6. 跟投，yes代表可以
 
    | 狀態       | 遊客 | 試玩 | 會員 | 帶玩(營運) |
-         | ---------- | ---- | ---- | ---- | ---------- |
+               | ---------- | ---- | ---- | ---- | ---------- |
    | 正常       |      |      | Yes  | Yes        |
    | 房間已關閉 |      |      |      |            |
    | 房間禁言   |      |      | Yes  | Yes        |

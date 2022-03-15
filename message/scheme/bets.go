@@ -9,7 +9,7 @@ import (
 	"unicode/utf8"
 )
 
-// 跟投訊息格式
+// Bets 跟投訊息格式
 type Bets struct {
 	Message
 
@@ -24,7 +24,7 @@ type Bets struct {
 	TotalAmount  int        `json:"total_amount"`
 }
 
-// 跟投資料
+// Bet 跟投資料
 type Bet struct {
 	GameId       int        `json:"game_id"`
 	GameName     string     `json:"game_name"`
@@ -34,7 +34,7 @@ type Bet struct {
 	Orders       []BetOrder `json:"bets"`
 }
 
-// 跟投項目資料
+// BetOrder 跟投項目資料
 type BetOrder struct {
 	Name       string   `json:"name"`
 	OddsCode   string   `json:"odds_code"`
@@ -59,7 +59,7 @@ func (b Bet) ToProto(seq int64, rid []int32, user User) (*logicpb.PushMsg, error
 	m := Bets{
 		Message: Message{
 			Id:        seq,
-			Type:      "bets",
+			Type:      BETS,
 			Display:   displayByBets(user, b.GameName, b.TotalAmount),
 			User:      user,
 			Time:      now.Format("15:04:05"),
@@ -77,6 +77,56 @@ func (b Bet) ToProto(seq int64, rid []int32, user User) (*logicpb.PushMsg, error
 		Items:        b.Orders,
 		Count:        b.Count,
 		TotalAmount:  b.TotalAmount,
+	}
+
+	bm, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+
+	return &logicpb.PushMsg{
+		Seq:    seq,
+		Op:     pb.OpRaw,
+		Type:   logicpb.PushMsg_ROOM,
+		Room:   rid,
+		Msg:    bm,
+		SendAt: m.Timestamp,
+	}, nil
+}
+
+// QuizBets 競猜跟投格式
+type QuizBets struct {
+	Message
+
+	QuizBet QuizBet `json:"quiz_bet"`
+}
+
+type QuizBet struct {
+	QuizId   int    `json:"quiz_id"`
+	QuizName string `json:"quiz_name"`
+	BetName  string `json:"bet_name"`
+	Bet      string `json:"bet"`
+	Amount   int    `json:"amount"`
+}
+
+// ToProto
+//TODO
+func (b QuizBet) ToProto(seq int64, rid []int32, user User) (*logicpb.PushMsg, error) {
+	now := time.Now()
+	m := QuizBets{
+		Message: Message{
+			Id:        seq,
+			Type:      QUIZ_BETS,
+			Display:   displayByBets(user, b.QuizName, b.Amount),
+			User:      user,
+			Time:      now.Format("15:04:05"),
+			Timestamp: now.Unix(),
+
+			Uid:    user.Uid,
+			Name:   user.Name,
+			Avatar: user.Avatar,
+		},
+		QuizBet: b,
 	}
 
 	bm, err := json.Marshal(m)
